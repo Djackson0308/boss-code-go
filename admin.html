@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>B.O.S.S CODE GO Admin</title>
+
+
+  <style>
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+    }
+
+    body{
+      min-height:100vh;
+      background:#000;
+      color:#fff;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    button,
+    input{
+      font-family:inherit;
+    }
+
+
+    /* ===================================================== */
+    /* PAGE */
+    /* ===================================================== */
+
+    .admin-page{
+      width:100%;
+      max-width:900px;
+      margin:0 auto;
+      padding:35px 20px 70px;
+    }
+
+
+    /* ===================================================== */
+    /* HEADER */
+    /* ===================================================== */
+
+    .admin-header{
+      text-align:center;
+      margin-bottom:45px;
+    }
+
+    .admin-logo{
+      width:100%;
+      max-width:420px;
+      height:auto;
+      object-fit:contain;
+      margin-bottom:15px;
+    }
+
+    .admin-kicker{
+      display:block;
+      color:#F5C518;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:2.5px;
+      margin-bottom:8px;
+    }
+
+    .admin-header h1{
+      font-size:clamp(32px,6vw,52px);
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .admin-header p{
+      color:#888;
+      line-height:1.5;
+    }
+
+
+    /* ===================================================== */
+    /* ADMIN CARD */
+    /* ===================================================== */
+
+    .admin-card{
+      background:
+        linear-gradient(
+          145deg,
+          #101010,
+          #050505
+        );
+
+      border:2px solid #262626;
+      border-radius:24px;
+
+      padding:28px;
+
+      margin-bottom:28px;
+    }
+
+    .admin-card-heading{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:20px;
+      margin-bottom:25px;
+    }
+
+    .admin-card-heading span{
+      display:block;
+      color:#F5C518;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:2px;
+      margin-bottom:7px;
+    }
+
+    .admin-card-heading h2{
+      font-size:27px;
+      font-weight:900;
+    }
+
+
+    /* ===================================================== */
+    /* STATUS */
+    /* ===================================================== */
+
+    .live-status{
+      flex:0 0 auto;
+
+      display:flex;
+      align-items:center;
+      gap:8px;
+
+      padding:9px 14px;
+
+      border-radius:30px;
+
+      background:#171717;
+      color:#777;
+
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:1px;
+    }
+
+    .live-status.active{
+      background:#d40000;
+      color:#fff;
+    }
+
+    .status-dot{
+      width:9px;
+      height:9px;
+      border-radius:50%;
+      background:currentColor;
+    }
+
+
+    /* ===================================================== */
+    /* FORM */
+    /* ===================================================== */
+
+    .field{
+      margin-bottom:22px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:9px;
+
+      color:#fff;
+
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.8px;
+    }
+
+    .field-help{
+      display:block;
+
+      margin-top:8px;
+
+      color:#666;
+
+      font-size:10px;
+      line-height:1.45;
+    }
+
+    .live-input{
+      width:100%;
+      min-height:54px;
+
+      border:2px solid #292929;
+      border-radius:14px;
+
+      background:#080808;
+      color:#fff;
+
+      padding:0 16px;
+
+      font-size:14px;
+
+      outline:none;
+    }
+
+    .live-input:focus{
+      border-color:#F5C518;
+    }
+
+
+    /* ===================================================== */
+    /* TOGGLE */
+    /* ===================================================== */
+
+    .toggle-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+
+      padding:18px;
+
+      background:#090909;
+
+      border:1px solid #252525;
+      border-radius:16px;
+
+      margin-bottom:25px;
+    }
+
+    .toggle-copy strong{
+      display:block;
+      margin-bottom:5px;
+    }
+
+    .toggle-copy span{
+      color:#777;
+      font-size:11px;
+    }
+
+    .switch{
+      position:relative;
+      width:56px;
+      height:32px;
+      flex:0 0 auto;
+    }
+
+    .switch input{
+      opacity:0;
+      width:0;
+      height:0;
+    }
+
+    .slider{
+      position:absolute;
+      inset:0;
+
+      background:#292929;
+
+      border-radius:30px;
+
+      cursor:pointer;
+
+      transition:.2s ease;
+    }
+
+    .slider::before{
+      content:"";
+
+      position:absolute;
+
+      width:24px;
+      height:24px;
+
+      left:4px;
+      top:4px;
+
+      border-radius:50%;
+
+      background:#fff;
+
+      transition:.2s ease;
+    }
+
+    .switch input:checked + .slider{
+      background:#d40000;
+    }
+
+    .switch input:checked + .slider::before{
+      transform:translateX(24px);
+    }
+
+
+    /* ===================================================== */
+    /* BUTTONS */
+    /* ===================================================== */
+
+    .button-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .admin-button{
+      min-height:52px;
+
+      border-radius:30px;
+
+      font-weight:900;
+      letter-spacing:.7px;
+
+      cursor:pointer;
+    }
+
+    .save-button{
+      border:0;
+      background:#d40000;
+      color:#fff;
+    }
+
+    .clear-button{
+      border:2px solid #F5C518;
+      background:transparent;
+      color:#F5C518;
+    }
+
+
+    /* ===================================================== */
+    /* SAVED INFO */
+    /* ===================================================== */
+
+    .saved-box{
+      display:none;
+
+      margin-top:25px;
+
+      padding:18px;
+
+      border:1px solid #2d2d2d;
+      border-radius:16px;
+
+      background:#080808;
+    }
+
+    .saved-box.show{
+      display:block;
+    }
+
+    .saved-box span{
+      display:block;
+
+      color:#F5C518;
+
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:1.5px;
+
+      margin-bottom:8px;
+    }
+
+    .saved-box strong{
+      display:block;
+      word-break:break-word;
+      line-height:1.4;
+    }
+
+    .saved-box p{
+      color:#777;
+      font-size:10px;
+      margin-top:8px;
+    }
+
+
+    /* ===================================================== */
+    /* MESSAGE */
+    /* ===================================================== */
+
+    .admin-message{
+      min-height:24px;
+
+      margin-top:18px;
+
+      text-align:center;
+
+      color:#F5C518;
+
+      font-size:11px;
+      font-weight:900;
+    }
+
+
+    /* ===================================================== */
+    /* COMING SOON */
+    /* ===================================================== */
+
+    .coming-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .coming-item{
+      padding:18px;
+
+      background:#080808;
+
+      border:1px solid #222;
+      border-radius:15px;
+    }
+
+    .coming-item span{
+      color:#d40000;
+      font-size:9px;
+      font-weight:900;
+    }
+
+    .coming-item strong{
+      display:block;
+      margin-top:5px;
+    }
+
+
+    /* ===================================================== */
+    /* MOBILE */
+    /* ===================================================== */
+
+    @media(max-width:650px){
+
+      .admin-page{
+        padding:25px 16px 60px;
+      }
+
+      .admin-card{
+        padding:20px;
+      }
+
+      .admin-card-heading{
+        display:block;
+      }
+
+      .live-status{
+        width:max-content;
+        margin-top:15px;
+      }
+
+      .button-row{
+        grid-template-columns:1fr;
+      }
+
+      .coming-grid{
+        grid-template-columns:1fr;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+
+  <main class="admin-page">
+
+
+    <!-- ================================================= -->
+    <!-- HEADER -->
+    <!-- ================================================= -->
+
+    <header class="admin-header">
+
+      <img
+        src="images/boss-code-go-logo.png"
+        alt="B.O.S.S CODE GO"
+        class="admin-logo"
+      >
+
+      <span class="admin-kicker">
+        PRIVATE CONTROL PANEL
+      </span>
+
+      <h1>
+        ADMIN
+      </h1>
+
+      <p>
+        Manage B.O.S.S CODE GO content without editing the main app.
+      </p>
+
+    </header>
+
+
+
+    <!-- ================================================= -->
+    <!-- LIVE CONTROL -->
+    <!-- ================================================= -->
+
+    <section class="admin-card">
+
+      <div class="admin-card-heading">
+
+        <div>
+
+          <span>
+            B.O.S.S CODE TV
+          </span>
+
+          <h2>
+            LIVE CONTROL
+          </h2>
+
+        </div>
+
+
+        <div
+          id="live-status"
+          class="live-status"
+        >
+
+          <span class="status-dot"></span>
+
+          <span id="live-status-text">
+            OFF AIR
+          </span>
+
+        </div>
+
+      </div>
+
+
+
+      <div class="field">
+
+        <label for="youtube-live-url">
+          YOUTUBE LIVE LINK
+        </label>
+
+        <input
+          id="youtube-live-url"
+          class="live-input"
+          type="url"
+          placeholder="https://youtube.com/live/..."
+          autocomplete="off"
+        >
+
+        <span class="field-help">
+          Paste the public YouTube Live share link here. Never paste your stream key.
+        </span>
+
+      </div>
+
+
+
+      <div class="toggle-row">
+
+        <div class="toggle-copy">
+
+          <strong>
+            SHOW LIVE BROADCAST
+          </strong>
+
+          <span>
+            Turn this on when you want the live player active in B.O.S.S CODE TV.
+          </span>
+
+        </div>
+
+
+        <label class="switch">
+
+          <input
+            id="live-enabled"
+            type="checkbox"
+          >
+
+          <span class="slider"></span>
+
+        </label>
+
+      </div>
+
+
+
+      <div class="button-row">
+
+        <button
+          id="save-live"
+          class="admin-button save-button"
+          type="button"
+        >
+          SAVE LIVE SETTINGS
+        </button>
+
+
+        <button
+          id="clear-live"
+          class="admin-button clear-button"
+          type="button"
+        >
+          CLEAR LIVE BROADCAST
+        </button>
+
+      </div>
+
+
+
+      <div
+        id="saved-box"
+        class="saved-box"
+      >
+
+        <span>
+          CURRENT LIVE VIDEO ID
+        </span>
+
+        <strong id="saved-video-id">
+          NONE
+        </strong>
+
+        <p id="saved-update-time"></p>
+
+      </div>
+
+
+      <div
+        id="admin-message"
+        class="admin-message"
+      ></div>
+
+    </section>
+
+
+
+    <!-- ================================================= -->
+    <!-- FUTURE ADMIN FEATURES -->
+    <!-- ================================================= -->
+
+    <section class="admin-card">
+
+      <div class="admin-card-heading">
+
+        <div>
+
+          <span>
+            COMING NEXT
+          </span>
+
+          <h2>
+            CONTENT MANAGEMENT
+          </h2>
+
+        </div>
+
+      </div>
+
+
+      <div class="coming-grid">
+
+        <div class="coming-item">
+          <span>MAGAZINE</span>
+          <strong>Manage Issues</strong>
+        </div>
+
+        <div class="coming-item">
+          <span>THE BOSS BITE</span>
+          <strong>Manage Episodes</strong>
+        </div>
+
+        <div class="coming-item">
+          <span>DECISION MAKERS</span>
+          <strong>Manage Videos</strong>
+        </div>
+
+        <div class="coming-item">
+          <span>MUSIC</span>
+          <strong>Manage Artists + Releases</strong>
+        </div>
+
+      </div>
+
+    </section>
+
+
+  </main>
+
+
+
+  <script>
+
+    /* ===================================================== */
+    /* B.O.S.S CODE GO ADMIN */
+    /* ===================================================== */
+
+
+    const ADMIN_STORAGE_KEY =
+      "boss-code-admin-settings-v1";
+
+
+    const liveUrlInput =
+      document.getElementById(
+        "youtube-live-url"
+      );
+
+
+    const liveEnabled =
+      document.getElementById(
+        "live-enabled"
+      );
+
+
+    const saveLiveButton =
+      document.getElementById(
+        "save-live"
+      );
+
+
+    const clearLiveButton =
+      document.getElementById(
+        "clear-live"
+      );
+
+
+    const liveStatus =
+      document.getElementById(
+        "live-status"
+      );
+
+
+    const liveStatusText =
+      document.getElementById(
+        "live-status-text"
+      );
+
+
+    const savedBox =
+      document.getElementById(
+        "saved-box"
+      );
+
+
+    const savedVideoId =
+      document.getElementById(
+        "saved-video-id"
+      );
+
+
+    const savedUpdateTime =
+      document.getElementById(
+        "saved-update-time"
+      );
+
+
+    const adminMessage =
+      document.getElementById(
+        "admin-message"
+      );
+
+
+
+    /* ===================================================== */
+    /* EXTRACT YOUTUBE VIDEO ID */
+    /* ===================================================== */
+
+    function getYouTubeVideoId(url){
+
+      if(!url){
+        return null;
+      }
+
+
+      const patterns = [
+
+        /youtube\.com\/live\/([^?&/]+)/,
+
+        /youtube\.com\/watch\?v=([^&]+)/,
+
+        /youtu\.be\/([^?&/]+)/,
+
+        /youtube\.com\/embed\/([^?&/]+)/
+
+      ];
+
+
+      for(
+        const pattern
+        of patterns
+      ){
+
+        const match =
+          url.match(
+            pattern
+          );
+
+
+        if(
+          match &&
+          match[1]
+        ){
+
+          return match[1];
+
+        }
+
+      }
+
+
+      return null;
+
+    }
+
+
+
+    /* ===================================================== */
+    /* GET SETTINGS */
+    /* ===================================================== */
+
+    function getAdminSettings(){
+
+      try{
+
+        const stored =
+          localStorage.getItem(
+            ADMIN_STORAGE_KEY
+          );
+
+
+        if(!stored){
+
+          return{
+
+            liveUrl:"",
+            liveVideoId:"",
+            liveEnabled:false,
+            updatedAt:null
+
+          };
+
+        }
+
+
+        return JSON.parse(
+          stored
+        );
+
+
+      }catch(error){
+
+        return{
+
+          liveUrl:"",
+          liveVideoId:"",
+          liveEnabled:false,
+          updatedAt:null
+
+        };
+
+      }
+
+    }
+
+
+
+    /* ===================================================== */
+    /* SAVE SETTINGS */
+    /* ===================================================== */
+
+    function saveAdminSettings(settings){
+
+      localStorage.setItem(
+
+        ADMIN_STORAGE_KEY,
+
+        JSON.stringify(
+          settings
+        )
+
+      );
+
+    }
+
+
+
+    /* ===================================================== */
+    /* RENDER ADMIN */
+    /* ===================================================== */
+
+    function renderAdmin(){
+
+      const settings =
+        getAdminSettings();
+
+
+      liveUrlInput.value =
+        settings.liveUrl ||
+        "";
+
+
+      liveEnabled.checked =
+        Boolean(
+          settings.liveEnabled
+        );
+
+
+      if(
+        settings.liveEnabled &&
+        settings.liveVideoId
+      ){
+
+        liveStatus.classList.add(
+          "active"
+        );
+
+
+        liveStatusText.textContent =
+          "LIVE";
+
+      }else{
+
+        liveStatus.classList.remove(
+          "active"
+        );
+
+
+        liveStatusText.textContent =
+          "OFF AIR";
+
+      }
+
+
+      if(
+        settings.liveVideoId
+      ){
+
+        savedBox.classList.add(
+          "show"
+        );
+
+
+        savedVideoId.textContent =
+          settings.liveVideoId;
+
+
+        if(
+          settings.updatedAt
+        ){
+
+          savedUpdateTime.textContent =
+            "Last updated: " +
+            new Date(
+              settings.updatedAt
+            )
+            .toLocaleString();
+
+        }
+
+      }else{
+
+        savedBox.classList.remove(
+          "show"
+        );
+
+      }
+
+    }
+
+
+
+    /* ===================================================== */
+    /* SAVE LIVE */
+    /* ===================================================== */
+
+    saveLiveButton.addEventListener(
+
+      "click",
+
+      function(){
+
+        const liveUrl =
+          liveUrlInput
+          .value
+          .trim();
+
+
+        const videoId =
+          getYouTubeVideoId(
+            liveUrl
+          );
+
+
+        if(
+          liveUrl &&
+          !videoId
+        ){
+
+          adminMessage.textContent =
+            "THAT DOES NOT LOOK LIKE A VALID YOUTUBE LIVE LINK.";
+
+          return;
+
+        }
+
+
+        if(
+          liveEnabled.checked &&
+          !videoId
+        ){
+
+          adminMessage.textContent =
+            "ADD A YOUTUBE LIVE LINK BEFORE TURNING LIVE ON.";
+
+          return;
+
+        }
+
+
+        const settings = {
+
+          liveUrl:
+            liveUrl,
+
+          liveVideoId:
+            videoId ||
+            "",
+
+          liveEnabled:
+            Boolean(
+              liveEnabled.checked
+            ),
+
+          updatedAt:
+            Date.now()
+
+        };
+
+
+        saveAdminSettings(
+          settings
+        );
+
+
+        adminMessage.textContent =
+          settings.liveEnabled
+            ?
+            "B.O.S.S CODE TV LIVE SETTINGS SAVED."
+            :
+            "LIVE LINK SAVED. BROADCAST IS CURRENTLY OFF AIR.";
+
+
+        renderAdmin();
+
+      }
+
+    );
+
+
+
+    /* ===================================================== */
+    /* CLEAR LIVE */
+    /* ===================================================== */
+
+    clearLiveButton.addEventListener(
+
+      "click",
+
+      function(){
+
+        const settings = {
+
+          liveUrl:"",
+          liveVideoId:"",
+          liveEnabled:false,
+          updatedAt:Date.now()
+
+        };
+
+
+        saveAdminSettings(
+          settings
+        );
+
+
+        liveUrlInput.value =
+          "";
+
+
+        liveEnabled.checked =
+          false;
+
+
+        adminMessage.textContent =
+          "LIVE BROADCAST CLEARED.";
+
+
+        renderAdmin();
+
+      }
+
+    );
+
+
+
+    /* ===================================================== */
+    /* START ADMIN */
+    /* ===================================================== */
+
+    renderAdmin();
+
+  </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>B.O.S.S CODE GO</title>
+
+  <link
+    href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+
+<body>
+
+
+  <!-- ================================================= -->
+  <!-- SPLASH SCREEN -->
+  <!-- ================================================= -->
+
+  <div id="splash-screen">
+
+    <div class="splash-content">
+
+      <img
+        src="images/boss-code-media-logo.png"
+        alt="B.O.S.S CODE MEDIA"
+        class="splash-logo"
+      >
+
+      <h2>
+        GREATNESS IS A DECISION
+      </h2>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- DAILY DECISION POPUP -->
+  <!-- ================================================= -->
+
+  <div
+    id="daily-decision-modal"
+    class="daily-decision-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="daily-decision-card"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="daily-decision-title"
+    >
+
+      <button
+        id="daily-decision-close"
+        class="daily-decision-close"
+        type="button"
+        aria-label="Close today's decision"
+      >
+        ×
+      </button>
+
+
+      <div class="daily-decision-topline">
+
+        <span id="daily-decision-number">
+          DECISION 001
+        </span>
+
+        <span>
+          GREATNESS IS A DECISION
+        </span>
+
+      </div>
+
+
+      <div class="daily-decision-badge">
+        B
+      </div>
+
+
+      <span class="daily-decision-kicker">
+        TODAY'S DECISION
+      </span>
+
+
+      <h2 id="daily-decision-title">
+        Make the decision.
+      </h2>
+
+
+      <div class="daily-decision-move">
+
+        <span>
+          YOUR MOVE
+        </span>
+
+        <p id="daily-decision-move-text">
+          Take one intentional action today.
+        </p>
+
+      </div>
+
+
+      <button
+        id="daily-decision-made"
+        class="daily-decision-made"
+        type="button"
+      >
+        DECISION MADE ✓
+      </button>
+
+
+      <p
+        id="daily-decision-confirmation"
+        class="daily-decision-confirmation"
+        aria-live="polite"
+      ></p>
+
+
+      <p class="daily-decision-reset-note">
+        A new decision unlocks every 24 hours.
+      </p>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- HOME -->
+  <!-- ================================================= -->
+
+  <div
+    id="home-screen"
+    class="screen active-screen"
+  >
+
+    <header class="app-header">
+
+      <img
+        src="images/boss-code-go-logo.png"
+        alt="B.O.S.S CODE GO"
+        class="boss-code-go-header-logo"
+      >
+
+      <p>
+        Welcome to the B.O.S.S CODE GO App for everything B.O.S.S CODE MEDIA
+      </p>
+
+    </header>
+
+
+    <main>
+
+
+      <section class="daily-decision-home">
+
+        <button
+          id="daily-decision-reopen"
+          class="daily-decision-reopen"
+          type="button"
+        >
+
+          <span class="daily-decision-reopen-text">
+
+            <small>
+              TODAY'S DECISION
+            </small>
+
+            <strong id="daily-decision-home-preview">
+              VIEW TODAY'S DECISION
+            </strong>
+
+          </span>
+
+          <span class="daily-decision-reopen-arrow">
+            ›
+          </span>
+
+        </button>
+
+      </section>
+
+
+
+      <section class="app-menu">
+
+
+        <a
+          href="https://magazine.bosscodemedia.com"
+          class="app-button"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/magazine-logo.png"
+              alt="B.O.S.S CODE Magazine"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            MAGAZINE
+          </span>
+
+        </a>
+
+
+
+        <button
+          class="app-button"
+          id="boss-bite-button"
+          type="button"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/boss-bite-logo.png"
+              alt="The Boss Bite"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            THE BOSS BITE
+          </span>
+
+        </button>
+
+
+
+        <button
+          class="app-button"
+          id="decision-makers-button"
+          type="button"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/decision-makers-logo.png"
+              alt="Decision Makers"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            DECISION MAKERS
+          </span>
+
+        </button>
+
+
+
+        <button
+          class="app-button"
+          id="boss-code-tv-button"
+          type="button"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/boss-code-tv-logo.png"
+              alt="B.O.S.S CODE TV"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            B.O.S.S CODE TV
+          </span>
+
+        </button>
+
+
+
+        <button
+          class="app-button"
+          id="music-button"
+          type="button"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/dez-tha-reason-logo.jpg"
+              alt="B.O.S.S CODE Music"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            MUSIC
+          </span>
+
+        </button>
+
+
+
+        <a
+          href="https://www.bosscodemedia.com/shop"
+          class="app-button"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+
+          <span class="app-button-logo-zone">
+
+            <img
+              src="images/code-clothing-logo.png"
+              alt="The Code Clothing"
+            >
+
+          </span>
+
+          <span class="app-button-title">
+            THE CODE CLOTHING
+          </span>
+
+        </a>
+
+
+
+        <button
+          class="boss-checkin-feature"
+          id="boss-checkin-button"
+          type="button"
+        >
+
+          <span class="boss-checkin-feature-kicker">
+            CHECK YOUR SOCIAL STRESS
+          </span>
+
+          <strong>
+            B.O.S.S CHECK IN
+          </strong>
+
+          <span class="boss-checkin-feature-arrow">
+            ›
+          </span>
+
+        </button>
+
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- MUSIC -->
+  <!-- ================================================= -->
+
+  <div
+    id="music-screen"
+    class="screen"
+  >
+
+    <div class="music-wrap">
+
+      <button
+        id="music-back"
+        class="back-button"
+        type="button"
+      >
+        ← HOME
+      </button>
+
+
+      <header class="music-header">
+
+        <img
+          src="Music/dez-tha-reason/artwork/Dez photo.jpg"
+          alt="B.O.S.S CODE Music"
+          class="music-artist-logo"
+        >
+
+        <span class="music-kicker">
+          B.O.S.S CODE MUSIC
+        </span>
+
+        <h1>
+          B.O.S.S CODE MUSIC
+        </h1>
+
+        <p>
+          Independent music. Direct from the artists.
+        </p>
+
+      </header>
+
+
+      <section class="music-section">
+
+        <div class="music-section-heading">
+
+          <div>
+            <span>FEATURED</span>
+            <h2>LATEST RELEASE</h2>
+          </div>
+
+          <div class="music-heading-line"></div>
+
+        </div>
+
+
+        <div class="featured-release">
+
+          <div class="featured-cover">
+
+            <div class="placeholder-cover">
+
+              <span>DTR</span>
+
+              <strong>
+                DEZ THA REASON
+              </strong>
+
+              <small>
+                FEATURED RELEASE
+              </small>
+
+            </div>
+
+          </div>
+
+
+          <div class="featured-release-info">
+
+            <span class="featured-label">
+              FEATURED PROJECT
+            </span>
+
+            <h2>
+              RISE OF THE DECISION MAKER
+            </h2>
+
+            <p class="featured-artist">
+              DEZ THA REASON
+            </p>
+
+            <p class="featured-description">
+              Listen directly inside B.O.S.S CODE Music.
+            </p>
+
+            <button
+              id="play-featured-release"
+              class="music-main-button"
+              type="button"
+            >
+              ▶ PLAY RELEASE
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+
+      <section class="music-section">
+
+        <div class="music-section-heading">
+
+          <div>
+            <span>B.O.S.S CODE PLAYER</span>
+            <h2>NOW PLAYING</h2>
+          </div>
+
+          <div class="music-heading-line"></div>
+
+        </div>
+
+
+        <div class="music-player-shell">
+
+          <div
+            id="now-playing-art"
+            class="now-playing-art"
+          >
+            <span>DTR</span>
+          </div>
+
+
+          <div class="now-playing-info">
+
+            <span class="now-playing-label">
+              NOW PLAYING
+            </span>
+
+            <h3 id="now-playing-title">
+              SELECT A TRACK
+            </h3>
+
+            <p id="now-playing-artist">
+              DEZ THA REASON
+            </p>
+
+          </div>
+
+
+          <div class="music-controls">
+
+            <button
+              id="music-previous"
+              class="music-control secondary-control"
+              type="button"
+            >
+              ◀
+            </button>
+
+            <button
+              id="music-play-pause"
+              class="music-control main-control"
+              type="button"
+            >
+              ▶
+            </button>
+
+            <button
+              id="music-next"
+              class="music-control secondary-control"
+              type="button"
+            >
+              ▶
+            </button>
+
+          </div>
+
+
+          <div class="music-progress-area">
+
+            <span id="music-current-time">
+              0:00
+            </span>
+
+            <input
+              id="music-progress"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+            >
+
+            <span id="music-duration">
+              0:00
+            </span>
+
+          </div>
+
+
+          <div
+            id="music-player-message"
+            class="music-player-message"
+          >
+            Choose a track from the library.
+          </div>
+
+
+          <audio
+            id="boss-music-audio"
+            preload="metadata"
+          ></audio>
+
+        </div>
+
+      </section>
+
+
+
+      <section class="music-section">
+
+        <div class="music-section-heading">
+
+          <div>
+            <span>THE CATALOG</span>
+            <h2>TRACKS</h2>
+          </div>
+
+          <div class="music-heading-line"></div>
+
+        </div>
+
+        <div
+          id="music-track-list"
+          class="music-track-list"
+        ></div>
+
+      </section>
+
+
+
+      <section class="music-section">
+
+        <div class="music-section-heading">
+
+          <div>
+            <span>EXPLORE</span>
+            <h2>RELEASES</h2>
+          </div>
+
+          <div class="music-heading-line"></div>
+
+        </div>
+
+        <div class="release-grid"></div>
+
+      </section>
+
+
+      <footer class="boss-footer">
+
+        <img
+          src="images/boss-code-media-logo.png"
+          alt="B.O.S.S CODE MEDIA"
+        >
+
+        <p>
+          GREATNESS IS A DECISION
+        </p>
+
+      </footer>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- B.O.S.S CHECK IN -->
+  <!-- ================================================= -->
+
+  <div
+    id="boss-checkin-screen"
+    class="screen"
+  >
+
+    <div class="checkin-wrap">
+
+      <button
+        id="boss-checkin-back"
+        class="back-button"
+        type="button"
+      >
+        ← HOME
+      </button>
+
+
+      <section
+        id="checkin-intro"
+        class="checkin-intro"
+      >
+
+        <span class="checkin-kicker">
+          BUSINESS OVER SOCIAL STRESS
+        </span>
+
+        <h1>
+          B.O.S.S<br>
+          CHECK IN
+        </h1>
+
+        <p class="checkin-question">
+          How much is social stress influencing your decisions?
+        </p>
+
+        <p class="checkin-description">
+          Every Check In gives you a fresh set of 12 questions pulled from
+          Approval, Comparison, Confidence and Action.
+        </p>
+
+
+        <div class="checkin-categories">
+
+          <span>APPROVAL</span>
+          <span>COMPARISON</span>
+          <span>CONFIDENCE</span>
+          <span>ACTION</span>
+
+        </div>
+
+
+        <button
+          id="start-checkin"
+          class="checkin-primary-button"
+          type="button"
+        >
+          START MY CHECK IN
+        </button>
+
+
+        <p class="checkin-disclaimer">
+          This is a self reflection tool, not a clinical or mental health assessment.
+        </p>
+
+      </section>
+
+
+
+      <section
+        id="checkin-questions"
+        class="checkin-question-screen"
+      >
+
+        <div class="checkin-progress-header">
+
+          <span id="question-count">
+            QUESTION 1 OF 12
+          </span>
+
+          <span id="progress-percent">
+            8%
+          </span>
+
+        </div>
+
+
+        <div class="checkin-progress-track">
+
+          <div
+            id="checkin-progress-bar"
+            class="checkin-progress-bar"
+          ></div>
+
+        </div>
+
+
+        <div class="question-category">
+
+          <span>
+            CHECKING:
+          </span>
+
+          <strong id="question-category">
+            APPROVAL
+          </strong>
+
+        </div>
+
+
+        <h2
+          id="checkin-question-text"
+          class="checkin-question-text"
+        ></h2>
+
+
+        <div
+          id="checkin-answers"
+          class="checkin-answers"
+        ></div>
+
+
+        <button
+          id="previous-question"
+          class="previous-question-button"
+          type="button"
+        >
+          ← PREVIOUS QUESTION
+        </button>
+
+      </section>
+
+
+
+      <section
+        id="checkin-results"
+        class="checkin-results"
+      >
+
+        <span class="results-kicker">
+          YOUR B.O.S.S SCORE
+        </span>
+
+
+        <div class="score-circle">
+
+          <span id="boss-score">
+            0
+          </span>
+
+          <small>
+            / 100
+          </small>
+
+        </div>
+
+
+        <h2 id="boss-score-title">
+          KEEP BUILDING
+        </h2>
+
+
+        <p
+          id="boss-score-description"
+          class="boss-score-description"
+        ></p>
+
+
+        <div class="score-breakdown">
+
+
+          <div class="score-category">
+
+            <div class="score-category-heading">
+
+              <span>APPROVAL</span>
+              <strong id="approval-score">0</strong>
+
+            </div>
+
+            <div class="score-meter">
+              <div id="approval-meter"></div>
+            </div>
+
+          </div>
+
+
+          <div class="score-category">
+
+            <div class="score-category-heading">
+
+              <span>COMPARISON</span>
+              <strong id="comparison-score">0</strong>
+
+            </div>
+
+            <div class="score-meter">
+              <div id="comparison-meter"></div>
+            </div>
+
+          </div>
+
+
+          <div class="score-category">
+
+            <div class="score-category-heading">
+
+              <span>CONFIDENCE</span>
+              <strong id="confidence-score">0</strong>
+
+            </div>
+
+            <div class="score-meter">
+              <div id="confidence-meter"></div>
+            </div>
+
+          </div>
+
+
+          <div class="score-category">
+
+            <div class="score-category-heading">
+
+              <span>ACTION</span>
+              <strong id="action-score">0</strong>
+
+            </div>
+
+            <div class="score-meter">
+              <div id="action-meter"></div>
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="social-stress-result">
+
+          <span>
+            YOUR BIGGEST SOCIAL STRESS
+          </span>
+
+          <h3 id="weakest-category">
+            COMPARISON
+          </h3>
+
+          <p id="weakest-message"></p>
+
+        </div>
+
+
+        <div class="next-decision-box">
+
+          <span>
+            YOUR NEXT DECISION
+          </span>
+
+          <h3 id="next-decision"></h3>
+
+        </div>
+
+
+        <button
+          id="go-to-decision-makers"
+          class="checkin-primary-button"
+          type="button"
+        >
+          GO TO DECISION MAKERS →
+        </button>
+
+
+        <button
+          id="retake-checkin"
+          class="retake-button"
+          type="button"
+        >
+          TAKE A NEW CHECK IN
+        </button>
+
+      </section>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- DECISION MAKERS -->
+  <!-- ================================================= -->
+
+  <div
+    id="decision-makers-screen"
+    class="screen"
+  >
+
+    <header class="decision-header">
+
+      <button
+        id="decision-makers-back"
+        class="back-button"
+        type="button"
+      >
+        ← HOME
+      </button>
+
+
+      <img
+        src="images/decision-makers-logo.png"
+        alt="Decision Makers"
+        class="decision-logo"
+      >
+
+
+      <h2>
+        DECISION MAKERS
+      </h2>
+
+
+      <p class="decision-tagline">
+        GREATNESS STARTS WITH A DECISION
+      </p>
+
+
+      <p class="decision-intro">
+        Real conversations. Focused lessons. Action that moves you forward.
+      </p>
+
+    </header>
+
+
+
+    <section class="decision-section">
+
+      <div class="decision-heading">
+
+        <div>
+
+          <span class="decision-kicker">
+            REAL THOUGHTS. REAL TIME.
+          </span>
+
+          <h2>
+            ON THE GO
+          </h2>
+
+        </div>
+
+        <span class="red-line"></span>
+
+      </div>
+
+
+      <p class="decision-section-copy">
+        Quick perspective for wherever life finds you.
+      </p>
+
+
+      <div class="on-the-go-row"></div>
+
+    </section>
+
+
+
+    <section class="decision-section session-section">
+
+      <div class="decision-heading">
+
+        <div>
+
+          <span class="decision-kicker">
+            GO DEEPER
+          </span>
+
+          <h2>
+            DECISION MAKER SESSIONS
+          </h2>
+
+        </div>
+
+        <span class="red-line"></span>
+
+      </div>
+
+
+      <p class="decision-section-copy">
+        Focused teaching designed to challenge your thinking and strengthen your execution.
+      </p>
+
+
+      <div class="session-grid">
+
+        <article class="session-card">
+
+          <div class="session-number">
+            01
+          </div>
+
+          <div class="session-content">
+
+            <span>
+              FOCUSED SESSION
+            </span>
+
+            <h3>
+              PURPOSE
+            </h3>
+
+            <p>
+              Understanding what deserves your time, energy and attention.
+            </p>
+
+            <div class="session-status">
+              SESSION COMING SOON
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <article class="session-card">
+
+          <div class="session-number">
+            02
+          </div>
+
+          <div class="session-content">
+
+            <span>
+              FOCUSED SESSION
+            </span>
+
+            <h3>
+              DISCIPLINE
+            </h3>
+
+            <p>
+              Building the consistency required to move beyond motivation.
+            </p>
+
+            <div class="session-status">
+              SESSION COMING SOON
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <article class="session-card">
+
+          <div class="session-number">
+            03
+          </div>
+
+          <div class="session-content">
+
+            <span>
+              FOCUSED SESSION
+            </span>
+
+            <h3>
+              EXECUTION
+            </h3>
+
+            <p>
+              Turning ideas, plans and intentions into measurable movement.
+            </p>
+
+            <div class="session-status">
+              SESSION COMING SOON
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <article class="session-card">
+
+          <div class="session-number">
+            04
+          </div>
+
+          <div class="session-content">
+
+            <span>
+              FOCUSED SESSION
+            </span>
+
+            <h3>
+              BOLDNESS
+            </h3>
+
+            <p>
+              Developing the courage to move when fear tells you to stay comfortable.
+            </p>
+
+            <div class="session-status">
+              SESSION COMING SOON
+            </div>
+
+          </div>
+
+        </article>
+
+      </div>
+
+    </section>
+
+
+
+    <section class="decision-section">
+
+      <div class="decision-heading">
+
+        <div>
+
+          <span class="decision-kicker">
+            DON'T JUST WATCH
+          </span>
+
+          <h2>
+            TAKE ACTION
+          </h2>
+
+        </div>
+
+        <span class="red-line"></span>
+
+      </div>
+
+
+      <div class="action-grid">
+
+        <article class="action-card">
+
+          <div class="action-number">
+            01
+          </div>
+
+          <h3>
+            MAKE THE DECISION
+          </h3>
+
+          <p>
+            Name one thing you know you need to do but have continued putting off.
+          </p>
+
+          <button
+            class="action-button"
+            data-action="decision"
+            type="button"
+          >
+            ACCEPT CHALLENGE
+          </button>
+
+        </article>
+
+
+        <article class="action-card">
+
+          <div class="action-number">
+            02
+          </div>
+
+          <h3>
+            TAKE THE FIRST STEP
+          </h3>
+
+          <p>
+            Choose one action you can complete today that moves the goal forward.
+          </p>
+
+          <button
+            class="action-button"
+            data-action="step"
+            type="button"
+          >
+            ACCEPT CHALLENGE
+          </button>
+
+        </article>
+
+
+        <article class="action-card">
+
+          <div class="action-number">
+            03
+          </div>
+
+          <h3>
+            STOP WAITING FOR PERFECT
+          </h3>
+
+          <p>
+            Start something before you feel completely ready.
+          </p>
+
+          <button
+            class="action-button"
+            data-action="perfect"
+            type="button"
+          >
+            ACCEPT CHALLENGE
+          </button>
+
+        </article>
+
+      </div>
+
+
+      <div
+        id="decision-challenge-message"
+        class="decision-challenge-message"
+      >
+
+        <span class="challenge-small">
+          TODAY'S DECISION
+        </span>
+
+        <h3 id="challenge-title">
+          YOU MADE THE DECISION.
+        </h3>
+
+        <p id="challenge-copy">
+          Now take action.
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <footer class="boss-footer">
+
+      <img
+        src="images/boss-code-media-logo.png"
+        alt="B.O.S.S CODE MEDIA"
+      >
+
+      <p>
+        GREATNESS IS A DECISION
+      </p>
+
+    </footer>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- BOSS BITE -->
+  <!-- ================================================= -->
+
+  <div
+    id="boss-bite-screen"
+    class="screen"
+  >
+
+    <header class="section-header">
+
+      <button
+        id="boss-bite-back"
+        class="back-button"
+        type="button"
+      >
+        ← HOME
+      </button>
+
+
+      <img
+        src="images/boss-bite-logo.png"
+        class="section-logo"
+        alt="The Boss Bite"
+      >
+
+
+      <h2>
+        THE BOSS BITE
+      </h2>
+
+
+      <p>
+        FUELING YOUR HUSTLE
+      </p>
+
+    </header>
+
+
+    <section class="featured-player-section">
+
+      <div
+        id="featured-player"
+        class="featured-player"
+      ></div>
+
+      <h3 id="featured-title">
+        THE BOSS BITE
+      </h3>
+
+    </section>
+
+
+    <section class="boss-section">
+
+      <div class="section-title-row">
+
+        <h2>
+          EPISODES
+        </h2>
+
+        <span class="red-line"></span>
+
+      </div>
+
+      <div
+        id="episode-grid"
+        class="episode-grid"
+      ></div>
+
+    </section>
+
+
+    <section class="boss-section">
+
+      <div class="section-title-row">
+
+        <h2>
+          BOSS BITE GALLERY
+        </h2>
+
+        <span class="red-line"></span>
+
+      </div>
+
+      <div
+        id="boss-bite-gallery"
+        class="photo-gallery"
+      ></div>
+
+    </section>
+
+
+    <section class="boss-section">
+
+      <div class="section-title-row">
+
+        <h2>
+          TAKE A BOSS BITE ROAD TRIP
+        </h2>
+
+        <span class="red-line"></span>
+
+      </div>
+
+
+      <div class="road-trip-layout">
+
+        <aside class="restaurant-browser">
+
+          <div class="restaurant-browser-header">
+
+            <h3>
+              BOSS BITE STOPS
+            </h3>
+
+            <span>
+              TAP A LOCATION
+            </span>
+
+          </div>
+
+
+          <div
+            id="restaurant-list"
+            class="restaurant-list"
+          ></div>
+
+        </aside>
+
+
+        <div class="map-shell">
+
+          <div id="boss-bite-map"></div>
+
+
+          <div
+            id="map-loading"
+            class="map-loading"
+          >
+
+            <img
+              src="images/boss-bite-logo.png"
+              alt=""
+            >
+
+            <strong>
+              LOADING THE ROAD TRIP...
+            </strong>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <footer class="boss-footer">
+
+      <img
+        src="images/boss-code-media-logo.png"
+        alt="B.O.S.S CODE MEDIA"
+      >
+
+      <p>
+        GREATNESS IS A DECISION
+      </p>
+
+    </footer>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- B.O.S.S CODE TV -->
+  <!-- ================================================= -->
+
+  <div
+    id="boss-code-tv-screen"
+    class="screen"
+  >
+
+    <div class="boss-tv-page">
+
+
+      <button
+        id="boss-code-tv-back"
+        class="back-button"
+        type="button"
+      >
+        ← HOME
+      </button>
+
+
+
+      <!-- ================================================= -->
+      <!-- B.O.S.S CODE TV LIVE -->
+      <!-- ================================================= -->
+
+      <section class="boss-tv-live-section">
+
+        <div class="boss-tv-live-heading">
+
+          <div>
+
+            <span class="boss-tv-live-kicker">
+              B.O.S.S CODE MEDIA
+            </span>
+
+            <h1>
+              B.O.S.S CODE TV LIVE
+            </h1>
+
+          </div>
+
+
+          <div class="boss-tv-live-badge">
+
+            <span class="live-dot"></span>
+
+            LIVE
+
+          </div>
+
+        </div>
+
+
+        <p class="boss-tv-live-description">
+          Live interviews, conversations, special broadcasts and events from B.O.S.S CODE MEDIA.
+        </p>
+
+
+        <div class="boss-tv-live-player">
+
+          <iframe
+            src="https://www.youtube.com/embed/4QB-21dFtW0?rel=0"
+            title="B.O.S.S CODE TV LIVE"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+
+        </div>
+
+
+        <div class="boss-tv-live-bottom">
+
+          <span class="boss-tv-live-label">
+            LIVE BROADCAST
+          </span>
+
+          <strong>
+            B.O.S.S CODE MEDIA LIVE STREAM
+          </strong>
+
+          <p>
+            Watch live broadcasts directly inside B.O.S.S CODE GO.
+          </p>
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================================================= -->
+      <!-- PREVIOUSLY RECORDED -->
+      <!-- ================================================= -->
+
+      <section class="boss-tv-recorded-section">
+
+        <div class="boss-tv-recorded-heading">
+
+          <div>
+
+            <span>
+              B.O.S.S CODE TV
+            </span>
+
+            <h2>
+              PREVIOUSLY RECORDED
+            </h2>
+
+          </div>
+
+          <div class="boss-tv-heading-line"></div>
+
+        </div>
+
+
+        <p class="boss-tv-recorded-copy">
+          Interviews, conversations and stories from the B.O.S.S CODE TV archive.
+        </p>
+
+
+        <div
+          class="boss-code-tv-grid"
+          id="boss-code-tv-grid"
+        ></div>
+
+      </section>
+
+
+      <footer class="boss-footer">
+
+        <img
+          src="images/boss-code-media-logo.png"
+          alt="B.O.S.S CODE MEDIA"
+        >
+
+        <p>
+          GREATNESS IS A DECISION
+        </p>
+
+      </footer>
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ================================================= -->
+  <!-- GALLERY LIGHTBOX -->
+  <!-- ================================================= -->
+
+  <div
+    id="gallery-lightbox"
+    class="gallery-lightbox"
+  >
+
+    <button
+      id="gallery-close"
+      class="gallery-close"
+      type="button"
+    >
+      ×
+    </button>
+
+
+    <button
+      id="gallery-previous"
+      class="gallery-nav gallery-previous"
+      type="button"
+    >
+      ‹
+    </button>
+
+
+    <div class="gallery-viewer">
+
+      <img
+        id="gallery-large-image"
+        alt="Boss Bite gallery photo"
+      >
+
+      <div
+        id="gallery-counter"
+        class="gallery-counter"
+      ></div>
+
+    </div>
+
+
+    <button
+      id="gallery-next"
+      class="gallery-nav gallery-next"
+      type="button"
+    >
+      ›
+    </button>
+
+  </div>
+
+
+
+  <script
+    src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"
+  ></script>
+
+  <script src="app.js"></script>
+
+</body>
+
+</html>
