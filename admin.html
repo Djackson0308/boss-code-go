@@ -1,1121 +1,5150 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-  <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>B.O.S.S CODE GO Admin</title>
-
-
-  <style>
-
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-    }
-
-    body{
-      min-height:100vh;
-      background:#000;
-      color:#fff;
-      font-family:Arial,Helvetica,sans-serif;
-    }
-
-    button,
-    input{
-      font-family:inherit;
-    }
-
-
-    /* ===================================================== */
-    /* PAGE */
-    /* ===================================================== */
-
-    .admin-page{
-      width:100%;
-      max-width:900px;
-      margin:0 auto;
-      padding:35px 20px 70px;
-    }
-
-
-    /* ===================================================== */
-    /* HEADER */
-    /* ===================================================== */
-
-    .admin-header{
-      text-align:center;
-      margin-bottom:45px;
-    }
-
-    .admin-logo{
-      width:100%;
-      max-width:420px;
-      height:auto;
-      object-fit:contain;
-      margin-bottom:15px;
-    }
-
-    .admin-kicker{
-      display:block;
-      color:#F5C518;
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:2.5px;
-      margin-bottom:8px;
-    }
-
-    .admin-header h1{
-      font-size:clamp(32px,6vw,52px);
-      font-weight:900;
-      margin-bottom:10px;
-    }
-
-    .admin-header p{
-      color:#888;
-      line-height:1.5;
-    }
-
-
-    /* ===================================================== */
-    /* ADMIN CARD */
-    /* ===================================================== */
-
-    .admin-card{
-      background:
-        linear-gradient(
-          145deg,
-          #101010,
-          #050505
-        );
-
-      border:2px solid #262626;
-      border-radius:24px;
-
-      padding:28px;
-
-      margin-bottom:28px;
-    }
-
-    .admin-card-heading{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:20px;
-      margin-bottom:25px;
-    }
-
-    .admin-card-heading span{
-      display:block;
-      color:#F5C518;
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:2px;
-      margin-bottom:7px;
-    }
-
-    .admin-card-heading h2{
-      font-size:27px;
-      font-weight:900;
-    }
-
-
-    /* ===================================================== */
-    /* STATUS */
-    /* ===================================================== */
-
-    .live-status{
-      flex:0 0 auto;
-
-      display:flex;
-      align-items:center;
-      gap:8px;
-
-      padding:9px 14px;
-
-      border-radius:30px;
-
-      background:#171717;
-      color:#777;
-
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:1px;
-    }
-
-    .live-status.active{
-      background:#d40000;
-      color:#fff;
-    }
-
-    .status-dot{
-      width:9px;
-      height:9px;
-      border-radius:50%;
-      background:currentColor;
-    }
-
-
-    /* ===================================================== */
-    /* FORM */
-    /* ===================================================== */
-
-    .field{
-      margin-bottom:22px;
-    }
-
-    .field label{
-      display:block;
-      margin-bottom:9px;
-
-      color:#fff;
-
-      font-size:11px;
-      font-weight:900;
-      letter-spacing:.8px;
-    }
-
-    .field-help{
-      display:block;
-
-      margin-top:8px;
-
-      color:#666;
-
-      font-size:10px;
-      line-height:1.45;
-    }
-
-    .live-input{
-      width:100%;
-      min-height:54px;
-
-      border:2px solid #292929;
-      border-radius:14px;
-
-      background:#080808;
-      color:#fff;
-
-      padding:0 16px;
-
-      font-size:14px;
-
-      outline:none;
-    }
-
-    .live-input:focus{
-      border-color:#F5C518;
-    }
-
-
-    /* ===================================================== */
-    /* TOGGLE */
-    /* ===================================================== */
-
-    .toggle-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:20px;
-
-      padding:18px;
-
-      background:#090909;
-
-      border:1px solid #252525;
-      border-radius:16px;
-
-      margin-bottom:25px;
-    }
-
-    .toggle-copy strong{
-      display:block;
-      margin-bottom:5px;
-    }
-
-    .toggle-copy span{
-      color:#777;
-      font-size:11px;
-    }
-
-    .switch{
-      position:relative;
-      width:56px;
-      height:32px;
-      flex:0 0 auto;
-    }
-
-    .switch input{
-      opacity:0;
-      width:0;
-      height:0;
-    }
-
-    .slider{
-      position:absolute;
-      inset:0;
-
-      background:#292929;
-
-      border-radius:30px;
-
-      cursor:pointer;
-
-      transition:.2s ease;
-    }
-
-    .slider::before{
-      content:"";
-
-      position:absolute;
-
-      width:24px;
-      height:24px;
-
-      left:4px;
-      top:4px;
-
-      border-radius:50%;
-
-      background:#fff;
-
-      transition:.2s ease;
-    }
-
-    .switch input:checked + .slider{
-      background:#d40000;
-    }
-
-    .switch input:checked + .slider::before{
-      transform:translateX(24px);
-    }
-
-
-    /* ===================================================== */
-    /* BUTTONS */
-    /* ===================================================== */
-
-    .button-row{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .admin-button{
-      min-height:52px;
-
-      border-radius:30px;
-
-      font-weight:900;
-      letter-spacing:.7px;
-
-      cursor:pointer;
-    }
-
-    .save-button{
-      border:0;
-      background:#d40000;
-      color:#fff;
-    }
-
-    .clear-button{
-      border:2px solid #F5C518;
-      background:transparent;
-      color:#F5C518;
-    }
-
-
-    /* ===================================================== */
-    /* SAVED INFO */
-    /* ===================================================== */
-
-    .saved-box{
-      display:none;
-
-      margin-top:25px;
-
-      padding:18px;
-
-      border:1px solid #2d2d2d;
-      border-radius:16px;
-
-      background:#080808;
-    }
-
-    .saved-box.show{
-      display:block;
-    }
-
-    .saved-box span{
-      display:block;
-
-      color:#F5C518;
-
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:1.5px;
-
-      margin-bottom:8px;
-    }
-
-    .saved-box strong{
-      display:block;
-      word-break:break-word;
-      line-height:1.4;
-    }
-
-    .saved-box p{
-      color:#777;
-      font-size:10px;
-      margin-top:8px;
-    }
-
-
-    /* ===================================================== */
-    /* MESSAGE */
-    /* ===================================================== */
-
-    .admin-message{
-      min-height:24px;
-
-      margin-top:18px;
-
-      text-align:center;
-
-      color:#F5C518;
-
-      font-size:11px;
-      font-weight:900;
-    }
-
-
-    /* ===================================================== */
-    /* COMING SOON */
-    /* ===================================================== */
-
-    .coming-grid{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-    }
-
-    .coming-item{
-      padding:18px;
-
-      background:#080808;
-
-      border:1px solid #222;
-      border-radius:15px;
-    }
-
-    .coming-item span{
-      color:#d40000;
-      font-size:9px;
-      font-weight:900;
-    }
-
-    .coming-item strong{
-      display:block;
-      margin-top:5px;
-    }
-
-
-    /* ===================================================== */
-    /* MOBILE */
-    /* ===================================================== */
-
-    @media(max-width:650px){
-
-      .admin-page{
-        padding:25px 16px 60px;
-      }
-
-      .admin-card{
-        padding:20px;
-      }
-
-      .admin-card-heading{
-        display:block;
-      }
-
-      .live-status{
-        width:max-content;
-        margin-top:15px;
-      }
-
-      .button-row{
-        grid-template-columns:1fr;
-      }
-
-      .coming-grid{
-        grid-template-columns:1fr;
-      }
-
-    }
-
-  </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>B.O.S.S CODE GO Admin</title>
+
+<style>
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+background:#000;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
+min-height:100vh;
+}
+
+button,
+input,
+textarea,
+select{
+font:inherit;
+}
+
+.wrap{
+width:min(1100px,calc(100% - 28px));
+margin:auto;
+padding:28px 0 70px;
+}
+
+.header{
+text-align:center;
+margin-bottom:28px;
+}
+
+.logo{
+width:min(420px,100%);
+}
+
+.gold{
+color:#f5c518;
+}
+
+.muted{
+color:#858585;
+}
+
+.card{
+background:linear-gradient(145deg,#111,#050505);
+border:1px solid #282828;
+border-radius:22px;
+padding:22px;
+margin-bottom:20px;
+}
+
+.head{
+display:flex;
+justify-content:space-between;
+gap:15px;
+align-items:flex-start;
+margin-bottom:18px;
+}
+
+.head small{
+color:#f5c518;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+}
+
+.head h2{
+font-size:25px;
+margin-top:5px;
+}
+
+.status{
+padding:8px 12px;
+border-radius:999px;
+background:#181818;
+color:#888;
+font-size:10px;
+font-weight:900;
+}
+
+.status.ok{
+background:#102518;
+color:#72e59a;
+}
+
+.tabs{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-bottom:18px;
+}
+
+.tab,
+.btn{
+border-radius:999px;
+font-size:10px;
+font-weight:900;
+cursor:pointer;
+}
+
+.tab{
+padding:10px 14px;
+border:1px solid #333;
+background:#0b0b0b;
+color:#aaa;
+}
+
+.tab.active{
+background:#d40000;
+border-color:#d40000;
+color:#fff;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:14px;
+}
+
+.full{
+grid-column:1/-1;
+}
+
+.field label{
+display:block;
+font-size:10px;
+font-weight:900;
+margin-bottom:7px;
+}
+
+.input,
+.select,
+.textarea{
+width:100%;
+border:1px solid #303030;
+border-radius:13px;
+background:#080808;
+color:#fff;
+outline:none;
+}
+
+.input,
+.select{
+min-height:50px;
+padding:0 14px;
+}
+
+.textarea{
+min-height:95px;
+padding:13px 14px;
+resize:vertical;
+}
+
+.toggle-row{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+margin:16px 0;
+}
+
+.toggle{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:12px;
+padding:14px;
+background:#090909;
+border:1px solid #252525;
+border-radius:14px;
+}
+
+.toggle strong{
+font-size:10px;
+}
+
+.toggle em{
+display:block;
+color:#777;
+font-size:9px;
+font-style:normal;
+margin-top:4px;
+}
+
+.switch{
+position:relative;
+width:50px;
+height:28px;
+}
+
+.switch input{
+display:none;
+}
+
+.slider{
+position:absolute;
+inset:0;
+background:#333;
+border-radius:999px;
+}
+
+.slider:before{
+content:"";
+position:absolute;
+width:20px;
+height:20px;
+left:4px;
+top:4px;
+background:#fff;
+border-radius:50%;
+transition:.2s;
+}
+
+.switch input:checked + .slider{
+background:#d40000;
+}
+
+.switch input:checked + .slider:before{
+transform:translateX(22px);
+}
+
+.actions{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-top:15px;
+}
+
+.btn{
+min-height:44px;
+padding:0 17px;
+}
+
+.red{
+background:#d40000;
+color:#fff;
+border:0;
+}
+
+.outline{
+background:transparent;
+color:#f5c518;
+border:1px solid #f5c518;
+}
+
+.gray{
+background:#161616;
+color:#fff;
+border:1px solid #333;
+}
+
+.danger{
+background:transparent;
+color:#ff7676;
+border:1px solid #5c2525;
+}
+
+.message{
+min-height:20px;
+margin-top:12px;
+color:#f5c518;
+font-size:10px;
+font-weight:900;
+}
+
+.manager{
+display:none;
+}
+
+.manager.active{
+display:block;
+}
+
+.list{
+display:grid;
+gap:12px;
+margin-top:20px;
+}
+
+.item{
+display:grid;
+grid-template-columns:150px 1fr;
+gap:14px;
+padding:14px;
+border:1px solid #242424;
+border-radius:16px;
+background:#080808;
+}
+
+.thumb{
+width:100%;
+aspect-ratio:16/9;
+object-fit:cover;
+border-radius:11px;
+background:#111;
+}
+
+.item h3{
+font-size:15px;
+margin-bottom:6px;
+}
+
+.meta{
+font-size:10px;
+color:#888;
+line-height:1.5;
+}
+
+.badges{
+display:flex;
+gap:6px;
+flex-wrap:wrap;
+margin:8px 0;
+}
+
+.badge{
+padding:5px 8px;
+border-radius:999px;
+background:#181818;
+color:#aaa;
+font-size:8px;
+font-weight:900;
+}
+
+.pub{
+background:#11331c;
+color:#7af09d;
+}
+
+.draft{
+background:#321414;
+color:#ff8c8c;
+}
+
+.featured{
+background:#332b0e;
+color:#f5c518;
+}
+
+.empty{
+text-align:center;
+color:#777;
+border:1px dashed #303030;
+border-radius:14px;
+padding:22px;
+}
+
+.login{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.97);
+z-index:100;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.login.hide{
+display:none;
+}
+
+.loginbox{
+width:min(460px,100%);
+background:#0b0b0b;
+border:1px solid #292929;
+border-radius:22px;
+padding:24px;
+}
+
+.loginbox h2{
+font-size:26px;
+margin:7px 0;
+}
+
+.loginbox p{
+color:#888;
+font-size:11px;
+line-height:1.5;
+margin-bottom:18px;
+}
+
+.file-row{
+display:grid;
+grid-template-columns:1fr auto;
+gap:8px;
+}
+
+@media(max-width:700px){
+
+.grid,
+.toggle-row{
+grid-template-columns:1fr;
+}
+
+.full{
+grid-column:auto;
+}
+
+.item{
+grid-template-columns:1fr;
+}
+
+.head{
+display:block;
+}
+
+.status{
+display:inline-block;
+margin-top:10px;
+}
+
+}
+</style>
 </head>
-
 
 <body>
 
+<div id="login" class="login">
 
-  <main class="admin-page">
+<div class="loginbox">
 
+<div class="gold">
+PRIVATE CONTROL PANEL
+</div>
 
-    <!-- ================================================= -->
-    <!-- HEADER -->
-    <!-- ================================================= -->
+<h2>
+B.O.S.S CODE GO ADMIN
+</h2>
 
-    <header class="admin-header">
+<p>
+Enter the ADMIN_KEY you created in Cloudflare.
+It stays in this browser tab only.
+</p>
 
-      <img
-        src="images/boss-code-go-logo.png"
-        alt="B.O.S.S CODE GO"
-        class="admin-logo"
-      >
+<div class="field">
 
-      <span class="admin-kicker">
-        PRIVATE CONTROL PANEL
-      </span>
+<label>
+ADMIN KEY
+</label>
 
-      <h1>
-        ADMIN
-      </h1>
+<input
+id="adminKey"
+class="input"
+type="password"
+autocomplete="off"
+>
 
-      <p>
-        Manage B.O.S.S CODE GO content without editing the main app.
-      </p>
+</div>
 
-    </header>
+<div class="actions">
 
+<button
+id="unlock"
+class="btn red"
+>
+UNLOCK ADMIN
+</button>
 
+</div>
 
-    <!-- ================================================= -->
-    <!-- LIVE CONTROL -->
-    <!-- ================================================= -->
+<div
+id="loginMsg"
+class="message"
+></div>
 
-    <section class="admin-card">
+</div>
 
-      <div class="admin-card-heading">
+</div>
 
-        <div>
 
-          <span>
-            B.O.S.S CODE TV
-          </span>
+<main class="wrap">
 
-          <h2>
-            LIVE CONTROL
-          </h2>
 
-        </div>
+<header class="header">
 
+<img
+class="logo"
+src="images/boss-code-go-logo.png"
+alt="B.O.S.S CODE GO"
+>
 
-        <div
-          id="live-status"
-          class="live-status"
-        >
+<div class="gold">
+PRIVATE CONTROL PANEL
+</div>
 
-          <span class="status-dot"></span>
+<h1>
+ADMIN
+</h1>
 
-          <span id="live-status-text">
-            OFF AIR
-          </span>
+<p class="muted">
+Manage B.O.S.S CODE GO content without editing the main app.
+</p>
 
-        </div>
+</header>
 
-      </div>
 
+<section class="card">
 
+<div class="head">
 
-      <div class="field">
+<div>
 
-        <label for="youtube-live-url">
-          YOUTUBE LIVE LINK
-        </label>
+<small>
+BACKEND
+</small>
 
-        <input
-          id="youtube-live-url"
-          class="live-input"
-          type="url"
-          placeholder="https://youtube.com/live/..."
-          autocomplete="off"
-        >
+<h2>
+CONNECTION
+</h2>
 
-        <span class="field-help">
-          Paste the public YouTube Live share link here. Never paste your stream key.
-        </span>
+</div>
 
-      </div>
+<div
+id="apiStatus"
+class="status"
+>
+CHECKING
+</div>
 
+</div>
 
+<div
+class="muted"
+style="font-size:10px"
+>
 
-      <div class="toggle-row">
+API:
 
-        <div class="toggle-copy">
+<span id="apiLabel"></span>
 
-          <strong>
-            SHOW LIVE BROADCAST
-          </strong>
+</div>
 
-          <span>
-            Turn this on when you want the live player active in B.O.S.S CODE TV.
-          </span>
+<div class="actions">
 
-        </div>
+<button
+id="refresh"
+class="btn outline"
+>
+REFRESH CONTENT
+</button>
 
+<button
+id="lock"
+class="btn gray"
+>
+LOCK ADMIN
+</button>
 
-        <label class="switch">
+</div>
 
-          <input
-            id="live-enabled"
-            type="checkbox"
-          >
+</section>
 
-          <span class="slider"></span>
 
-        </label>
+<section class="card">
 
-      </div>
+<div class="head">
 
+<div>
 
+<small>
+B.O.S.S CODE TV
+</small>
 
-      <div class="button-row">
+<h2>
+LIVE CONTROL
+</h2>
 
-        <button
-          id="save-live"
-          class="admin-button save-button"
-          type="button"
-        >
-          SAVE LIVE SETTINGS
-        </button>
+</div>
 
+<div
+id="liveStatus"
+class="status"
+>
+OFF AIR
+</div>
 
-        <button
-          id="clear-live"
-          class="admin-button clear-button"
-          type="button"
-        >
-          CLEAR LIVE BROADCAST
-        </button>
+</div>
 
-      </div>
+<div class="field">
 
+<label>
+YOUTUBE LIVE LINK
+</label>
 
+<input
+id="liveUrl"
+class="input"
+type="url"
+placeholder="https://youtube.com/live/..."
+>
 
-      <div
-        id="saved-box"
-        class="saved-box"
-      >
+</div>
 
-        <span>
-          CURRENT LIVE VIDEO ID
-        </span>
 
-        <strong id="saved-video-id">
-          NONE
-        </strong>
+<div class="toggle-row">
 
-        <p id="saved-update-time"></p>
+<div class="toggle">
 
-      </div>
+<div>
 
+<strong>
+SHOW LIVE BROADCAST
+</strong>
 
-      <div
-        id="admin-message"
-        class="admin-message"
-      ></div>
+<em>
+Publish or take the live player off air.
+</em>
 
-    </section>
+</div>
 
+<label class="switch">
 
+<input
+id="liveEnabled"
+type="checkbox"
+>
 
-    <!-- ================================================= -->
-    <!-- FUTURE ADMIN FEATURES -->
-    <!-- ================================================= -->
+<span class="slider"></span>
 
-    <section class="admin-card">
+</label>
 
-      <div class="admin-card-heading">
+</div>
 
-        <div>
+</div>
 
-          <span>
-            COMING NEXT
-          </span>
 
-          <h2>
-            CONTENT MANAGEMENT
-          </h2>
+<div class="actions">
 
-        </div>
+<button
+id="saveLive"
+class="btn red"
+>
+SAVE LIVE SETTINGS
+</button>
 
-      </div>
+<button
+id="clearLive"
+class="btn outline"
+>
+CLEAR LIVE
+</button>
 
+</div>
 
-      <div class="coming-grid">
+<div
+id="liveMsg"
+class="message"
+></div>
 
-        <div class="coming-item">
-          <span>MAGAZINE</span>
-          <strong>Manage Issues</strong>
-        </div>
+</section>
 
-        <div class="coming-item">
-          <span>THE BOSS BITE</span>
-          <strong>Manage Episodes</strong>
-        </div>
 
-        <div class="coming-item">
-          <span>DECISION MAKERS</span>
-          <strong>Manage Videos</strong>
-        </div>
+<section class="card">
 
-        <div class="coming-item">
-          <span>MUSIC</span>
-          <strong>Manage Artists + Releases</strong>
-        </div>
+<div class="head">
 
-      </div>
+<div>
 
-    </section>
+<small>
+VIDEO CONTENT
+</small>
 
+<h2>
+VIDEO MANAGER
+</h2>
 
-  </main>
+</div>
 
+</div>
 
 
-  <script>
+<div class="tabs">
 
-    /* ===================================================== */
-    /* B.O.S.S CODE GO ADMIN */
-    /* ===================================================== */
+<button
+class="tab active"
+data-vtab="decision-makers"
+>
+DECISION MAKERS
+</button>
 
+<button
+class="tab"
+data-vtab="boss-bite"
+>
+THE BOSS BITE
+</button>
 
-    const ADMIN_STORAGE_KEY =
-      "boss-code-admin-settings-v1";
+<button
+class="tab"
+data-vtab="boss-code-tv"
+>
+B.O.S.S CODE TV
+</button>
 
+</div>
 
-    const liveUrlInput =
-      document.getElementById(
-        "youtube-live-url"
-      );
 
+<div
+id="vm-decision-makers"
+class="manager active"
+>
 
-    const liveEnabled =
-      document.getElementById(
-        "live-enabled"
-      );
+<div class="grid">
 
+<div class="field">
 
-    const saveLiveButton =
-      document.getElementById(
-        "save-live"
-      );
+<label>
+VIDEO TITLE
+</label>
 
+<input
+id="dmTitle"
+class="input"
+>
 
-    const clearLiveButton =
-      document.getElementById(
-        "clear-live"
-      );
+</div>
 
 
-    const liveStatus =
-      document.getElementById(
-        "live-status"
-      );
+<div class="field">
 
+<label>
+CATEGORY
+</label>
 
-    const liveStatusText =
-      document.getElementById(
-        "live-status-text"
-      );
+<select
+id="dmCategory"
+class="select"
+>
 
+<option>
+On The Go
+</option>
 
-    const savedBox =
-      document.getElementById(
-        "saved-box"
-      );
+<option>
+Full Session
+</option>
 
+<option>
+Quick Decision
+</option>
 
-    const savedVideoId =
-      document.getElementById(
-        "saved-video-id"
-      );
+<option>
+Featured
+</option>
 
+</select>
 
-    const savedUpdateTime =
-      document.getElementById(
-        "saved-update-time"
-      );
+</div>
 
 
-    const adminMessage =
-      document.getElementById(
-        "admin-message"
-      );
+<div class="field full">
 
+<label>
+YOUTUBE LINK
+</label>
 
+<input
+id="dmUrl"
+class="input"
+type="url"
+>
 
-    /* ===================================================== */
-    /* EXTRACT YOUTUBE VIDEO ID */
-    /* ===================================================== */
+</div>
 
-    function getYouTubeVideoId(url){
 
-      if(!url){
-        return null;
-      }
+<div class="field full">
 
+<label>
+DESCRIPTION
+</label>
 
-      const patterns = [
+<textarea
+id="dmDesc"
+class="textarea"
+></textarea>
 
-        /youtube\.com\/live\/([^?&/]+)/,
+</div>
 
-        /youtube\.com\/watch\?v=([^&]+)/,
+</div>
 
-        /youtu\.be\/([^?&/]+)/,
 
-        /youtube\.com\/embed\/([^?&/]+)/
+<div class="toggle-row">
 
-      ];
+<div class="toggle">
 
+<div>
 
-      for(
-        const pattern
-        of patterns
-      ){
+<strong>
+PUBLISHED
+</strong>
 
-        const match =
-          url.match(
-            pattern
-          );
+<em>
+Show in app.
+</em>
 
+</div>
 
-        if(
-          match &&
-          match[1]
-        ){
+<label class="switch">
 
-          return match[1];
+<input
+id="dmPub"
+type="checkbox"
+checked
+>
 
-        }
+<span class="slider"></span>
 
-      }
+</label>
 
+</div>
 
-      return null;
 
-    }
+<div class="toggle">
 
+<div>
 
+<strong>
+FEATURED
+</strong>
 
-    /* ===================================================== */
-    /* GET SETTINGS */
-    /* ===================================================== */
+<em>
+Feature this video.
+</em>
 
-    function getAdminSettings(){
+</div>
 
-      try{
+<label class="switch">
 
-        const stored =
-          localStorage.getItem(
-            ADMIN_STORAGE_KEY
-          );
+<input
+id="dmFeat"
+type="checkbox"
+>
 
+<span class="slider"></span>
 
-        if(!stored){
+</label>
 
-          return{
+</div>
 
-            liveUrl:"",
-            liveVideoId:"",
-            liveEnabled:false,
-            updatedAt:null
+</div>
 
-          };
 
-        }
+<div class="actions">
 
+<button
+id="dmSave"
+class="btn red"
+>
+ADD VIDEO
+</button>
 
-        return JSON.parse(
-          stored
-        );
+<button
+id="dmCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
 
+</div>
 
-      }catch(error){
+<div
+id="dmMsg"
+class="message"
+></div>
 
-        return{
+<div
+id="dmList"
+class="list"
+></div>
 
-          liveUrl:"",
-          liveVideoId:"",
-          liveEnabled:false,
-          updatedAt:null
+</div>
 
-        };
 
-      }
+<div
+id="vm-boss-bite"
+class="manager"
+>
 
-    }
+<div class="grid">
 
+<div class="field">
 
+<label>
+EPISODE TITLE
+</label>
 
-    /* ===================================================== */
-    /* SAVE SETTINGS */
-    /* ===================================================== */
+<input
+id="bbTitle"
+class="input"
+>
 
-    function saveAdminSettings(settings){
+</div>
 
-      localStorage.setItem(
 
-        ADMIN_STORAGE_KEY,
+<div class="field">
 
-        JSON.stringify(
-          settings
-        )
+<label>
+RESTAURANT / BUSINESS
+</label>
 
-      );
+<input
+id="bbBusiness"
+class="input"
+>
 
-    }
+</div>
 
 
+<div class="field">
 
-    /* ===================================================== */
-    /* RENDER ADMIN */
-    /* ===================================================== */
+<label>
+CITY / LOCATION
+</label>
 
-    function renderAdmin(){
+<input
+id="bbCity"
+class="input"
+>
 
-      const settings =
-        getAdminSettings();
+</div>
 
 
-      liveUrlInput.value =
-        settings.liveUrl ||
-        "";
+<div class="field">
 
+<label>
+CATEGORY
+</label>
 
-      liveEnabled.checked =
-        Boolean(
-          settings.liveEnabled
-        );
+<input
+id="bbCategory"
+class="input"
+placeholder="Episode"
+>
 
+</div>
 
-      if(
-        settings.liveEnabled &&
-        settings.liveVideoId
-      ){
 
-        liveStatus.classList.add(
-          "active"
-        );
+<div class="field full">
 
+<label>
+YOUTUBE LINK
+</label>
 
-        liveStatusText.textContent =
-          "LIVE";
+<input
+id="bbUrl"
+class="input"
+type="url"
+>
 
-      }else{
+</div>
 
-        liveStatus.classList.remove(
-          "active"
-        );
 
+<div class="field full">
 
-        liveStatusText.textContent =
-          "OFF AIR";
+<label>
+DESCRIPTION
+</label>
 
-      }
+<textarea
+id="bbDesc"
+class="textarea"
+></textarea>
 
+</div>
 
-      if(
-        settings.liveVideoId
-      ){
+</div>
 
-        savedBox.classList.add(
-          "show"
-        );
 
+<div class="toggle-row">
 
-        savedVideoId.textContent =
-          settings.liveVideoId;
+<div class="toggle">
 
+<div>
 
-        if(
-          settings.updatedAt
-        ){
+<strong>
+PUBLISHED
+</strong>
 
-          savedUpdateTime.textContent =
-            "Last updated: " +
-            new Date(
-              settings.updatedAt
-            )
-            .toLocaleString();
+<em>
+Show in Boss Bite.
+</em>
 
-        }
+</div>
 
-      }else{
+<label class="switch">
 
-        savedBox.classList.remove(
-          "show"
-        );
+<input
+id="bbPub"
+type="checkbox"
+checked
+>
 
-      }
+<span class="slider"></span>
 
-    }
+</label>
 
+</div>
 
 
-    /* ===================================================== */
-    /* SAVE LIVE */
-    /* ===================================================== */
+<div class="toggle">
 
-    saveLiveButton.addEventListener(
+<div>
 
-      "click",
+<strong>
+FEATURED
+</strong>
 
-      function(){
+<em>
+Feature episode.
+</em>
 
-        const liveUrl =
-          liveUrlInput
-          .value
-          .trim();
+</div>
 
+<label class="switch">
 
-        const videoId =
-          getYouTubeVideoId(
-            liveUrl
-          );
+<input
+id="bbFeat"
+type="checkbox"
+>
 
+<span class="slider"></span>
 
-        if(
-          liveUrl &&
-          !videoId
-        ){
+</label>
 
-          adminMessage.textContent =
-            "THAT DOES NOT LOOK LIKE A VALID YOUTUBE LIVE LINK.";
+</div>
 
-          return;
+</div>
 
-        }
 
+<div class="actions">
 
-        if(
-          liveEnabled.checked &&
-          !videoId
-        ){
+<button
+id="bbSave"
+class="btn red"
+>
+ADD EPISODE
+</button>
 
-          adminMessage.textContent =
-            "ADD A YOUTUBE LIVE LINK BEFORE TURNING LIVE ON.";
+<button
+id="bbCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
 
-          return;
+</div>
 
-        }
+<div
+id="bbMsg"
+class="message"
+></div>
 
+<div
+id="bbList"
+class="list"
+></div>
 
-        const settings = {
+</div>
 
-          liveUrl:
-            liveUrl,
 
-          liveVideoId:
-            videoId ||
-            "",
+<div
+id="vm-boss-code-tv"
+class="manager"
+>
 
-          liveEnabled:
-            Boolean(
-              liveEnabled.checked
-            ),
+<div class="grid">
 
-          updatedAt:
-            Date.now()
+<div class="field">
 
-        };
+<label>
+EPISODE TITLE
+</label>
 
+<input
+id="tvTitle"
+class="input"
+>
 
-        saveAdminSettings(
-          settings
-        );
+</div>
 
 
-        adminMessage.textContent =
-          settings.liveEnabled
-            ?
-            "B.O.S.S CODE TV LIVE SETTINGS SAVED."
-            :
-            "LIVE LINK SAVED. BROADCAST IS CURRENTLY OFF AIR.";
+<div class="field">
 
+<label>
+GUEST / CATEGORY
+</label>
 
-        renderAdmin();
+<input
+id="tvCategory"
+class="input"
+>
 
-      }
+</div>
 
-    );
 
+<div class="field full">
 
+<label>
+YOUTUBE LINK
+</label>
 
-    /* ===================================================== */
-    /* CLEAR LIVE */
-    /* ===================================================== */
+<input
+id="tvUrl"
+class="input"
+type="url"
+>
 
-    clearLiveButton.addEventListener(
+</div>
 
-      "click",
 
-      function(){
+<div class="field full">
 
-        const settings = {
+<label>
+DESCRIPTION
+</label>
 
-          liveUrl:"",
-          liveVideoId:"",
-          liveEnabled:false,
-          updatedAt:Date.now()
+<textarea
+id="tvDesc"
+class="textarea"
+></textarea>
 
-        };
+</div>
 
+</div>
 
-        saveAdminSettings(
-          settings
-        );
 
+<div class="toggle-row">
 
-        liveUrlInput.value =
-          "";
+<div class="toggle">
 
+<div>
 
-        liveEnabled.checked =
-          false;
+<strong>
+PUBLISHED
+</strong>
 
+<em>
+Show in B.O.S.S CODE TV.
+</em>
 
-        adminMessage.textContent =
-          "LIVE BROADCAST CLEARED.";
+</div>
 
+<label class="switch">
 
-        renderAdmin();
+<input
+id="tvPub"
+type="checkbox"
+checked
+>
 
-      }
+<span class="slider"></span>
 
-    );
+</label>
 
+</div>
 
 
-    /* ===================================================== */
-    /* START ADMIN */
-    /* ===================================================== */
+<div class="toggle">
 
-    renderAdmin();
+<div>
 
-  </script>
+<strong>
+FEATURED
+</strong>
 
+<em>
+Feature episode.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="tvFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="tvSave"
+class="btn red"
+>
+ADD EPISODE
+</button>
+
+<button
+id="tvCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="tvMsg"
+class="message"
+></div>
+
+<div
+id="tvList"
+class="list"
+></div>
+
+</div>
+
+</section>
+
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+MAGAZINE
+</small>
+
+<h2>
+MAGAZINE MANAGER
+</h2>
+
+</div>
+
+<span class="status ok">
+D1 + R2
+</span>
+
+</div>
+
+
+<div class="grid">
+
+
+<div class="field">
+
+<label>
+ISSUE TITLE
+</label>
+
+<input
+id="magTitle"
+class="input"
+placeholder="Example: August 2026"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+ISSUE DATE
+</label>
+
+<input
+id="magDate"
+class="input"
+type="date"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+ISSUE / FLIPBOOK URL
+</label>
+
+<input
+id="magIssueUrl"
+class="input"
+type="url"
+placeholder="https://magazine.bosscodemedia.com/..."
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="magDesc"
+class="textarea"
+placeholder="Short description of this issue"
+></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+COVER IMAGE
+</label>
+
+<div class="file-row">
+
+<input
+id="magCoverFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="magCoverUpload"
+class="btn outline"
+>
+UPLOAD COVER
+</button>
+
+</div>
+
+
+<input
+id="magCoverUrl"
+class="input"
+type="url"
+placeholder="Uploaded cover URL"
+style="margin-top:8px"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="magSort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show this issue in the app.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="magPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature this issue first.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="magFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="magSave"
+class="btn red"
+>
+ADD ISSUE
+</button>
+
+<button
+id="magCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+
+<div
+id="magMsg"
+class="message"
+></div>
+
+
+<div
+id="magList"
+class="list"
+></div>
+
+</section>
+
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+MUSIC
+</small>
+
+<h2>
+MUSIC MANAGER
+</h2>
+
+</div>
+
+</div>
+
+
+<div class="tabs">
+
+<button
+class="tab active"
+data-mtab="artists"
+>
+ARTISTS
+</button>
+
+<button
+class="tab"
+data-mtab="releases"
+>
+RELEASES
+</button>
+
+<button
+class="tab"
+data-mtab="tracks"
+>
+TRACKS
+</button>
+
+</div>
+
+
+<div
+id="mm-artists"
+class="manager active"
+>
+
+<div class="grid">
+
+
+<div class="field full">
+
+<label>
+ARTIST NAME
+</label>
+
+<input
+id="artistName"
+class="input"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+BIO
+</label>
+
+<textarea
+id="artistBio"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+ARTIST PHOTO
+</label>
+
+<div class="file-row">
+
+<input
+id="artistFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="artistUpload"
+class="btn outline"
+>
+UPLOAD PHOTO
+</button>
+
+</div>
+
+
+<input
+id="artistUrl"
+class="input"
+type="url"
+placeholder="Uploaded image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show artist.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="artistPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature artist.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="artistFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="artistSave"
+class="btn red"
+>
+ADD ARTIST
+</button>
+
+<button
+id="artistCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="artistMsg"
+class="message"
+></div>
+
+<div
+id="artistList"
+class="list"
+></div>
+
+</div>
+
+
+
+<div
+id="mm-releases"
+class="manager"
+>
+
+<div class="grid">
+
+
+<div class="field">
+
+<label>
+ARTIST
+</label>
+
+<select
+id="releaseArtist"
+class="select"
+></select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+RELEASE TITLE
+</label>
+
+<input
+id="releaseTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+TYPE
+</label>
+
+<select
+id="releaseType"
+class="select"
+>
+
+<option value="album">
+Album
+</option>
+
+<option value="single">
+Single
+</option>
+
+<option value="ep">
+EP
+</option>
+
+<option value="mixtape">
+Mixtape
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+RELEASE DATE
+</label>
+
+<input
+id="releaseDate"
+class="input"
+type="date"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="releaseDesc"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+ARTWORK
+</label>
+
+<div class="file-row">
+
+<input
+id="releaseFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="releaseUpload"
+class="btn outline"
+>
+UPLOAD ARTWORK
+</button>
+
+</div>
+
+<input
+id="releaseUrl"
+class="input"
+type="url"
+placeholder="Uploaded artwork URL"
+style="margin-top:8px"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show release.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="releasePub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature release.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="releaseFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="releaseSave"
+class="btn red"
+>
+ADD RELEASE
+</button>
+
+<button
+id="releaseCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="releaseMsg"
+class="message"
+></div>
+
+<div
+id="releaseList"
+class="list"
+></div>
+
+</div>
+
+
+
+<div
+id="mm-tracks"
+class="manager"
+>
+
+<div class="grid">
+
+
+<div class="field">
+
+<label>
+ARTIST
+</label>
+
+<select
+id="trackArtist"
+class="select"
+></select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+RELEASE
+</label>
+
+<select
+id="trackRelease"
+class="select"
+></select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+TRACK TITLE
+</label>
+
+<input
+id="trackTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+TRACK NUMBER
+</label>
+
+<input
+id="trackNumber"
+class="input"
+type="number"
+min="0"
+value="0"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+AUDIO FILE
+</label>
+
+<div class="file-row">
+
+<input
+id="trackFile"
+class="input"
+type="file"
+accept="audio/*"
+>
+
+<button
+id="trackUpload"
+class="btn outline"
+>
+UPLOAD AUDIO
+</button>
+
+</div>
+
+<input
+id="trackUrl"
+class="input"
+type="url"
+placeholder="Uploaded audio URL"
+style="margin-top:8px"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show track.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="trackPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature track.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="trackFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="trackSave"
+class="btn red"
+>
+ADD TRACK
+</button>
+
+<button
+id="trackCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="trackMsg"
+class="message"
+></div>
+
+<div
+id="trackList"
+class="list"
+></div>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const API =
+"https://boss-code-go-api.dezthareason4ever.workers.dev";
+
+
+let KEY = "";
+
+let videos = [];
+
+let artists = [];
+
+let releases = [];
+
+let tracks = [];
+
+let magazines = [];
+
+
+const edit = {
+
+dm:null,
+
+bb:null,
+
+tv:null,
+
+artist:null,
+
+release:null,
+
+track:null,
+
+magazine:null
+
+};
+
+
+const $ =
+id =>
+document.getElementById(id);
+
+
+const esc =
+v =>
+String(v ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+
+
+function yid(url){
+
+const patterns = [
+
+/youtube\.com\/live\/([^?&/]+)/,
+
+/youtube\.com\/watch\?v=([^&]+)/,
+
+/youtu\.be\/([^?&/]+)/,
+
+/youtube\.com\/embed\/([^?&/]+)/,
+
+/youtube\.com\/shorts\/([^?&/]+)/
+
+];
+
+
+for(const pattern of patterns){
+
+const match =
+String(url || "").match(pattern);
+
+
+if(
+match &&
+match[1]
+){
+
+return match[1];
+
+}
+
+}
+
+
+return null;
+
+}
+
+
+
+async function api(
+path,
+options = {}
+){
+
+const headers =
+new Headers(
+options.headers || {}
+);
+
+
+if(
+options.body &&
+!(
+options.body instanceof FormData
+)
+){
+
+headers.set(
+"Content-Type",
+"application/json"
+);
+
+}
+
+
+if(KEY){
+
+headers.set(
+"X-Admin-Key",
+KEY
+);
+
+}
+
+
+const response =
+await fetch(
+API + path,
+{
+...options,
+headers
+}
+);
+
+
+const data =
+await response
+.json()
+.catch(
+() => ({
+success:false,
+error:"Bad response"
+})
+);
+
+
+if(
+!response.ok ||
+data.success === false
+){
+
+throw Error(
+data.error ||
+"Request failed"
+);
+
+}
+
+
+return data;
+
+}
+
+
+
+async function health(){
+
+try{
+
+const data =
+await api(
+"/health"
+);
+
+
+$("apiStatus").textContent =
+data.status === "online"
+?
+"ONLINE"
+:
+"CHECK";
+
+
+$("apiStatus")
+.classList
+.add("ok");
+
+}
+catch(error){
+
+$("apiStatus").textContent =
+"OFFLINE";
+
+
+$("apiStatus")
+.classList
+.remove("ok");
+
+}
+
+}
+
+
+
+async function unlock(){
+
+const key =
+$("adminKey")
+.value
+.trim();
+
+
+if(!key){
+
+$("loginMsg").textContent =
+"ENTER YOUR ADMIN KEY.";
+
+return;
+
+}
+
+
+KEY = key;
+
+
+sessionStorage.setItem(
+"boss-code-admin-key",
+key
+);
+
+
+try{
+
+await api(
+"/videos?all=1"
+);
+
+
+$("login")
+.classList
+.add("hide");
+
+
+await loadAll();
+
+}
+catch(error){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("loginMsg").textContent =
+"COULD NOT CONNECT.";
+
+}
+
+}
+
+
+
+function lock(){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("login")
+.classList
+.remove("hide");
+
+}
+
+
+
+async function loadAll(){
+
+try{
+
+const [
+videoData,
+artistData,
+releaseData,
+trackData,
+magazineData
+] =
+await Promise.all([
+
+api(
+"/videos?all=1"
+),
+
+api(
+"/artists?all=1"
+),
+
+api(
+"/releases?all=1"
+),
+
+api(
+"/tracks?all=1"
+),
+
+api(
+"/magazines?all=1"
+)
+
+]);
+
+
+videos =
+videoData.data || [];
+
+
+artists =
+artistData.data || [];
+
+
+releases =
+releaseData.data || [];
+
+
+tracks =
+trackData.data || [];
+
+
+magazines =
+magazineData.data || [];
+
+
+renderAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+
+
+function renderAll(){
+
+renderLive();
+
+renderVideo(
+"dm",
+"decision-makers"
+);
+
+renderVideo(
+"bb",
+"boss-bite"
+);
+
+renderVideo(
+"tv",
+"boss-code-tv"
+);
+
+renderMagazines();
+
+renderArtists();
+
+renderReleases();
+
+renderTracks();
+
+fillArtists();
+
+fillReleases();
+
+}
+
+
+
+function thumb(id){
+
+return id
+?
+`https://img.youtube.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`
+:
+"";
+
+}
+
+
+
+function renderLive(){
+
+const video =
+videos.find(
+item =>
+item.section ===
+"boss-code-tv-live"
+);
+
+
+$("liveUrl").value =
+video?.youtube_url || "";
+
+
+$("liveEnabled").checked =
+!!(
+video &&
+Number(
+video.published
+) === 1
+);
+
+
+const on =
+!!(
+video &&
+Number(
+video.published
+) === 1 &&
+video.youtube_id
+);
+
+
+$("liveStatus").textContent =
+on
+?
+"LIVE"
+:
+"OFF AIR";
+
+
+$("liveStatus")
+.classList
+.toggle(
+"ok",
+on
+);
+
+}
+
+
+
+async function saveLive(){
+
+const url =
+$("liveUrl")
+.value
+.trim();
+
+
+const id =
+yid(url);
+
+
+const enabled =
+$("liveEnabled")
+.checked;
+
+
+const existing =
+videos.find(
+item =>
+item.section ===
+"boss-code-tv-live"
+);
+
+
+if(
+enabled &&
+!id
+){
+
+$("liveMsg").textContent =
+"ADD A VALID YOUTUBE LIVE LINK.";
+
+return;
+
+}
+
+
+const payload = {
+
+section:
+"boss-code-tv-live",
+
+title:
+"B.O.S.S CODE TV LIVE",
+
+youtube_url:
+url,
+
+youtube_id:
+id || "",
+
+description:
+"Current B.O.S.S CODE TV live broadcast.",
+
+category:
+"Live",
+
+location_name:
+"",
+
+location_city:
+"",
+
+featured:
+1,
+
+published:
+enabled ? 1 : 0,
+
+sort_order:
+0
+
+};
+
+
+try{
+
+if(existing){
+
+await api(
+`/videos/${existing.id}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+if(!id){
+
+$("liveMsg").textContent =
+"ADD A YOUTUBE LINK.";
+
+return;
+
+}
+
+
+await api(
+"/videos",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+$("liveMsg").textContent =
+"LIVE SETTINGS SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("liveMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+
+async function clearLive(){
+
+const video =
+videos.find(
+item =>
+item.section ===
+"boss-code-tv-live"
+);
+
+
+if(video){
+
+await api(
+`/videos/${video.id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published:0
+})
+}
+);
+
+}
+
+
+$("liveMsg").textContent =
+"LIVE BROADCAST CLEARED.";
+
+
+await loadAll();
+
+}
+
+
+
+function setupVideo(
+prefix,
+section
+){
+
+$(`${prefix}Save`).onclick =
+async () => {
+
+const title =
+$(`${prefix}Title`)
+.value
+.trim();
+
+
+const url =
+$(`${prefix}Url`)
+.value
+.trim();
+
+
+const id =
+yid(url);
+
+
+if(
+!title ||
+!id
+){
+
+$(`${prefix}Msg`).textContent =
+"ADD A TITLE AND VALID YOUTUBE LINK.";
+
+return;
+
+}
+
+
+const payload = {
+
+section,
+
+title,
+
+youtube_url:
+url,
+
+youtube_id:
+id,
+
+description:
+$(`${prefix}Desc`)
+.value
+.trim(),
+
+category:
+$(`${prefix}Category`)
+.value
+.trim(),
+
+location_name:
+prefix === "bb"
+?
+$("bbBusiness")
+.value
+.trim()
+:
+"",
+
+location_city:
+prefix === "bb"
+?
+$("bbCity")
+.value
+.trim()
+:
+"",
+
+featured:
+$(`${prefix}Feat`)
+.checked
+?
+1
+:
+0,
+
+published:
+$(`${prefix}Pub`)
+.checked
+?
+1
+:
+0,
+
+sort_order:
+0
+
+};
+
+
+try{
+
+if(
+edit[prefix]
+){
+
+await api(
+`/videos/${edit[prefix]}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/videos",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetVideo(
+prefix
+);
+
+
+$(`${prefix}Msg`).textContent =
+"SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$(`${prefix}Msg`).textContent =
+error.message;
+
+}
+
+};
+
+
+$(`${prefix}Cancel`).onclick =
+() =>
+resetVideo(
+prefix
+);
+
+}
+
+
+
+function resetVideo(prefix){
+
+edit[prefix] =
+null;
+
+
+for(
+const suffix of [
+"Title",
+"Url",
+"Desc"
+]
+){
+
+$(`${prefix}${suffix}`).value =
+"";
+
+}
+
+
+$(`${prefix}Pub`).checked =
+true;
+
+
+$(`${prefix}Feat`).checked =
+false;
+
+
+$(`${prefix}Cancel`).hidden =
+true;
+
+
+if(
+prefix === "bb"
+){
+
+$("bbBusiness").value =
+"";
+
+
+$("bbCity").value =
+"";
+
+
+$("bbCategory").value =
+"";
+
+
+$("bbSave").textContent =
+"ADD EPISODE";
+
+}
+else if(
+prefix === "tv"
+){
+
+$("tvCategory").value =
+"";
+
+
+$("tvSave").textContent =
+"ADD EPISODE";
+
+}
+else{
+
+$("dmCategory").value =
+"On The Go";
+
+
+$("dmSave").textContent =
+"ADD VIDEO";
+
+}
+
+}
+
+
+
+function renderVideo(
+prefix,
+section
+){
+
+const items =
+videos.filter(
+video =>
+video.section ===
+section
+);
+
+
+const list =
+$(`${prefix}List`);
+
+
+if(
+!items.length
+){
+
+list.innerHTML =
+'<div class="empty">No saved content yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+items
+.map(
+video =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${thumb(video.youtube_id)}"
+>
+
+<div>
+
+<h3>
+${esc(video.title)}
+</h3>
+
+<div class="badges">
+
+<span class="badge">
+${esc(video.category || section)}
+</span>
+
+<span class="badge ${Number(video.published) === 1 ? "pub" : "draft"}">
+
+${Number(video.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(video.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+${esc(video.description || "")}
+</div>
+
+${video.location_name
+?
+`
+
+<div class="meta">
+
+${esc(video.location_name)}
+
+${video.location_city
+?
+" • " +
+esc(video.location_city)
+:
+""
+}
+
+</div>
+
+`
+:
+""
+}
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editVideo('${prefix}',${video.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleVideo(${video.id},${Number(video.published) === 1 ? 0 : 1})"
+>
+
+${Number(video.published) === 1
+?
+"UNPUBLISH"
+:
+"PUBLISH"
+}
+
+</button>
+
+<button
+class="btn danger"
+onclick="deleteVideo(${video.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+
+window.editVideo =
+(
+prefix,
+id
+) => {
+
+const video =
+videos.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!video){
+return;
+}
+
+
+edit[prefix] =
+id;
+
+
+$(`${prefix}Title`).value =
+video.title || "";
+
+
+$(`${prefix}Url`).value =
+video.youtube_url || "";
+
+
+$(`${prefix}Desc`).value =
+video.description || "";
+
+
+$(`${prefix}Pub`).checked =
+Number(
+video.published
+) === 1;
+
+
+$(`${prefix}Feat`).checked =
+Number(
+video.featured
+) === 1;
+
+
+$(`${prefix}Category`).value =
+video.category ||
+(
+prefix === "dm"
+?
+"On The Go"
+:
+""
+);
+
+
+if(
+prefix === "bb"
+){
+
+$("bbBusiness").value =
+video.location_name || "";
+
+
+$("bbCity").value =
+video.location_city || "";
+
+}
+
+
+$(`${prefix}Save`).textContent =
+"SAVE CHANGES";
+
+
+$(`${prefix}Cancel`).hidden =
+false;
+
+};
+
+
+
+window.toggleVideo =
+async (
+id,
+published
+) => {
+
+await api(
+`/videos/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+};
+
+
+
+window.deleteVideo =
+async id => {
+
+if(
+confirm(
+"Delete this video?"
+)
+){
+
+await api(
+`/videos/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+
+};
+
+
+
+async function upload(
+file,
+folder,
+messageId
+){
+
+if(!file){
+
+$(messageId).textContent =
+"CHOOSE A FILE FIRST.";
+
+return null;
+
+}
+
+
+const form =
+new FormData();
+
+
+form.append(
+"file",
+file
+);
+
+
+form.append(
+"folder",
+folder
+);
+
+
+$(messageId).textContent =
+"UPLOADING...";
+
+
+try{
+
+const data =
+await api(
+"/media/upload",
+{
+method:"POST",
+body:form
+}
+);
+
+
+$(messageId).textContent =
+"UPLOAD COMPLETE.";
+
+
+return data.url;
+
+}
+catch(error){
+
+$(messageId).textContent =
+error.message;
+
+
+return null;
+
+}
+
+}
+
+
+
+function fillArtists(){
+
+const options =
+'<option value="">Select artist</option>' +
+artists
+.map(
+artist =>
+`
+<option value="${artist.id}">
+${esc(artist.name)}
+</option>
+`
+)
+.join("");
+
+
+$("releaseArtist").innerHTML =
+options;
+
+
+$("trackArtist").innerHTML =
+options;
+
+}
+
+
+
+function fillReleases(){
+
+const artistId =
+Number(
+$("trackArtist").value ||
+0
+);
+
+
+const items =
+artistId
+?
+releases.filter(
+release =>
+Number(
+release.artist_id
+) === artistId
+)
+:
+releases;
+
+
+$("trackRelease").innerHTML =
+'<option value="">No release / standalone</option>' +
+items
+.map(
+release =>
+`
+<option value="${release.id}">
+${esc(release.title)}
+</option>
+`
+)
+.join("");
+
+}
+
+
+
+async function saveArtist(){
+
+const payload = {
+
+name:
+$("artistName")
+.value
+.trim(),
+
+artist_image_url:
+$("artistUrl")
+.value
+.trim(),
+
+bio:
+$("artistBio")
+.value
+.trim(),
+
+featured:
+$("artistFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("artistPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+0
+
+};
+
+
+if(
+!payload.name
+){
+
+$("artistMsg").textContent =
+"ADD AN ARTIST NAME.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.artist
+){
+
+await api(
+`/artists/${edit.artist}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/artists",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetArtist();
+
+
+$("artistMsg").textContent =
+"ARTIST SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("artistMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+
+function resetArtist(){
+
+edit.artist =
+null;
+
+
+$("artistName").value =
+"";
+
+
+$("artistBio").value =
+"";
+
+
+$("artistUrl").value =
+"";
+
+
+$("artistFile").value =
+"";
+
+
+$("artistFeat").checked =
+false;
+
+
+$("artistPub").checked =
+true;
+
+
+$("artistSave").textContent =
+"ADD ARTIST";
+
+
+$("artistCancel").hidden =
+true;
+
+}
+
+
+
+function renderArtists(){
+
+const list =
+$("artistList");
+
+
+if(
+!artists.length
+){
+
+list.innerHTML =
+'<div class="empty">No artists yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+artists
+.map(
+artist =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${esc(artist.artist_image_url || "")}"
+>
+
+<div>
+
+<h3>
+${esc(artist.name)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(artist.published) === 1 ? "pub" : "draft"}">
+
+${Number(artist.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+</div>
+
+<div class="meta">
+${esc(artist.bio || "")}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editArtist(${artist.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteArtist(${artist.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+
+window.editArtist =
+id => {
+
+const artist =
+artists.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!artist){
+return;
+}
+
+
+edit.artist =
+id;
+
+
+$("artistName").value =
+artist.name || "";
+
+
+$("artistBio").value =
+artist.bio || "";
+
+
+$("artistUrl").value =
+artist.artist_image_url || "";
+
+
+$("artistFeat").checked =
+Number(
+artist.featured
+) === 1;
+
+
+$("artistPub").checked =
+Number(
+artist.published
+) === 1;
+
+
+$("artistSave").textContent =
+"SAVE CHANGES";
+
+
+$("artistCancel").hidden =
+false;
+
+};
+
+
+
+window.deleteArtist =
+async id => {
+
+if(
+confirm(
+"Delete artist? Connected releases and tracks may also be removed."
+)
+){
+
+await api(
+`/artists/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+
+};
+
+
+
+async function saveRelease(){
+
+const payload = {
+
+artist_id:
+Number(
+$("releaseArtist").value
+),
+
+title:
+$("releaseTitle")
+.value
+.trim(),
+
+release_type:
+$("releaseType").value,
+
+artwork_url:
+$("releaseUrl")
+.value
+.trim(),
+
+release_date:
+$("releaseDate").value,
+
+description:
+$("releaseDesc")
+.value
+.trim(),
+
+featured:
+$("releaseFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("releasePub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+0
+
+};
+
+
+if(
+!payload.artist_id ||
+!payload.title
+){
+
+$("releaseMsg").textContent =
+"SELECT AN ARTIST AND ADD A RELEASE TITLE.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.release
+){
+
+await api(
+`/releases/${edit.release}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/releases",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetRelease();
+
+
+$("releaseMsg").textContent =
+"RELEASE SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("releaseMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+
+function resetRelease(){
+
+edit.release =
+null;
+
+
+$("releaseTitle").value =
+"";
+
+
+$("releaseUrl").value =
+"";
+
+
+$("releaseDate").value =
+"";
+
+
+$("releaseDesc").value =
+"";
+
+
+$("releaseType").value =
+"album";
+
+
+$("releaseFile").value =
+"";
+
+
+$("releaseFeat").checked =
+false;
+
+
+$("releasePub").checked =
+true;
+
+
+$("releaseSave").textContent =
+"ADD RELEASE";
+
+
+$("releaseCancel").hidden =
+true;
+
+}
+
+
+
+function renderReleases(){
+
+const list =
+$("releaseList");
+
+
+if(
+!releases.length
+){
+
+list.innerHTML =
+'<div class="empty">No releases yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+releases
+.map(
+release =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${esc(release.artwork_url || "")}"
+>
+
+<div>
+
+<h3>
+${esc(release.title)}
+</h3>
+
+<div class="meta">
+
+${esc(release.artist_name || "")}
+
+•
+
+${esc(release.release_type || "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editRelease(${release.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteRelease(${release.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+
+window.editRelease =
+id => {
+
+const release =
+releases.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!release){
+return;
+}
+
+
+edit.release =
+id;
+
+
+$("releaseArtist").value =
+release.artist_id;
+
+
+$("releaseTitle").value =
+release.title || "";
+
+
+$("releaseType").value =
+release.release_type ||
+"album";
+
+
+$("releaseUrl").value =
+release.artwork_url || "";
+
+
+$("releaseDate").value =
+release.release_date || "";
+
+
+$("releaseDesc").value =
+release.description || "";
+
+
+$("releaseFeat").checked =
+Number(
+release.featured
+) === 1;
+
+
+$("releasePub").checked =
+Number(
+release.published
+) === 1;
+
+
+$("releaseSave").textContent =
+"SAVE CHANGES";
+
+
+$("releaseCancel").hidden =
+false;
+
+};
+
+
+
+window.deleteRelease =
+async id => {
+
+if(
+confirm(
+"Delete release? Connected tracks may also be removed."
+)
+){
+
+await api(
+`/releases/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+
+};
+
+
+
+async function saveTrack(){
+
+const payload = {
+
+artist_id:
+Number(
+$("trackArtist").value
+),
+
+release_id:
+$("trackRelease").value
+?
+Number(
+$("trackRelease").value
+)
+:
+null,
+
+title:
+$("trackTitle")
+.value
+.trim(),
+
+audio_url:
+$("trackUrl")
+.value
+.trim(),
+
+track_number:
+Number(
+$("trackNumber").value ||
+0
+),
+
+duration:
+"",
+
+featured:
+$("trackFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("trackPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+0
+
+};
+
+
+if(
+!payload.artist_id ||
+!payload.title ||
+!payload.audio_url
+){
+
+$("trackMsg").textContent =
+"SELECT AN ARTIST, ADD A TITLE, AND UPLOAD AUDIO.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.track
+){
+
+await api(
+`/tracks/${edit.track}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/tracks",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetTrack();
+
+
+$("trackMsg").textContent =
+"TRACK SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("trackMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+
+function resetTrack(){
+
+edit.track =
+null;
+
+
+$("trackTitle").value =
+"";
+
+
+$("trackUrl").value =
+"";
+
+
+$("trackNumber").value =
+0;
+
+
+$("trackFile").value =
+"";
+
+
+$("trackFeat").checked =
+false;
+
+
+$("trackPub").checked =
+true;
+
+
+$("trackSave").textContent =
+"ADD TRACK";
+
+
+$("trackCancel").hidden =
+true;
+
+}
+
+
+
+function renderTracks(){
+
+const list =
+$("trackList");
+
+
+if(
+!tracks.length
+){
+
+list.innerHTML =
+'<div class="empty">No tracks yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+tracks
+.map(
+track =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${esc(track.artwork_url || "")}"
+>
+
+<div>
+
+<h3>
+${esc(track.title)}
+</h3>
+
+<div class="meta">
+
+${esc(track.artist_name || "")}
+
+${track.release_title
+?
+" • " +
+esc(track.release_title)
+:
+""
+}
+
+</div>
+
+<audio
+controls
+preload="none"
+style="width:100%;margin-top:8px"
+src="${esc(track.audio_url || "")}"
+></audio>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editTrack(${track.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteTrack(${track.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+
+window.editTrack =
+id => {
+
+const track =
+tracks.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!track){
+return;
+}
+
+
+edit.track =
+id;
+
+
+$("trackArtist").value =
+track.artist_id;
+
+
+fillReleases();
+
+
+$("trackRelease").value =
+track.release_id || "";
+
+
+$("trackTitle").value =
+track.title || "";
+
+
+$("trackUrl").value =
+track.audio_url || "";
+
+
+$("trackNumber").value =
+track.track_number || 0;
+
+
+$("trackFeat").checked =
+Number(
+track.featured
+) === 1;
+
+
+$("trackPub").checked =
+Number(
+track.published
+) === 1;
+
+
+$("trackSave").textContent =
+"SAVE CHANGES";
+
+
+$("trackCancel").hidden =
+false;
+
+};
+
+
+
+window.deleteTrack =
+async id => {
+
+if(
+confirm(
+"Delete track?"
+)
+){
+
+await api(
+`/tracks/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+
+};
+
+
+
+async function saveMagazine(){
+
+const payload = {
+
+title:
+$("magTitle")
+.value
+.trim(),
+
+cover_url:
+$("magCoverUrl")
+.value
+.trim(),
+
+issue_url:
+$("magIssueUrl")
+.value
+.trim(),
+
+description:
+$("magDesc")
+.value
+.trim(),
+
+issue_date:
+$("magDate").value,
+
+featured:
+$("magFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("magPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("magSort").value ||
+0
+)
+
+};
+
+
+if(
+!payload.title ||
+!payload.issue_url
+){
+
+$("magMsg").textContent =
+"ADD AN ISSUE TITLE AND ISSUE URL.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.magazine
+){
+
+await api(
+`/magazines/${edit.magazine}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/magazines",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetMagazine();
+
+
+$("magMsg").textContent =
+"MAGAZINE ISSUE SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("magMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+
+function resetMagazine(){
+
+edit.magazine =
+null;
+
+
+$("magTitle").value =
+"";
+
+
+$("magDate").value =
+"";
+
+
+$("magIssueUrl").value =
+"";
+
+
+$("magDesc").value =
+"";
+
+
+$("magCoverUrl").value =
+"";
+
+
+$("magCoverFile").value =
+"";
+
+
+$("magSort").value =
+0;
+
+
+$("magFeat").checked =
+false;
+
+
+$("magPub").checked =
+true;
+
+
+$("magSave").textContent =
+"ADD ISSUE";
+
+
+$("magCancel").hidden =
+true;
+
+}
+
+
+
+function renderMagazines(){
+
+const list =
+$("magList");
+
+
+if(
+!magazines.length
+){
+
+list.innerHTML =
+'<div class="empty">No magazine issues yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+magazines
+.map(
+magazine =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${esc(magazine.cover_url || "")}"
+alt=""
+>
+
+<div>
+
+<h3>
+${esc(magazine.title)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(magazine.published) === 1 ? "pub" : "draft"}">
+
+${Number(magazine.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(magazine.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(magazine.issue_date || "")}
+
+${magazine.description
+?
+" • " +
+esc(magazine.description)
+:
+""
+}
+
+</div>
+
+<div
+class="meta"
+style="margin-top:5px"
+>
+
+${esc(magazine.issue_url || "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editMagazine(${magazine.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleMagazine(${magazine.id},${Number(magazine.published) === 1 ? 0 : 1})"
+>
+
+${Number(magazine.published) === 1
+?
+"UNPUBLISH"
+:
+"PUBLISH"
+}
+
+</button>
+
+<button
+class="btn danger"
+onclick="deleteMagazine(${magazine.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+
+window.editMagazine =
+id => {
+
+const magazine =
+magazines.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!magazine){
+return;
+}
+
+
+edit.magazine =
+id;
+
+
+$("magTitle").value =
+magazine.title || "";
+
+
+$("magDate").value =
+magazine.issue_date || "";
+
+
+$("magIssueUrl").value =
+magazine.issue_url || "";
+
+
+$("magDesc").value =
+magazine.description || "";
+
+
+$("magCoverUrl").value =
+magazine.cover_url || "";
+
+
+$("magSort").value =
+magazine.sort_order || 0;
+
+
+$("magFeat").checked =
+Number(
+magazine.featured
+) === 1;
+
+
+$("magPub").checked =
+Number(
+magazine.published
+) === 1;
+
+
+$("magSave").textContent =
+"SAVE CHANGES";
+
+
+$("magCancel").hidden =
+false;
+
+
+window.scrollTo({
+
+top:
+$("magTitle")
+.getBoundingClientRect()
+.top +
+window.scrollY -
+30,
+
+behavior:
+"smooth"
+
+});
+
+};
+
+
+
+window.toggleMagazine =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/magazines/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("magMsg").textContent =
+error.message;
+
+}
+
+};
+
+
+
+window.deleteMagazine =
+async id => {
+
+if(
+confirm(
+"Delete this magazine issue?"
+)
+){
+
+try{
+
+await api(
+`/magazines/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("magMsg").textContent =
+error.message;
+
+}
+
+}
+
+};
+
+
+
+document
+.querySelectorAll(
+"[data-vtab]"
+)
+.forEach(
+button =>
+button.onclick =
+() => {
+
+document
+.querySelectorAll(
+"[data-vtab]"
+)
+.forEach(
+item =>
+item.classList.remove(
+"active"
+)
+);
+
+
+button.classList.add(
+"active"
+);
+
+
+document
+.querySelectorAll(
+'[id^="vm-"]'
+)
+.forEach(
+item =>
+item.classList.remove(
+"active"
+)
+);
+
+
+$(
+`vm-${button.dataset.vtab}`
+)
+.classList
+.add(
+"active"
+);
+
+}
+);
+
+
+
+document
+.querySelectorAll(
+"[data-mtab]"
+)
+.forEach(
+button =>
+button.onclick =
+() => {
+
+document
+.querySelectorAll(
+"[data-mtab]"
+)
+.forEach(
+item =>
+item.classList.remove(
+"active"
+)
+);
+
+
+button.classList.add(
+"active"
+);
+
+
+document
+.querySelectorAll(
+'[id^="mm-"]'
+)
+.forEach(
+item =>
+item.classList.remove(
+"active"
+)
+);
+
+
+$(
+`mm-${button.dataset.mtab}`
+)
+.classList
+.add(
+"active"
+);
+
+}
+);
+
+
+
+$("unlock").onclick =
+unlock;
+
+
+$("adminKey").onkeydown =
+event => {
+
+if(
+event.key === "Enter"
+){
+
+unlock();
+
+}
+
+};
+
+
+$("lock").onclick =
+lock;
+
+
+$("refresh").onclick =
+loadAll;
+
+
+$("saveLive").onclick =
+saveLive;
+
+
+$("clearLive").onclick =
+clearLive;
+
+
+setupVideo(
+"dm",
+"decision-makers"
+);
+
+
+setupVideo(
+"bb",
+"boss-bite"
+);
+
+
+setupVideo(
+"tv",
+"boss-code-tv"
+);
+
+
+$("artistSave").onclick =
+saveArtist;
+
+
+$("artistCancel").onclick =
+resetArtist;
+
+
+$("releaseSave").onclick =
+saveRelease;
+
+
+$("releaseCancel").onclick =
+resetRelease;
+
+
+$("trackSave").onclick =
+saveTrack;
+
+
+$("trackCancel").onclick =
+resetTrack;
+
+
+$("trackArtist").onchange =
+fillReleases;
+
+
+$("magSave").onclick =
+saveMagazine;
+
+
+$("magCancel").onclick =
+resetMagazine;
+
+
+
+$("artistUpload").onclick =
+async () => {
+
+const url =
+await upload(
+$("artistFile").files[0],
+"music/artists",
+"artistMsg"
+);
+
+
+if(url){
+
+$("artistUrl").value =
+url;
+
+}
+
+};
+
+
+
+$("releaseUpload").onclick =
+async () => {
+
+const url =
+await upload(
+$("releaseFile").files[0],
+"music/artwork",
+"releaseMsg"
+);
+
+
+if(url){
+
+$("releaseUrl").value =
+url;
+
+}
+
+};
+
+
+
+$("trackUpload").onclick =
+async () => {
+
+const url =
+await upload(
+$("trackFile").files[0],
+"music/tracks",
+"trackMsg"
+);
+
+
+if(url){
+
+$("trackUrl").value =
+url;
+
+}
+
+};
+
+
+
+$("magCoverUpload").onclick =
+async () => {
+
+const url =
+await upload(
+$("magCoverFile").files[0],
+"magazines/covers",
+"magMsg"
+);
+
+
+if(url){
+
+$("magCoverUrl").value =
+url;
+
+}
+
+};
+
+
+
+$("apiLabel").textContent =
+API;
+
+
+health();
+
+
+const savedKey =
+sessionStorage.getItem(
+"boss-code-admin-key"
+);
+
+
+if(savedKey){
+
+KEY =
+savedKey;
+
+
+$("adminKey").value =
+savedKey;
+
+
+unlock();
+
+}
+
+</script>
 
 </body>
-
 </html>
