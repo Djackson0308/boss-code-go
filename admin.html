@@ -418,6 +418,19 @@ margin-top:10px;
 }
 
 }
+
+.inquiry-message{
+white-space:pre-wrap;
+line-height:1.55;
+margin-top:8px;
+color:#ddd;
+font-size:11px;
+}
+
+.location-thumb{
+aspect-ratio:4/3;
+}
+
 </style>
 </head>
 
@@ -1085,7 +1098,6 @@ EPISODE TITLE
 id="tvTitle"
 class="input"
 >
-
 </div>
 
 
@@ -1228,6 +1240,956 @@ class="list"
 
 </section>
 
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+THE BOSS BITE
+</small>
+
+<h2>
+GALLERY MANAGER
+</h2>
+
+</div>
+
+<span class="status ok">
+D1 + R2
+</span>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field full">
+
+<label>
+PHOTO
+</label>
+
+<div class="file-row">
+
+<input
+id="galleryFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="galleryUpload"
+class="btn outline"
+>
+UPLOAD PHOTO
+</button>
+
+</div>
+
+<input
+id="galleryUrl"
+class="input"
+type="url"
+placeholder="Uploaded image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+RESTAURANT / LOCATION
+</label>
+
+<input
+id="galleryLocation"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="gallerySort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+CAPTION
+</label>
+
+<textarea
+id="galleryCaption"
+class="textarea"
+placeholder="Optional caption"
+></textarea>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show this photo in the Boss Bite gallery.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="galleryPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature this photo.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="galleryFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="gallerySave"
+class="btn red"
+>
+ADD PHOTO
+</button>
+
+<button
+id="galleryCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="galleryMsg"
+class="message"
+></div>
+
+<div
+id="galleryList"
+class="list"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+THE BOSS BITE
+</small>
+
+<h2>
+MAP MANAGER
+</h2>
+
+</div>
+
+<span class="status ok">
+D1 + R2
+</span>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+RESTAURANT / BUSINESS NAME
+</label>
+
+<input
+id="locationName"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+ADDRESS
+</label>
+
+<input
+id="locationAddress"
+class="input"
+placeholder="Street address"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+CITY
+</label>
+
+<input
+id="locationCity"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+STATE
+</label>
+
+<input
+id="locationState"
+class="input"
+placeholder="PA"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+LATITUDE
+</label>
+
+<input
+id="locationLat"
+class="input"
+type="number"
+step="any"
+placeholder="41.0000"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+LONGITUDE
+</label>
+
+<input
+id="locationLng"
+class="input"
+type="number"
+step="any"
+placeholder="-80.0000"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+LOCATION PHOTO
+</label>
+
+<div class="file-row">
+
+<input
+id="locationFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="locationUpload"
+class="btn outline"
+>
+UPLOAD PHOTO
+</button>
+
+</div>
+
+<input
+id="locationImageUrl"
+class="input"
+type="url"
+placeholder="Uploaded image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+EPISODE LINK
+</label>
+
+<input
+id="locationEpisodeUrl"
+class="input"
+type="url"
+placeholder="YouTube episode link"
+>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="locationDesc"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="locationSort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show this location on the Boss Bite map.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="locationPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Feature this location.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="locationFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="locationSave"
+class="btn red"
+>
+ADD LOCATION
+</button>
+
+<button
+id="locationCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="locationMsg"
+class="message"
+></div>
+
+<div
+id="locationList"
+class="list"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+DAILY ENGAGEMENT
+</small>
+
+<h2>
+TODAY'S DECISION MANAGER
+</h2>
+
+</div>
+
+<span class="status ok">
+D1
+</span>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field full">
+
+<label>
+DECISION
+</label>
+
+<textarea
+id="decisionText"
+class="textarea"
+placeholder="Example: Today I will take one action toward the goal I keep thinking about."
+></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+ACTION TEXT
+</label>
+
+<textarea
+id="decisionAction"
+class="textarea"
+placeholder="Example: Write down the next move and complete it today."
+></textarea>
+
+</div>
+
+
+<div class="field">
+
+<label>
+CATEGORY
+</label>
+
+<input
+id="decisionCategory"
+class="input"
+placeholder="Mindset, Action, Discipline..."
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SCHEDULE DATE
+</label>
+
+<input
+id="decisionDate"
+class="input"
+type="date"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="decisionSort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Make this decision available in the app.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="decisionPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Prioritize this decision.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="decisionFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="decisionSave"
+class="btn red"
+>
+ADD DECISION
+</button>
+
+<button
+id="decisionCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="decisionMsg"
+class="message"
+></div>
+
+<div
+id="decisionList"
+class="list"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+B.O.S.S CHECK IN
+</small>
+
+<h2>
+QUESTION MANAGER
+</h2>
+
+</div>
+
+<span class="status ok">
+D1
+</span>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field full">
+
+<label>
+QUESTION
+</label>
+
+<textarea
+id="questionText"
+class="textarea"
+placeholder="Enter the Check In question"
+></textarea>
+
+</div>
+
+
+<div class="field">
+
+<label>
+CATEGORY
+</label>
+
+<select
+id="questionCategory"
+class="select"
+>
+
+<option value="Approval">
+Approval
+</option>
+
+<option value="Comparison">
+Comparison
+</option>
+
+<option value="Confidence">
+Confidence
+</option>
+
+<option value="Action">
+Action
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+WEIGHT
+</label>
+
+<input
+id="questionWeight"
+class="input"
+type="number"
+min="1"
+value="1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="questionSort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Make this question available in B.O.S.S Check In.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="questionPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="questionSave"
+class="btn red"
+>
+ADD QUESTION
+</button>
+
+<button
+id="questionCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="questionMsg"
+class="message"
+></div>
+
+<div
+id="questionList"
+class="list"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small>
+CONTACT B.O.S.S CODE MEDIA
+</small>
+
+<h2>
+INQUIRY MANAGER
+</h2>
+
+</div>
+
+<span
+id="inquiryStatus"
+class="status"
+>
+0 NEW
+</span>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+FILTER BY STATUS
+</label>
+
+<select
+id="inquiryFilter"
+class="select"
+>
+
+<option value="">
+All Inquiries
+</option>
+
+<option value="new">
+New
+</option>
+
+<option value="read">
+Read
+</option>
+
+<option value="replied">
+Replied
+</option>
+
+<option value="closed">
+Closed
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="inquiryRefresh"
+class="btn outline"
+>
+REFRESH INQUIRIES
+</button>
+
+</div>
+
+<div
+id="inquiryMsg"
+class="message"
+></div>
+
+<div
+id="inquiryList"
+class="list"
+></div>
+
+</section>
 
 
 <section class="card">
@@ -1467,7 +2429,6 @@ class="list"
 </section>
 
 
-
 <section class="card">
 
 <div class="head">
@@ -1679,7 +2640,6 @@ class="list"
 ></div>
 
 </div>
-
 
 
 <div
@@ -1910,7 +2870,6 @@ class="list"
 </div>
 
 
-
 <div
 id="mm-tracks"
 class="manager"
@@ -2131,6 +3090,16 @@ let tracks = [];
 
 let magazines = [];
 
+let galleryItems = [];
+
+let bossBiteLocations = [];
+
+let dailyDecisions = [];
+
+let checkinQuestions = [];
+
+let inquiries = [];
+
 
 const edit = {
 
@@ -2146,7 +3115,15 @@ release:null,
 
 track:null,
 
-magazine:null
+magazine:null,
+
+gallery:null,
+
+location:null,
+
+decision:null,
+
+question:null
 
 };
 
@@ -2164,7 +3141,6 @@ String(v ?? "")
 .replace(/>/g,"&gt;")
 .replace(/"/g,"&quot;")
 .replace(/'/g,"&#039;");
-
 
 
 function yid(url){
@@ -2205,7 +3181,6 @@ return match[1];
 return null;
 
 }
-
 
 
 async function api(
@@ -2283,7 +3258,6 @@ return data;
 }
 
 
-
 async function health(){
 
 try{
@@ -2320,7 +3294,6 @@ $("apiStatus")
 }
 
 }
-
 
 
 async function unlock(){
@@ -2383,7 +3356,6 @@ $("loginMsg").textContent =
 }
 
 
-
 function lock(){
 
 KEY = "";
@@ -2401,61 +3373,74 @@ $("login")
 }
 
 
-
 async function loadAll(){
 
 try{
 
-const [
-videoData,
-artistData,
-releaseData,
-trackData,
-magazineData
-] =
-await Promise.all([
+const results =
+await Promise.allSettled([
 
-api(
-"/videos?all=1"
-),
+api("/videos?all=1"),
 
-api(
-"/artists?all=1"
-),
+api("/artists?all=1"),
 
-api(
-"/releases?all=1"
-),
+api("/releases?all=1"),
 
-api(
-"/tracks?all=1"
-),
+api("/tracks?all=1"),
 
-api(
-"/magazines?all=1"
-)
+api("/magazines?all=1"),
+
+api("/boss-bite-gallery?all=1"),
+
+api("/boss-bite-locations?all=1"),
+
+api("/daily-decisions?all=1"),
+
+api("/checkin-questions?all=1"),
+
+api("/contact-inquiries")
 
 ]);
 
 
-videos =
-videoData.data || [];
+const value =
+index =>
+results[index].status === "fulfilled"
+?
+results[index].value.data || []
+:
+[];
 
+
+videos =
+value(0);
 
 artists =
-artistData.data || [];
-
+value(1);
 
 releases =
-releaseData.data || [];
-
+value(2);
 
 tracks =
-trackData.data || [];
-
+value(3);
 
 magazines =
-magazineData.data || [];
+value(4);
+
+galleryItems =
+value(5);
+
+bossBiteLocations =
+value(6);
+
+dailyDecisions =
+value(7);
+
+checkinQuestions =
+value(8);
+
+inquiries =
+value(9);
 
 
 renderAll();
@@ -2470,7 +3455,6 @@ error.message
 }
 
 }
-
 
 
 function renderAll(){
@@ -2492,6 +3476,16 @@ renderVideo(
 "boss-code-tv"
 );
 
+renderGallery();
+
+renderLocations();
+
+renderDecisions();
+
+renderQuestions();
+
+renderInquiries();
+
 renderMagazines();
 
 renderArtists();
@@ -2507,7 +3501,6 @@ fillReleases();
 }
 
 
-
 function thumb(id){
 
 return id
@@ -2517,9 +3510,6 @@ return id
 "";
 
 }
-
-
-
 function renderLive(){
 
 const video =
@@ -2569,7 +3559,6 @@ on
 );
 
 }
-
 
 
 async function saveLive(){
@@ -2707,7 +3696,6 @@ error.message;
 }
 
 
-
 async function clearLive(){
 
 const video =
@@ -2717,6 +3705,8 @@ item.section ===
 "boss-code-tv-live"
 );
 
+
+try{
 
 if(video){
 
@@ -2741,7 +3731,14 @@ $("liveMsg").textContent =
 await loadAll();
 
 }
+catch(error){
 
+$("liveMsg").textContent =
+error.message;
+
+}
+
+}
 
 
 function setupVideo(
@@ -2908,7 +3905,6 @@ prefix
 }
 
 
-
 function resetVideo(prefix){
 
 edit[prefix] =
@@ -2987,7 +3983,6 @@ $("dmSave").textContent =
 }
 
 
-
 function renderVideo(
 prefix,
 section
@@ -3028,6 +4023,7 @@ video =>
 <img
 class="thumb"
 src="${thumb(video.youtube_id)}"
+alt=""
 >
 
 <div>
@@ -3127,7 +4123,6 @@ DELETE
 }
 
 
-
 window.editVideo =
 (
 prefix,
@@ -3210,12 +4205,13 @@ false;
 };
 
 
-
 window.toggleVideo =
 async (
 id,
 published
 ) => {
+
+try{
 
 await api(
 `/videos/${id}`,
@@ -3231,8 +4227,16 @@ published
 
 await loadAll();
 
-};
+}
+catch(error){
 
+alert(
+error.message
+);
+
+}
+
+};
 
 
 window.deleteVideo =
@@ -3243,6 +4247,8 @@ confirm(
 "Delete this video?"
 )
 ){
+
+try{
 
 await api(
 `/videos/${id}`,
@@ -3255,9 +4261,17 @@ method:"DELETE"
 await loadAll();
 
 }
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
 
 };
-
 
 
 async function upload(
@@ -3328,8 +4342,2382 @@ return null;
 }
 
 
+async function saveGallery(){
+
+const imageUrl =
+$("galleryUrl")
+.value
+.trim();
+
+
+if(!imageUrl){
+
+$("galleryMsg").textContent =
+"UPLOAD OR ADD A PHOTO URL.";
+
+return;
+
+}
+
+
+const payload = {
+
+image_url:
+imageUrl,
+
+caption:
+$("galleryCaption")
+.value
+.trim(),
+
+location_name:
+$("galleryLocation")
+.value
+.trim(),
+
+featured:
+$("galleryFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("galleryPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("gallerySort").value || 0
+)
+
+};
+
+
+try{
+
+if(
+edit.gallery
+){
+
+await api(
+`/boss-bite-gallery/${edit.gallery}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/boss-bite-gallery",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetGallery();
+
+
+$("galleryMsg").textContent =
+"PHOTO SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("galleryMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+function resetGallery(){
+
+edit.gallery =
+null;
+
+
+$("galleryFile").value =
+"";
+
+
+$("galleryUrl").value =
+"";
+
+
+$("galleryCaption").value =
+"";
+
+
+$("galleryLocation").value =
+"";
+
+
+$("gallerySort").value =
+"0";
+
+
+$("galleryPub").checked =
+true;
+
+
+$("galleryFeat").checked =
+false;
+
+
+$("gallerySave").textContent =
+"ADD PHOTO";
+
+
+$("galleryCancel").hidden =
+true;
+
+}
+
+
+function renderGallery(){
+
+const list =
+$("galleryList");
+
+
+if(
+!galleryItems.length
+){
+
+list.innerHTML =
+'<div class="empty">No gallery photos yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+galleryItems
+.map(
+item =>
+`
+
+<article class="item">
+
+<img
+class="thumb"
+src="${esc(item.image_url || "")}"
+alt=""
+>
+
+<div>
+
+<h3>
+${esc(item.caption || "Boss Bite Photo")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+
+${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(item.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.location_name || "")}
+</div>
+
+<div class="meta">
+SORT ORDER: ${Number(item.sort_order || 0)}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editGallery(${item.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleGallery(${item.id},${Number(item.published) === 1 ? 0 : 1})"
+>
+${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
+</button>
+
+<button
+class="btn danger"
+onclick="deleteGallery(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+window.editGallery =
+id => {
+
+const item =
+galleryItems.find(
+row =>
+Number(row.id) ===
+Number(id)
+);
+
+
+if(!item){
+return;
+}
+
+
+edit.gallery =
+id;
+
+
+$("galleryUrl").value =
+item.image_url || "";
+
+
+$("galleryCaption").value =
+item.caption || "";
+
+
+$("galleryLocation").value =
+item.location_name || "";
+
+
+$("gallerySort").value =
+Number(item.sort_order || 0);
+
+
+$("galleryPub").checked =
+Number(item.published) === 1;
+
+
+$("galleryFeat").checked =
+Number(item.featured) === 1;
+
+
+$("gallerySave").textContent =
+"SAVE CHANGES";
+
+
+$("galleryCancel").hidden =
+false;
+
+};
+
+
+window.toggleGallery =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/boss-bite-gallery/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+};
+
+
+window.deleteGallery =
+async id => {
+
+if(
+confirm(
+"Delete this gallery photo?"
+)
+){
+
+try{
+
+await api(
+`/boss-bite-gallery/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+};
+
+
+async function saveLocation(){
+
+const name =
+$("locationName")
+.value
+.trim();
+
+
+if(!name){
+
+$("locationMsg").textContent =
+"ADD A RESTAURANT OR BUSINESS NAME.";
+
+return;
+
+}
+
+
+const latRaw =
+$("locationLat")
+.value
+.trim();
+
+
+const lngRaw =
+$("locationLng")
+.value
+.trim();
+
+
+const payload = {
+
+name,
+
+address:
+$("locationAddress")
+.value
+.trim(),
+
+city:
+$("locationCity")
+.value
+.trim(),
+
+state:
+$("locationState")
+.value
+.trim(),
+
+latitude:
+latRaw === ""
+?
+null
+:
+Number(latRaw),
+
+longitude:
+lngRaw === ""
+?
+null
+:
+Number(lngRaw),
+
+image_url:
+$("locationImageUrl")
+.value
+.trim(),
+
+episode_url:
+$("locationEpisodeUrl")
+.value
+.trim(),
+
+description:
+$("locationDesc")
+.value
+.trim(),
+
+featured:
+$("locationFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("locationPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("locationSort").value || 0
+)
+
+};
+
+
+try{
+
+if(
+edit.location
+){
+
+await api(
+`/boss-bite-locations/${edit.location}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/boss-bite-locations",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetLocation();
+
+
+$("locationMsg").textContent =
+"LOCATION SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("locationMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+function resetLocation(){
+
+edit.location =
+null;
+
+
+$("locationName").value =
+"";
+
+
+$("locationAddress").value =
+"";
+
+
+$("locationCity").value =
+"";
+
+
+$("locationState").value =
+"";
+
+
+$("locationLat").value =
+"";
+
+
+$("locationLng").value =
+"";
+
+
+$("locationFile").value =
+"";
+
+
+$("locationImageUrl").value =
+"";
+
+
+$("locationEpisodeUrl").value =
+"";
+
+
+$("locationDesc").value =
+"";
+
+
+$("locationSort").value =
+"0";
+
+
+$("locationPub").checked =
+true;
+
+
+$("locationFeat").checked =
+false;
+
+
+$("locationSave").textContent =
+"ADD LOCATION";
+
+
+$("locationCancel").hidden =
+true;
+
+}
+
+
+function renderLocations(){
+
+const list =
+$("locationList");
+
+
+if(
+!bossBiteLocations.length
+){
+
+list.innerHTML =
+'<div class="empty">No map locations yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+bossBiteLocations
+.map(
+item =>
+`
+
+<article class="item">
+
+${item.image_url
+?
+`
+
+<img
+class="thumb location-thumb"
+src="${esc(item.image_url)}"
+alt=""
+>
+
+`
+:
+`
+
+<div class="thumb"></div>
+
+`
+}
+
+<div>
+
+<h3>
+${esc(item.name)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+
+${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(item.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.address || "")}
+</div>
+
+<div class="meta">
+${esc(item.city || "")}${item.state ? ", " + esc(item.state) : ""}
+</div>
+
+<div class="meta">
+LAT: ${item.latitude ?? ""} • LNG: ${item.longitude ?? ""}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editLocation(${item.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleLocation(${item.id},${Number(item.published) === 1 ? 0 : 1})"
+>
+${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
+</button>
+
+<button
+class="btn danger"
+onclick="deleteLocation(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+window.editLocation =
+id => {
+
+const item =
+bossBiteLocations.find(
+row =>
+Number(row.id) ===
+Number(id)
+);
+
+
+if(!item){
+return;
+}
+
+
+edit.location =
+id;
+
+
+$("locationName").value =
+item.name || "";
+
+
+$("locationAddress").value =
+item.address || "";
+
+
+$("locationCity").value =
+item.city || "";
+
+
+$("locationState").value =
+item.state || "";
+
+
+$("locationLat").value =
+item.latitude ?? "";
+
+
+$("locationLng").value =
+item.longitude ?? "";
+
+
+$("locationImageUrl").value =
+item.image_url || "";
+
+
+$("locationEpisodeUrl").value =
+item.episode_url || "";
+
+
+$("locationDesc").value =
+item.description || "";
+
+
+$("locationSort").value =
+Number(item.sort_order || 0);
+
+
+$("locationPub").checked =
+Number(item.published) === 1;
+
+
+$("locationFeat").checked =
+Number(item.featured) === 1;
+
+
+$("locationSave").textContent =
+"SAVE CHANGES";
+
+
+$("locationCancel").hidden =
+false;
+
+};
+
+
+window.toggleLocation =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/boss-bite-locations/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+};
+
+
+window.deleteLocation =
+async id => {
+
+if(
+confirm(
+"Delete this Boss Bite map location?"
+)
+){
+
+try{
+
+await api(
+`/boss-bite-locations/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+};
+async function saveDecision(){
+
+const payload = {
+
+decision_text:
+$("decisionText")
+.value
+.trim(),
+
+action_text:
+$("decisionAction")
+.value
+.trim(),
+
+category:
+$("decisionCategory")
+.value
+.trim(),
+
+scheduled_date:
+$("decisionDate")
+.value,
+
+featured:
+$("decisionFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("decisionPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("decisionSort").value || 0
+)
+
+};
+
+
+if(
+!payload.decision_text ||
+!payload.action_text
+){
+
+$("decisionMsg").textContent =
+"ADD THE DECISION AND ACTION.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.decision
+){
+
+await api(
+`/daily-decisions/${edit.decision}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/daily-decisions",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetDecision();
+
+
+$("decisionMsg").textContent =
+"DECISION SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("decisionMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+function resetDecision(){
+
+edit.decision =
+null;
+
+
+$("decisionText").value =
+"";
+
+
+$("decisionAction").value =
+"";
+
+
+$("decisionCategory").value =
+"";
+
+
+$("decisionDate").value =
+"";
+
+
+$("decisionSort").value =
+"0";
+
+
+$("decisionFeat").checked =
+false;
+
+
+$("decisionPub").checked =
+true;
+
+
+$("decisionSave").textContent =
+"ADD DECISION";
+
+
+$("decisionCancel").hidden =
+true;
+
+}
+
+
+function renderDecisions(){
+
+const list =
+$("decisionList");
+
+
+if(
+!dailyDecisions.length
+){
+
+list.innerHTML =
+'<div class="empty">No Daily Decisions yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+dailyDecisions
+.map(
+item =>
+`
+
+<article class="item">
+
+<div
+class="thumb"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+padding:14px;
+text-align:center;
+color:#f5c518;
+font-weight:900;
+"
+>
+DECISION
+</div>
+
+<div>
+
+<h3>
+${esc(item.decision_text)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+
+${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${item.category
+?
+`
+<span class="badge">
+${esc(item.category)}
+</span>
+`
+:
+""
+}
+
+${Number(item.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.action_text || "")}
+</div>
+
+${item.scheduled_date
+?
+`
+<div class="meta">
+SCHEDULED: ${esc(item.scheduled_date)}
+</div>
+`
+:
+""
+}
+
+<div class="meta">
+SORT ORDER: ${Number(item.sort_order || 0)}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editDecision(${item.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleDecision(${item.id},${Number(item.published) === 1 ? 0 : 1})"
+>
+${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
+</button>
+
+<button
+class="btn danger"
+onclick="deleteDecision(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+window.editDecision =
+id => {
+
+const item =
+dailyDecisions.find(
+row =>
+Number(row.id) ===
+Number(id)
+);
+
+
+if(!item){
+return;
+}
+
+
+edit.decision =
+id;
+
+
+$("decisionText").value =
+item.decision_text || "";
+
+
+$("decisionAction").value =
+item.action_text || "";
+
+
+$("decisionCategory").value =
+item.category || "";
+
+
+$("decisionDate").value =
+item.scheduled_date || "";
+
+
+$("decisionSort").value =
+Number(item.sort_order || 0);
+
+
+$("decisionFeat").checked =
+Number(item.featured) === 1;
+
+
+$("decisionPub").checked =
+Number(item.published) === 1;
+
+
+$("decisionSave").textContent =
+"SAVE CHANGES";
+
+
+$("decisionCancel").hidden =
+false;
+
+};
+
+
+window.toggleDecision =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/daily-decisions/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+};
+
+
+window.deleteDecision =
+async id => {
+
+if(
+confirm(
+"Delete this Daily Decision?"
+)
+){
+
+try{
+
+await api(
+`/daily-decisions/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+};
+
+
+async function saveQuestion(){
+
+const payload = {
+
+question_text:
+$("questionText")
+.value
+.trim(),
+
+category:
+$("questionCategory")
+.value,
+
+weight:
+Number(
+$("questionWeight").value || 1
+),
+
+published:
+$("questionPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("questionSort").value || 0
+)
+
+};
+
+
+if(
+!payload.question_text
+){
+
+$("questionMsg").textContent =
+"ADD A QUESTION.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.question
+){
+
+await api(
+`/checkin-questions/${edit.question}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/checkin-questions",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetQuestion();
+
+
+$("questionMsg").textContent =
+"QUESTION SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("questionMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+function resetQuestion(){
+
+edit.question =
+null;
+
+
+$("questionText").value =
+"";
+
+
+$("questionCategory").value =
+"Approval";
+
+
+$("questionWeight").value =
+"1";
+
+
+$("questionSort").value =
+"0";
+
+
+$("questionPub").checked =
+true;
+
+
+$("questionSave").textContent =
+"ADD QUESTION";
+
+
+$("questionCancel").hidden =
+true;
+
+}
+
+
+function renderQuestions(){
+
+const list =
+$("questionList");
+
+
+if(
+!checkinQuestions.length
+){
+
+list.innerHTML =
+'<div class="empty">No Check In questions yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+checkinQuestions
+.map(
+item =>
+`
+
+<article class="item">
+
+<div
+class="thumb"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+padding:14px;
+text-align:center;
+color:#f5c518;
+font-weight:900;
+"
+>
+${esc(item.category || "CHECK IN")}
+</div>
+
+<div>
+
+<h3>
+${esc(item.question_text)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+
+${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+<span class="badge">
+${esc(item.category || "")}
+</span>
+
+<span class="badge">
+WEIGHT ${Number(item.weight || 1)}
+</span>
+
+</div>
+
+<div class="meta">
+SORT ORDER: ${Number(item.sort_order || 0)}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editQuestion(${item.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleQuestion(${item.id},${Number(item.published) === 1 ? 0 : 1})"
+>
+${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
+</button>
+
+<button
+class="btn danger"
+onclick="deleteQuestion(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+window.editQuestion =
+id => {
+
+const item =
+checkinQuestions.find(
+row =>
+Number(row.id) ===
+Number(id)
+);
+
+
+if(!item){
+return;
+}
+
+
+edit.question =
+id;
+
+
+$("questionText").value =
+item.question_text || "";
+
+
+$("questionCategory").value =
+item.category || "Approval";
+
+
+$("questionWeight").value =
+Number(item.weight || 1);
+
+
+$("questionSort").value =
+Number(item.sort_order || 0);
+
+
+$("questionPub").checked =
+Number(item.published) === 1;
+
+
+$("questionSave").textContent =
+"SAVE CHANGES";
+
+
+$("questionCancel").hidden =
+false;
+
+};
+
+
+window.toggleQuestion =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/checkin-questions/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+};
+
+
+window.deleteQuestion =
+async id => {
+
+if(
+confirm(
+"Delete this Check In question?"
+)
+){
+
+try{
+
+await api(
+`/checkin-questions/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+};
+
+
+function filteredInquiries(){
+
+const status =
+$("inquiryFilter")
+.value;
+
+
+if(!status){
+
+return inquiries;
+
+}
+
+
+return inquiries.filter(
+item =>
+String(
+item.status || "new"
+).toLowerCase() ===
+status
+);
+
+}
+
+
+function renderInquiries(){
+
+const list =
+$("inquiryList");
+
+
+const newCount =
+inquiries.filter(
+item =>
+String(
+item.status || "new"
+).toLowerCase() ===
+"new"
+)
+.length;
+
+
+$("inquiryStatus").textContent =
+`${newCount} NEW`;
+
+
+$("inquiryStatus")
+.classList
+.toggle(
+"ok",
+newCount === 0
+);
+
+
+const items =
+filteredInquiries();
+
+
+if(
+!items.length
+){
+
+list.innerHTML =
+'<div class="empty">No contact inquiries found.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+items
+.map(
+item =>
+`
+
+<article class="item">
+
+<div
+class="thumb"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+padding:14px;
+text-align:center;
+color:#f5c518;
+font-weight:900;
+"
+>
+${esc(
+String(
+item.status || "new"
+).toUpperCase()
+)}
+</div>
+
+<div>
+
+<h3>
+${esc(item.name)}
+</h3>
+
+<div class="badges">
+
+<span class="badge">
+${esc(item.inquiry_type || "General Inquiry")}
+</span>
+
+<span class="badge ${String(item.status || "new") === "new" ? "featured" : ""}">
+${esc(
+String(
+item.status || "new"
+).toUpperCase()
+)}
+</span>
+
+</div>
+
+<div class="meta">
+${esc(item.email || "")}
+</div>
+
+${item.created_at
+?
+`
+<div class="meta">
+${esc(item.created_at)}
+</div>
+`
+:
+""
+}
+
+<div class="inquiry-message">
+${esc(item.message || "")}
+</div>
+
+<div class="actions">
+
+<button
+class="btn outline"
+onclick="setInquiryStatus(${item.id},'read')"
+>
+MARK READ
+</button>
+
+<button
+class="btn gray"
+onclick="setInquiryStatus(${item.id},'replied')"
+>
+REPLIED
+</button>
+
+<button
+class="btn gray"
+onclick="setInquiryStatus(${item.id},'closed')"
+>
+CLOSE
+</button>
+
+<button
+class="btn danger"
+onclick="deleteInquiry(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+async function refreshInquiries(){
+
+try{
+
+const status =
+$("inquiryFilter")
+.value;
+
+
+const endpoint =
+status
+?
+`/contact-inquiries?status=${encodeURIComponent(status)}`
+:
+"/contact-inquiries";
+
+
+const data =
+await api(
+endpoint
+);
+
+
+if(status){
+
+const others =
+inquiries.filter(
+item =>
+String(
+item.status || "new"
+).toLowerCase() !==
+status
+);
+
+
+inquiries = [
+...others,
+...(data.data || [])
+];
+
+}
+else{
+
+inquiries =
+data.data || [];
+
+}
+
+
+$("inquiryMsg").textContent =
+"INQUIRIES REFRESHED.";
+
+
+renderInquiries();
+
+}
+catch(error){
+
+$("inquiryMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+window.setInquiryStatus =
+async (
+id,
+status
+) => {
+
+try{
+
+await api(
+`/contact-inquiries/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+status
+})
+}
+);
+
+
+$("inquiryMsg").textContent =
+"INQUIRY UPDATED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("inquiryMsg").textContent =
+error.message;
+
+}
+
+};
+
+
+window.deleteInquiry =
+async id => {
+
+if(
+confirm(
+"Delete this contact inquiry?"
+)
+){
+
+try{
+
+await api(
+`/contact-inquiries/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+$("inquiryMsg").textContent =
+"INQUIRY DELETED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("inquiryMsg").textContent =
+error.message;
+
+}
+
+}
+
+};
+async function saveMagazine(){
+
+const payload = {
+
+title:
+$("magTitle")
+.value
+.trim(),
+
+cover_url:
+$("magCoverUrl")
+.value
+.trim(),
+
+issue_url:
+$("magIssueUrl")
+.value
+.trim(),
+
+description:
+$("magDesc")
+.value
+.trim(),
+
+issue_date:
+$("magDate")
+.value,
+
+featured:
+$("magFeat")
+.checked
+?
+1
+:
+0,
+
+published:
+$("magPub")
+.checked
+?
+1
+:
+0,
+
+sort_order:
+Number(
+$("magSort").value || 0
+)
+
+};
+
+
+if(
+!payload.title ||
+!payload.issue_url
+){
+
+$("magMsg").textContent =
+"ADD AN ISSUE TITLE AND FLIPBOOK URL.";
+
+return;
+
+}
+
+
+try{
+
+if(
+edit.magazine
+){
+
+await api(
+`/magazines/${edit.magazine}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+else{
+
+await api(
+"/magazines",
+{
+method:"POST",
+body:
+JSON.stringify(
+payload
+)
+}
+);
+
+}
+
+
+resetMagazine();
+
+
+$("magMsg").textContent =
+"ISSUE SAVED.";
+
+
+await loadAll();
+
+}
+catch(error){
+
+$("magMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+function resetMagazine(){
+
+edit.magazine =
+null;
+
+
+$("magTitle").value =
+"";
+
+
+$("magDate").value =
+"";
+
+
+$("magIssueUrl").value =
+"";
+
+
+$("magDesc").value =
+"";
+
+
+$("magCoverFile").value =
+"";
+
+
+$("magCoverUrl").value =
+"";
+
+
+$("magSort").value =
+"0";
+
+
+$("magPub").checked =
+true;
+
+
+$("magFeat").checked =
+false;
+
+
+$("magSave").textContent =
+"ADD ISSUE";
+
+
+$("magCancel").hidden =
+true;
+
+}
+
+
+function renderMagazines(){
+
+const list =
+$("magList");
+
+
+if(
+!magazines.length
+){
+
+list.innerHTML =
+'<div class="empty">No magazine issues yet.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+magazines
+.map(
+item =>
+`
+
+<article class="item">
+
+${item.cover_url
+?
+`
+<img
+class="thumb"
+src="${esc(item.cover_url)}"
+alt=""
+>
+`
+:
+`
+<div class="thumb"></div>
+`
+}
+
+<div>
+
+<h3>
+${esc(item.title)}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+
+${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(item.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.issue_date || "")}
+</div>
+
+<div class="meta">
+${esc(item.description || "")}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editMagazine(${item.id})"
+>
+EDIT
+</button>
+
+<button
+class="btn outline"
+onclick="toggleMagazine(${item.id},${Number(item.published) === 1 ? 0 : 1})"
+>
+${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
+</button>
+
+<button
+class="btn danger"
+onclick="deleteMagazine(${item.id})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</article>
+
+`
+)
+.join("");
+
+}
+
+
+window.editMagazine =
+id => {
+
+const item =
+magazines.find(
+row =>
+Number(row.id) ===
+Number(id)
+);
+
+
+if(!item){
+return;
+}
+
+
+edit.magazine =
+id;
+
+
+$("magTitle").value =
+item.title || "";
+
+
+$("magDate").value =
+item.issue_date || "";
+
+
+$("magIssueUrl").value =
+item.issue_url || "";
+
+
+$("magDesc").value =
+item.description || "";
+
+
+$("magCoverUrl").value =
+item.cover_url || "";
+
+
+$("magSort").value =
+Number(item.sort_order || 0);
+
+
+$("magPub").checked =
+Number(item.published) === 1;
+
+
+$("magFeat").checked =
+Number(item.featured) === 1;
+
+
+$("magSave").textContent =
+"SAVE CHANGES";
+
+
+$("magCancel").hidden =
+false;
+
+};
+
+
+window.toggleMagazine =
+async (
+id,
+published
+) => {
+
+try{
+
+await api(
+`/magazines/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+published
+})
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+};
+
+
+window.deleteMagazine =
+async id => {
+
+if(
+confirm(
+"Delete this magazine issue?"
+)
+){
+
+try{
+
+await api(
+`/magazines/${id}`,
+{
+method:"DELETE"
+}
+);
+
+
+await loadAll();
+
+}
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
+
+};
+
 
 function fillArtists(){
+
+const releaseSelected =
+$("releaseArtist").value;
+
+
+const trackSelected =
+$("trackArtist").value;
+
 
 const options =
 '<option value="">Select artist</option>' +
@@ -3352,11 +6740,42 @@ options;
 $("trackArtist").innerHTML =
 options;
 
+
+if(
+artists.some(
+artist =>
+String(artist.id) ===
+String(releaseSelected)
+)
+){
+
+$("releaseArtist").value =
+releaseSelected;
+
 }
 
 
+if(
+artists.some(
+artist =>
+String(artist.id) ===
+String(trackSelected)
+)
+){
+
+$("trackArtist").value =
+trackSelected;
+
+}
+
+}
+
 
 function fillReleases(){
+
+const selected =
+$("trackRelease").value;
+
 
 const artistId =
 Number(
@@ -3391,8 +6810,21 @@ ${esc(release.title)}
 )
 .join("");
 
+
+if(
+items.some(
+release =>
+String(release.id) ===
+String(selected)
+)
+){
+
+$("trackRelease").value =
+selected;
+
 }
 
+}
 
 
 async function saveArtist(){
@@ -3502,7 +6934,6 @@ error.message;
 }
 
 
-
 function resetArtist(){
 
 edit.artist =
@@ -3543,7 +6974,6 @@ true;
 }
 
 
-
 function renderArtists(){
 
 const list =
@@ -3570,10 +7000,20 @@ artist =>
 
 <article class="item">
 
+${artist.artist_image_url
+?
+`
 <img
 class="thumb"
-src="${esc(artist.artist_image_url || "")}"
+src="${esc(artist.artist_image_url)}"
+alt=""
 >
+`
+:
+`
+<div class="thumb"></div>
+`
+}
 
 <div>
 
@@ -3588,6 +7028,13 @@ ${esc(artist.name)}
 ${Number(artist.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
 
 </span>
+
+${Number(artist.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
 
 </div>
 
@@ -3622,7 +7069,6 @@ DELETE
 .join("");
 
 }
-
 
 
 window.editArtist =
@@ -3679,7 +7125,6 @@ false;
 };
 
 
-
 window.deleteArtist =
 async id => {
 
@@ -3688,6 +7133,8 @@ confirm(
 "Delete artist? Connected releases and tracks may also be removed."
 )
 ){
+
+try{
 
 await api(
 `/artists/${id}`,
@@ -3700,9 +7147,17 @@ method:"DELETE"
 await loadAll();
 
 }
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
 
 };
-
 
 
 async function saveRelease(){
@@ -3824,19 +7279,22 @@ error.message;
 }
 
 
-
 function resetRelease(){
 
 edit.release =
 null;
 
 
+$("releaseArtist").value =
+"";
+
+
 $("releaseTitle").value =
 "";
 
 
-$("releaseUrl").value =
-"";
+$("releaseType").value =
+"album";
 
 
 $("releaseDate").value =
@@ -3847,11 +7305,11 @@ $("releaseDesc").value =
 "";
 
 
-$("releaseType").value =
-"album";
-
-
 $("releaseFile").value =
+"";
+
+
+$("releaseUrl").value =
 "";
 
 
@@ -3871,7 +7329,6 @@ $("releaseCancel").hidden =
 true;
 
 }
-
 
 
 function renderReleases(){
@@ -3895,15 +7352,34 @@ return;
 list.innerHTML =
 releases
 .map(
-release =>
-`
+release => {
+
+const artist =
+artists.find(
+item =>
+Number(item.id) ===
+Number(release.artist_id)
+);
+
+
+return `
 
 <article class="item">
 
+${release.artwork_url
+?
+`
 <img
 class="thumb"
-src="${esc(release.artwork_url || "")}"
+src="${esc(release.artwork_url)}"
+alt=""
 >
+`
+:
+`
+<div class="thumb"></div>
+`
+}
 
 <div>
 
@@ -3911,14 +7387,37 @@ src="${esc(release.artwork_url || "")}"
 ${esc(release.title)}
 </h3>
 
+<div class="badges">
+
+<span class="badge">
+${esc(release.release_type || "release")}
+</span>
+
+<span class="badge ${Number(release.published) === 1 ? "pub" : "draft"}">
+
+${Number(release.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(release.featured) === 1
+?
+'<span class="badge featured">FEATURED</span>'
+:
+""
+}
+
+</div>
+
 <div class="meta">
+${esc(artist?.name || "Unknown Artist")}
+</div>
 
-${esc(release.artist_name || "")}
+<div class="meta">
+${esc(release.release_date || "")}
+</div>
 
-•
-
-${esc(release.release_type || "")}
-
+<div class="meta">
+${esc(release.description || "")}
 </div>
 
 <div class="actions">
@@ -3943,12 +7442,13 @@ DELETE
 
 </article>
 
-`
+`;
+
+}
 )
 .join("");
 
 }
-
 
 
 window.editRelease =
@@ -3972,7 +7472,9 @@ id;
 
 
 $("releaseArtist").value =
-release.artist_id;
+String(
+release.artist_id || ""
+);
 
 
 $("releaseTitle").value =
@@ -3980,12 +7482,7 @@ release.title || "";
 
 
 $("releaseType").value =
-release.release_type ||
-"album";
-
-
-$("releaseUrl").value =
-release.artwork_url || "";
+release.release_type || "album";
 
 
 $("releaseDate").value =
@@ -3994,6 +7491,10 @@ release.release_date || "";
 
 $("releaseDesc").value =
 release.description || "";
+
+
+$("releaseUrl").value =
+release.artwork_url || "";
 
 
 $("releaseFeat").checked =
@@ -4018,15 +7519,16 @@ false;
 };
 
 
-
 window.deleteRelease =
 async id => {
 
 if(
 confirm(
-"Delete release? Connected tracks may also be removed."
+"Delete this release?"
 )
 ){
+
+try{
 
 await api(
 `/releases/${id}`,
@@ -4039,9 +7541,17 @@ method:"DELETE"
 await loadAll();
 
 }
+catch(error){
+
+alert(
+error.message
+);
+
+}
+
+}
 
 };
-
 
 
 async function saveTrack(){
@@ -4074,8 +7584,7 @@ $("trackUrl")
 
 track_number:
 Number(
-$("trackNumber").value ||
-0
+$("trackNumber").value || 0
 ),
 
 duration:
@@ -4171,26 +7680,36 @@ error.message;
 }
 
 
-
 function resetTrack(){
 
 edit.track =
 null;
 
 
+$("trackArtist").value =
+"";
+
+
+fillReleases();
+
+
+$("trackRelease").value =
+"";
+
+
 $("trackTitle").value =
 "";
 
 
-$("trackUrl").value =
-"";
-
-
 $("trackNumber").value =
-0;
+"0";
 
 
 $("trackFile").value =
+"";
+
+
+$("trackUrl").value =
 "";
 
 
@@ -4210,7 +7729,6 @@ $("trackCancel").hidden =
 true;
 
 }
-
 
 
 function renderTracks(){
@@ -4234,15 +7752,42 @@ return;
 list.innerHTML =
 tracks
 .map(
-track =>
-`
+track => {
+
+const artist =
+artists.find(
+item =>
+Number(item.id) ===
+Number(track.artist_id)
+);
+
+
+const release =
+releases.find(
+item =>
+Number(item.id) ===
+Number(track.release_id)
+);
+
+
+return `
 
 <article class="item">
 
-<img
+<div
 class="thumb"
-src="${esc(track.artwork_url || "")}"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+padding:14px;
+text-align:center;
+color:#f5c518;
+font-weight:900;
+"
 >
+AUDIO
+</div>
 
 <div>
 
@@ -4250,26 +7795,34 @@ src="${esc(track.artwork_url || "")}"
 ${esc(track.title)}
 </h3>
 
-<div class="meta">
+<div class="badges">
 
-${esc(track.artist_name || "")}
+<span class="badge ${Number(track.published) === 1 ? "pub" : "draft"}">
 
-${track.release_title
+${Number(track.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
+
+</span>
+
+${Number(track.featured) === 1
 ?
-" • " +
-esc(track.release_title)
+'<span class="badge featured">FEATURED</span>'
 :
 ""
 }
 
 </div>
 
-<audio
-controls
-preload="none"
-style="width:100%;margin-top:8px"
-src="${esc(track.audio_url || "")}"
-></audio>
+<div class="meta">
+${esc(artist?.name || "Unknown Artist")}
+</div>
+
+<div class="meta">
+${esc(release?.title || "Standalone")}
+</div>
+
+<div class="meta">
+TRACK ${Number(track.track_number || 0)}
+</div>
 
 <div class="actions">
 
@@ -4293,12 +7846,13 @@ DELETE
 
 </article>
 
-`
+`;
+
+}
 )
 .join("");
 
 }
-
 
 
 window.editTrack =
@@ -4322,26 +7876,32 @@ id;
 
 
 $("trackArtist").value =
-track.artist_id;
+String(
+track.artist_id || ""
+);
 
 
 fillReleases();
 
 
 $("trackRelease").value =
-track.release_id || "";
+track.release_id
+?
+String(track.release_id)
+:
+"";
 
 
 $("trackTitle").value =
 track.title || "";
 
 
+$("trackNumber").value =
+Number(track.track_number || 0);
+
+
 $("trackUrl").value =
 track.audio_url || "";
-
-
-$("trackNumber").value =
-track.track_number || 0;
 
 
 $("trackFeat").checked =
@@ -4366,15 +7926,16 @@ false;
 };
 
 
-
 window.deleteTrack =
 async id => {
 
 if(
 confirm(
-"Delete track?"
+"Delete this track?"
 )
 ){
+
+try{
 
 await api(
 `/tracks/${id}`,
@@ -4387,575 +7948,19 @@ method:"DELETE"
 await loadAll();
 
 }
-
-};
-
-
-
-async function saveMagazine(){
-
-const payload = {
-
-title:
-$("magTitle")
-.value
-.trim(),
-
-cover_url:
-$("magCoverUrl")
-.value
-.trim(),
-
-issue_url:
-$("magIssueUrl")
-.value
-.trim(),
-
-description:
-$("magDesc")
-.value
-.trim(),
-
-issue_date:
-$("magDate").value,
-
-featured:
-$("magFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("magPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("magSort").value ||
-0
-)
-
-};
-
-
-if(
-!payload.title ||
-!payload.issue_url
-){
-
-$("magMsg").textContent =
-"ADD AN ISSUE TITLE AND ISSUE URL.";
-
-return;
-
-}
-
-
-try{
-
-if(
-edit.magazine
-){
-
-await api(
-`/magazines/${edit.magazine}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/magazines",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetMagazine();
-
-
-$("magMsg").textContent =
-"MAGAZINE ISSUE SAVED.";
-
-
-await loadAll();
-
-}
 catch(error){
 
-$("magMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-
-function resetMagazine(){
-
-edit.magazine =
-null;
-
-
-$("magTitle").value =
-"";
-
-
-$("magDate").value =
-"";
-
-
-$("magIssueUrl").value =
-"";
-
-
-$("magDesc").value =
-"";
-
-
-$("magCoverUrl").value =
-"";
-
-
-$("magCoverFile").value =
-"";
-
-
-$("magSort").value =
-0;
-
-
-$("magFeat").checked =
-false;
-
-
-$("magPub").checked =
-true;
-
-
-$("magSave").textContent =
-"ADD ISSUE";
-
-
-$("magCancel").hidden =
-true;
-
-}
-
-
-
-function renderMagazines(){
-
-const list =
-$("magList");
-
-
-if(
-!magazines.length
-){
-
-list.innerHTML =
-'<div class="empty">No magazine issues yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-magazines
-.map(
-magazine =>
-`
-
-<article class="item">
-
-<img
-class="thumb"
-src="${esc(magazine.cover_url || "")}"
-alt=""
->
-
-<div>
-
-<h3>
-${esc(magazine.title)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(magazine.published) === 1 ? "pub" : "draft"}">
-
-${Number(magazine.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(magazine.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-
-${esc(magazine.issue_date || "")}
-
-${magazine.description
-?
-" • " +
-esc(magazine.description)
-:
-""
-}
-
-</div>
-
-<div
-class="meta"
-style="margin-top:5px"
->
-
-${esc(magazine.issue_url || "")}
-
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editMagazine(${magazine.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleMagazine(${magazine.id},${Number(magazine.published) === 1 ? 0 : 1})"
->
-
-${Number(magazine.published) === 1
-?
-"UNPUBLISH"
-:
-"PUBLISH"
-}
-
-</button>
-
-<button
-class="btn danger"
-onclick="deleteMagazine(${magazine.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-
-window.editMagazine =
-id => {
-
-const magazine =
-magazines.find(
-item =>
-Number(item.id) ===
-Number(id)
+alert(
+error.message
 );
-
-
-if(!magazine){
-return;
-}
-
-
-edit.magazine =
-id;
-
-
-$("magTitle").value =
-magazine.title || "";
-
-
-$("magDate").value =
-magazine.issue_date || "";
-
-
-$("magIssueUrl").value =
-magazine.issue_url || "";
-
-
-$("magDesc").value =
-magazine.description || "";
-
-
-$("magCoverUrl").value =
-magazine.cover_url || "";
-
-
-$("magSort").value =
-magazine.sort_order || 0;
-
-
-$("magFeat").checked =
-Number(
-magazine.featured
-) === 1;
-
-
-$("magPub").checked =
-Number(
-magazine.published
-) === 1;
-
-
-$("magSave").textContent =
-"SAVE CHANGES";
-
-
-$("magCancel").hidden =
-false;
-
-
-window.scrollTo({
-
-top:
-$("magTitle")
-.getBoundingClientRect()
-.top +
-window.scrollY -
-30,
-
-behavior:
-"smooth"
-
-});
-
-};
-
-
-
-window.toggleMagazine =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/magazines/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("magMsg").textContent =
-error.message;
-
-}
-
-};
-
-
-
-window.deleteMagazine =
-async id => {
-
-if(
-confirm(
-"Delete this magazine issue?"
-)
-){
-
-try{
-
-await api(
-`/magazines/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("magMsg").textContent =
-error.message;
 
 }
 
 }
 
 };
-
-
-
-document
-.querySelectorAll(
-"[data-vtab]"
-)
-.forEach(
-button =>
-button.onclick =
-() => {
-
-document
-.querySelectorAll(
-"[data-vtab]"
-)
-.forEach(
-item =>
-item.classList.remove(
-"active"
-)
-);
-
-
-button.classList.add(
-"active"
-);
-
-
-document
-.querySelectorAll(
-'[id^="vm-"]'
-)
-.forEach(
-item =>
-item.classList.remove(
-"active"
-)
-);
-
-
-$(
-`vm-${button.dataset.vtab}`
-)
-.classList
-.add(
-"active"
-);
-
-}
-);
-
-
-
-document
-.querySelectorAll(
-"[data-mtab]"
-)
-.forEach(
-button =>
-button.onclick =
-() => {
-
-document
-.querySelectorAll(
-"[data-mtab]"
-)
-.forEach(
-item =>
-item.classList.remove(
-"active"
-)
-);
-
-
-button.classList.add(
-"active"
-);
-
-
-document
-.querySelectorAll(
-'[id^="mm-"]'
-)
-.forEach(
-item =>
-item.classList.remove(
-"active"
-)
-);
-
-
-$(
-`mm-${button.dataset.mtab}`
-)
-.classList
-.add(
-"active"
-);
-
-}
-);
-
-
-
 $("unlock").onclick =
 unlock;
-
-
-$("adminKey").onkeydown =
-event => {
-
-if(
-event.key === "Enter"
-){
-
-unlock();
-
-}
-
-};
 
 
 $("lock").onclick =
@@ -4963,7 +7968,23 @@ lock;
 
 
 $("refresh").onclick =
-loadAll;
+async () => {
+
+$("apiStatus").textContent =
+"CHECKING";
+
+
+$("apiStatus")
+.classList
+.remove("ok");
+
+
+await health();
+
+
+await loadAll();
+
+};
 
 
 $("saveLive").onclick =
@@ -4992,57 +8013,25 @@ setupVideo(
 );
 
 
-$("artistSave").onclick =
-saveArtist;
-
-
-$("artistCancel").onclick =
-resetArtist;
-
-
-$("releaseSave").onclick =
-saveRelease;
-
-
-$("releaseCancel").onclick =
-resetRelease;
-
-
-$("trackSave").onclick =
-saveTrack;
-
-
-$("trackCancel").onclick =
-resetTrack;
-
-
-$("trackArtist").onchange =
-fillReleases;
-
-
-$("magSave").onclick =
-saveMagazine;
-
-
-$("magCancel").onclick =
-resetMagazine;
-
-
-
-$("artistUpload").onclick =
+$("galleryUpload").onclick =
 async () => {
+
+const file =
+$("galleryFile")
+.files[0];
+
 
 const url =
 await upload(
-$("artistFile").files[0],
-"music/artists",
-"artistMsg"
+file,
+"boss-bite/gallery",
+"galleryMsg"
 );
 
 
 if(url){
 
-$("artistUrl").value =
+$("galleryUrl").value =
 url;
 
 }
@@ -5050,21 +8039,33 @@ url;
 };
 
 
+$("gallerySave").onclick =
+saveGallery;
 
-$("releaseUpload").onclick =
+
+$("galleryCancel").onclick =
+resetGallery;
+
+
+$("locationUpload").onclick =
 async () => {
+
+const file =
+$("locationFile")
+.files[0];
+
 
 const url =
 await upload(
-$("releaseFile").files[0],
-"music/artwork",
-"releaseMsg"
+file,
+"boss-bite/locations",
+"locationMsg"
 );
 
 
 if(url){
 
-$("releaseUrl").value =
+$("locationImageUrl").value =
 url;
 
 }
@@ -5072,35 +8073,49 @@ url;
 };
 
 
-
-$("trackUpload").onclick =
-async () => {
-
-const url =
-await upload(
-$("trackFile").files[0],
-"music/tracks",
-"trackMsg"
-);
+$("locationSave").onclick =
+saveLocation;
 
 
-if(url){
+$("locationCancel").onclick =
+resetLocation;
 
-$("trackUrl").value =
-url;
 
-}
+$("decisionSave").onclick =
+saveDecision;
 
-};
 
+$("decisionCancel").onclick =
+resetDecision;
+
+
+$("questionSave").onclick =
+saveQuestion;
+
+
+$("questionCancel").onclick =
+resetQuestion;
+
+
+$("inquiryRefresh").onclick =
+refreshInquiries;
+
+
+$("inquiryFilter").onchange =
+renderInquiries;
 
 
 $("magCoverUpload").onclick =
 async () => {
 
+const file =
+$("magCoverFile")
+.files[0];
+
+
 const url =
 await upload(
-$("magCoverFile").files[0],
+file,
 "magazines/covers",
 "magMsg"
 );
@@ -5116,12 +8131,256 @@ url;
 };
 
 
+$("magSave").onclick =
+saveMagazine;
+
+
+$("magCancel").onclick =
+resetMagazine;
+
+
+$("artistUpload").onclick =
+async () => {
+
+const file =
+$("artistFile")
+.files[0];
+
+
+const url =
+await upload(
+file,
+"music/artists",
+"artistMsg"
+);
+
+
+if(url){
+
+$("artistUrl").value =
+url;
+
+}
+
+};
+
+
+$("artistSave").onclick =
+saveArtist;
+
+
+$("artistCancel").onclick =
+resetArtist;
+
+
+$("releaseUpload").onclick =
+async () => {
+
+const file =
+$("releaseFile")
+.files[0];
+
+
+const url =
+await upload(
+file,
+"music/releases",
+"releaseMsg"
+);
+
+
+if(url){
+
+$("releaseUrl").value =
+url;
+
+}
+
+};
+
+
+$("releaseSave").onclick =
+saveRelease;
+
+
+$("releaseCancel").onclick =
+resetRelease;
+
+
+$("trackUpload").onclick =
+async () => {
+
+const file =
+$("trackFile")
+.files[0];
+
+
+const url =
+await upload(
+file,
+"music/tracks",
+"trackMsg"
+);
+
+
+if(url){
+
+$("trackUrl").value =
+url;
+
+}
+
+};
+
+
+$("trackSave").onclick =
+saveTrack;
+
+
+$("trackCancel").onclick =
+resetTrack;
+
+
+$("trackArtist").onchange =
+fillReleases;
+
+
+document
+.querySelectorAll(
+"[data-vtab]"
+)
+.forEach(
+button => {
+
+button.onclick =
+() => {
+
+const section =
+button.dataset.vtab;
+
+
+document
+.querySelectorAll(
+"[data-vtab]"
+)
+.forEach(
+tab =>
+tab.classList.remove(
+"active"
+)
+);
+
+
+button
+.classList
+.add(
+"active"
+);
+
+
+document
+.querySelectorAll(
+"[id^='vm-']"
+)
+.forEach(
+manager =>
+manager.classList.remove(
+"active"
+)
+);
+
+
+const target =
+document.getElementById(
+`vm-${section}`
+);
+
+
+if(target){
+
+target
+.classList
+.add(
+"active"
+);
+
+}
+
+};
+
+}
+);
+
+
+document
+.querySelectorAll(
+"[data-mtab]"
+)
+.forEach(
+button => {
+
+button.onclick =
+() => {
+
+const section =
+button.dataset.mtab;
+
+
+document
+.querySelectorAll(
+"[data-mtab]"
+)
+.forEach(
+tab =>
+tab.classList.remove(
+"active"
+)
+);
+
+
+button
+.classList
+.add(
+"active"
+);
+
+
+document
+.querySelectorAll(
+"[id^='mm-']"
+)
+.forEach(
+manager =>
+manager.classList.remove(
+"active"
+)
+);
+
+
+const target =
+document.getElementById(
+`mm-${section}`
+);
+
+
+if(target){
+
+target
+.classList
+.add(
+"active"
+);
+
+}
+
+};
+
+}
+);
+
 
 $("apiLabel").textContent =
 API;
-
-
-health();
 
 
 const savedKey =
@@ -5140,11 +8399,22 @@ $("adminKey").value =
 savedKey;
 
 
-unlock();
+$("login")
+.classList
+.add(
+"hide"
+);
+
+
+loadAll();
 
 }
+
+
+health();
 
 </script>
 
 </body>
+
 </html>
