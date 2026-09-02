@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>B.O.S.S CODE GO Admin</title>
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
+
+<title>
+B.O.S.S CODE GO Admin
+</title>
 
 <style>
+
 *{
 box-sizing:border-box;
 margin:0;
@@ -42,7 +52,7 @@ width:min(420px,100%);
 }
 
 .gold{
-color:#f5c518;
+color:#F5C518;
 }
 
 .muted{
@@ -66,7 +76,7 @@ margin-bottom:18px;
 }
 
 .head small{
-color:#f5c518;
+color:#F5C518;
 font-size:9px;
 font-weight:900;
 letter-spacing:2px;
@@ -159,6 +169,12 @@ padding:13px 14px;
 resize:vertical;
 }
 
+.input:focus,
+.select:focus,
+.textarea:focus{
+border-color:#F5C518;
+}
+
 .toggle-row{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -246,8 +262,8 @@ border:0;
 
 .outline{
 background:transparent;
-color:#f5c518;
-border:1px solid #f5c518;
+color:#F5C518;
+border:1px solid #F5C518;
 }
 
 .gray{
@@ -265,7 +281,7 @@ border:1px solid #5c2525;
 .message{
 min-height:20px;
 margin-top:12px;
-color:#f5c518;
+color:#F5C518;
 font-size:10px;
 font-weight:900;
 }
@@ -300,6 +316,10 @@ aspect-ratio:16/9;
 object-fit:cover;
 border-radius:11px;
 background:#111;
+}
+
+.resource-thumb{
+aspect-ratio:3/4;
 }
 
 .item h3{
@@ -341,7 +361,7 @@ color:#ff8c8c;
 
 .featured{
 background:#332b0e;
-color:#f5c518;
+color:#F5C518;
 }
 
 .empty{
@@ -393,6 +413,14 @@ grid-template-columns:1fr auto;
 gap:8px;
 }
 
+.section-note{
+color:#777;
+font-size:10px;
+line-height:1.5;
+margin-top:-6px;
+margin-bottom:16px;
+}
+
 @media(max-width:700px){
 
 .grid,
@@ -417,26 +445,23 @@ display:inline-block;
 margin-top:10px;
 }
 
+.file-row{
+grid-template-columns:1fr;
 }
 
-.inquiry-message{
-white-space:pre-wrap;
-line-height:1.55;
-margin-top:8px;
-color:#ddd;
-font-size:11px;
-}
-
-.location-thumb{
-aspect-ratio:4/3;
 }
 
 </style>
+
 </head>
 
 <body>
 
-<div id="login" class="login">
+
+<div
+id="login"
+class="login"
+>
 
 <div class="loginbox">
 
@@ -449,8 +474,7 @@ B.O.S.S CODE GO ADMIN
 </h2>
 
 <p>
-Enter the ADMIN_KEY you created in Cloudflare.
-It stays in this browser tab only.
+Enter the ADMIN_KEY you created in Cloudflare. It stays in this browser tab only.
 </p>
 
 <div class="field">
@@ -546,7 +570,6 @@ style="font-size:10px"
 >
 
 API:
-
 <span id="apiLabel"></span>
 
 </div>
@@ -736,7 +759,6 @@ class="input"
 
 </div>
 
-
 <div class="field">
 
 <label>
@@ -768,7 +790,6 @@ Featured
 
 </div>
 
-
 <div class="field full">
 
 <label>
@@ -782,7 +803,6 @@ type="url"
 >
 
 </div>
-
 
 <div class="field full">
 
@@ -913,7 +933,6 @@ class="input"
 
 </div>
 
-
 <div class="field">
 
 <label>
@@ -927,7 +946,6 @@ class="input"
 
 </div>
 
-
 <div class="field">
 
 <label>
@@ -940,7 +958,6 @@ class="input"
 >
 
 </div>
-
 
 <div class="field">
 
@@ -956,7 +973,6 @@ placeholder="Episode"
 
 </div>
 
-
 <div class="field full">
 
 <label>
@@ -970,7 +986,6 @@ type="url"
 >
 
 </div>
-
 
 <div class="field full">
 
@@ -1098,8 +1113,8 @@ EPISODE TITLE
 id="tvTitle"
 class="input"
 >
-</div>
 
+</div>
 
 <div class="field">
 
@@ -1114,7 +1129,6 @@ class="input"
 
 </div>
 
-
 <div class="field full">
 
 <label>
@@ -1128,7 +1142,6 @@ type="url"
 >
 
 </div>
-
 
 <div class="field full">
 
@@ -1241,205 +1254,9 @@ class="list"
 </section>
 
 
-<section class="card">
-
-<div class="head">
-
-<div>
-
-<small>
-THE BOSS BITE
-</small>
-
-<h2>
-GALLERY MANAGER
-</h2>
-
-</div>
-
-<span class="status ok">
-D1 + R2
-</span>
-
-</div>
-
-
-<div class="grid">
-
-<div class="field full">
-
-<label>
-PHOTO
-</label>
-
-<div class="file-row">
-
-<input
-id="galleryFile"
-class="input"
-type="file"
-accept="image/*"
->
-
-<button
-id="galleryUpload"
-class="btn outline"
->
-UPLOAD PHOTO
-</button>
-
-</div>
-
-<input
-id="galleryUrl"
-class="input"
-type="url"
-placeholder="Uploaded image URL"
-style="margin-top:8px"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-RESTAURANT / LOCATION
-</label>
-
-<input
-id="galleryLocation"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-SORT ORDER
-</label>
-
-<input
-id="gallerySort"
-class="input"
-type="number"
-value="0"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-CAPTION
-</label>
-
-<textarea
-id="galleryCaption"
-class="textarea"
-placeholder="Optional caption"
-></textarea>
-
-</div>
-
-</div>
-
-
-<div class="toggle-row">
-
-<div class="toggle">
-
-<div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Show this photo in the Boss Bite gallery.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="galleryPub"
-type="checkbox"
-checked
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-
-<div class="toggle">
-
-<div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Feature this photo.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="galleryFeat"
-type="checkbox"
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-</div>
-
-
-<div class="actions">
-
-<button
-id="gallerySave"
-class="btn red"
->
-ADD PHOTO
-</button>
-
-<button
-id="galleryCancel"
-class="btn outline"
-hidden
->
-CANCEL EDIT
-</button>
-
-</div>
-
-<div
-id="galleryMsg"
-class="message"
-></div>
-
-<div
-id="galleryList"
-class="list"
-></div>
-
-</section>
-
+<!-- ===================================================== -->
+<!-- DECISION MAKERS PROGRAM MANAGER -->
+<!-- ===================================================== -->
 
 <section class="card">
 
@@ -1448,568 +1265,65 @@ class="list"
 <div>
 
 <small>
-THE BOSS BITE
+DECISION MAKERS
 </small>
 
 <h2>
-MAP MANAGER
+PROGRAM MANAGER
 </h2>
 
 </div>
 
-<span class="status ok">
-D1 + R2
-</span>
+</div>
+
+<p class="section-note">
+Manage sessions, Take Action challenges and downloadable Decision Makers resources.
+</p>
+
+
+<div class="tabs">
+
+<button
+class="tab active"
+data-dmtab="sessions"
+>
+SESSIONS
+</button>
+
+<button
+class="tab"
+data-dmtab="challenges"
+>
+TAKE ACTION
+</button>
+
+<button
+class="tab"
+data-dmtab="resources"
+>
+RESOURCES
+</button>
 
 </div>
 
+
+<!-- SESSION MANAGER -->
+
+<div
+id="dmm-sessions"
+class="manager active"
+>
 
 <div class="grid">
 
 <div class="field">
 
 <label>
-RESTAURANT / BUSINESS NAME
+SESSION NUMBER
 </label>
 
 <input
-id="locationName"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-ADDRESS
-</label>
-
-<input
-id="locationAddress"
-class="input"
-placeholder="Street address"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-CITY
-</label>
-
-<input
-id="locationCity"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-STATE
-</label>
-
-<input
-id="locationState"
-class="input"
-placeholder="PA"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-LATITUDE
-</label>
-
-<input
-id="locationLat"
-class="input"
-type="number"
-step="any"
-placeholder="41.0000"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-LONGITUDE
-</label>
-
-<input
-id="locationLng"
-class="input"
-type="number"
-step="any"
-placeholder="-80.0000"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-LOCATION PHOTO
-</label>
-
-<div class="file-row">
-
-<input
-id="locationFile"
-class="input"
-type="file"
-accept="image/*"
->
-
-<button
-id="locationUpload"
-class="btn outline"
->
-UPLOAD PHOTO
-</button>
-
-</div>
-
-<input
-id="locationImageUrl"
-class="input"
-type="url"
-placeholder="Uploaded image URL"
-style="margin-top:8px"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-EPISODE LINK
-</label>
-
-<input
-id="locationEpisodeUrl"
-class="input"
-type="url"
-placeholder="YouTube episode link"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-DESCRIPTION
-</label>
-
-<textarea
-id="locationDesc"
-class="textarea"
-></textarea>
-
-</div>
-
-
-<div class="field">
-
-<label>
-SORT ORDER
-</label>
-
-<input
-id="locationSort"
-class="input"
-type="number"
-value="0"
->
-
-</div>
-
-</div>
-
-
-<div class="toggle-row">
-
-<div class="toggle">
-
-<div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Show this location on the Boss Bite map.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="locationPub"
-type="checkbox"
-checked
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-
-<div class="toggle">
-
-<div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Feature this location.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="locationFeat"
-type="checkbox"
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-</div>
-
-
-<div class="actions">
-
-<button
-id="locationSave"
-class="btn red"
->
-ADD LOCATION
-</button>
-
-<button
-id="locationCancel"
-class="btn outline"
-hidden
->
-CANCEL EDIT
-</button>
-
-</div>
-
-<div
-id="locationMsg"
-class="message"
-></div>
-
-<div
-id="locationList"
-class="list"
-></div>
-
-</section>
-
-
-<section class="card">
-
-<div class="head">
-
-<div>
-
-<small>
-DAILY ENGAGEMENT
-</small>
-
-<h2>
-TODAY'S DECISION MANAGER
-</h2>
-
-</div>
-
-<span class="status ok">
-D1
-</span>
-
-</div>
-
-
-<div class="grid">
-
-<div class="field full">
-
-<label>
-DECISION
-</label>
-
-<textarea
-id="decisionText"
-class="textarea"
-placeholder="Example: Today I will take one action toward the goal I keep thinking about."
-></textarea>
-
-</div>
-
-
-<div class="field full">
-
-<label>
-ACTION TEXT
-</label>
-
-<textarea
-id="decisionAction"
-class="textarea"
-placeholder="Example: Write down the next move and complete it today."
-></textarea>
-
-</div>
-
-
-<div class="field">
-
-<label>
-CATEGORY
-</label>
-
-<input
-id="decisionCategory"
-class="input"
-placeholder="Mindset, Action, Discipline..."
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-SCHEDULE DATE
-</label>
-
-<input
-id="decisionDate"
-class="input"
-type="date"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-SORT ORDER
-</label>
-
-<input
-id="decisionSort"
-class="input"
-type="number"
-value="0"
->
-
-</div>
-
-</div>
-
-
-<div class="toggle-row">
-
-<div class="toggle">
-
-<div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Make this decision available in the app.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="decisionPub"
-type="checkbox"
-checked
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-
-<div class="toggle">
-
-<div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Prioritize this decision.
-</em>
-
-</div>
-
-<label class="switch">
-
-<input
-id="decisionFeat"
-type="checkbox"
->
-
-<span class="slider"></span>
-
-</label>
-
-</div>
-
-</div>
-
-
-<div class="actions">
-
-<button
-id="decisionSave"
-class="btn red"
->
-ADD DECISION
-</button>
-
-<button
-id="decisionCancel"
-class="btn outline"
-hidden
->
-CANCEL EDIT
-</button>
-
-</div>
-
-<div
-id="decisionMsg"
-class="message"
-></div>
-
-<div
-id="decisionList"
-class="list"
-></div>
-
-</section>
-
-
-<section class="card">
-
-<div class="head">
-
-<div>
-
-<small>
-B.O.S.S CHECK IN
-</small>
-
-<h2>
-QUESTION MANAGER
-</h2>
-
-</div>
-
-<span class="status ok">
-D1
-</span>
-
-</div>
-
-
-<div class="grid">
-
-<div class="field full">
-
-<label>
-QUESTION
-</label>
-
-<textarea
-id="questionText"
-class="textarea"
-placeholder="Enter the Check In question"
-></textarea>
-
-</div>
-
-
-<div class="field">
-
-<label>
-CATEGORY
-</label>
-
-<select
-id="questionCategory"
-class="select"
->
-
-<option value="Approval">
-Approval
-</option>
-
-<option value="Comparison">
-Comparison
-</option>
-
-<option value="Confidence">
-Confidence
-</option>
-
-<option value="Action">
-Action
-</option>
-
-</select>
-
-</div>
-
-
-<div class="field">
-
-<label>
-WEIGHT
-</label>
-
-<input
-id="questionWeight"
+id="sessionNumber"
 class="input"
 type="number"
 min="1"
@@ -2018,6 +1332,63 @@ value="1"
 
 </div>
 
+<div class="field">
+
+<label>
+SESSION TITLE
+</label>
+
+<input
+id="sessionTitle"
+class="input"
+placeholder="PURPOSE"
+>
+
+</div>
+
+<div class="field full">
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="sessionDesc"
+class="textarea"
+placeholder="What this session teaches."
+></textarea>
+
+</div>
+
+<div class="field full">
+
+<label>
+YOUTUBE VIDEO LINK
+</label>
+
+<input
+id="sessionUrl"
+class="input"
+type="url"
+placeholder="Leave blank if session is still coming soon"
+>
+
+</div>
+
+<div class="field full">
+
+<label>
+THUMBNAIL URL
+</label>
+
+<input
+id="sessionThumb"
+class="input"
+type="url"
+placeholder="Optional custom thumbnail URL"
+>
+
+</div>
 
 <div class="field">
 
@@ -2026,7 +1397,7 @@ SORT ORDER
 </label>
 
 <input
-id="questionSort"
+id="sessionSort"
 class="input"
 type="number"
 value="0"
@@ -2048,7 +1419,7 @@ PUBLISHED
 </strong>
 
 <em>
-Make this question available in B.O.S.S Check In.
+Show this session in Decision Makers.
 </em>
 
 </div>
@@ -2056,7 +1427,199 @@ Make this question available in B.O.S.S Check In.
 <label class="switch">
 
 <input
-id="questionPub"
+id="sessionPub"
+type="checkbox"
+checked
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+
+<div class="toggle">
+
+<div>
+
+<strong>
+FEATURED
+</strong>
+
+<em>
+Move this session toward the top.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="sessionFeat"
+type="checkbox"
+>
+
+<span class="slider"></span>
+
+</label>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="sessionSave"
+class="btn red"
+>
+ADD SESSION
+</button>
+
+<button
+id="sessionCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="sessionMsg"
+class="message"
+></div>
+
+<div
+id="sessionList"
+class="list"
+></div>
+
+</div>
+
+
+<!-- TAKE ACTION MANAGER -->
+
+<div
+id="dmm-challenges"
+class="manager"
+>
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+CHALLENGE NUMBER
+</label>
+
+<input
+id="challengeNumber"
+class="input"
+type="number"
+min="1"
+value="1"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+CHALLENGE TITLE
+</label>
+
+<input
+id="challengeTitle"
+class="input"
+placeholder="MAKE THE DECISION"
+>
+
+</div>
+
+<div class="field full">
+
+<label>
+CHALLENGE INSTRUCTIONS
+</label>
+
+<textarea
+id="challengeDesc"
+class="textarea"
+placeholder="Name one thing you know you need to do but have continued putting off."
+></textarea>
+
+</div>
+
+<div class="field">
+
+<label>
+BUTTON TEXT
+</label>
+
+<input
+id="challengeButton"
+class="input"
+value="ACCEPT CHALLENGE"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+COMPLETION MESSAGE
+</label>
+
+<input
+id="challengeComplete"
+class="input"
+value="NOW TAKE ACTION."
+>
+
+</div>
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="challengeSort"
+class="input"
+type="number"
+value="0"
+>
+
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+
+<div>
+
+<strong>
+PUBLISHED
+</strong>
+
+<em>
+Show this challenge in the app.
+</em>
+
+</div>
+
+<label class="switch">
+
+<input
+id="challengePub"
 type="checkbox"
 checked
 >
@@ -2073,14 +1636,14 @@ checked
 <div class="actions">
 
 <button
-id="questionSave"
+id="challengeSave"
 class="btn red"
 >
-ADD QUESTION
+ADD CHALLENGE
 </button>
 
 <button
-id="questionCancel"
+id="challengeCancel"
 class="btn outline"
 hidden
 >
@@ -2090,179 +1653,71 @@ CANCEL EDIT
 </div>
 
 <div
-id="questionMsg"
+id="challengeMsg"
 class="message"
 ></div>
 
 <div
-id="questionList"
+id="challengeList"
 class="list"
 ></div>
 
-</section>
-
-
-<section class="card">
-
-<div class="head">
-
-<div>
-
-<small>
-CONTACT B.O.S.S CODE MEDIA
-</small>
-
-<h2>
-INQUIRY MANAGER
-</h2>
-
 </div>
 
-<span
-id="inquiryStatus"
-class="status"
+
+<!-- RESOURCE MANAGER -->
+
+<div
+id="dmm-resources"
+class="manager"
 >
-0 NEW
-</span>
-
-</div>
-
 
 <div class="grid">
 
 <div class="field">
 
 <label>
-FILTER BY STATUS
+RESOURCE TITLE
+</label>
+
+<input
+id="resourceTitle"
+class="input"
+placeholder="Rise of the Decision Maker"
+>
+
+</div>
+
+<div class="field">
+
+<label>
+RESOURCE TYPE
 </label>
 
 <select
-id="inquiryFilter"
+id="resourceType"
 class="select"
 >
 
-<option value="">
-All Inquiries
+<option value="PDF">
+PDF
 </option>
 
-<option value="new">
-New
+<option value="BOOK SAMPLE">
+Book Sample
 </option>
 
-<option value="read">
-Read
+<option value="WORKBOOK">
+Workbook
 </option>
 
-<option value="replied">
-Replied
-</option>
-
-<option value="closed">
-Closed
+<option value="GUIDE">
+Guide
 </option>
 
 </select>
 
 </div>
-
-</div>
-
-
-<div class="actions">
-
-<button
-id="inquiryRefresh"
-class="btn outline"
->
-REFRESH INQUIRIES
-</button>
-
-</div>
-
-<div
-id="inquiryMsg"
-class="message"
-></div>
-
-<div
-id="inquiryList"
-class="list"
-></div>
-
-</section>
-
-
-<section class="card">
-
-<div class="head">
-
-<div>
-
-<small>
-MAGAZINE
-</small>
-
-<h2>
-MAGAZINE MANAGER
-</h2>
-
-</div>
-
-<span class="status ok">
-D1 + R2
-</span>
-
-</div>
-
-
-<div class="grid">
-
-
-<div class="field">
-
-<label>
-ISSUE TITLE
-</label>
-
-<input
-id="magTitle"
-class="input"
-placeholder="Example: August 2026"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-ISSUE DATE
-</label>
-
-<input
-id="magDate"
-class="input"
-type="date"
->
-
-</div>
-
-
-<div class="field full">
-
-<label>
-ISSUE / FLIPBOOK URL
-</label>
-
-<input
-id="magIssueUrl"
-class="input"
-type="url"
-placeholder="https://magazine.bosscodemedia.com/..."
->
-
-</div>
-
 
 <div class="field full">
 
@@ -2271,10 +1726,46 @@ DESCRIPTION
 </label>
 
 <textarea
-id="magDesc"
+id="resourceDesc"
 class="textarea"
-placeholder="Short description of this issue"
+placeholder="Download a free sample of Rise of the Decision Maker."
 ></textarea>
+
+</div>
+
+
+<div class="field full">
+
+<label>
+PDF / RESOURCE FILE
+</label>
+
+<div class="file-row">
+
+<input
+id="resourceFile"
+class="input"
+type="file"
+accept=".pdf,application/pdf"
+>
+
+<button
+id="resourceUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD PDF
+</button>
+
+</div>
+
+<input
+id="resourceUrl"
+class="input"
+type="url"
+placeholder="Uploaded file URL"
+style="margin-top:8px"
+>
 
 </div>
 
@@ -2288,27 +1779,27 @@ COVER IMAGE
 <div class="file-row">
 
 <input
-id="magCoverFile"
+id="resourceCoverFile"
 class="input"
 type="file"
 accept="image/*"
 >
 
 <button
-id="magCoverUpload"
+id="resourceCoverUpload"
 class="btn outline"
+type="button"
 >
 UPLOAD COVER
 </button>
 
 </div>
 
-
 <input
-id="magCoverUrl"
+id="resourceCoverUrl"
 class="input"
 type="url"
-placeholder="Uploaded cover URL"
+placeholder="Uploaded cover image URL"
 style="margin-top:8px"
 >
 
@@ -2318,11 +1809,25 @@ style="margin-top:8px"
 <div class="field">
 
 <label>
+BUTTON TEXT
+</label>
+
+<input
+id="resourceButton"
+class="input"
+value="DOWNLOAD FREE SAMPLE"
+>
+
+</div>
+
+<div class="field">
+
+<label>
 SORT ORDER
 </label>
 
 <input
-id="magSort"
+id="resourceSort"
 class="input"
 type="number"
 value="0"
@@ -2335,7 +1840,6 @@ value="0"
 
 <div class="toggle-row">
 
-
 <div class="toggle">
 
 <div>
@@ -2345,7 +1849,7 @@ PUBLISHED
 </strong>
 
 <em>
-Show this issue in the app.
+Show this resource in Decision Makers.
 </em>
 
 </div>
@@ -2353,7 +1857,7 @@ Show this issue in the app.
 <label class="switch">
 
 <input
-id="magPub"
+id="resourcePub"
 type="checkbox"
 checked
 >
@@ -2374,7 +1878,7 @@ FEATURED
 </strong>
 
 <em>
-Feature this issue first.
+Feature this resource first.
 </em>
 
 </div>
@@ -2382,7 +1886,7 @@ Feature this issue first.
 <label class="switch">
 
 <input
-id="magFeat"
+id="resourceFeat"
 type="checkbox"
 >
 
@@ -2398,14 +1902,14 @@ type="checkbox"
 <div class="actions">
 
 <button
-id="magSave"
+id="resourceSave"
 class="btn red"
 >
-ADD ISSUE
+ADD RESOURCE
 </button>
 
 <button
-id="magCancel"
+id="resourceCancel"
 class="btn outline"
 hidden
 >
@@ -2414,39 +1918,31 @@ CANCEL EDIT
 
 </div>
 
-
 <div
-id="magMsg"
+id="resourceMsg"
 class="message"
 ></div>
 
-
 <div
-id="magList"
+id="resourceList"
 class="list"
 ></div>
 
-</section>
+</div>
 
+</section>
+<!-- ===================================================== -->
+<!-- MUSIC MANAGER -->
+<!-- ===================================================== -->
 
 <section class="card">
 
 <div class="head">
-
 <div>
-
-<small>
-MUSIC
-</small>
-
-<h2>
-MUSIC MANAGER
-</h2>
-
+<small>MUSIC</small>
+<h2>MUSIC MANAGER</h2>
 </div>
-
 </div>
-
 
 <div class="tabs">
 
@@ -2474,6 +1970,8 @@ TRACKS
 </div>
 
 
+<!-- ARTISTS -->
+
 <div
 id="mm-artists"
 class="manager active"
@@ -2481,40 +1979,25 @@ class="manager active"
 
 <div class="grid">
 
-
 <div class="field full">
-
-<label>
-ARTIST NAME
-</label>
-
+<label>ARTIST NAME</label>
 <input
 id="artistName"
 class="input"
 >
-
 </div>
 
-
 <div class="field full">
-
-<label>
-BIO
-</label>
-
+<label>BIO</label>
 <textarea
 id="artistBio"
 class="textarea"
 ></textarea>
-
 </div>
-
 
 <div class="field full">
 
-<label>
-ARTIST PHOTO
-</label>
+<label>ARTIST PHOTO</label>
 
 <div class="file-row">
 
@@ -2528,12 +2011,12 @@ accept="image/*"
 <button
 id="artistUpload"
 class="btn outline"
+type="button"
 >
 UPLOAD PHOTO
 </button>
 
 </div>
-
 
 <input
 id="artistUrl"
@@ -2550,61 +2033,33 @@ style="margin-top:8px"
 
 <div class="toggle-row">
 
-
 <div class="toggle">
-
 <div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Show artist.
-</em>
-
+<strong>PUBLISHED</strong>
+<em>Show artist in Music.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="artistPub"
 type="checkbox"
 checked
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
-
 
 <div class="toggle">
-
 <div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Feature artist.
-</em>
-
+<strong>FEATURED</strong>
+<em>Feature artist.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="artistFeat"
 type="checkbox"
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
 
 </div>
@@ -2642,6 +2097,8 @@ class="list"
 </div>
 
 
+<!-- RELEASES -->
+
 <div
 id="mm-releases"
 class="manager"
@@ -2649,12 +2106,9 @@ class="manager"
 
 <div class="grid">
 
-
 <div class="field">
 
-<label>
-ARTIST
-</label>
+<label>ARTIST</label>
 
 <select
 id="releaseArtist"
@@ -2663,12 +2117,9 @@ class="select"
 
 </div>
 
-
 <div class="field">
 
-<label>
-RELEASE TITLE
-</label>
+<label>RELEASE TITLE</label>
 
 <input
 id="releaseTitle"
@@ -2677,12 +2128,9 @@ class="input"
 
 </div>
 
-
 <div class="field">
 
-<label>
-TYPE
-</label>
+<label>TYPE</label>
 
 <select
 id="releaseType"
@@ -2709,12 +2157,9 @@ Mixtape
 
 </div>
 
-
 <div class="field">
 
-<label>
-RELEASE DATE
-</label>
+<label>RELEASE DATE</label>
 
 <input
 id="releaseDate"
@@ -2724,12 +2169,9 @@ type="date"
 
 </div>
 
-
 <div class="field full">
 
-<label>
-DESCRIPTION
-</label>
+<label>DESCRIPTION</label>
 
 <textarea
 id="releaseDesc"
@@ -2741,9 +2183,7 @@ class="textarea"
 
 <div class="field full">
 
-<label>
-ARTWORK
-</label>
+<label>ARTWORK</label>
 
 <div class="file-row">
 
@@ -2757,6 +2197,7 @@ accept="image/*"
 <button
 id="releaseUpload"
 class="btn outline"
+type="button"
 >
 UPLOAD ARTWORK
 </button>
@@ -2778,61 +2219,33 @@ style="margin-top:8px"
 
 <div class="toggle-row">
 
-
 <div class="toggle">
-
 <div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Show release.
-</em>
-
+<strong>PUBLISHED</strong>
+<em>Show release.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="releasePub"
 type="checkbox"
 checked
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
-
 
 <div class="toggle">
-
 <div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Feature release.
-</em>
-
+<strong>FEATURED</strong>
+<em>Feature release.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="releaseFeat"
 type="checkbox"
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
 
 </div>
@@ -2870,6 +2283,8 @@ class="list"
 </div>
 
 
+<!-- TRACKS -->
+
 <div
 id="mm-tracks"
 class="manager"
@@ -2877,55 +2292,32 @@ class="manager"
 
 <div class="grid">
 
-
 <div class="field">
-
-<label>
-ARTIST
-</label>
-
+<label>ARTIST</label>
 <select
 id="trackArtist"
 class="select"
 ></select>
-
 </div>
 
-
 <div class="field">
-
-<label>
-RELEASE
-</label>
-
+<label>RELEASE</label>
 <select
 id="trackRelease"
 class="select"
 ></select>
-
 </div>
 
-
 <div class="field">
-
-<label>
-TRACK TITLE
-</label>
-
+<label>TRACK TITLE</label>
 <input
 id="trackTitle"
 class="input"
 >
-
 </div>
 
-
 <div class="field">
-
-<label>
-TRACK NUMBER
-</label>
-
+<label>TRACK NUMBER</label>
 <input
 id="trackNumber"
 class="input"
@@ -2933,15 +2325,12 @@ type="number"
 min="0"
 value="0"
 >
-
 </div>
 
 
 <div class="field full">
 
-<label>
-AUDIO FILE
-</label>
+<label>AUDIO FILE</label>
 
 <div class="file-row">
 
@@ -2955,6 +2344,7 @@ accept="audio/*"
 <button
 id="trackUpload"
 class="btn outline"
+type="button"
 >
 UPLOAD AUDIO
 </button>
@@ -2971,66 +2361,72 @@ style="margin-top:8px"
 
 </div>
 
+
+<div class="field full">
+
+<label>TRACK / SINGLE ARTWORK</label>
+
+<div class="file-row">
+
+<input
+id="trackArtworkFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="trackArtworkUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD ARTWORK
+</button>
+
+</div>
+
+<input
+id="trackArtworkUrl"
+class="input"
+type="url"
+placeholder="Optional track artwork URL"
+style="margin-top:8px"
+>
+
+</div>
+
 </div>
 
 
 <div class="toggle-row">
 
-
 <div class="toggle">
-
 <div>
-
-<strong>
-PUBLISHED
-</strong>
-
-<em>
-Show track.
-</em>
-
+<strong>PUBLISHED</strong>
+<em>Show track.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="trackPub"
 type="checkbox"
 checked
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
-
 
 <div class="toggle">
-
 <div>
-
-<strong>
-FEATURED
-</strong>
-
-<em>
-Feature track.
-</em>
-
+<strong>FEATURED</strong>
+<em>Feature track.</em>
 </div>
-
 <label class="switch">
-
 <input
 id="trackFeat"
 type="checkbox"
 >
-
 <span class="slider"></span>
-
 </label>
-
 </div>
 
 </div>
@@ -3069,6 +2465,813 @@ class="list"
 
 </section>
 
+
+<!-- ===================================================== -->
+<!-- MAGAZINE MANAGER -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+<div>
+<small>MAGAZINE</small>
+<h2>MAGAZINE MANAGER</h2>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="field">
+<label>ISSUE TITLE</label>
+<input
+id="magTitle"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>ISSUE LABEL</label>
+<input
+id="magLabel"
+class="input"
+placeholder="Latest Issue"
+>
+</div>
+
+<div class="field full">
+<label>DESCRIPTION</label>
+<textarea
+id="magDesc"
+class="textarea"
+></textarea>
+</div>
+
+<div class="field full">
+<label>MAGAZINE / FLIPBOOK URL</label>
+<input
+id="magUrl"
+class="input"
+type="url"
+placeholder="https://magazine.bosscodemedia.com/..."
+>
+</div>
+
+<div class="field full">
+
+<label>COVER IMAGE</label>
+
+<div class="file-row">
+
+<input
+id="magCoverFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="magCoverUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD COVER
+</button>
+
+</div>
+
+<input
+id="magCoverUrl"
+class="input"
+type="url"
+placeholder="Cover image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input
+id="magSort"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Show issue in the app.</em>
+</div>
+<label class="switch">
+<input
+id="magPub"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+<div class="toggle">
+<div>
+<strong>FEATURED</strong>
+<em>Make this the featured issue.</em>
+</div>
+<label class="switch">
+<input
+id="magFeat"
+type="checkbox"
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="magSave"
+class="btn red"
+>
+ADD ISSUE
+</button>
+
+<button
+id="magCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="magMsg"
+class="message"
+></div>
+
+<div
+id="magList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- BOSS BITE GALLERY -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+<div>
+<small>THE BOSS BITE</small>
+<h2>GALLERY MANAGER</h2>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="field full">
+
+<label>PHOTO</label>
+
+<div class="file-row">
+
+<input
+id="galleryFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="galleryUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD PHOTO
+</button>
+
+</div>
+
+<input
+id="galleryUrl"
+class="input"
+type="url"
+placeholder="Uploaded image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+<div class="field">
+<label>CAPTION</label>
+<input
+id="galleryCaption"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>LOCATION</label>
+<input
+id="galleryLocation"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input
+id="gallerySort"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Show photo in gallery.</em>
+</div>
+<label class="switch">
+<input
+id="galleryPub"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+<div class="toggle">
+<div>
+<strong>FEATURED</strong>
+<em>Feature this gallery photo.</em>
+</div>
+<label class="switch">
+<input
+id="galleryFeat"
+type="checkbox"
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="gallerySave"
+class="btn red"
+>
+ADD PHOTO
+</button>
+
+<button
+id="galleryCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="galleryMsg"
+class="message"
+></div>
+
+<div
+id="galleryList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- BOSS BITE MAP -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+<div>
+<small>THE BOSS BITE</small>
+<h2>MAP MANAGER</h2>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="field">
+<label>BUSINESS NAME</label>
+<input
+id="locationName"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>STREET ADDRESS</label>
+<input
+id="locationAddress"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>CITY</label>
+<input
+id="locationCity"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>STATE</label>
+<input
+id="locationState"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>LATITUDE</label>
+<input
+id="locationLat"
+class="input"
+type="number"
+step="any"
+>
+</div>
+
+<div class="field">
+<label>LONGITUDE</label>
+<input
+id="locationLng"
+class="input"
+type="number"
+step="any"
+>
+</div>
+
+<div class="field full">
+
+<label>LOCATION IMAGE</label>
+
+<div class="file-row">
+
+<input
+id="locationFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="locationUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD IMAGE
+</button>
+
+</div>
+
+<input
+id="locationImage"
+class="input"
+type="url"
+placeholder="Image URL"
+style="margin-top:8px"
+>
+
+</div>
+
+<div class="field full">
+<label>EPISODE LINK</label>
+<input
+id="locationEpisode"
+class="input"
+type="url"
+placeholder="YouTube episode link"
+>
+</div>
+
+<div class="field full">
+<label>DESCRIPTION</label>
+<textarea
+id="locationDesc"
+class="textarea"
+></textarea>
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input
+id="locationSort"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Show on Boss Bite map.</em>
+</div>
+<label class="switch">
+<input
+id="locationPub"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+<div class="toggle">
+<div>
+<strong>FEATURED</strong>
+<em>Feature this location.</em>
+</div>
+<label class="switch">
+<input
+id="locationFeat"
+type="checkbox"
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="locationSave"
+class="btn red"
+>
+ADD LOCATION
+</button>
+
+<button
+id="locationCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="locationMsg"
+class="message"
+></div>
+
+<div
+id="locationList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- DAILY DECISION -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+<div>
+<small>APP HOME</small>
+<h2>TODAY'S DECISION</h2>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="field full">
+
+<label>DECISION</label>
+
+<textarea
+id="dailyText"
+class="textarea"
+placeholder="Enter the decision."
+></textarea>
+
+</div>
+
+<div class="field full">
+
+<label>YOUR MOVE / DESCRIPTION</label>
+
+<textarea
+id="dailyDesc"
+class="textarea"
+placeholder="Enter the action connected to the decision."
+></textarea>
+
+</div>
+
+<div class="field">
+<label>SCHEDULE DATE</label>
+<input
+id="dailyDate"
+class="input"
+type="date"
+>
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input
+id="dailySort"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Allow this decision in the app.</em>
+</div>
+<label class="switch">
+<input
+id="dailyPub"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+<div class="toggle">
+<div>
+<strong>FEATURED</strong>
+<em>Prioritize this decision.</em>
+</div>
+<label class="switch">
+<input
+id="dailyFeat"
+type="checkbox"
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="dailySave"
+class="btn red"
+>
+ADD DECISION
+</button>
+
+<button
+id="dailyCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="dailyMsg"
+class="message"
+></div>
+
+<div
+id="dailyList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- CHECK IN QUESTIONS -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+<div>
+<small>B.O.S.S CHECK IN</small>
+<h2>QUESTION MANAGER</h2>
+</div>
+</div>
+
+<div class="grid">
+
+<div class="field full">
+<label>QUESTION</label>
+<textarea
+id="checkinText"
+class="textarea"
+></textarea>
+</div>
+
+<div class="field">
+
+<label>CATEGORY</label>
+
+<select
+id="checkinCategory"
+class="select"
+>
+
+<option value="APPROVAL">
+APPROVAL
+</option>
+
+<option value="COMPARISON">
+COMPARISON
+</option>
+
+<option value="CONFIDENCE">
+CONFIDENCE
+</option>
+
+<option value="ACTION">
+ACTION
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+<label>WEIGHT</label>
+<input
+id="checkinWeight"
+class="input"
+type="number"
+value="1"
+>
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input
+id="checkinSort"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+</div>
+
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Allow this question in Check In.</em>
+</div>
+<label class="switch">
+<input
+id="checkinPub"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="checkinSave"
+class="btn red"
+>
+ADD QUESTION
+</button>
+
+<button
+id="checkinCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="checkinMsg"
+class="message"
+></div>
+
+<div
+id="checkinList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- CONTACT INQUIRIES -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+
+<div>
+<small>CONTACT</small>
+<h2>INQUIRY MANAGER</h2>
+</div>
+
+<div
+id="contactCount"
+class="status"
+>
+0 NEW
+</div>
+
+</div>
+
+<p class="section-note">
+Messages submitted through the B.O.S.S CODE GO Contact page appear here.
+</p>
+
+<div class="actions">
+
+<button
+id="contactRefresh"
+class="btn outline"
+>
+REFRESH INQUIRIES
+</button>
+
+</div>
+
+<div
+id="contactMsg"
+class="message"
+></div>
+
+<div
+id="contactList"
+class="list"
+></div>
+
+</section>
+
+
 </main>
 
 
@@ -3077,53 +3280,44 @@ class="list"
 const API =
 "https://boss-code-go-api.dezthareason4ever.workers.dev";
 
-
 let KEY = "";
 
 let videos = [];
-
 let artists = [];
-
 let releases = [];
-
 let tracks = [];
-
 let magazines = [];
 
 let galleryItems = [];
-
-let bossBiteLocations = [];
-
+let locations = [];
 let dailyDecisions = [];
-
 let checkinQuestions = [];
+let contacts = [];
 
-let inquiries = [];
+let dmSessions = [];
+let dmChallenges = [];
+let dmResources = [];
 
 
 const edit = {
 
 dm:null,
-
 bb:null,
-
 tv:null,
 
 artist:null,
-
 release:null,
-
 track:null,
 
 magazine:null,
-
 gallery:null,
-
 location:null,
+daily:null,
+checkin:null,
 
-decision:null,
-
-question:null
+session:null,
+challenge:null,
+resource:null
 
 };
 
@@ -3134,8 +3328,8 @@ document.getElementById(id);
 
 
 const esc =
-v =>
-String(v ?? "")
+value =>
+String(value ?? "")
 .replace(/&/g,"&amp;")
 .replace(/</g,"&lt;")
 .replace(/>/g,"&gt;")
@@ -3145,26 +3339,19 @@ String(v ?? "")
 
 function yid(url){
 
-const patterns = [
-
+for(
+const pattern of [
 /youtube\.com\/live\/([^?&/]+)/,
-
 /youtube\.com\/watch\?v=([^&]+)/,
-
 /youtu\.be\/([^?&/]+)/,
-
 /youtube\.com\/embed\/([^?&/]+)/,
-
 /youtube\.com\/shorts\/([^?&/]+)/
-
-];
-
-
-for(const pattern of patterns){
+]
+){
 
 const match =
-String(url || "").match(pattern);
-
+String(url || "")
+.match(pattern);
 
 if(
 match &&
@@ -3177,8 +3364,24 @@ return match[1];
 
 }
 
-
 return null;
+
+}
+
+
+function numberValue(
+id,
+fallback = 0
+){
+
+const n =
+Number(
+$(id)?.value
+);
+
+return Number.isFinite(n)
+? n
+: fallback;
 
 }
 
@@ -3197,7 +3400,8 @@ options.headers || {}
 if(
 options.body &&
 !(
-options.body instanceof FormData
+options.body
+instanceof FormData
 )
 ){
 
@@ -3233,7 +3437,7 @@ const data =
 await response
 .json()
 .catch(
-() => ({
+()=>({
 success:false,
 error:"Bad response"
 })
@@ -3258,6 +3462,69 @@ return data;
 }
 
 
+async function upload(
+file,
+folder,
+messageId
+){
+
+if(!file){
+
+$(messageId).textContent =
+"CHOOSE A FILE FIRST.";
+
+return null;
+
+}
+
+
+const form =
+new FormData();
+
+form.append(
+"file",
+file
+);
+
+form.append(
+"folder",
+folder
+);
+
+
+$(messageId).textContent =
+"UPLOADING...";
+
+
+try{
+
+const data =
+await api(
+"/media/upload",
+{
+method:"POST",
+body:form
+}
+);
+
+$(messageId).textContent =
+"UPLOAD COMPLETE.";
+
+return data.url;
+
+}
+catch(error){
+
+$(messageId).textContent =
+error.message;
+
+return null;
+
+}
+
+}
+
+
 async function health(){
 
 try{
@@ -3267,14 +3534,10 @@ await api(
 "/health"
 );
 
-
 $("apiStatus").textContent =
 data.status === "online"
-?
-"ONLINE"
-:
-"CHECK";
-
+? "ONLINE"
+: "CHECK";
 
 $("apiStatus")
 .classList
@@ -3285,7 +3548,6 @@ catch(error){
 
 $("apiStatus").textContent =
 "OFFLINE";
-
 
 $("apiStatus")
 .classList
@@ -3316,7 +3578,6 @@ return;
 
 KEY = key;
 
-
 sessionStorage.setItem(
 "boss-code-admin-key",
 key
@@ -3329,11 +3590,9 @@ await api(
 "/videos?all=1"
 );
 
-
 $("login")
 .classList
 .add("hide");
-
 
 await loadAll();
 
@@ -3342,11 +3601,9 @@ catch(error){
 
 KEY = "";
 
-
 sessionStorage.removeItem(
 "boss-code-admin-key"
 );
-
 
 $("loginMsg").textContent =
 "COULD NOT CONNECT.";
@@ -3360,11 +3617,9 @@ function lock(){
 
 KEY = "";
 
-
 sessionStorage.removeItem(
 "boss-code-admin-key"
 );
-
 
 $("login")
 .classList
@@ -3373,74 +3628,78 @@ $("login")
 }
 
 
+/* ===================================================== */
+/* LOAD EVERYTHING */
+/* ===================================================== */
+
 async function loadAll(){
 
 try{
 
 const results =
-await Promise.allSettled([
+await Promise.all([
 
 api("/videos?all=1"),
 
 api("/artists?all=1"),
-
 api("/releases?all=1"),
-
 api("/tracks?all=1"),
 
 api("/magazines?all=1"),
 
 api("/boss-bite-gallery?all=1"),
-
 api("/boss-bite-locations?all=1"),
 
 api("/daily-decisions?all=1"),
-
 api("/checkin-questions?all=1"),
+
+api("/decision-maker-sessions?all=1"),
+api("/decision-maker-challenges?all=1"),
+api("/decision-maker-resources?all=1"),
 
 api("/contact-inquiries")
 
 ]);
 
 
-const value =
-index =>
-results[index].status === "fulfilled"
-?
-results[index].value.data || []
-:
-[];
-
-
 videos =
-value(0);
+results[0].data || [];
 
 artists =
-value(1);
+results[1].data || [];
 
 releases =
-value(2);
+results[2].data || [];
 
 tracks =
-value(3);
+results[3].data || [];
 
 magazines =
-value(4);
+results[4].data || [];
 
 galleryItems =
-value(5);
+results[5].data || [];
 
-bossBiteLocations =
-value(6);
+locations =
+results[6].data || [];
 
 dailyDecisions =
-value(7);
+results[7].data || [];
 
 checkinQuestions =
-value(8);
+results[8].data || [];
 
-inquiries =
-value(9);
+dmSessions =
+results[9].data || [];
+
+dmChallenges =
+results[10].data || [];
+
+dmResources =
+results[11].data || [];
+
+contacts =
+results[12].data || [];
 
 
 renderAll();
@@ -3476,40 +3735,34 @@ renderVideo(
 "boss-code-tv"
 );
 
-renderGallery();
-
-renderLocations();
-
-renderDecisions();
-
-renderQuestions();
-
-renderInquiries();
-
-renderMagazines();
-
 renderArtists();
-
 renderReleases();
-
 renderTracks();
 
 fillArtists();
-
 fillReleases();
 
+renderMagazines();
+
+renderGallery();
+renderLocations();
+
+renderDaily();
+renderCheckin();
+
+renderSessions();
+renderChallenges();
+renderResources();
+
+renderContacts();
+
 }
 
 
-function thumb(id){
+/* ===================================================== */
+/* LIVE */
+/* ===================================================== */
 
-return id
-?
-`https://img.youtube.com/vi/${encodeURIComponent(id)}/hqdefault.jpg`
-:
-"";
-
-}
 function renderLive(){
 
 const video =
@@ -3525,30 +3778,24 @@ video?.youtube_url || "";
 
 
 $("liveEnabled").checked =
-!!(
+Boolean(
 video &&
-Number(
-video.published
-) === 1
+Number(video.published) === 1
 );
 
 
 const on =
-!!(
+Boolean(
 video &&
-Number(
-video.published
-) === 1 &&
+Number(video.published) === 1 &&
 video.youtube_id
 );
 
 
 $("liveStatus").textContent =
 on
-?
-"LIVE"
-:
-"OFF AIR";
+? "LIVE"
+: "OFF AIR";
 
 
 $("liveStatus")
@@ -3568,17 +3815,14 @@ $("liveUrl")
 .value
 .trim();
 
-
 const id =
 yid(url);
 
-
-const enabled =
+const on =
 $("liveEnabled")
 .checked;
 
-
-const existing =
+const old =
 videos.find(
 item =>
 item.section ===
@@ -3587,7 +3831,7 @@ item.section ===
 
 
 if(
-enabled &&
+on &&
 !id
 ){
 
@@ -3616,39 +3860,26 @@ id || "",
 description:
 "Current B.O.S.S CODE TV live broadcast.",
 
-category:
-"Live",
-
-location_name:
-"",
-
-location_city:
-"",
-
-featured:
-1,
+featured:1,
 
 published:
-enabled ? 1 : 0,
+on ? 1 : 0,
 
-sort_order:
-0
+sort_order:0
 
 };
 
 
 try{
 
-if(existing){
+if(old){
 
 await api(
-`/videos/${existing.id}`,
+`/videos/${old.id}`,
 {
 method:"PUT",
 body:
-JSON.stringify(
-payload
-)
+JSON.stringify(payload)
 }
 );
 
@@ -3664,15 +3895,12 @@ return;
 
 }
 
-
 await api(
 "/videos",
 {
 method:"POST",
 body:
-JSON.stringify(
-payload
-)
+JSON.stringify(payload)
 }
 );
 
@@ -3681,7 +3909,6 @@ payload
 
 $("liveMsg").textContent =
 "LIVE SETTINGS SAVED.";
-
 
 await loadAll();
 
@@ -3706,8 +3933,6 @@ item.section ===
 );
 
 
-try{
-
 if(video){
 
 await api(
@@ -3727,258 +3952,26 @@ published:0
 $("liveMsg").textContent =
 "LIVE BROADCAST CLEARED.";
 
-
 await loadAll();
 
 }
-catch(error){
 
-$("liveMsg").textContent =
-error.message;
-
-}
-
-}
+/* PART 3 CONTINUES INSIDE THE EXISTING SCRIPT.
+   IMPORTANT: If Part 2 already ended with an open <script>,
+   REMOVE THIS ONE OPENING <script> LINE ONLY.
+*/
 
 
-function setupVideo(
-prefix,
-section
-){
+/* ===================================================== */
+/* GENERIC VIDEO MANAGER */
+/* ===================================================== */
 
-$(`${prefix}Save`).onclick =
-async () => {
+function videoRows(section){
 
-const title =
-$(`${prefix}Title`)
-.value
-.trim();
-
-
-const url =
-$(`${prefix}Url`)
-.value
-.trim();
-
-
-const id =
-yid(url);
-
-
-if(
-!title ||
-!id
-){
-
-$(`${prefix}Msg`).textContent =
-"ADD A TITLE AND VALID YOUTUBE LINK.";
-
-return;
-
-}
-
-
-const payload = {
-
-section,
-
-title,
-
-youtube_url:
-url,
-
-youtube_id:
-id,
-
-description:
-$(`${prefix}Desc`)
-.value
-.trim(),
-
-category:
-$(`${prefix}Category`)
-.value
-.trim(),
-
-location_name:
-prefix === "bb"
-?
-$("bbBusiness")
-.value
-.trim()
-:
-"",
-
-location_city:
-prefix === "bb"
-?
-$("bbCity")
-.value
-.trim()
-:
-"",
-
-featured:
-$(`${prefix}Feat`)
-.checked
-?
-1
-:
-0,
-
-published:
-$(`${prefix}Pub`)
-.checked
-?
-1
-:
-0,
-
-sort_order:
-0
-
-};
-
-
-try{
-
-if(
-edit[prefix]
-){
-
-await api(
-`/videos/${edit[prefix]}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
+return videos.filter(
+item =>
+item.section === section
 );
-
-}
-else{
-
-await api(
-"/videos",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetVideo(
-prefix
-);
-
-
-$(`${prefix}Msg`).textContent =
-"SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$(`${prefix}Msg`).textContent =
-error.message;
-
-}
-
-};
-
-
-$(`${prefix}Cancel`).onclick =
-() =>
-resetVideo(
-prefix
-);
-
-}
-
-
-function resetVideo(prefix){
-
-edit[prefix] =
-null;
-
-
-for(
-const suffix of [
-"Title",
-"Url",
-"Desc"
-]
-){
-
-$(`${prefix}${suffix}`).value =
-"";
-
-}
-
-
-$(`${prefix}Pub`).checked =
-true;
-
-
-$(`${prefix}Feat`).checked =
-false;
-
-
-$(`${prefix}Cancel`).hidden =
-true;
-
-
-if(
-prefix === "bb"
-){
-
-$("bbBusiness").value =
-"";
-
-
-$("bbCity").value =
-"";
-
-
-$("bbCategory").value =
-"";
-
-
-$("bbSave").textContent =
-"ADD EPISODE";
-
-}
-else if(
-prefix === "tv"
-){
-
-$("tvCategory").value =
-"";
-
-
-$("tvSave").textContent =
-"ADD EPISODE";
-
-}
-else{
-
-$("dmCategory").value =
-"On The Go";
-
-
-$("dmSave").textContent =
-"ADD VIDEO";
-
-}
 
 }
 
@@ -3988,24 +3981,20 @@ prefix,
 section
 ){
 
-const items =
-videos.filter(
-video =>
-video.section ===
-section
-);
-
-
 const list =
 $(`${prefix}List`);
 
+if(!list) return;
 
-if(
-!items.length
-){
+
+const rows =
+videoRows(section);
+
+
+if(!rows.length){
 
 list.innerHTML =
-'<div class="empty">No saved content yet.</div>';
+'<div class="empty">NO CONTENT ADDED YET.</div>';
 
 return;
 
@@ -4013,99 +4002,60 @@ return;
 
 
 list.innerHTML =
-items
-.map(
-video =>
-`
+rows.map(item=>{
 
-<article class="item">
+const image =
+item.thumbnail_url ||
+(
+item.youtube_id
+? `https://img.youtube.com/vi/${esc(item.youtube_id)}/hqdefault.jpg`
+: ""
+);
 
-<img
-class="thumb"
-src="${thumb(video.youtube_id)}"
-alt=""
->
+
+return `
+<div class="item">
+
+<div>
+${image
+? `<img class="thumb" src="${esc(image)}" alt="">`
+: `<div class="thumb"></div>`
+}
+</div>
 
 <div>
 
-<h3>
-${esc(video.title)}
-</h3>
+<h3>${esc(item.title || "UNTITLED")}</h3>
 
 <div class="badges">
 
-<span class="badge">
-${esc(video.category || section)}
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
 </span>
 
-<span class="badge ${Number(video.published) === 1 ? "pub" : "draft"}">
-
-${Number(video.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(video.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
 }
 
 </div>
 
 <div class="meta">
-${esc(video.description || "")}
+${esc(item.category || "")}
 </div>
-
-${video.location_name
-?
-`
-
-<div class="meta">
-
-${esc(video.location_name)}
-
-${video.location_city
-?
-" • " +
-esc(video.location_city)
-:
-""
-}
-
-</div>
-
-`
-:
-""
-}
 
 <div class="actions">
 
 <button
 class="btn gray"
-onclick="editVideo('${prefix}',${video.id})"
+onclick="editVideo('${prefix}',${Number(item.id)})"
 >
 EDIT
 </button>
 
 <button
-class="btn outline"
-onclick="toggleVideo(${video.id},${Number(video.published) === 1 ? 0 : 1})"
->
-
-${Number(video.published) === 1
-?
-"UNPUBLISH"
-:
-"PUBLISH"
-}
-
-</button>
-
-<button
 class="btn danger"
-onclick="deleteVideo(${video.id})"
+onclick="deleteVideo(${Number(item.id)})"
 >
 DELETE
 </button>
@@ -4114,2766 +4064,320 @@ DELETE
 
 </div>
 
-</article>
+</div>
+`;
 
-`
-)
-.join("");
+}).join("");
 
 }
 
 
-window.editVideo =
-(
+function editVideo(
 prefix,
 id
-) => {
+){
 
-const video =
+const item =
 videos.find(
-item =>
-Number(item.id) ===
-Number(id)
+x =>
+Number(x.id) === Number(id)
 );
 
-
-if(!video){
-return;
-}
+if(!item) return;
 
 
 edit[prefix] =
-id;
+item.id;
 
 
-$(`${prefix}Title`).value =
-video.title || "";
+if(prefix === "dm"){
 
-
-$(`${prefix}Url`).value =
-video.youtube_url || "";
-
-
-$(`${prefix}Desc`).value =
-video.description || "";
-
-
-$(`${prefix}Pub`).checked =
-Number(
-video.published
-) === 1;
-
-
-$(`${prefix}Feat`).checked =
-Number(
-video.featured
-) === 1;
-
-
-$(`${prefix}Category`).value =
-video.category ||
-(
-prefix === "dm"
-?
-"On The Go"
-:
-""
-);
-
-
-if(
-prefix === "bb"
-){
-
-$("bbBusiness").value =
-video.location_name || "";
-
-
-$("bbCity").value =
-video.location_city || "";
-
-}
-
-
-$(`${prefix}Save`).textContent =
-"SAVE CHANGES";
-
-
-$(`${prefix}Cancel`).hidden =
-false;
-
-};
-
-
-window.toggleVideo =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/videos/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-};
-
-
-window.deleteVideo =
-async id => {
-
-if(
-confirm(
-"Delete this video?"
-)
-){
-
-try{
-
-await api(
-`/videos/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-}
-
-};
-
-
-async function upload(
-file,
-folder,
-messageId
-){
-
-if(!file){
-
-$(messageId).textContent =
-"CHOOSE A FILE FIRST.";
-
-return null;
-
-}
-
-
-const form =
-new FormData();
-
-
-form.append(
-"file",
-file
-);
-
-
-form.append(
-"folder",
-folder
-);
-
-
-$(messageId).textContent =
-"UPLOADING...";
-
-
-try{
-
-const data =
-await api(
-"/media/upload",
-{
-method:"POST",
-body:form
-}
-);
-
-
-$(messageId).textContent =
-"UPLOAD COMPLETE.";
-
-
-return data.url;
-
-}
-catch(error){
-
-$(messageId).textContent =
-error.message;
-
-
-return null;
-
-}
-
-}
-
-
-async function saveGallery(){
-
-const imageUrl =
-$("galleryUrl")
-.value
-.trim();
-
-
-if(!imageUrl){
-
-$("galleryMsg").textContent =
-"UPLOAD OR ADD A PHOTO URL.";
-
-return;
-
-}
-
-
-const payload = {
-
-image_url:
-imageUrl,
-
-caption:
-$("galleryCaption")
-.value
-.trim(),
-
-location_name:
-$("galleryLocation")
-.value
-.trim(),
-
-featured:
-$("galleryFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("galleryPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("gallerySort").value || 0
-)
-
-};
-
-
-try{
-
-if(
-edit.gallery
-){
-
-await api(
-`/boss-bite-gallery/${edit.gallery}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/boss-bite-gallery",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetGallery();
-
-
-$("galleryMsg").textContent =
-"PHOTO SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("galleryMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-function resetGallery(){
-
-edit.gallery =
-null;
-
-
-$("galleryFile").value =
-"";
-
-
-$("galleryUrl").value =
-"";
-
-
-$("galleryCaption").value =
-"";
-
-
-$("galleryLocation").value =
-"";
-
-
-$("gallerySort").value =
-"0";
-
-
-$("galleryPub").checked =
-true;
-
-
-$("galleryFeat").checked =
-false;
-
-
-$("gallerySave").textContent =
-"ADD PHOTO";
-
-
-$("galleryCancel").hidden =
-true;
-
-}
-
-
-function renderGallery(){
-
-const list =
-$("galleryList");
-
-
-if(
-!galleryItems.length
-){
-
-list.innerHTML =
-'<div class="empty">No gallery photos yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-galleryItems
-.map(
-item =>
-`
-
-<article class="item">
-
-<img
-class="thumb"
-src="${esc(item.image_url || "")}"
-alt=""
->
-
-<div>
-
-<h3>
-${esc(item.caption || "Boss Bite Photo")}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-
-${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(item.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(item.location_name || "")}
-</div>
-
-<div class="meta">
-SORT ORDER: ${Number(item.sort_order || 0)}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editGallery(${item.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleGallery(${item.id},${Number(item.published) === 1 ? 0 : 1})"
->
-${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
-</button>
-
-<button
-class="btn danger"
-onclick="deleteGallery(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-window.editGallery =
-id => {
-
-const item =
-galleryItems.find(
-row =>
-Number(row.id) ===
-Number(id)
-);
-
-
-if(!item){
-return;
-}
-
-
-edit.gallery =
-id;
-
-
-$("galleryUrl").value =
-item.image_url || "";
-
-
-$("galleryCaption").value =
-item.caption || "";
-
-
-$("galleryLocation").value =
-item.location_name || "";
-
-
-$("gallerySort").value =
-Number(item.sort_order || 0);
-
-
-$("galleryPub").checked =
-Number(item.published) === 1;
-
-
-$("galleryFeat").checked =
-Number(item.featured) === 1;
-
-
-$("gallerySave").textContent =
-"SAVE CHANGES";
-
-
-$("galleryCancel").hidden =
-false;
-
-};
-
-
-window.toggleGallery =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/boss-bite-gallery/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-};
-
-
-window.deleteGallery =
-async id => {
-
-if(
-confirm(
-"Delete this gallery photo?"
-)
-){
-
-try{
-
-await api(
-`/boss-bite-gallery/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-}
-
-};
-
-
-async function saveLocation(){
-
-const name =
-$("locationName")
-.value
-.trim();
-
-
-if(!name){
-
-$("locationMsg").textContent =
-"ADD A RESTAURANT OR BUSINESS NAME.";
-
-return;
-
-}
-
-
-const latRaw =
-$("locationLat")
-.value
-.trim();
-
-
-const lngRaw =
-$("locationLng")
-.value
-.trim();
-
-
-const payload = {
-
-name,
-
-address:
-$("locationAddress")
-.value
-.trim(),
-
-city:
-$("locationCity")
-.value
-.trim(),
-
-state:
-$("locationState")
-.value
-.trim(),
-
-latitude:
-latRaw === ""
-?
-null
-:
-Number(latRaw),
-
-longitude:
-lngRaw === ""
-?
-null
-:
-Number(lngRaw),
-
-image_url:
-$("locationImageUrl")
-.value
-.trim(),
-
-episode_url:
-$("locationEpisodeUrl")
-.value
-.trim(),
-
-description:
-$("locationDesc")
-.value
-.trim(),
-
-featured:
-$("locationFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("locationPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("locationSort").value || 0
-)
-
-};
-
-
-try{
-
-if(
-edit.location
-){
-
-await api(
-`/boss-bite-locations/${edit.location}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/boss-bite-locations",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetLocation();
-
-
-$("locationMsg").textContent =
-"LOCATION SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("locationMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-function resetLocation(){
-
-edit.location =
-null;
-
-
-$("locationName").value =
-"";
-
-
-$("locationAddress").value =
-"";
-
-
-$("locationCity").value =
-"";
-
-
-$("locationState").value =
-"";
-
-
-$("locationLat").value =
-"";
-
-
-$("locationLng").value =
-"";
-
-
-$("locationFile").value =
-"";
-
-
-$("locationImageUrl").value =
-"";
-
-
-$("locationEpisodeUrl").value =
-"";
-
-
-$("locationDesc").value =
-"";
-
-
-$("locationSort").value =
-"0";
-
-
-$("locationPub").checked =
-true;
-
-
-$("locationFeat").checked =
-false;
-
-
-$("locationSave").textContent =
-"ADD LOCATION";
-
-
-$("locationCancel").hidden =
-true;
-
-}
-
-
-function renderLocations(){
-
-const list =
-$("locationList");
-
-
-if(
-!bossBiteLocations.length
-){
-
-list.innerHTML =
-'<div class="empty">No map locations yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-bossBiteLocations
-.map(
-item =>
-`
-
-<article class="item">
-
-${item.image_url
-?
-`
-
-<img
-class="thumb location-thumb"
-src="${esc(item.image_url)}"
-alt=""
->
-
-`
-:
-`
-
-<div class="thumb"></div>
-
-`
-}
-
-<div>
-
-<h3>
-${esc(item.name)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-
-${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(item.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(item.address || "")}
-</div>
-
-<div class="meta">
-${esc(item.city || "")}${item.state ? ", " + esc(item.state) : ""}
-</div>
-
-<div class="meta">
-LAT: ${item.latitude ?? ""} • LNG: ${item.longitude ?? ""}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editLocation(${item.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleLocation(${item.id},${Number(item.published) === 1 ? 0 : 1})"
->
-${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
-</button>
-
-<button
-class="btn danger"
-onclick="deleteLocation(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-window.editLocation =
-id => {
-
-const item =
-bossBiteLocations.find(
-row =>
-Number(row.id) ===
-Number(id)
-);
-
-
-if(!item){
-return;
-}
-
-
-edit.location =
-id;
-
-
-$("locationName").value =
-item.name || "";
-
-
-$("locationAddress").value =
-item.address || "";
-
-
-$("locationCity").value =
-item.city || "";
-
-
-$("locationState").value =
-item.state || "";
-
-
-$("locationLat").value =
-item.latitude ?? "";
-
-
-$("locationLng").value =
-item.longitude ?? "";
-
-
-$("locationImageUrl").value =
-item.image_url || "";
-
-
-$("locationEpisodeUrl").value =
-item.episode_url || "";
-
-
-$("locationDesc").value =
-item.description || "";
-
-
-$("locationSort").value =
-Number(item.sort_order || 0);
-
-
-$("locationPub").checked =
-Number(item.published) === 1;
-
-
-$("locationFeat").checked =
-Number(item.featured) === 1;
-
-
-$("locationSave").textContent =
-"SAVE CHANGES";
-
-
-$("locationCancel").hidden =
-false;
-
-};
-
-
-window.toggleLocation =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/boss-bite-locations/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-};
-
-
-window.deleteLocation =
-async id => {
-
-if(
-confirm(
-"Delete this Boss Bite map location?"
-)
-){
-
-try{
-
-await api(
-`/boss-bite-locations/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-}
-
-};
-async function saveDecision(){
-
-const payload = {
-
-decision_text:
-$("decisionText")
-.value
-.trim(),
-
-action_text:
-$("decisionAction")
-.value
-.trim(),
-
-category:
-$("decisionCategory")
-.value
-.trim(),
-
-scheduled_date:
-$("decisionDate")
-.value,
-
-featured:
-$("decisionFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("decisionPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("decisionSort").value || 0
-)
-
-};
-
-
-if(
-!payload.decision_text ||
-!payload.action_text
-){
-
-$("decisionMsg").textContent =
-"ADD THE DECISION AND ACTION.";
-
-return;
-
-}
-
-
-try{
-
-if(
-edit.decision
-){
-
-await api(
-`/daily-decisions/${edit.decision}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/daily-decisions",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetDecision();
-
-
-$("decisionMsg").textContent =
-"DECISION SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("decisionMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-function resetDecision(){
-
-edit.decision =
-null;
-
-
-$("decisionText").value =
-"";
-
-
-$("decisionAction").value =
-"";
-
-
-$("decisionCategory").value =
-"";
-
-
-$("decisionDate").value =
-"";
-
-
-$("decisionSort").value =
-"0";
-
-
-$("decisionFeat").checked =
-false;
-
-
-$("decisionPub").checked =
-true;
-
-
-$("decisionSave").textContent =
-"ADD DECISION";
-
-
-$("decisionCancel").hidden =
-true;
-
-}
-
-
-function renderDecisions(){
-
-const list =
-$("decisionList");
-
-
-if(
-!dailyDecisions.length
-){
-
-list.innerHTML =
-'<div class="empty">No Daily Decisions yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-dailyDecisions
-.map(
-item =>
-`
-
-<article class="item">
-
-<div
-class="thumb"
-style="
-display:flex;
-align-items:center;
-justify-content:center;
-padding:14px;
-text-align:center;
-color:#f5c518;
-font-weight:900;
-"
->
-DECISION
-</div>
-
-<div>
-
-<h3>
-${esc(item.decision_text)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-
-${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${item.category
-?
-`
-<span class="badge">
-${esc(item.category)}
-</span>
-`
-:
-""
-}
-
-${Number(item.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(item.action_text || "")}
-</div>
-
-${item.scheduled_date
-?
-`
-<div class="meta">
-SCHEDULED: ${esc(item.scheduled_date)}
-</div>
-`
-:
-""
-}
-
-<div class="meta">
-SORT ORDER: ${Number(item.sort_order || 0)}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editDecision(${item.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleDecision(${item.id},${Number(item.published) === 1 ? 0 : 1})"
->
-${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
-</button>
-
-<button
-class="btn danger"
-onclick="deleteDecision(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-window.editDecision =
-id => {
-
-const item =
-dailyDecisions.find(
-row =>
-Number(row.id) ===
-Number(id)
-);
-
-
-if(!item){
-return;
-}
-
-
-edit.decision =
-id;
-
-
-$("decisionText").value =
-item.decision_text || "";
-
-
-$("decisionAction").value =
-item.action_text || "";
-
-
-$("decisionCategory").value =
-item.category || "";
-
-
-$("decisionDate").value =
-item.scheduled_date || "";
-
-
-$("decisionSort").value =
-Number(item.sort_order || 0);
-
-
-$("decisionFeat").checked =
-Number(item.featured) === 1;
-
-
-$("decisionPub").checked =
-Number(item.published) === 1;
-
-
-$("decisionSave").textContent =
-"SAVE CHANGES";
-
-
-$("decisionCancel").hidden =
-false;
-
-};
-
-
-window.toggleDecision =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/daily-decisions/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-};
-
-
-window.deleteDecision =
-async id => {
-
-if(
-confirm(
-"Delete this Daily Decision?"
-)
-){
-
-try{
-
-await api(
-`/daily-decisions/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-}
-
-};
-
-
-async function saveQuestion(){
-
-const payload = {
-
-question_text:
-$("questionText")
-.value
-.trim(),
-
-category:
-$("questionCategory")
-.value,
-
-weight:
-Number(
-$("questionWeight").value || 1
-),
-
-published:
-$("questionPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("questionSort").value || 0
-)
-
-};
-
-
-if(
-!payload.question_text
-){
-
-$("questionMsg").textContent =
-"ADD A QUESTION.";
-
-return;
-
-}
-
-
-try{
-
-if(
-edit.question
-){
-
-await api(
-`/checkin-questions/${edit.question}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/checkin-questions",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetQuestion();
-
-
-$("questionMsg").textContent =
-"QUESTION SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("questionMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-function resetQuestion(){
-
-edit.question =
-null;
-
-
-$("questionText").value =
-"";
-
-
-$("questionCategory").value =
-"Approval";
-
-
-$("questionWeight").value =
-"1";
-
-
-$("questionSort").value =
-"0";
-
-
-$("questionPub").checked =
-true;
-
-
-$("questionSave").textContent =
-"ADD QUESTION";
-
-
-$("questionCancel").hidden =
-true;
-
-}
-
-
-function renderQuestions(){
-
-const list =
-$("questionList");
-
-
-if(
-!checkinQuestions.length
-){
-
-list.innerHTML =
-'<div class="empty">No Check In questions yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-checkinQuestions
-.map(
-item =>
-`
-
-<article class="item">
-
-<div
-class="thumb"
-style="
-display:flex;
-align-items:center;
-justify-content:center;
-padding:14px;
-text-align:center;
-color:#f5c518;
-font-weight:900;
-"
->
-${esc(item.category || "CHECK IN")}
-</div>
-
-<div>
-
-<h3>
-${esc(item.question_text)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-
-${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-<span class="badge">
-${esc(item.category || "")}
-</span>
-
-<span class="badge">
-WEIGHT ${Number(item.weight || 1)}
-</span>
-
-</div>
-
-<div class="meta">
-SORT ORDER: ${Number(item.sort_order || 0)}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editQuestion(${item.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleQuestion(${item.id},${Number(item.published) === 1 ? 0 : 1})"
->
-${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
-</button>
-
-<button
-class="btn danger"
-onclick="deleteQuestion(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-window.editQuestion =
-id => {
-
-const item =
-checkinQuestions.find(
-row =>
-Number(row.id) ===
-Number(id)
-);
-
-
-if(!item){
-return;
-}
-
-
-edit.question =
-id;
-
-
-$("questionText").value =
-item.question_text || "";
-
-
-$("questionCategory").value =
-item.category || "Approval";
-
-
-$("questionWeight").value =
-Number(item.weight || 1);
-
-
-$("questionSort").value =
-Number(item.sort_order || 0);
-
-
-$("questionPub").checked =
-Number(item.published) === 1;
-
-
-$("questionSave").textContent =
-"SAVE CHANGES";
-
-
-$("questionCancel").hidden =
-false;
-
-};
-
-
-window.toggleQuestion =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/checkin-questions/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-};
-
-
-window.deleteQuestion =
-async id => {
-
-if(
-confirm(
-"Delete this Check In question?"
-)
-){
-
-try{
-
-await api(
-`/checkin-questions/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
-}
-
-}
-
-};
-
-
-function filteredInquiries(){
-
-const status =
-$("inquiryFilter")
-.value;
-
-
-if(!status){
-
-return inquiries;
-
-}
-
-
-return inquiries.filter(
-item =>
-String(
-item.status || "new"
-).toLowerCase() ===
-status
-);
-
-}
-
-
-function renderInquiries(){
-
-const list =
-$("inquiryList");
-
-
-const newCount =
-inquiries.filter(
-item =>
-String(
-item.status || "new"
-).toLowerCase() ===
-"new"
-)
-.length;
-
-
-$("inquiryStatus").textContent =
-`${newCount} NEW`;
-
-
-$("inquiryStatus")
-.classList
-.toggle(
-"ok",
-newCount === 0
-);
-
-
-const items =
-filteredInquiries();
-
-
-if(
-!items.length
-){
-
-list.innerHTML =
-'<div class="empty">No contact inquiries found.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-items
-.map(
-item =>
-`
-
-<article class="item">
-
-<div
-class="thumb"
-style="
-display:flex;
-align-items:center;
-justify-content:center;
-padding:14px;
-text-align:center;
-color:#f5c518;
-font-weight:900;
-"
->
-${esc(
-String(
-item.status || "new"
-).toUpperCase()
-)}
-</div>
-
-<div>
-
-<h3>
-${esc(item.name)}
-</h3>
-
-<div class="badges">
-
-<span class="badge">
-${esc(item.inquiry_type || "General Inquiry")}
-</span>
-
-<span class="badge ${String(item.status || "new") === "new" ? "featured" : ""}">
-${esc(
-String(
-item.status || "new"
-).toUpperCase()
-)}
-</span>
-
-</div>
-
-<div class="meta">
-${esc(item.email || "")}
-</div>
-
-${item.created_at
-?
-`
-<div class="meta">
-${esc(item.created_at)}
-</div>
-`
-:
-""
-}
-
-<div class="inquiry-message">
-${esc(item.message || "")}
-</div>
-
-<div class="actions">
-
-<button
-class="btn outline"
-onclick="setInquiryStatus(${item.id},'read')"
->
-MARK READ
-</button>
-
-<button
-class="btn gray"
-onclick="setInquiryStatus(${item.id},'replied')"
->
-REPLIED
-</button>
-
-<button
-class="btn gray"
-onclick="setInquiryStatus(${item.id},'closed')"
->
-CLOSE
-</button>
-
-<button
-class="btn danger"
-onclick="deleteInquiry(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-async function refreshInquiries(){
-
-try{
-
-const status =
-$("inquiryFilter")
-.value;
-
-
-const endpoint =
-status
-?
-`/contact-inquiries?status=${encodeURIComponent(status)}`
-:
-"/contact-inquiries";
-
-
-const data =
-await api(
-endpoint
-);
-
-
-if(status){
-
-const others =
-inquiries.filter(
-item =>
-String(
-item.status || "new"
-).toLowerCase() !==
-status
-);
-
-
-inquiries = [
-...others,
-...(data.data || [])
-];
-
-}
-else{
-
-inquiries =
-data.data || [];
-
-}
-
-
-$("inquiryMsg").textContent =
-"INQUIRIES REFRESHED.";
-
-
-renderInquiries();
-
-}
-catch(error){
-
-$("inquiryMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-window.setInquiryStatus =
-async (
-id,
-status
-) => {
-
-try{
-
-await api(
-`/contact-inquiries/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-status
-})
-}
-);
-
-
-$("inquiryMsg").textContent =
-"INQUIRY UPDATED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("inquiryMsg").textContent =
-error.message;
-
-}
-
-};
-
-
-window.deleteInquiry =
-async id => {
-
-if(
-confirm(
-"Delete this contact inquiry?"
-)
-){
-
-try{
-
-await api(
-`/contact-inquiries/${id}`,
-{
-method:"DELETE"
-}
-);
-
-
-$("inquiryMsg").textContent =
-"INQUIRY DELETED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("inquiryMsg").textContent =
-error.message;
-
-}
-
-}
-
-};
-async function saveMagazine(){
-
-const payload = {
-
-title:
-$("magTitle")
-.value
-.trim(),
-
-cover_url:
-$("magCoverUrl")
-.value
-.trim(),
-
-issue_url:
-$("magIssueUrl")
-.value
-.trim(),
-
-description:
-$("magDesc")
-.value
-.trim(),
-
-issue_date:
-$("magDate")
-.value,
-
-featured:
-$("magFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("magPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-Number(
-$("magSort").value || 0
-)
-
-};
-
-
-if(
-!payload.title ||
-!payload.issue_url
-){
-
-$("magMsg").textContent =
-"ADD AN ISSUE TITLE AND FLIPBOOK URL.";
-
-return;
-
-}
-
-
-try{
-
-if(
-edit.magazine
-){
-
-await api(
-`/magazines/${edit.magazine}`,
-{
-method:"PUT",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-else{
-
-await api(
-"/magazines",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetMagazine();
-
-
-$("magMsg").textContent =
-"ISSUE SAVED.";
-
-
-await loadAll();
-
-}
-catch(error){
-
-$("magMsg").textContent =
-error.message;
-
-}
-
-}
-
-
-function resetMagazine(){
-
-edit.magazine =
-null;
-
-
-$("magTitle").value =
-"";
-
-
-$("magDate").value =
-"";
-
-
-$("magIssueUrl").value =
-"";
-
-
-$("magDesc").value =
-"";
-
-
-$("magCoverFile").value =
-"";
-
-
-$("magCoverUrl").value =
-"";
-
-
-$("magSort").value =
-"0";
-
-
-$("magPub").checked =
-true;
-
-
-$("magFeat").checked =
-false;
-
-
-$("magSave").textContent =
-"ADD ISSUE";
-
-
-$("magCancel").hidden =
-true;
-
-}
-
-
-function renderMagazines(){
-
-const list =
-$("magList");
-
-
-if(
-!magazines.length
-){
-
-list.innerHTML =
-'<div class="empty">No magazine issues yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-magazines
-.map(
-item =>
-`
-
-<article class="item">
-
-${item.cover_url
-?
-`
-<img
-class="thumb"
-src="${esc(item.cover_url)}"
-alt=""
->
-`
-:
-`
-<div class="thumb"></div>
-`
-}
-
-<div>
-
-<h3>
-${esc(item.title)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-
-${Number(item.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(item.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(item.issue_date || "")}
-</div>
-
-<div class="meta">
-${esc(item.description || "")}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editMagazine(${item.id})"
->
-EDIT
-</button>
-
-<button
-class="btn outline"
-onclick="toggleMagazine(${item.id},${Number(item.published) === 1 ? 0 : 1})"
->
-${Number(item.published) === 1 ? "UNPUBLISH" : "PUBLISH"}
-</button>
-
-<button
-class="btn danger"
-onclick="deleteMagazine(${item.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`
-)
-.join("");
-
-}
-
-
-window.editMagazine =
-id => {
-
-const item =
-magazines.find(
-row =>
-Number(row.id) ===
-Number(id)
-);
-
-
-if(!item){
-return;
-}
-
-
-edit.magazine =
-id;
-
-
-$("magTitle").value =
+$("dmTitle").value =
 item.title || "";
 
+$("dmCategory").value =
+item.category || "On The Go";
 
-$("magDate").value =
-item.issue_date || "";
+$("dmUrl").value =
+item.youtube_url || "";
 
-
-$("magIssueUrl").value =
-item.issue_url || "";
-
-
-$("magDesc").value =
+$("dmDesc").value =
 item.description || "";
 
-
-$("magCoverUrl").value =
-item.cover_url || "";
-
-
-$("magSort").value =
-Number(item.sort_order || 0);
-
-
-$("magPub").checked =
+$("dmPub").checked =
 Number(item.published) === 1;
 
-
-$("magFeat").checked =
+$("dmFeat").checked =
 Number(item.featured) === 1;
 
+$("dmSave").textContent =
+"UPDATE VIDEO";
 
-$("magSave").textContent =
-"SAVE CHANGES";
-
-
-$("magCancel").hidden =
+$("dmCancel").hidden =
 false;
 
-};
-
-
-window.toggleMagazine =
-async (
-id,
-published
-) => {
-
-try{
-
-await api(
-`/magazines/${id}`,
-{
-method:"PUT",
-body:
-JSON.stringify({
-published
-})
-}
-);
-
-
-await loadAll();
-
-}
-catch(error){
-
-alert(
-error.message
-);
-
 }
 
-};
 
+if(prefix === "bb"){
 
-window.deleteMagazine =
-async id => {
+$("bbTitle").value =
+item.title || "";
 
-if(
-confirm(
-"Delete this magazine issue?"
-)
-){
+$("bbBusiness").value =
+item.business_name || "";
 
-try{
+$("bbCity").value =
+item.location_name || "";
 
-await api(
-`/magazines/${id}`,
-{
-method:"DELETE"
-}
-);
+$("bbCategory").value =
+item.category || "";
 
+$("bbUrl").value =
+item.youtube_url || "";
 
-await loadAll();
+$("bbDesc").value =
+item.description || "";
 
-}
-catch(error){
+$("bbPub").checked =
+Number(item.published) === 1;
 
-alert(
-error.message
-);
+$("bbFeat").checked =
+Number(item.featured) === 1;
 
-}
+$("bbSave").textContent =
+"UPDATE EPISODE";
 
-}
-
-};
-
-
-function fillArtists(){
-
-const releaseSelected =
-$("releaseArtist").value;
-
-
-const trackSelected =
-$("trackArtist").value;
-
-
-const options =
-'<option value="">Select artist</option>' +
-artists
-.map(
-artist =>
-`
-<option value="${artist.id}">
-${esc(artist.name)}
-</option>
-`
-)
-.join("");
-
-
-$("releaseArtist").innerHTML =
-options;
-
-
-$("trackArtist").innerHTML =
-options;
-
-
-if(
-artists.some(
-artist =>
-String(artist.id) ===
-String(releaseSelected)
-)
-){
-
-$("releaseArtist").value =
-releaseSelected;
+$("bbCancel").hidden =
+false;
 
 }
 
 
-if(
-artists.some(
-artist =>
-String(artist.id) ===
-String(trackSelected)
-)
-){
+if(prefix === "tv"){
 
-$("trackArtist").value =
-trackSelected;
+$("tvTitle").value =
+item.title || "";
+
+$("tvCategory").value =
+item.category || "";
+
+$("tvUrl").value =
+item.youtube_url || "";
+
+$("tvDesc").value =
+item.description || "";
+
+$("tvPub").checked =
+Number(item.published) === 1;
+
+$("tvFeat").checked =
+Number(item.featured) === 1;
+
+$("tvSave").textContent =
+"UPDATE EPISODE";
+
+$("tvCancel").hidden =
+false;
 
 }
 
 }
 
 
-function fillReleases(){
+function resetVideo(prefix){
 
-const selected =
-$("trackRelease").value;
-
-
-const artistId =
-Number(
-$("trackArtist").value ||
-0
-);
+edit[prefix] = null;
 
 
-const items =
-artistId
-?
-releases.filter(
-release =>
-Number(
-release.artist_id
-) === artistId
-)
-:
-releases;
+if(prefix === "dm"){
+
+$("dmTitle").value = "";
+$("dmCategory").value = "On The Go";
+$("dmUrl").value = "";
+$("dmDesc").value = "";
+$("dmPub").checked = true;
+$("dmFeat").checked = false;
+
+$("dmSave").textContent =
+"ADD VIDEO";
+
+$("dmCancel").hidden =
+true;
+
+}
 
 
-$("trackRelease").innerHTML =
-'<option value="">No release / standalone</option>' +
-items
-.map(
-release =>
-`
-<option value="${release.id}">
-${esc(release.title)}
-</option>
-`
-)
-.join("");
+if(prefix === "bb"){
+
+$("bbTitle").value = "";
+$("bbBusiness").value = "";
+$("bbCity").value = "";
+$("bbCategory").value = "";
+$("bbUrl").value = "";
+$("bbDesc").value = "";
+$("bbPub").checked = true;
+$("bbFeat").checked = false;
+
+$("bbSave").textContent =
+"ADD EPISODE";
+
+$("bbCancel").hidden =
+true;
+
+}
 
 
-if(
-items.some(
-release =>
-String(release.id) ===
-String(selected)
-)
-){
+if(prefix === "tv"){
 
-$("trackRelease").value =
-selected;
+$("tvTitle").value = "";
+$("tvCategory").value = "";
+$("tvUrl").value = "";
+$("tvDesc").value = "";
+$("tvPub").checked = true;
+$("tvFeat").checked = false;
+
+$("tvSave").textContent =
+"ADD EPISODE";
+
+$("tvCancel").hidden =
+true;
 
 }
 
 }
 
 
-async function saveArtist(){
+async function saveVideo(prefix){
 
-const payload = {
+let payload = {};
+let message = null;
 
-name:
-$("artistName")
-.value
-.trim(),
 
-artist_image_url:
-$("artistUrl")
-.value
-.trim(),
+if(prefix === "dm"){
 
-bio:
-$("artistBio")
-.value
-.trim(),
+const url =
+$("dmUrl").value.trim();
+
+payload = {
+
+section:
+"decision-makers",
+
+title:
+$("dmTitle").value.trim(),
+
+category:
+$("dmCategory").value,
+
+youtube_url:url,
+
+youtube_id:
+yid(url) || "",
+
+description:
+$("dmDesc").value.trim(),
 
 featured:
-$("artistFeat")
-.checked
-?
-1
-:
-0,
+$("dmFeat").checked ? 1 : 0,
 
 published:
-$("artistPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-0
+$("dmPub").checked ? 1 : 0
 
 };
 
+message =
+$("dmMsg");
 
-if(
-!payload.name
-){
+}
 
-$("artistMsg").textContent =
-"ADD AN ARTIST NAME.";
+
+if(prefix === "bb"){
+
+const url =
+$("bbUrl").value.trim();
+
+payload = {
+
+section:
+"boss-bite",
+
+title:
+$("bbTitle").value.trim(),
+
+business_name:
+$("bbBusiness").value.trim(),
+
+location_name:
+$("bbCity").value.trim(),
+
+category:
+$("bbCategory").value.trim(),
+
+youtube_url:url,
+
+youtube_id:
+yid(url) || "",
+
+description:
+$("bbDesc").value.trim(),
+
+featured:
+$("bbFeat").checked ? 1 : 0,
+
+published:
+$("bbPub").checked ? 1 : 0
+
+};
+
+message =
+$("bbMsg");
+
+}
+
+
+if(prefix === "tv"){
+
+const url =
+$("tvUrl").value.trim();
+
+payload = {
+
+section:
+"boss-code-tv",
+
+title:
+$("tvTitle").value.trim(),
+
+category:
+$("tvCategory").value.trim(),
+
+youtube_url:url,
+
+youtube_id:
+yid(url) || "",
+
+description:
+$("tvDesc").value.trim(),
+
+featured:
+$("tvFeat").checked ? 1 : 0,
+
+published:
+$("tvPub").checked ? 1 : 0
+
+};
+
+message =
+$("tvMsg");
+
+}
+
+
+if(!payload.title){
+
+message.textContent =
+"TITLE IS REQUIRED.";
 
 return;
 
@@ -6882,51 +4386,38 @@ return;
 
 try{
 
-if(
-edit.artist
-){
+const id =
+edit[prefix];
+
 
 await api(
-`/artists/${edit.artist}`,
+id
+? `/videos/${id}`
+: "/videos",
 {
-method:"PUT",
+method:
+id ? "PUT" : "POST",
+
 body:
-JSON.stringify(
-payload
-)
+JSON.stringify(payload)
 }
 );
 
-}
-else{
 
-await api(
-"/artists",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
+message.textContent =
+id
+? "UPDATED."
+: "ADDED.";
 
 
-resetArtist();
-
-
-$("artistMsg").textContent =
-"ARTIST SAVED.";
-
+resetVideo(prefix);
 
 await loadAll();
 
 }
 catch(error){
 
-$("artistMsg").textContent =
+message.textContent =
 error.message;
 
 }
@@ -6934,58 +4425,1028 @@ error.message;
 }
 
 
-function resetArtist(){
+async function deleteVideo(id){
 
-edit.artist =
-null;
-
-
-$("artistName").value =
-"";
-
-
-$("artistBio").value =
-"";
+if(
+!confirm(
+"DELETE THIS VIDEO?"
+)
+) return;
 
 
-$("artistUrl").value =
-"";
+try{
+
+await api(
+`/videos/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
 
 
-$("artistFile").value =
-"";
+/* ===================================================== */
+/* DECISION MAKER SESSIONS */
+/* ===================================================== */
+
+function renderSessions(){
+
+const list =
+$("sessionList");
+
+if(!list) return;
 
 
-$("artistFeat").checked =
+if(!dmSessions.length){
+
+list.innerHTML =
+'<div class="empty">NO SESSIONS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+dmSessions.map(item=>{
+
+const image =
+item.thumbnail_url ||
+(
+item.youtube_id
+? `https://img.youtube.com/vi/${esc(item.youtube_id)}/hqdefault.jpg`
+: ""
+);
+
+
+return `
+<div class="item">
+
+<div>
+
+${image
+? `<img class="thumb" src="${esc(image)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>
+SESSION ${esc(item.session_number || "")}: ${esc(item.title || "")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(item.description || "")}
+
+<br>
+
+${item.youtube_id
+? "VIDEO READY"
+: "SESSION COMING SOON"
+}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editSession(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteSession(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+function editSession(id){
+
+const item =
+dmSessions.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.session =
+item.id;
+
+
+$("sessionNumber").value =
+item.session_number ?? 1;
+
+$("sessionTitle").value =
+item.title || "";
+
+$("sessionDesc").value =
+item.description || "";
+
+$("sessionUrl").value =
+item.youtube_url || "";
+
+$("sessionThumb").value =
+item.thumbnail_url || "";
+
+$("sessionSort").value =
+item.sort_order ?? 0;
+
+$("sessionPub").checked =
+Number(item.published) === 1;
+
+$("sessionFeat").checked =
+Number(item.featured) === 1;
+
+
+$("sessionSave").textContent =
+"UPDATE SESSION";
+
+$("sessionCancel").hidden =
 false;
 
-
-$("artistPub").checked =
-true;
+}
 
 
-$("artistSave").textContent =
-"ADD ARTIST";
+function resetSession(){
 
+edit.session = null;
 
-$("artistCancel").hidden =
+$("sessionNumber").value = 1;
+$("sessionTitle").value = "";
+$("sessionDesc").value = "";
+$("sessionUrl").value = "";
+$("sessionThumb").value = "";
+$("sessionSort").value = 0;
+
+$("sessionPub").checked = true;
+$("sessionFeat").checked = false;
+
+$("sessionSave").textContent =
+"ADD SESSION";
+
+$("sessionCancel").hidden =
 true;
 
 }
 
+
+async function saveSession(){
+
+const title =
+$("sessionTitle")
+.value
+.trim();
+
+const url =
+$("sessionUrl")
+.value
+.trim();
+
+
+if(!title){
+
+$("sessionMsg").textContent =
+"SESSION TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+title,
+
+description:
+$("sessionDesc").value.trim(),
+
+session_number:
+numberValue(
+"sessionNumber",
+1
+),
+
+youtube_url:url,
+
+youtube_id:
+yid(url) || "",
+
+thumbnail_url:
+$("sessionThumb").value.trim(),
+
+featured:
+$("sessionFeat").checked ? 1 : 0,
+
+published:
+$("sessionPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"sessionSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.session;
+
+
+await api(
+id
+? `/decision-maker-sessions/${id}`
+: "/decision-maker-sessions",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("sessionMsg").textContent =
+id
+? "SESSION UPDATED."
+: "SESSION ADDED.";
+
+
+resetSession();
+
+await loadAll();
+
+}
+catch(error){
+
+$("sessionMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteSession(id){
+
+if(
+!confirm(
+"DELETE THIS DECISION MAKER SESSION?"
+)
+) return;
+
+
+try{
+
+await api(
+`/decision-maker-sessions/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* TAKE ACTION CHALLENGES */
+/* ===================================================== */
+
+function renderChallenges(){
+
+const list =
+$("challengeList");
+
+if(!list) return;
+
+
+if(!dmChallenges.length){
+
+list.innerHTML =
+'<div class="empty">NO TAKE ACTION CHALLENGES ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+dmChallenges.map(item=>`
+
+<div class="item">
+
+<div>
+<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#F5C518;">
+${String(item.challenge_number || "").padStart(2,"0")}
+</div>
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+</div>
+
+<div class="meta">
+
+${esc(item.description || "")}
+
+<br><br>
+
+BUTTON:
+${esc(item.button_text || "ACCEPT CHALLENGE")}
+
+<br>
+
+COMPLETION:
+${esc(item.completion_message || "NOW TAKE ACTION.")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editChallenge(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteChallenge(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editChallenge(id){
+
+const item =
+dmChallenges.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.challenge =
+item.id;
+
+
+$("challengeNumber").value =
+item.challenge_number ?? 1;
+
+$("challengeTitle").value =
+item.title || "";
+
+$("challengeDesc").value =
+item.description || "";
+
+$("challengeButton").value =
+item.button_text ||
+"ACCEPT CHALLENGE";
+
+$("challengeComplete").value =
+item.completion_message ||
+"NOW TAKE ACTION.";
+
+$("challengeSort").value =
+item.sort_order ?? 0;
+
+$("challengePub").checked =
+Number(item.published) === 1;
+
+
+$("challengeSave").textContent =
+"UPDATE CHALLENGE";
+
+$("challengeCancel").hidden =
+false;
+
+}
+
+
+function resetChallenge(){
+
+edit.challenge = null;
+
+$("challengeNumber").value = 1;
+$("challengeTitle").value = "";
+$("challengeDesc").value = "";
+
+$("challengeButton").value =
+"ACCEPT CHALLENGE";
+
+$("challengeComplete").value =
+"NOW TAKE ACTION.";
+
+$("challengeSort").value = 0;
+$("challengePub").checked = true;
+
+$("challengeSave").textContent =
+"ADD CHALLENGE";
+
+$("challengeCancel").hidden =
+true;
+
+}
+
+
+async function saveChallenge(){
+
+const title =
+$("challengeTitle")
+.value
+.trim();
+
+
+if(!title){
+
+$("challengeMsg").textContent =
+"CHALLENGE TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+title,
+
+description:
+$("challengeDesc").value.trim(),
+
+challenge_number:
+numberValue(
+"challengeNumber",
+1
+),
+
+button_text:
+$("challengeButton").value.trim() ||
+"ACCEPT CHALLENGE",
+
+completion_message:
+$("challengeComplete").value.trim() ||
+"NOW TAKE ACTION.",
+
+published:
+$("challengePub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"challengeSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.challenge;
+
+
+await api(
+id
+? `/decision-maker-challenges/${id}`
+: "/decision-maker-challenges",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("challengeMsg").textContent =
+id
+? "CHALLENGE UPDATED."
+: "CHALLENGE ADDED.";
+
+
+resetChallenge();
+
+await loadAll();
+
+}
+catch(error){
+
+$("challengeMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteChallenge(id){
+
+if(
+!confirm(
+"DELETE THIS TAKE ACTION CHALLENGE?"
+)
+) return;
+
+
+try{
+
+await api(
+`/decision-maker-challenges/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* DECISION MAKER RESOURCES */
+/* ===================================================== */
+
+function renderResources(){
+
+const list =
+$("resourceList");
+
+if(!list) return;
+
+
+if(!dmResources.length){
+
+list.innerHTML =
+'<div class="empty">NO RESOURCES ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+dmResources.map(item=>`
+
+<div class="item">
+
+<div>
+
+${item.cover_image_url
+? `<img class="thumb resource-thumb" src="${esc(item.cover_image_url)}" alt="">`
+: `<div class="thumb resource-thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+<span class="badge">
+${esc(item.resource_type || "PDF")}
+</span>
+
+</div>
+
+<div class="meta">
+
+${esc(item.description || "")}
+
+<br><br>
+
+${item.file_url
+? "FILE READY"
+: "NO FILE UPLOADED"
+}
+
+<br>
+
+BUTTON:
+${esc(item.button_text || "DOWNLOAD FREE SAMPLE")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editResource(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteResource(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editResource(id){
+
+const item =
+dmResources.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.resource =
+item.id;
+
+
+$("resourceTitle").value =
+item.title || "";
+
+$("resourceType").value =
+item.resource_type || "PDF";
+
+$("resourceDesc").value =
+item.description || "";
+
+$("resourceUrl").value =
+item.file_url || "";
+
+$("resourceCoverUrl").value =
+item.cover_image_url || "";
+
+$("resourceButton").value =
+item.button_text ||
+"DOWNLOAD FREE SAMPLE";
+
+$("resourceSort").value =
+item.sort_order ?? 0;
+
+$("resourcePub").checked =
+Number(item.published) === 1;
+
+$("resourceFeat").checked =
+Number(item.featured) === 1;
+
+
+$("resourceSave").textContent =
+"UPDATE RESOURCE";
+
+$("resourceCancel").hidden =
+false;
+
+}
+
+
+function resetResource(){
+
+edit.resource = null;
+
+$("resourceTitle").value = "";
+$("resourceType").value = "PDF";
+$("resourceDesc").value = "";
+$("resourceUrl").value = "";
+$("resourceCoverUrl").value = "";
+
+$("resourceButton").value =
+"DOWNLOAD FREE SAMPLE";
+
+$("resourceSort").value = 0;
+$("resourcePub").checked = true;
+$("resourceFeat").checked = false;
+
+$("resourceFile").value = "";
+$("resourceCoverFile").value = "";
+
+$("resourceSave").textContent =
+"ADD RESOURCE";
+
+$("resourceCancel").hidden =
+true;
+
+}
+
+
+async function saveResource(){
+
+const title =
+$("resourceTitle")
+.value
+.trim();
+
+
+if(!title){
+
+$("resourceMsg").textContent =
+"RESOURCE TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+title,
+
+description:
+$("resourceDesc").value.trim(),
+
+resource_type:
+$("resourceType").value ||
+"PDF",
+
+file_url:
+$("resourceUrl").value.trim(),
+
+cover_image_url:
+$("resourceCoverUrl").value.trim(),
+
+button_text:
+$("resourceButton").value.trim() ||
+"DOWNLOAD FREE SAMPLE",
+
+featured:
+$("resourceFeat").checked ? 1 : 0,
+
+published:
+$("resourcePub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"resourceSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.resource;
+
+
+await api(
+id
+? `/decision-maker-resources/${id}`
+: "/decision-maker-resources",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("resourceMsg").textContent =
+id
+? "RESOURCE UPDATED."
+: "RESOURCE ADDED.";
+
+
+resetResource();
+
+await loadAll();
+
+}
+catch(error){
+
+$("resourceMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteResource(id){
+
+if(
+!confirm(
+"DELETE THIS DECISION MAKER RESOURCE?"
+)
+) return;
+
+
+try{
+
+await api(
+`/decision-maker-resources/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* RESOURCE UPLOADS */
+/* ===================================================== */
+
+async function uploadResourcePDF(){
+
+const file =
+$("resourceFile")
+.files[0];
+
+
+if(
+file &&
+file.type &&
+file.type !== "application/pdf" &&
+!file.name.toLowerCase().endsWith(".pdf")
+){
+
+$("resourceMsg").textContent =
+"PLEASE CHOOSE A PDF FILE.";
+
+return;
+
+}
+
+
+const url =
+await upload(
+file,
+"decision-makers/resources",
+"resourceMsg"
+);
+
+
+if(url){
+
+$("resourceUrl").value =
+url;
+
+$("resourceMsg").textContent =
+"PDF UPLOADED. SAVE THE RESOURCE.";
+
+}
+
+}
+
+
+async function uploadResourceCover(){
+
+const file =
+$("resourceCoverFile")
+.files[0];
+
+
+const url =
+await upload(
+file,
+"decision-makers/resources/covers",
+"resourceMsg"
+);
+
+
+if(url){
+
+$("resourceCoverUrl").value =
+url;
+
+$("resourceMsg").textContent =
+"COVER UPLOADED. SAVE THE RESOURCE.";
+
+}
+
+}
+
+
+/* ===================================================== */
+/* ARTISTS */
+/* ===================================================== */
 
 function renderArtists(){
 
 const list =
 $("artistList");
 
+if(!list) return;
 
-if(
-!artists.length
-){
+
+if(!artists.length){
 
 list.innerHTML =
-'<div class="empty">No artists yet.</div>';
+'<div class="empty">NO ARTISTS ADDED YET.</div>';
 
 return;
 
@@ -6993,67 +5454,52 @@ return;
 
 
 list.innerHTML =
-artists
-.map(
-artist =>
-`
+artists.map(item=>`
 
-<article class="item">
-
-${artist.artist_image_url
-?
-`
-<img
-class="thumb"
-src="${esc(artist.artist_image_url)}"
-alt=""
->
-`
-:
-`
-<div class="thumb"></div>
-`
-}
+<div class="item">
 
 <div>
 
-<h3>
-${esc(artist.name)}
-</h3>
+${item.artist_image_url
+? `<img class="thumb" src="${esc(item.artist_image_url)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.name || "")}</h3>
 
 <div class="badges">
 
-<span class="badge ${Number(artist.published) === 1 ? "pub" : "draft"}">
-
-${Number(artist.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
 </span>
 
-${Number(artist.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
 }
 
 </div>
 
 <div class="meta">
-${esc(artist.bio || "")}
+${esc(item.bio || "")}
 </div>
 
 <div class="actions">
 
 <button
 class="btn gray"
-onclick="editArtist(${artist.id})"
+onclick="editArtist(${Number(item.id)})"
 >
 EDIT
 </button>
 
 <button
 class="btn danger"
-onclick="deleteArtist(${artist.id})"
+onclick="deleteArtist(${Number(item.id)})"
 >
 DELETE
 </button>
@@ -7062,77 +5508,160 @@ DELETE
 
 </div>
 
-</article>
+</div>
 
-`
-)
-.join("");
+`).join("");
 
 }
 
 
-window.editArtist =
-id => {
+function editArtist(id){
 
-const artist =
+const item =
 artists.find(
-item =>
-Number(item.id) ===
-Number(id)
+x =>
+Number(x.id) === Number(id)
 );
 
-
-if(!artist){
-return;
-}
+if(!item) return;
 
 
 edit.artist =
-id;
-
+item.id;
 
 $("artistName").value =
-artist.name || "";
-
+item.name || "";
 
 $("artistBio").value =
-artist.bio || "";
-
+item.bio || "";
 
 $("artistUrl").value =
-artist.artist_image_url || "";
-
-
-$("artistFeat").checked =
-Number(
-artist.featured
-) === 1;
-
+item.artist_image_url || "";
 
 $("artistPub").checked =
-Number(
-artist.published
-) === 1;
+Number(item.published) === 1;
 
+$("artistFeat").checked =
+Number(item.featured) === 1;
 
 $("artistSave").textContent =
-"SAVE CHANGES";
-
+"UPDATE ARTIST";
 
 $("artistCancel").hidden =
 false;
 
+}
+
+
+function resetArtist(){
+
+edit.artist = null;
+
+$("artistName").value = "";
+$("artistBio").value = "";
+$("artistUrl").value = "";
+$("artistFile").value = "";
+
+$("artistPub").checked = true;
+$("artistFeat").checked = false;
+
+$("artistSave").textContent =
+"ADD ARTIST";
+
+$("artistCancel").hidden =
+true;
+
+}
+
+
+async function saveArtist(){
+
+const name =
+$("artistName")
+.value
+.trim();
+
+
+if(!name){
+
+$("artistMsg").textContent =
+"ARTIST NAME IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+name,
+
+artist_image_url:
+$("artistUrl").value.trim(),
+
+bio:
+$("artistBio").value.trim(),
+
+featured:
+$("artistFeat").checked ? 1 : 0,
+
+published:
+$("artistPub").checked ? 1 : 0,
+
+sort_order:0
+
 };
 
 
-window.deleteArtist =
-async id => {
+try{
+
+const id =
+edit.artist;
+
+
+await api(
+id
+? `/artists/${id}`
+: "/artists",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("artistMsg").textContent =
+id
+? "ARTIST UPDATED."
+: "ARTIST ADDED.";
+
+
+resetArtist();
+
+await loadAll();
+
+}
+catch(error){
+
+$("artistMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteArtist(id){
 
 if(
-confirm(
-"Delete artist? Connected releases and tracks may also be removed."
+!confirm(
+"DELETE THIS ARTIST?"
 )
-){
+) return;
+
 
 try{
 
@@ -7143,128 +5672,298 @@ method:"DELETE"
 }
 );
 
-
 await loadAll();
 
 }
 catch(error){
 
-alert(
-error.message
-);
+alert(error.message);
 
 }
 
 }
 
-};
+
+function fillArtists(){
+
+const options =
+artists.map(item=>`
+<option value="${Number(item.id)}">
+${esc(item.name || "")}
+</option>
+`).join("");
 
 
-async function saveRelease(){
+if($("releaseArtist")){
 
-const payload = {
+$("releaseArtist").innerHTML =
+options;
 
-artist_id:
-Number(
-$("releaseArtist").value
-),
-
-title:
-$("releaseTitle")
-.value
-.trim(),
-
-release_type:
-$("releaseType").value,
-
-artwork_url:
-$("releaseUrl")
-.value
-.trim(),
-
-release_date:
-$("releaseDate").value,
-
-description:
-$("releaseDesc")
-.value
-.trim(),
-
-featured:
-$("releaseFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("releasePub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-0
-
-};
+}
 
 
-if(
-!payload.artist_id ||
-!payload.title
-){
+if($("trackArtist")){
 
-$("releaseMsg").textContent =
-"SELECT AN ARTIST AND ADD A RELEASE TITLE.";
+$("trackArtist").innerHTML =
+options;
+
+}
+
+}
+
+
+/* ===================================================== */
+/* RELEASES */
+/* ===================================================== */
+
+function renderReleases(){
+
+const list =
+$("releaseList");
+
+if(!list) return;
+
+
+if(!releases.length){
+
+list.innerHTML =
+'<div class="empty">NO RELEASES ADDED YET.</div>';
 
 return;
 
 }
 
 
+list.innerHTML =
+releases.map(item=>{
+
+const artist =
+artists.find(
+x =>
+Number(x.id) ===
+Number(item.artist_id)
+);
+
+
+return `
+<div class="item">
+
+<div>
+
+${item.artwork_url
+? `<img class="thumb resource-thumb" src="${esc(item.artwork_url)}" alt="">`
+: `<div class="thumb resource-thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+<span class="badge">
+${esc(item.release_type || "")}
+</span>
+
+</div>
+
+<div class="meta">
+
+${esc(artist?.name || "")}
+
+<br>
+
+${esc(item.release_date || "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editRelease(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteRelease(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+function editRelease(id){
+
+const item =
+releases.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.release =
+item.id;
+
+$("releaseArtist").value =
+item.artist_id ?? "";
+
+$("releaseTitle").value =
+item.title || "";
+
+$("releaseType").value =
+item.release_type || "album";
+
+$("releaseDate").value =
+item.release_date || "";
+
+$("releaseDesc").value =
+item.description || "";
+
+$("releaseUrl").value =
+item.artwork_url || "";
+
+$("releasePub").checked =
+Number(item.published) === 1;
+
+$("releaseFeat").checked =
+Number(item.featured) === 1;
+
+$("releaseSave").textContent =
+"UPDATE RELEASE";
+
+$("releaseCancel").hidden =
+false;
+
+}
+
+
+function resetRelease(){
+
+edit.release = null;
+
+$("releaseTitle").value = "";
+$("releaseType").value = "album";
+$("releaseDate").value = "";
+$("releaseDesc").value = "";
+$("releaseUrl").value = "";
+$("releaseFile").value = "";
+
+$("releasePub").checked = true;
+$("releaseFeat").checked = false;
+
+$("releaseSave").textContent =
+"ADD RELEASE";
+
+$("releaseCancel").hidden =
+true;
+
+}
+
+
+async function saveRelease(){
+
+const title =
+$("releaseTitle")
+.value
+.trim();
+
+
+if(!title){
+
+$("releaseMsg").textContent =
+"RELEASE TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+artist_id:
+numberValue(
+"releaseArtist",
+0
+),
+
+title,
+
+release_type:
+$("releaseType").value,
+
+artwork_url:
+$("releaseUrl").value.trim(),
+
+release_date:
+$("releaseDate").value,
+
+description:
+$("releaseDesc").value.trim(),
+
+featured:
+$("releaseFeat").checked ? 1 : 0,
+
+published:
+$("releasePub").checked ? 1 : 0,
+
+sort_order:0
+
+};
+
+
 try{
 
-if(
-edit.release
-){
+const id =
+edit.release;
+
 
 await api(
-`/releases/${edit.release}`,
+id
+? `/releases/${id}`
+: "/releases",
 {
-method:"PUT",
+method:
+id ? "PUT" : "POST",
+
 body:
-JSON.stringify(
-payload
-)
+JSON.stringify(payload)
 }
 );
-
-}
-else{
-
-await api(
-"/releases",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetRelease();
 
 
 $("releaseMsg").textContent =
-"RELEASE SAVED.";
+id
+? "RELEASE UPDATED."
+: "RELEASE ADDED.";
 
+
+resetRelease();
 
 await loadAll();
 
@@ -7279,254 +5978,14 @@ error.message;
 }
 
 
-function resetRelease(){
-
-edit.release =
-null;
-
-
-$("releaseArtist").value =
-"";
-
-
-$("releaseTitle").value =
-"";
-
-
-$("releaseType").value =
-"album";
-
-
-$("releaseDate").value =
-"";
-
-
-$("releaseDesc").value =
-"";
-
-
-$("releaseFile").value =
-"";
-
-
-$("releaseUrl").value =
-"";
-
-
-$("releaseFeat").checked =
-false;
-
-
-$("releasePub").checked =
-true;
-
-
-$("releaseSave").textContent =
-"ADD RELEASE";
-
-
-$("releaseCancel").hidden =
-true;
-
-}
-
-
-function renderReleases(){
-
-const list =
-$("releaseList");
-
+async function deleteRelease(id){
 
 if(
-!releases.length
-){
-
-list.innerHTML =
-'<div class="empty">No releases yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-releases
-.map(
-release => {
-
-const artist =
-artists.find(
-item =>
-Number(item.id) ===
-Number(release.artist_id)
-);
-
-
-return `
-
-<article class="item">
-
-${release.artwork_url
-?
-`
-<img
-class="thumb"
-src="${esc(release.artwork_url)}"
-alt=""
->
-`
-:
-`
-<div class="thumb"></div>
-`
-}
-
-<div>
-
-<h3>
-${esc(release.title)}
-</h3>
-
-<div class="badges">
-
-<span class="badge">
-${esc(release.release_type || "release")}
-</span>
-
-<span class="badge ${Number(release.published) === 1 ? "pub" : "draft"}">
-
-${Number(release.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(release.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(artist?.name || "Unknown Artist")}
-</div>
-
-<div class="meta">
-${esc(release.release_date || "")}
-</div>
-
-<div class="meta">
-${esc(release.description || "")}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editRelease(${release.id})"
->
-EDIT
-</button>
-
-<button
-class="btn danger"
-onclick="deleteRelease(${release.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`;
-
-}
+!confirm(
+"DELETE THIS RELEASE?"
 )
-.join("");
+) return;
 
-}
-
-
-window.editRelease =
-id => {
-
-const release =
-releases.find(
-item =>
-Number(item.id) ===
-Number(id)
-);
-
-
-if(!release){
-return;
-}
-
-
-edit.release =
-id;
-
-
-$("releaseArtist").value =
-String(
-release.artist_id || ""
-);
-
-
-$("releaseTitle").value =
-release.title || "";
-
-
-$("releaseType").value =
-release.release_type || "album";
-
-
-$("releaseDate").value =
-release.release_date || "";
-
-
-$("releaseDesc").value =
-release.description || "";
-
-
-$("releaseUrl").value =
-release.artwork_url || "";
-
-
-$("releaseFeat").checked =
-Number(
-release.featured
-) === 1;
-
-
-$("releasePub").checked =
-Number(
-release.published
-) === 1;
-
-
-$("releaseSave").textContent =
-"SAVE CHANGES";
-
-
-$("releaseCancel").hidden =
-false;
-
-};
-
-
-window.deleteRelease =
-async id => {
-
-if(
-confirm(
-"Delete this release?"
-)
-){
 
 try{
 
@@ -7537,135 +5996,332 @@ method:"DELETE"
 }
 );
 
-
 await loadAll();
 
 }
 catch(error){
 
-alert(
-error.message
+alert(error.message);
+
+}
+
+}
+
+
+function fillReleases(){
+
+const artistId =
+Number(
+$("trackArtist")?.value
 );
 
-}
 
-}
-
-};
-
-
-async function saveTrack(){
-
-const payload = {
-
-artist_id:
-Number(
-$("trackArtist").value
-),
-
-release_id:
-$("trackRelease").value
-?
-Number(
-$("trackRelease").value
+const filtered =
+artistId
+? releases.filter(
+item =>
+Number(item.artist_id) === artistId
 )
-:
-null,
-
-title:
-$("trackTitle")
-.value
-.trim(),
-
-audio_url:
-$("trackUrl")
-.value
-.trim(),
-
-track_number:
-Number(
-$("trackNumber").value || 0
-),
-
-duration:
-"",
-
-featured:
-$("trackFeat")
-.checked
-?
-1
-:
-0,
-
-published:
-$("trackPub")
-.checked
-?
-1
-:
-0,
-
-sort_order:
-0
-
-};
+: releases;
 
 
-if(
-!payload.artist_id ||
-!payload.title ||
-!payload.audio_url
-){
+if($("trackRelease")){
 
-$("trackMsg").textContent =
-"SELECT AN ARTIST, ADD A TITLE, AND UPLOAD AUDIO.";
+$("trackRelease").innerHTML =
+`
+<option value="">
+NO RELEASE / SINGLE
+</option>
+` +
+filtered.map(item=>`
+<option value="${Number(item.id)}">
+${esc(item.title || "")}
+</option>
+`).join("");
+
+}
+
+}
+/* ===================================================== */
+/* TRACKS */
+/* ===================================================== */
+
+function renderTracks(){
+
+const list =
+$("trackList");
+
+if(!list) return;
+
+
+if(!tracks.length){
+
+list.innerHTML =
+'<div class="empty">NO TRACKS ADDED YET.</div>';
 
 return;
 
 }
 
 
+list.innerHTML =
+tracks.map(item=>{
+
+const artist =
+artists.find(
+x =>
+Number(x.id) ===
+Number(item.artist_id)
+);
+
+const release =
+releases.find(
+x =>
+Number(x.id) ===
+Number(item.release_id)
+);
+
+const artwork =
+item.artwork_url ||
+release?.artwork_url ||
+artist?.artist_image_url ||
+"";
+
+
+return `
+<div class="item">
+
+<div>
+
+${artwork
+? `<img class="thumb" src="${esc(artwork)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(artist?.name || "")}
+
+${release
+? `<br>${esc(release.title || "")}`
+: ""
+}
+
+<br>
+
+TRACK ${esc(item.track_number ?? "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editTrack(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteTrack(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+function editTrack(id){
+
+const item =
+tracks.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.track =
+item.id;
+
+$("trackArtist").value =
+item.artist_id ?? "";
+
+fillReleases();
+
+$("trackRelease").value =
+item.release_id ?? "";
+
+$("trackTitle").value =
+item.title || "";
+
+$("trackNumber").value =
+item.track_number ?? 0;
+
+$("trackUrl").value =
+item.audio_url || "";
+
+$("trackArtworkUrl").value =
+item.artwork_url || "";
+
+$("trackPub").checked =
+Number(item.published) === 1;
+
+$("trackFeat").checked =
+Number(item.featured) === 1;
+
+$("trackSave").textContent =
+"UPDATE TRACK";
+
+$("trackCancel").hidden =
+false;
+
+}
+
+
+function resetTrack(){
+
+edit.track = null;
+
+$("trackTitle").value = "";
+$("trackNumber").value = 0;
+$("trackUrl").value = "";
+$("trackArtworkUrl").value = "";
+
+$("trackFile").value = "";
+$("trackArtworkFile").value = "";
+
+$("trackPub").checked = true;
+$("trackFeat").checked = false;
+
+$("trackSave").textContent =
+"ADD TRACK";
+
+$("trackCancel").hidden =
+true;
+
+fillReleases();
+
+}
+
+
+async function saveTrack(){
+
+const title =
+$("trackTitle")
+.value
+.trim();
+
+
+if(!title){
+
+$("trackMsg").textContent =
+"TRACK TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const releaseValue =
+$("trackRelease").value;
+
+
+const payload = {
+
+artist_id:
+numberValue(
+"trackArtist",
+0
+),
+
+release_id:
+releaseValue
+? Number(releaseValue)
+: null,
+
+title,
+
+audio_url:
+$("trackUrl").value.trim(),
+
+artwork_url:
+$("trackArtworkUrl").value.trim(),
+
+track_number:
+numberValue(
+"trackNumber",
+0
+),
+
+featured:
+$("trackFeat").checked ? 1 : 0,
+
+published:
+$("trackPub").checked ? 1 : 0,
+
+sort_order:0
+
+};
+
+
 try{
 
-if(
-edit.track
-){
+const id =
+edit.track;
+
 
 await api(
-`/tracks/${edit.track}`,
+id
+? `/tracks/${id}`
+: "/tracks",
 {
-method:"PUT",
+method:
+id ? "PUT" : "POST",
+
 body:
-JSON.stringify(
-payload
-)
+JSON.stringify(payload)
 }
 );
-
-}
-else{
-
-await api(
-"/tracks",
-{
-method:"POST",
-body:
-JSON.stringify(
-payload
-)
-}
-);
-
-}
-
-
-resetTrack();
 
 
 $("trackMsg").textContent =
-"TRACK SAVED.";
+id
+? "TRACK UPDATED."
+: "TRACK ADDED.";
 
+
+resetTrack();
 
 await loadAll();
 
@@ -7680,260 +6336,14 @@ error.message;
 }
 
 
-function resetTrack(){
-
-edit.track =
-null;
-
-
-$("trackArtist").value =
-"";
-
-
-fillReleases();
-
-
-$("trackRelease").value =
-"";
-
-
-$("trackTitle").value =
-"";
-
-
-$("trackNumber").value =
-"0";
-
-
-$("trackFile").value =
-"";
-
-
-$("trackUrl").value =
-"";
-
-
-$("trackFeat").checked =
-false;
-
-
-$("trackPub").checked =
-true;
-
-
-$("trackSave").textContent =
-"ADD TRACK";
-
-
-$("trackCancel").hidden =
-true;
-
-}
-
-
-function renderTracks(){
-
-const list =
-$("trackList");
-
+async function deleteTrack(id){
 
 if(
-!tracks.length
-){
-
-list.innerHTML =
-'<div class="empty">No tracks yet.</div>';
-
-return;
-
-}
-
-
-list.innerHTML =
-tracks
-.map(
-track => {
-
-const artist =
-artists.find(
-item =>
-Number(item.id) ===
-Number(track.artist_id)
-);
-
-
-const release =
-releases.find(
-item =>
-Number(item.id) ===
-Number(track.release_id)
-);
-
-
-return `
-
-<article class="item">
-
-<div
-class="thumb"
-style="
-display:flex;
-align-items:center;
-justify-content:center;
-padding:14px;
-text-align:center;
-color:#f5c518;
-font-weight:900;
-"
->
-AUDIO
-</div>
-
-<div>
-
-<h3>
-${esc(track.title)}
-</h3>
-
-<div class="badges">
-
-<span class="badge ${Number(track.published) === 1 ? "pub" : "draft"}">
-
-${Number(track.published) === 1 ? "PUBLISHED" : "UNPUBLISHED"}
-
-</span>
-
-${Number(track.featured) === 1
-?
-'<span class="badge featured">FEATURED</span>'
-:
-""
-}
-
-</div>
-
-<div class="meta">
-${esc(artist?.name || "Unknown Artist")}
-</div>
-
-<div class="meta">
-${esc(release?.title || "Standalone")}
-</div>
-
-<div class="meta">
-TRACK ${Number(track.track_number || 0)}
-</div>
-
-<div class="actions">
-
-<button
-class="btn gray"
-onclick="editTrack(${track.id})"
->
-EDIT
-</button>
-
-<button
-class="btn danger"
-onclick="deleteTrack(${track.id})"
->
-DELETE
-</button>
-
-</div>
-
-</div>
-
-</article>
-
-`;
-
-}
+!confirm(
+"DELETE THIS TRACK?"
 )
-.join("");
+) return;
 
-}
-
-
-window.editTrack =
-id => {
-
-const track =
-tracks.find(
-item =>
-Number(item.id) ===
-Number(id)
-);
-
-
-if(!track){
-return;
-}
-
-
-edit.track =
-id;
-
-
-$("trackArtist").value =
-String(
-track.artist_id || ""
-);
-
-
-fillReleases();
-
-
-$("trackRelease").value =
-track.release_id
-?
-String(track.release_id)
-:
-"";
-
-
-$("trackTitle").value =
-track.title || "";
-
-
-$("trackNumber").value =
-Number(track.track_number || 0);
-
-
-$("trackUrl").value =
-track.audio_url || "";
-
-
-$("trackFeat").checked =
-Number(
-track.featured
-) === 1;
-
-
-$("trackPub").checked =
-Number(
-track.published
-) === 1;
-
-
-$("trackSave").textContent =
-"SAVE CHANGES";
-
-
-$("trackCancel").hidden =
-false;
-
-};
-
-
-window.deleteTrack =
-async id => {
-
-if(
-confirm(
-"Delete this track?"
-)
-){
 
 try{
 
@@ -7944,440 +6354,2317 @@ method:"DELETE"
 }
 );
 
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* MAGAZINES */
+/* ===================================================== */
+
+function renderMagazines(){
+
+const list =
+$("magList");
+
+if(!list) return;
+
+
+if(!magazines.length){
+
+list.innerHTML =
+'<div class="empty">NO MAGAZINE ISSUES ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+magazines.map(item=>`
+
+<div class="item">
+
+<div>
+
+${item.cover_url
+? `<img class="thumb resource-thumb" src="${esc(item.cover_url)}" alt="">`
+: `<div class="thumb resource-thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(item.description || "")}
+
+${item.issue_date
+? `<br>${esc(item.issue_date)}`
+: ""
+}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editMagazine(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteMagazine(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editMagazine(id){
+
+const item =
+magazines.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.magazine =
+item.id;
+
+$("magTitle").value =
+item.title || "";
+
+$("magLabel").value =
+item.issue_date || "";
+
+$("magDesc").value =
+item.description || "";
+
+$("magUrl").value =
+item.issue_url || "";
+
+$("magCoverUrl").value =
+item.cover_url || "";
+
+$("magSort").value =
+item.sort_order ?? 0;
+
+$("magPub").checked =
+Number(item.published) === 1;
+
+$("magFeat").checked =
+Number(item.featured) === 1;
+
+$("magSave").textContent =
+"UPDATE ISSUE";
+
+$("magCancel").hidden =
+false;
+
+}
+
+
+function resetMagazine(){
+
+edit.magazine = null;
+
+$("magTitle").value = "";
+$("magLabel").value = "";
+$("magDesc").value = "";
+$("magUrl").value = "";
+$("magCoverUrl").value = "";
+$("magCoverFile").value = "";
+$("magSort").value = 0;
+
+$("magPub").checked = true;
+$("magFeat").checked = false;
+
+$("magSave").textContent =
+"ADD ISSUE";
+
+$("magCancel").hidden =
+true;
+
+}
+
+
+async function saveMagazine(){
+
+const title =
+$("magTitle")
+.value
+.trim();
+
+
+if(!title){
+
+$("magMsg").textContent =
+"ISSUE TITLE IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+title,
+
+cover_url:
+$("magCoverUrl").value.trim(),
+
+issue_url:
+$("magUrl").value.trim(),
+
+description:
+$("magDesc").value.trim(),
+
+issue_date:
+$("magLabel").value.trim(),
+
+featured:
+$("magFeat").checked ? 1 : 0,
+
+published:
+$("magPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"magSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.magazine;
+
+
+await api(
+id
+? `/magazines/${id}`
+: "/magazines",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("magMsg").textContent =
+id
+? "ISSUE UPDATED."
+: "ISSUE ADDED.";
+
+
+resetMagazine();
 
 await loadAll();
 
 }
 catch(error){
 
-alert(
-error.message
+$("magMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteMagazine(id){
+
+if(
+!confirm(
+"DELETE THIS MAGAZINE ISSUE?"
+)
+) return;
+
+
+try{
+
+await api(
+`/magazines/${id}`,
+{
+method:"DELETE"
+}
 );
-
-}
-
-}
-
-};
-$("unlock").onclick =
-unlock;
-
-
-$("lock").onclick =
-lock;
-
-
-$("refresh").onclick =
-async () => {
-
-$("apiStatus").textContent =
-"CHECKING";
-
-
-$("apiStatus")
-.classList
-.remove("ok");
-
-
-await health();
-
 
 await loadAll();
 
-};
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
 
 
-$("saveLive").onclick =
-saveLive;
+/* ===================================================== */
+/* BOSS BITE GALLERY */
+/* ===================================================== */
+
+function renderGallery(){
+
+const list =
+$("galleryList");
+
+if(!list) return;
 
 
-$("clearLive").onclick =
-clearLive;
+if(!galleryItems.length){
+
+list.innerHTML =
+'<div class="empty">NO CLOUD GALLERY PHOTOS ADDED YET.</div>';
+
+return;
+
+}
 
 
-setupVideo(
-"dm",
-"decision-makers"
+list.innerHTML =
+galleryItems.map(item=>`
+
+<div class="item">
+
+<div>
+
+${item.image_url
+? `<img class="thumb" src="${esc(item.image_url)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.caption || "BOSS BITE PHOTO")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.location_name || "")}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editGallery(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteGallery(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editGallery(id){
+
+const item =
+galleryItems.find(
+x =>
+Number(x.id) === Number(id)
 );
 
-
-setupVideo(
-"bb",
-"boss-bite"
-);
+if(!item) return;
 
 
-setupVideo(
-"tv",
-"boss-code-tv"
-);
-
-
-$("galleryUpload").onclick =
-async () => {
-
-const file =
-$("galleryFile")
-.files[0];
-
-
-const url =
-await upload(
-file,
-"boss-bite/gallery",
-"galleryMsg"
-);
-
-
-if(url){
+edit.gallery =
+item.id;
 
 $("galleryUrl").value =
-url;
+item.image_url || "";
+
+$("galleryCaption").value =
+item.caption || "";
+
+$("galleryLocation").value =
+item.location_name || "";
+
+$("gallerySort").value =
+item.sort_order ?? 0;
+
+$("galleryPub").checked =
+Number(item.published) === 1;
+
+$("galleryFeat").checked =
+Number(item.featured) === 1;
+
+$("gallerySave").textContent =
+"UPDATE PHOTO";
+
+$("galleryCancel").hidden =
+false;
 
 }
+
+
+function resetGallery(){
+
+edit.gallery = null;
+
+$("galleryUrl").value = "";
+$("galleryCaption").value = "";
+$("galleryLocation").value = "";
+$("gallerySort").value = 0;
+$("galleryFile").value = "";
+
+$("galleryPub").checked = true;
+$("galleryFeat").checked = false;
+
+$("gallerySave").textContent =
+"ADD PHOTO";
+
+$("galleryCancel").hidden =
+true;
+
+}
+
+
+async function saveGallery(){
+
+const image =
+$("galleryUrl")
+.value
+.trim();
+
+
+if(!image){
+
+$("galleryMsg").textContent =
+"UPLOAD OR ENTER AN IMAGE URL.";
+
+return;
+
+}
+
+
+const payload = {
+
+image_url:image,
+
+caption:
+$("galleryCaption").value.trim(),
+
+location_name:
+$("galleryLocation").value.trim(),
+
+featured:
+$("galleryFeat").checked ? 1 : 0,
+
+published:
+$("galleryPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"gallerySort",
+0
+)
 
 };
 
 
-$("gallerySave").onclick =
-saveGallery;
+try{
+
+const id =
+edit.gallery;
 
 
-$("galleryCancel").onclick =
-resetGallery;
+await api(
+id
+? `/boss-bite-gallery/${id}`
+: "/boss-bite-gallery",
+{
+method:
+id ? "PUT" : "POST",
 
-
-$("locationUpload").onclick =
-async () => {
-
-const file =
-$("locationFile")
-.files[0];
-
-
-const url =
-await upload(
-file,
-"boss-bite/locations",
-"locationMsg"
+body:
+JSON.stringify(payload)
+}
 );
 
 
-if(url){
+$("galleryMsg").textContent =
+id
+? "PHOTO UPDATED."
+: "PHOTO ADDED.";
 
-$("locationImageUrl").value =
-url;
+
+resetGallery();
+
+await loadAll();
+
+}
+catch(error){
+
+$("galleryMsg").textContent =
+error.message;
 
 }
 
-};
+}
 
 
-$("locationSave").onclick =
-saveLocation;
+async function deleteGallery(id){
+
+if(
+!confirm(
+"DELETE THIS GALLERY PHOTO?"
+)
+) return;
 
 
-$("locationCancel").onclick =
-resetLocation;
+try{
+
+await api(
+`/boss-bite-gallery/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
 
 
-$("decisionSave").onclick =
-saveDecision;
+/* ===================================================== */
+/* BOSS BITE LOCATIONS */
+/* ===================================================== */
+
+function renderLocations(){
+
+const list =
+$("locationList");
+
+if(!list) return;
 
 
-$("decisionCancel").onclick =
-resetDecision;
+if(!locations.length){
+
+list.innerHTML =
+'<div class="empty">NO CLOUD MAP LOCATIONS ADDED YET.</div>';
+
+return;
+
+}
 
 
-$("questionSave").onclick =
-saveQuestion;
+list.innerHTML =
+locations.map(item=>`
+
+<div class="item">
+
+<div>
+
+${item.image_url
+? `<img class="thumb" src="${esc(item.image_url)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.name || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(item.address || "")}
+
+<br>
+
+${esc(item.city || "")}
+${item.city && item.state ? ", " : ""}
+${esc(item.state || "")}
+
+<br>
+
+${esc(item.latitude ?? "")},
+${esc(item.longitude ?? "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editLocation(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteLocation(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
 
 
-$("questionCancel").onclick =
-resetQuestion;
+function editLocation(id){
+
+const item =
+locations.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
 
 
-$("inquiryRefresh").onclick =
-refreshInquiries;
+edit.location =
+item.id;
+
+$("locationName").value =
+item.name || "";
+
+$("locationAddress").value =
+item.address || "";
+
+$("locationCity").value =
+item.city || "";
+
+$("locationState").value =
+item.state || "";
+
+$("locationLat").value =
+item.latitude ?? "";
+
+$("locationLng").value =
+item.longitude ?? "";
+
+$("locationImage").value =
+item.image_url || "";
+
+$("locationEpisode").value =
+item.episode_url || "";
+
+$("locationDesc").value =
+item.description || "";
+
+$("locationSort").value =
+item.sort_order ?? 0;
+
+$("locationPub").checked =
+Number(item.published) === 1;
+
+$("locationFeat").checked =
+Number(item.featured) === 1;
+
+$("locationSave").textContent =
+"UPDATE LOCATION";
+
+$("locationCancel").hidden =
+false;
+
+}
 
 
-$("inquiryFilter").onchange =
-renderInquiries;
+function resetLocation(){
+
+edit.location = null;
+
+$("locationName").value = "";
+$("locationAddress").value = "";
+$("locationCity").value = "";
+$("locationState").value = "";
+$("locationLat").value = "";
+$("locationLng").value = "";
+$("locationImage").value = "";
+$("locationEpisode").value = "";
+$("locationDesc").value = "";
+$("locationSort").value = 0;
+$("locationFile").value = "";
+
+$("locationPub").checked = true;
+$("locationFeat").checked = false;
+
+$("locationSave").textContent =
+"ADD LOCATION";
+
+$("locationCancel").hidden =
+true;
+
+}
 
 
-$("magCoverUpload").onclick =
-async () => {
+async function saveLocation(){
 
-const file =
-$("magCoverFile")
-.files[0];
+const name =
+$("locationName")
+.value
+.trim();
 
+const lat =
+Number(
+$("locationLat").value
+);
 
-const url =
-await upload(
-file,
-"magazines/covers",
-"magMsg"
+const lng =
+Number(
+$("locationLng").value
 );
 
 
-if(url){
+if(!name){
 
-$("magCoverUrl").value =
-url;
+$("locationMsg").textContent =
+"BUSINESS NAME IS REQUIRED.";
+
+return;
 
 }
+
+
+if(
+!Number.isFinite(lat) ||
+!Number.isFinite(lng)
+){
+
+$("locationMsg").textContent =
+"VALID LATITUDE AND LONGITUDE ARE REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+name,
+
+address:
+$("locationAddress").value.trim(),
+
+city:
+$("locationCity").value.trim(),
+
+state:
+$("locationState").value.trim(),
+
+latitude:lat,
+
+longitude:lng,
+
+image_url:
+$("locationImage").value.trim(),
+
+episode_url:
+$("locationEpisode").value.trim(),
+
+description:
+$("locationDesc").value.trim(),
+
+featured:
+$("locationFeat").checked ? 1 : 0,
+
+published:
+$("locationPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"locationSort",
+0
+)
 
 };
 
 
-$("magSave").onclick =
-saveMagazine;
+try{
+
+const id =
+edit.location;
 
 
-$("magCancel").onclick =
-resetMagazine;
+await api(
+id
+? `/boss-bite-locations/${id}`
+: "/boss-bite-locations",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
 
 
-$("artistUpload").onclick =
-async () => {
+$("locationMsg").textContent =
+id
+? "LOCATION UPDATED."
+: "LOCATION ADDED.";
 
-const file =
-$("artistFile")
-.files[0];
 
+resetLocation();
+
+await loadAll();
+
+}
+catch(error){
+
+$("locationMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteLocation(id){
+
+if(
+!confirm(
+"DELETE THIS MAP LOCATION?"
+)
+) return;
+
+
+try{
+
+await api(
+`/boss-bite-locations/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* DAILY DECISIONS */
+/* ===================================================== */
+
+function renderDaily(){
+
+const list =
+$("dailyList");
+
+if(!list) return;
+
+
+if(!dailyDecisions.length){
+
+list.innerHTML =
+'<div class="empty">NO CLOUD DECISIONS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+dailyDecisions.map(item=>`
+
+<div class="item">
+
+<div>
+<div
+class="thumb"
+style="display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:#F5C518;"
+>
+B
+</div>
+</div>
+
+<div>
+
+<h3>${esc(item.decision_text || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(item.action_text || "")}
+
+${item.category
+? `<br>CATEGORY: ${esc(item.category)}`
+: ""
+}
+
+${item.scheduled_date
+? `<br>SCHEDULED: ${esc(item.scheduled_date)}`
+: ""
+}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editDaily(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteDaily(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editDaily(id){
+
+const item =
+dailyDecisions.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.daily =
+item.id;
+
+$("dailyText").value =
+item.decision_text || "";
+
+$("dailyDesc").value =
+item.action_text || "";
+
+$("dailyDate").value =
+item.scheduled_date || "";
+
+$("dailySort").value =
+item.sort_order ?? 0;
+
+$("dailyPub").checked =
+Number(item.published) === 1;
+
+$("dailyFeat").checked =
+Number(item.featured) === 1;
+
+$("dailySave").textContent =
+"UPDATE DECISION";
+
+$("dailyCancel").hidden =
+false;
+
+}
+
+
+function resetDaily(){
+
+edit.daily = null;
+
+$("dailyText").value = "";
+$("dailyDesc").value = "";
+$("dailyDate").value = "";
+$("dailySort").value = 0;
+
+$("dailyPub").checked = true;
+$("dailyFeat").checked = false;
+
+$("dailySave").textContent =
+"ADD DECISION";
+
+$("dailyCancel").hidden =
+true;
+
+}
+
+
+async function saveDaily(){
+
+const text =
+$("dailyText")
+.value
+.trim();
+
+
+if(!text){
+
+$("dailyMsg").textContent =
+"DECISION TEXT IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+decision_text:text,
+
+action_text:
+$("dailyDesc").value.trim(),
+
+category:"GENERAL",
+
+featured:
+$("dailyFeat").checked ? 1 : 0,
+
+published:
+$("dailyPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"dailySort",
+0
+),
+
+scheduled_date:
+$("dailyDate").value || ""
+
+};
+
+
+try{
+
+const id =
+edit.daily;
+
+
+await api(
+id
+? `/daily-decisions/${id}`
+: "/daily-decisions",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("dailyMsg").textContent =
+id
+? "DECISION UPDATED."
+: "DECISION ADDED.";
+
+
+resetDaily();
+
+await loadAll();
+
+}
+catch(error){
+
+$("dailyMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteDaily(id){
+
+if(
+!confirm(
+"DELETE THIS DAILY DECISION?"
+)
+) return;
+
+
+try{
+
+await api(
+`/daily-decisions/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* CHECK IN QUESTIONS */
+/* ===================================================== */
+
+function renderCheckin(){
+
+const list =
+$("checkinList");
+
+if(!list) return;
+
+
+if(!checkinQuestions.length){
+
+list.innerHTML =
+'<div class="empty">NO CLOUD CHECK IN QUESTIONS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+checkinQuestions.map(item=>`
+
+<div class="item">
+
+<div>
+<div
+class="thumb"
+style="display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#F5C518;"
+>
+${esc(item.category || "")}
+</div>
+</div>
+
+<div>
+
+<h3>${esc(item.question_text || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+<span class="badge">
+${esc(item.category || "")}
+</span>
+
+</div>
+
+<div class="meta">
+
+WEIGHT:
+${esc(item.weight ?? 1)}
+
+<br>
+
+SORT:
+${esc(item.sort_order ?? 0)}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editCheckin(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteCheckin(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+function editCheckin(id){
+
+const item =
+checkinQuestions.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.checkin =
+item.id;
+
+$("checkinText").value =
+item.question_text || "";
+
+$("checkinCategory").value =
+String(
+item.category || "APPROVAL"
+).toUpperCase();
+
+$("checkinWeight").value =
+item.weight ?? 1;
+
+$("checkinSort").value =
+item.sort_order ?? 0;
+
+$("checkinPub").checked =
+Number(item.published) === 1;
+
+$("checkinSave").textContent =
+"UPDATE QUESTION";
+
+$("checkinCancel").hidden =
+false;
+
+}
+
+
+function resetCheckin(){
+
+edit.checkin = null;
+
+$("checkinText").value = "";
+$("checkinCategory").value = "APPROVAL";
+$("checkinWeight").value = 1;
+$("checkinSort").value = 0;
+
+$("checkinPub").checked = true;
+
+$("checkinSave").textContent =
+"ADD QUESTION";
+
+$("checkinCancel").hidden =
+true;
+
+}
+
+
+async function saveCheckin(){
+
+const text =
+$("checkinText")
+.value
+.trim();
+
+
+if(!text){
+
+$("checkinMsg").textContent =
+"QUESTION TEXT IS REQUIRED.";
+
+return;
+
+}
+
+
+const payload = {
+
+question_text:text,
+
+category:
+$("checkinCategory").value,
+
+weight:
+numberValue(
+"checkinWeight",
+1
+),
+
+published:
+$("checkinPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"checkinSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.checkin;
+
+
+await api(
+id
+? `/checkin-questions/${id}`
+: "/checkin-questions",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("checkinMsg").textContent =
+id
+? "QUESTION UPDATED."
+: "QUESTION ADDED.";
+
+
+resetCheckin();
+
+await loadAll();
+
+}
+catch(error){
+
+$("checkinMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteCheckin(id){
+
+if(
+!confirm(
+"DELETE THIS CHECK IN QUESTION?"
+)
+) return;
+
+
+try{
+
+await api(
+`/checkin-questions/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+/* ===================================================== */
+/* CONTACT INQUIRIES */
+/* ===================================================== */
+
+function renderContacts(){
+
+const list =
+$("contactList");
+
+if(!list) return;
+
+
+const newCount =
+contacts.filter(
+item =>
+String(item.status || "new").toLowerCase() === "new"
+).length;
+
+
+$("contactCount").textContent =
+`${newCount} NEW`;
+
+$("contactCount")
+.classList
+.toggle(
+"ok",
+newCount > 0
+);
+
+
+if(!contacts.length){
+
+list.innerHTML =
+'<div class="empty">NO CONTACT INQUIRIES YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+contacts.map(item=>{
+
+const status =
+String(
+item.status || "new"
+).toLowerCase();
+
+
+return `
+<div class="item">
+
+<div>
+
+<div
+class="thumb"
+style="
+display:flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+padding:12px;
+font-size:12px;
+font-weight:900;
+color:#F5C518;
+"
+>
+${esc(item.inquiry_type || "GENERAL INQUIRY")}
+</div>
+
+</div>
+
+<div>
+
+<h3>
+${esc(item.name || "UNKNOWN")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${status === "new" ? "featured" : "pub"}">
+${esc(status.toUpperCase())}
+</span>
+
+</div>
+
+<div class="meta">
+
+${esc(item.email || "")}
+
+<br>
+
+${esc(item.created_at || "")}
+
+<br><br>
+
+${esc(item.message || "")}
+
+</div>
+
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="setContactStatus(${Number(item.id)},'read')"
+>
+MARK READ
+</button>
+
+<button
+class="btn outline"
+onclick="setContactStatus(${Number(item.id)},'replied')"
+>
+MARK REPLIED
+</button>
+
+<button
+class="btn gray"
+onclick="setContactStatus(${Number(item.id)},'closed')"
+>
+CLOSE
+</button>
+
+<button
+class="btn danger"
+onclick="deleteContact(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+async function setContactStatus(
+id,
+status
+){
+
+try{
+
+await api(
+`/contact-inquiries/${id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+status
+})
+}
+);
+
+$("contactMsg").textContent =
+"INQUIRY UPDATED.";
+
+await loadAll();
+
+}
+catch(error){
+
+$("contactMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteContact(id){
+
+if(
+!confirm(
+"DELETE THIS CONTACT INQUIRY?"
+)
+) return;
+
+
+try{
+
+await api(
+`/contact-inquiries/${id}`,
+{
+method:"DELETE"
+}
+);
+
+$("contactMsg").textContent =
+"INQUIRY DELETED.";
+
+await loadAll();
+
+}
+catch(error){
+
+$("contactMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+/* ===================================================== */
+/* EXISTING MEDIA UPLOADS */
+/* ===================================================== */
+
+async function uploadArtistPhoto(){
 
 const url =
 await upload(
-file,
+$("artistFile").files[0],
 "music/artists",
 "artistMsg"
 );
-
 
 if(url){
 
 $("artistUrl").value =
 url;
 
+$("artistMsg").textContent =
+"PHOTO UPLOADED. SAVE THE ARTIST.";
+
 }
 
-};
+}
 
 
-$("artistSave").onclick =
-saveArtist;
-
-
-$("artistCancel").onclick =
-resetArtist;
-
-
-$("releaseUpload").onclick =
-async () => {
-
-const file =
-$("releaseFile")
-.files[0];
-
+async function uploadReleaseArtwork(){
 
 const url =
 await upload(
-file,
+$("releaseFile").files[0],
 "music/releases",
 "releaseMsg"
 );
-
 
 if(url){
 
 $("releaseUrl").value =
 url;
 
+$("releaseMsg").textContent =
+"ARTWORK UPLOADED. SAVE THE RELEASE.";
+
 }
 
-};
+}
 
 
-$("releaseSave").onclick =
-saveRelease;
-
-
-$("releaseCancel").onclick =
-resetRelease;
-
-
-$("trackUpload").onclick =
-async () => {
-
-const file =
-$("trackFile")
-.files[0];
-
+async function uploadTrackAudio(){
 
 const url =
 await upload(
-file,
+$("trackFile").files[0],
 "music/tracks",
 "trackMsg"
 );
-
 
 if(url){
 
 $("trackUrl").value =
 url;
 
+$("trackMsg").textContent =
+"AUDIO UPLOADED. SAVE THE TRACK.";
+
 }
 
-};
+}
 
 
-$("trackSave").onclick =
-saveTrack;
+async function uploadTrackArtwork(){
 
-
-$("trackCancel").onclick =
-resetTrack;
-
-
-$("trackArtist").onchange =
-fillReleases;
-
-
-document
-.querySelectorAll(
-"[data-vtab]"
-)
-.forEach(
-button => {
-
-button.onclick =
-() => {
-
-const section =
-button.dataset.vtab;
-
-
-document
-.querySelectorAll(
-"[data-vtab]"
-)
-.forEach(
-tab =>
-tab.classList.remove(
-"active"
-)
+const url =
+await upload(
+$("trackArtworkFile").files[0],
+"music/tracks/artwork",
+"trackMsg"
 );
 
+if(url){
+
+$("trackArtworkUrl").value =
+url;
+
+$("trackMsg").textContent =
+"TRACK ARTWORK UPLOADED. SAVE THE TRACK.";
+
+}
+
+}
+
+
+async function uploadMagazineCover(){
+
+const url =
+await upload(
+$("magCoverFile").files[0],
+"magazines/covers",
+"magMsg"
+);
+
+if(url){
+
+$("magCoverUrl").value =
+url;
+
+$("magMsg").textContent =
+"COVER UPLOADED. SAVE THE ISSUE.";
+
+}
+
+}
+
+
+async function uploadGalleryPhoto(){
+
+const url =
+await upload(
+$("galleryFile").files[0],
+"boss-bite/gallery",
+"galleryMsg"
+);
+
+if(url){
+
+$("galleryUrl").value =
+url;
+
+$("galleryMsg").textContent =
+"PHOTO UPLOADED. SAVE THE PHOTO.";
+
+}
+
+}
+
+
+async function uploadLocationImage(){
+
+const url =
+await upload(
+$("locationFile").files[0],
+"boss-bite/locations",
+"locationMsg"
+);
+
+if(url){
+
+$("locationImage").value =
+url;
+
+$("locationMsg").textContent =
+"IMAGE UPLOADED. SAVE THE LOCATION.";
+
+}
+
+}
+
+
+/* ===================================================== */
+/* TABS */
+/* ===================================================== */
+
+document
+.querySelectorAll("[data-vtab]")
+.forEach(button=>{
+
+button.addEventListener(
+"click",
+()=>{
+
+document
+.querySelectorAll("[data-vtab]")
+.forEach(
+x =>
+x.classList.remove("active")
+);
 
 button
 .classList
-.add(
-"active"
-);
+.add("active");
 
 
 document
-.querySelectorAll(
-"[id^='vm-']"
-)
+.querySelectorAll('[id^="vm-"]')
 .forEach(
-manager =>
-manager.classList.remove(
-"active"
-)
+x =>
+x.classList.remove("active")
 );
 
 
-const target =
-document.getElementById(
-`vm-${section}`
+const panel =
+$(
+`vm-${button.dataset.vtab}`
 );
 
+if(panel){
 
-if(target){
-
-target
+panel
 .classList
-.add(
-"active"
-);
+.add("active");
 
 }
-
-};
 
 }
 );
 
-
-document
-.querySelectorAll(
-"[data-mtab]"
-)
-.forEach(
-button => {
-
-button.onclick =
-() => {
-
-const section =
-button.dataset.mtab;
+});
 
 
 document
-.querySelectorAll(
-"[data-mtab]"
-)
+.querySelectorAll("[data-dmtab]")
+.forEach(button=>{
+
+button.addEventListener(
+"click",
+()=>{
+
+document
+.querySelectorAll("[data-dmtab]")
 .forEach(
-tab =>
-tab.classList.remove(
-"active"
-)
+x =>
+x.classList.remove("active")
 );
-
 
 button
 .classList
-.add(
-"active"
-);
+.add("active");
 
 
 document
-.querySelectorAll(
-"[id^='mm-']"
-)
+.querySelectorAll('[id^="dmm-"]')
 .forEach(
-manager =>
-manager.classList.remove(
-"active"
-)
+x =>
+x.classList.remove("active")
 );
 
 
-const target =
-document.getElementById(
-`mm-${section}`
+const panel =
+$(
+`dmm-${button.dataset.dmtab}`
 );
 
+if(panel){
 
-if(target){
-
-target
+panel
 .classList
-.add(
-"active"
-);
+.add("active");
 
 }
-
-};
 
 }
 );
 
+});
+
+
+document
+.querySelectorAll("[data-mtab]")
+.forEach(button=>{
+
+button.addEventListener(
+"click",
+()=>{
+
+document
+.querySelectorAll("[data-mtab]")
+.forEach(
+x =>
+x.classList.remove("active")
+);
+
+button
+.classList
+.add("active");
+
+
+document
+.querySelectorAll('[id^="mm-"]')
+.forEach(
+x =>
+x.classList.remove("active")
+);
+
+
+const panel =
+$(
+`mm-${button.dataset.mtab}`
+);
+
+if(panel){
+
+panel
+.classList
+.add("active");
+
+}
+
+}
+);
+
+});
+
+
+/* ===================================================== */
+/* BASIC ADMIN BUTTONS */
+/* ===================================================== */
+
+$("unlock")
+.addEventListener(
+"click",
+unlock
+);
+
+
+$("adminKey")
+.addEventListener(
+"keydown",
+event=>{
+
+if(
+event.key === "Enter"
+){
+
+unlock();
+
+}
+
+}
+);
+
+
+$("lock")
+.addEventListener(
+"click",
+lock
+);
+
+
+$("refresh")
+.addEventListener(
+"click",
+loadAll
+);
+
+
+$("contactRefresh")
+.addEventListener(
+"click",
+loadAll
+);
+
+
+/* ===================================================== */
+/* LIVE EVENTS */
+/* ===================================================== */
+
+$("saveLive")
+.addEventListener(
+"click",
+saveLive
+);
+
+
+$("clearLive")
+.addEventListener(
+"click",
+clearLive
+);
+
+
+/* ===================================================== */
+/* VIDEO EVENTS */
+/* ===================================================== */
+
+$("dmSave")
+.addEventListener(
+"click",
+()=>saveVideo("dm")
+);
+
+
+$("dmCancel")
+.addEventListener(
+"click",
+()=>resetVideo("dm")
+);
+
+
+$("bbSave")
+.addEventListener(
+"click",
+()=>saveVideo("bb")
+);
+
+
+$("bbCancel")
+.addEventListener(
+"click",
+()=>resetVideo("bb")
+);
+
+
+$("tvSave")
+.addEventListener(
+"click",
+()=>saveVideo("tv")
+);
+
+
+$("tvCancel")
+.addEventListener(
+"click",
+()=>resetVideo("tv")
+);
+
+
+/* ===================================================== */
+/* DECISION MAKERS EVENTS */
+/* ===================================================== */
+
+$("sessionSave")
+.addEventListener(
+"click",
+saveSession
+);
+
+
+$("sessionCancel")
+.addEventListener(
+"click",
+resetSession
+);
+
+
+$("challengeSave")
+.addEventListener(
+"click",
+saveChallenge
+);
+
+
+$("challengeCancel")
+.addEventListener(
+"click",
+resetChallenge
+);
+
+
+$("resourceSave")
+.addEventListener(
+"click",
+saveResource
+);
+
+
+$("resourceCancel")
+.addEventListener(
+"click",
+resetResource
+);
+
+
+$("resourceUpload")
+.addEventListener(
+"click",
+uploadResourcePDF
+);
+
+
+$("resourceCoverUpload")
+.addEventListener(
+"click",
+uploadResourceCover
+);
+
+
+/* ===================================================== */
+/* MUSIC EVENTS */
+/* ===================================================== */
+
+$("artistSave")
+.addEventListener(
+"click",
+saveArtist
+);
+
+
+$("artistCancel")
+.addEventListener(
+"click",
+resetArtist
+);
+
+
+$("artistUpload")
+.addEventListener(
+"click",
+uploadArtistPhoto
+);
+
+
+$("releaseSave")
+.addEventListener(
+"click",
+saveRelease
+);
+
+
+$("releaseCancel")
+.addEventListener(
+"click",
+resetRelease
+);
+
+
+$("releaseUpload")
+.addEventListener(
+"click",
+uploadReleaseArtwork
+);
+
+
+$("trackSave")
+.addEventListener(
+"click",
+saveTrack
+);
+
+
+$("trackCancel")
+.addEventListener(
+"click",
+resetTrack
+);
+
+
+$("trackUpload")
+.addEventListener(
+"click",
+uploadTrackAudio
+);
+
+
+$("trackArtworkUpload")
+.addEventListener(
+"click",
+uploadTrackArtwork
+);
+
+
+$("trackArtist")
+.addEventListener(
+"change",
+fillReleases
+);
+
+
+/* ===================================================== */
+/* MAGAZINE EVENTS */
+/* ===================================================== */
+
+$("magSave")
+.addEventListener(
+"click",
+saveMagazine
+);
+
+
+$("magCancel")
+.addEventListener(
+"click",
+resetMagazine
+);
+
+
+$("magCoverUpload")
+.addEventListener(
+"click",
+uploadMagazineCover
+);
+
+
+/* ===================================================== */
+/* GALLERY EVENTS */
+/* ===================================================== */
+
+$("gallerySave")
+.addEventListener(
+"click",
+saveGallery
+);
+
+
+$("galleryCancel")
+.addEventListener(
+"click",
+resetGallery
+);
+
+
+$("galleryUpload")
+.addEventListener(
+"click",
+uploadGalleryPhoto
+);
+
+
+/* ===================================================== */
+/* MAP EVENTS */
+/* ===================================================== */
+
+$("locationSave")
+.addEventListener(
+"click",
+saveLocation
+);
+
+
+$("locationCancel")
+.addEventListener(
+"click",
+resetLocation
+);
+
+
+$("locationUpload")
+.addEventListener(
+"click",
+uploadLocationImage
+);
+
+
+/* ===================================================== */
+/* DAILY DECISION EVENTS */
+/* ===================================================== */
+
+$("dailySave")
+.addEventListener(
+"click",
+saveDaily
+);
+
+
+$("dailyCancel")
+.addEventListener(
+"click",
+resetDaily
+);
+
+
+/* ===================================================== */
+/* CHECK IN EVENTS */
+/* ===================================================== */
+
+$("checkinSave")
+.addEventListener(
+"click",
+saveCheckin
+);
+
+
+$("checkinCancel")
+.addEventListener(
+"click",
+resetCheckin
+);
+
+
+/* ===================================================== */
+/* STARTUP */
+/* ===================================================== */
 
 $("apiLabel").textContent =
 API;
@@ -8394,19 +8681,35 @@ if(savedKey){
 KEY =
 savedKey;
 
-
 $("adminKey").value =
 savedKey;
 
 
+api(
+"/videos?all=1"
+)
+.then(()=>{
+
 $("login")
 .classList
-.add(
-"hide"
+.add("hide");
+
+return loadAll();
+
+})
+.catch(()=>{
+
+KEY = "";
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
 );
 
+$("login")
+.classList
+.remove("hide");
 
-loadAll();
+});
 
 }
 
