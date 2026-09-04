@@ -635,6 +635,45 @@ placeholder="https://youtube.com/live/..."
 
 </div>
 
+<div class="field">
+
+<label>
+OFFLINE / LIVE THUMBNAIL
+</label>
+
+<div class="file-row">
+
+<input
+id="liveThumbFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="liveThumbUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD THUMBNAIL
+</button>
+
+</div>
+
+<input
+id="liveThumbUrl"
+class="input"
+type="url"
+placeholder="Thumbnail shown when the live broadcast is off air"
+style="margin-top:8px"
+>
+
+<p class="section-note" style="margin-top:8px;margin-bottom:0">
+This image remains visible when the live stream is turned off, so viewers never see YouTube's Video Unavailable screen.
+</p>
+
+</div>
+
 
 <div class="toggle-row">
 
@@ -1062,8 +1101,6 @@ type="checkbox"
 </div>
 
 </div>
-
-
 <div class="actions">
 
 <button
@@ -1554,6 +1591,41 @@ placeholder="Name one thing you know you need to do but have continued putting o
 
 </div>
 
+<div class="field full">
+
+<label>
+OPTIONAL THUMBNAIL
+</label>
+
+<div class="file-row">
+
+<input
+id="challengeThumbFile"
+class="input"
+type="file"
+accept="image/*"
+>
+
+<button
+id="challengeThumbUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD THUMBNAIL
+</button>
+
+</div>
+
+<input
+id="challengeThumb"
+class="input"
+type="url"
+placeholder="Optional thumbnail URL"
+style="margin-top:8px"
+>
+
+</div>
+
 <div class="field">
 
 <label>
@@ -1931,6 +2003,8 @@ class="list"
 </div>
 
 </section>
+
+
 <!-- ===================================================== -->
 <!-- MUSIC MANAGER -->
 <!-- ===================================================== -->
@@ -1938,11 +2012,21 @@ class="list"
 <section class="card">
 
 <div class="head">
+
 <div>
-<small>MUSIC</small>
-<h2>MUSIC MANAGER</h2>
+
+<small>
+MUSIC
+</small>
+
+<h2>
+MUSIC MANAGER
+</h2>
+
 </div>
+
 </div>
+
 
 <div class="tabs">
 
@@ -1967,9 +2051,21 @@ data-mtab="tracks"
 TRACKS
 </button>
 
+<button
+class="tab"
+data-mtab="artist-gallery"
+>
+PHOTO GALLERY
+</button>
+
+<button
+class="tab"
+data-mtab="artist-videos"
+>
+MUSIC VIDEOS
+</button>
+
 </div>
-
-
 <!-- ARTISTS -->
 
 <div
@@ -2463,9 +2559,124 @@ class="list"
 
 </div>
 
+
+<!-- ARTIST PHOTO GALLERY -->
+
+<div
+id="mm-artist-gallery"
+class="manager"
+>
+
+<p class="section-note">
+Choose an artist, upload photos, and control exactly which images appear in that artist's PHOTO GALLERY.
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>ARTIST</label>
+<select id="artistGalleryArtist" class="select"></select>
+</div>
+
+<div class="field">
+<label>CAPTION</label>
+<input id="artistGalleryCaption" class="input" placeholder="Optional caption">
+</div>
+
+<div class="field full">
+<label>PHOTO</label>
+<div class="file-row">
+<input id="artistGalleryFile" class="input" type="file" accept="image/*">
+<button id="artistGalleryUpload" class="btn outline" type="button">UPLOAD PHOTO</button>
+</div>
+<input id="artistGalleryUrl" class="input" type="url" placeholder="Uploaded photo URL" style="margin-top:8px">
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input id="artistGallerySort" class="input" type="number" value="0">
+</div>
+
+</div>
+
+<div class="toggle-row">
+<div class="toggle"><div><strong>PUBLISHED</strong><em>Show this photo in the artist gallery.</em></div><label class="switch"><input id="artistGalleryPub" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="toggle"><div><strong>FEATURED</strong><em>Feature this photo first.</em></div><label class="switch"><input id="artistGalleryFeat" type="checkbox"><span class="slider"></span></label></div>
+</div>
+
+<div class="actions">
+<button id="artistGallerySave" class="btn red">ADD PHOTO</button>
+<button id="artistGalleryCancel" class="btn outline" hidden>CANCEL EDIT</button>
+</div>
+
+<div id="artistGalleryMsg" class="message"></div>
+<div id="artistGalleryList" class="list"></div>
+
+</div>
+
+
+<!-- ARTIST MUSIC VIDEOS -->
+
+<div
+id="mm-artist-videos"
+class="manager"
+>
+
+<p class="section-note">
+Add YouTube music videos to each artist. The app will only show videos that are published here.
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>ARTIST</label>
+<select id="artistVideoArtist" class="select"></select>
+</div>
+
+<div class="field">
+<label>VIDEO TITLE</label>
+<input id="artistVideoTitle" class="input">
+</div>
+
+<div class="field full">
+<label>YOUTUBE LINK</label>
+<input id="artistVideoUrl" class="input" type="url" placeholder="https://youtube.com/watch?v=...">
+</div>
+
+<div class="field full">
+<label>OPTIONAL CUSTOM THUMBNAIL</label>
+
+<div class="file-row">
+<input id="artistVideoThumbFile" class="input" type="file" accept="image/*">
+<button id="artistVideoThumbUpload" class="btn outline" type="button">UPLOAD THUMBNAIL</button>
+</div>
+
+<input id="artistVideoThumb" class="input" type="url" placeholder="Leave blank to use the YouTube thumbnail in the app" style="margin-top:8px">
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input id="artistVideoSort" class="input" type="number" value="0">
+</div>
+
+</div>
+
+<div class="toggle-row">
+<div class="toggle"><div><strong>PUBLISHED</strong><em>Show this music video in the app.</em></div><label class="switch"><input id="artistVideoPub" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="toggle"><div><strong>FEATURED</strong><em>Feature this music video first.</em></div><label class="switch"><input id="artistVideoFeat" type="checkbox"><span class="slider"></span></label></div>
+</div>
+
+<div class="actions">
+<button id="artistVideoSave" class="btn red">ADD MUSIC VIDEO</button>
+<button id="artistVideoCancel" class="btn outline" hidden>CANCEL EDIT</button>
+</div>
+
+<div id="artistVideoMsg" class="message"></div>
+<div id="artistVideoList" class="list"></div>
+
+</div>
+
 </section>
-
-
 <!-- ===================================================== -->
 <!-- MAGAZINE MANAGER -->
 <!-- ===================================================== -->
@@ -2966,8 +3177,6 @@ class="list"
 ></div>
 
 </section>
-
-
 <!-- ===================================================== -->
 <!-- DAILY DECISION -->
 <!-- ===================================================== -->
@@ -3284,6 +3493,8 @@ let KEY = "";
 
 let videos = [];
 let artists = [];
+let artistGallery = [];
+let artistMusicVideos = [];
 let releases = [];
 let tracks = [];
 let magazines = [];
@@ -3306,6 +3517,8 @@ bb:null,
 tv:null,
 
 artist:null,
+artistGallery:null,
+artistVideo:null,
 release:null,
 track:null,
 
@@ -3640,76 +3853,45 @@ const results =
 await Promise.all([
 
 api("/videos?all=1"),
-
 api("/artists?all=1"),
+api("/artist-gallery?all=1"),
+api("/artist-music-videos?all=1"),
 api("/releases?all=1"),
 api("/tracks?all=1"),
-
 api("/magazines?all=1"),
-
 api("/boss-bite-gallery?all=1"),
 api("/boss-bite-locations?all=1"),
-
 api("/daily-decisions?all=1"),
 api("/checkin-questions?all=1"),
-
 api("/decision-maker-sessions?all=1"),
 api("/decision-maker-challenges?all=1"),
 api("/decision-maker-resources?all=1"),
-
 api("/contact-inquiries")
 
 ]);
 
-
-videos =
-results[0].data || [];
-
-artists =
-results[1].data || [];
-
-releases =
-results[2].data || [];
-
-tracks =
-results[3].data || [];
-
-magazines =
-results[4].data || [];
-
-galleryItems =
-results[5].data || [];
-
-locations =
-results[6].data || [];
-
-dailyDecisions =
-results[7].data || [];
-
-checkinQuestions =
-results[8].data || [];
-
-dmSessions =
-results[9].data || [];
-
-dmChallenges =
-results[10].data || [];
-
-dmResources =
-results[11].data || [];
-
-contacts =
-results[12].data || [];
-
+videos = results[0].data || [];
+artists = results[1].data || [];
+artistGallery = results[2].data || [];
+artistMusicVideos = results[3].data || [];
+releases = results[4].data || [];
+tracks = results[5].data || [];
+magazines = results[6].data || [];
+galleryItems = results[7].data || [];
+locations = results[8].data || [];
+dailyDecisions = results[9].data || [];
+checkinQuestions = results[10].data || [];
+dmSessions = results[11].data || [];
+dmChallenges = results[12].data || [];
+dmResources = results[13].data || [];
+contacts = results[14].data || [];
 
 renderAll();
 
 }
 catch(error){
 
-alert(
-error.message
-);
+alert(error.message);
 
 }
 
@@ -3736,6 +3918,8 @@ renderVideo(
 );
 
 renderArtists();
+renderArtistGallery();
+renderArtistMusicVideos();
 renderReleases();
 renderTracks();
 
@@ -3767,22 +3951,14 @@ function renderLive(){
 
 const video =
 videos.find(
-item =>
-item.section ===
-"boss-code-tv-live"
+item => item.section === "boss-code-tv-live"
 );
 
-
-$("liveUrl").value =
-video?.youtube_url || "";
-
+$("liveUrl").value = video?.youtube_url || "";
+$("liveThumbUrl").value = video?.thumbnail_url || "";
 
 $("liveEnabled").checked =
-Boolean(
-video &&
-Number(video.published) === 1
-);
-
+Boolean(video && Number(video.published) === 1);
 
 const on =
 Boolean(
@@ -3791,133 +3967,56 @@ Number(video.published) === 1 &&
 video.youtube_id
 );
 
-
-$("liveStatus").textContent =
-on
-? "LIVE"
-: "OFF AIR";
-
-
-$("liveStatus")
-.classList
-.toggle(
-"ok",
-on
-);
+$("liveStatus").textContent = on ? "LIVE" : "OFF AIR";
+$("liveStatus").classList.toggle("ok",on);
 
 }
 
 
 async function saveLive(){
 
-const url =
-$("liveUrl")
-.value
-.trim();
+const url = $("liveUrl").value.trim();
+const id = yid(url);
+const thumbnailUrl = $("liveThumbUrl").value.trim();
+const on = $("liveEnabled").checked;
 
-const id =
-yid(url);
-
-const on =
-$("liveEnabled")
-.checked;
-
-const old =
-videos.find(
-item =>
-item.section ===
-"boss-code-tv-live"
+const old = videos.find(
+item => item.section === "boss-code-tv-live"
 );
 
-
-if(
-on &&
-!id
-){
-
-$("liveMsg").textContent =
-"ADD A VALID YOUTUBE LIVE LINK.";
-
+if(on && !id){
+$("liveMsg").textContent = "ADD A VALID YOUTUBE LIVE LINK BEFORE TURNING LIVE ON.";
 return;
-
 }
 
-
 const payload = {
-
-section:
-"boss-code-tv-live",
-
-title:
-"B.O.S.S CODE TV LIVE",
-
-youtube_url:
-url,
-
-youtube_id:
-id || "",
-
-description:
-"Current B.O.S.S CODE TV live broadcast.",
-
+section:"boss-code-tv-live",
+title:"B.O.S.S CODE TV LIVE",
+youtube_url:url,
+youtube_id:id || "",
+thumbnail_url:thumbnailUrl,
+description:"Current B.O.S.S CODE TV live broadcast.",
 featured:1,
-
-published:
-on ? 1 : 0,
-
+published:on ? 1 : 0,
 sort_order:0
-
 };
-
 
 try{
 
 if(old){
-
-await api(
-`/videos/${old.id}`,
-{
-method:"PUT",
-body:
-JSON.stringify(payload)
-}
-);
-
-}
-else{
-
-if(!id){
-
-$("liveMsg").textContent =
-"ADD A YOUTUBE LINK.";
-
-return;
-
+await api(`/videos/${old.id}`,{method:"PUT",body:JSON.stringify(payload)});
+}else{
+await api("/videos",{method:"POST",body:JSON.stringify(payload)});
 }
 
-await api(
-"/videos",
-{
-method:"POST",
-body:
-JSON.stringify(payload)
-}
-);
-
-}
-
-
-$("liveMsg").textContent =
-"LIVE SETTINGS SAVED.";
+$("liveMsg").textContent = on
+? "LIVE SETTINGS SAVED."
+: "OFF AIR THUMBNAIL / LIVE SETTINGS SAVED.";
 
 await loadAll();
 
-}
-catch(error){
-
-$("liveMsg").textContent =
-error.message;
-
+}catch(error){
+$("liveMsg").textContent = error.message;
 }
 
 }
@@ -3925,41 +4024,27 @@ error.message;
 
 async function clearLive(){
 
-const video =
-videos.find(
-item =>
-item.section ===
-"boss-code-tv-live"
+const video = videos.find(
+item => item.section === "boss-code-tv-live"
 );
-
 
 if(video){
-
-await api(
-`/videos/${video.id}`,
-{
+await api(`/videos/${video.id}`,{
 method:"PUT",
-body:
-JSON.stringify({
+body:JSON.stringify({
+youtube_url:"",
+youtube_id:"",
 published:0
 })
-}
-);
-
+});
 }
 
-
-$("liveMsg").textContent =
-"LIVE BROADCAST CLEARED.";
-
+$("liveUrl").value = "";
+$("liveEnabled").checked = false;
+$("liveMsg").textContent = "LIVE BROADCAST CLEARED. OFFLINE THUMBNAIL KEPT.";
 await loadAll();
 
 }
-
-/* PART 3 CONTINUES INSIDE THE EXISTING SCRIPT.
-   IMPORTANT: If Part 2 already ended with an open <script>,
-   REMOVE THIS ONE OPENING <script> LINE ONLY.
-*/
 
 
 /* ===================================================== */
@@ -4453,8 +4538,6 @@ alert(error.message);
 }
 
 }
-
-
 /* ===================================================== */
 /* DECISION MAKER SESSIONS */
 /* ===================================================== */
@@ -4791,9 +4874,10 @@ dmChallenges.map(item=>`
 <div class="item">
 
 <div>
-<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#F5C518;">
-${String(item.challenge_number || "").padStart(2,"0")}
-</div>
+${item.thumbnail_url
+? `<img class="thumb" src="${esc(item.thumbnail_url)}" alt="">`
+: `<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#F5C518;">${String(item.challenge_number || "").padStart(2,"0")}</div>`
+}
 </div>
 
 <div>
@@ -4875,6 +4959,9 @@ item.title || "";
 $("challengeDesc").value =
 item.description || "";
 
+$("challengeThumb").value =
+item.thumbnail_url || "";
+
 $("challengeButton").value =
 item.button_text ||
 "ACCEPT CHALLENGE";
@@ -4906,6 +4993,8 @@ edit.challenge = null;
 $("challengeNumber").value = 1;
 $("challengeTitle").value = "";
 $("challengeDesc").value = "";
+$("challengeThumb").value = "";
+$("challengeThumbFile").value = "";
 
 $("challengeButton").value =
 "ACCEPT CHALLENGE";
@@ -4963,6 +5052,9 @@ $("challengeButton").value.trim() ||
 completion_message:
 $("challengeComplete").value.trim() ||
 "NOW TAKE ACTION.",
+
+thumbnail_url:
+$("challengeThumb").value.trim(),
 
 published:
 $("challengePub").checked ? 1 : 0,
@@ -5045,8 +5137,6 @@ alert(error.message);
 }
 
 }
-
-
 /* ===================================================== */
 /* DECISION MAKER RESOURCES */
 /* ===================================================== */
@@ -5693,25 +5783,614 @@ ${esc(item.name || "")}
 </option>
 `).join("");
 
+[
+"releaseArtist",
+"trackArtist",
+"artistGalleryArtist",
+"artistVideoArtist"
+].forEach(id=>{
 
-if($("releaseArtist")){
-
-$("releaseArtist").innerHTML =
+if($(id)){
+$(id).innerHTML =
 options;
+}
+
+});
 
 }
 
 
-if($("trackArtist")){
+/* ===================================================== */
+/* ARTIST PHOTO GALLERY */
+/* ===================================================== */
 
-$("trackArtist").innerHTML =
-options;
+function renderArtistGallery(){
+
+const list =
+$("artistGalleryList");
+
+if(!list) return;
+
+
+if(!artistGallery.length){
+
+list.innerHTML =
+'<div class="empty">NO ARTIST PHOTOS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+artistGallery.map(item=>{
+
+const artist =
+artists.find(
+x =>
+Number(x.id) ===
+Number(item.artist_id)
+);
+
+
+return `
+<div class="item">
+
+<div>
+
+${item.image_url
+? `<img class="thumb" src="${esc(item.image_url)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>
+${esc(artist?.name || "Artist Photo")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+${esc(item.caption || "")}
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editArtistGallery(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteArtistGallery(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+function editArtistGallery(id){
+
+const item =
+artistGallery.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.artistGallery =
+item.id;
+
+$("artistGalleryArtist").value =
+item.artist_id ?? "";
+
+$("artistGalleryCaption").value =
+item.caption || "";
+
+$("artistGalleryUrl").value =
+item.image_url || "";
+
+$("artistGallerySort").value =
+item.sort_order ?? 0;
+
+$("artistGalleryPub").checked =
+Number(item.published) === 1;
+
+$("artistGalleryFeat").checked =
+Number(item.featured) === 1;
+
+$("artistGallerySave").textContent =
+"UPDATE PHOTO";
+
+$("artistGalleryCancel").hidden =
+false;
+
+}
+
+
+function resetArtistGallery(){
+
+edit.artistGallery = null;
+
+$("artistGalleryCaption").value = "";
+$("artistGalleryUrl").value = "";
+$("artistGalleryFile").value = "";
+$("artistGallerySort").value = 0;
+$("artistGalleryPub").checked = true;
+$("artistGalleryFeat").checked = false;
+
+$("artistGallerySave").textContent =
+"ADD PHOTO";
+
+$("artistGalleryCancel").hidden =
+true;
+
+}
+
+
+async function saveArtistGallery(){
+
+const artistId =
+numberValue(
+"artistGalleryArtist",
+0
+);
+
+const imageUrl =
+$("artistGalleryUrl")
+.value
+.trim();
+
+
+if(
+!artistId ||
+!imageUrl
+){
+
+$("artistGalleryMsg").textContent =
+"CHOOSE AN ARTIST AND ADD A PHOTO.";
+
+return;
+
+}
+
+
+const payload = {
+
+artist_id:
+artistId,
+
+image_url:
+imageUrl,
+
+caption:
+$("artistGalleryCaption").value.trim(),
+
+featured:
+$("artistGalleryFeat").checked ? 1 : 0,
+
+published:
+$("artistGalleryPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"artistGallerySort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.artistGallery;
+
+
+await api(
+id
+? `/artist-gallery/${id}`
+: "/artist-gallery",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("artistGalleryMsg").textContent =
+id
+? "PHOTO UPDATED."
+: "PHOTO ADDED.";
+
+
+resetArtistGallery();
+
+await loadAll();
+
+}
+catch(error){
+
+$("artistGalleryMsg").textContent =
+error.message;
 
 }
 
 }
 
 
+async function deleteArtistGallery(id){
+
+if(
+!confirm(
+"DELETE THIS ARTIST PHOTO?"
+)
+) return;
+
+
+try{
+
+await api(
+`/artist-gallery/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+/* ===================================================== */
+/* ARTIST MUSIC VIDEOS */
+/* ===================================================== */
+
+function renderArtistMusicVideos(){
+
+const list =
+$("artistVideoList");
+
+if(!list) return;
+
+
+if(!artistMusicVideos.length){
+
+list.innerHTML =
+'<div class="empty">NO ARTIST MUSIC VIDEOS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+artistMusicVideos.map(item=>{
+
+const artist =
+artists.find(
+x =>
+Number(x.id) ===
+Number(item.artist_id)
+);
+
+
+const thumb =
+item.thumbnail_url ||
+(
+item.youtube_id
+? `https://img.youtube.com/vi/${item.youtube_id}/hqdefault.jpg`
+: ""
+);
+
+
+return `
+<div class="item">
+
+<div>
+
+${thumb
+? `<img class="thumb" src="${esc(thumb)}" alt="">`
+: `<div class="thumb"></div>`
+}
+
+</div>
+
+<div>
+
+<h3>${esc(item.title || "")}</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+${Number(item.featured) === 1
+? '<span class="badge featured">FEATURED</span>'
+: ""
+}
+
+</div>
+
+<div class="meta">
+
+${esc(artist?.name || "")}
+
+<br>
+
+${esc(item.youtube_url || "")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editArtistMusicVideo(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteArtistMusicVideo(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+
+function editArtistMusicVideo(id){
+
+const item =
+artistMusicVideos.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.artistVideo =
+item.id;
+
+$("artistVideoArtist").value =
+item.artist_id ?? "";
+
+$("artistVideoTitle").value =
+item.title || "";
+
+$("artistVideoUrl").value =
+item.youtube_url || "";
+
+$("artistVideoThumb").value =
+item.thumbnail_url || "";
+
+$("artistVideoSort").value =
+item.sort_order ?? 0;
+
+$("artistVideoPub").checked =
+Number(item.published) === 1;
+
+$("artistVideoFeat").checked =
+Number(item.featured) === 1;
+
+$("artistVideoSave").textContent =
+"UPDATE MUSIC VIDEO";
+
+$("artistVideoCancel").hidden =
+false;
+
+}
+
+
+function resetArtistMusicVideo(){
+
+edit.artistVideo = null;
+
+$("artistVideoTitle").value = "";
+$("artistVideoUrl").value = "";
+$("artistVideoThumb").value = "";
+$("artistVideoThumbFile").value = "";
+$("artistVideoSort").value = 0;
+$("artistVideoPub").checked = true;
+$("artistVideoFeat").checked = false;
+
+$("artistVideoSave").textContent =
+"ADD MUSIC VIDEO";
+
+$("artistVideoCancel").hidden =
+true;
+
+}
+
+
+async function saveArtistMusicVideo(){
+
+const artistId =
+numberValue(
+"artistVideoArtist",
+0
+);
+
+const title =
+$("artistVideoTitle")
+.value
+.trim();
+
+const youtubeUrl =
+$("artistVideoUrl")
+.value
+.trim();
+
+const youtubeId =
+yid(youtubeUrl);
+
+
+if(
+!artistId ||
+!title ||
+!youtubeId
+){
+
+$("artistVideoMsg").textContent =
+"CHOOSE AN ARTIST, ADD A TITLE AND A VALID YOUTUBE LINK.";
+
+return;
+
+}
+
+
+const payload = {
+
+artist_id:
+artistId,
+
+title,
+
+youtube_url:
+youtubeUrl,
+
+youtube_id:
+youtubeId,
+
+thumbnail_url:
+$("artistVideoThumb").value.trim(),
+
+featured:
+$("artistVideoFeat").checked ? 1 : 0,
+
+published:
+$("artistVideoPub").checked ? 1 : 0,
+
+sort_order:
+numberValue(
+"artistVideoSort",
+0
+)
+
+};
+
+
+try{
+
+const id =
+edit.artistVideo;
+
+
+await api(
+id
+? `/artist-music-videos/${id}`
+: "/artist-music-videos",
+{
+method:
+id ? "PUT" : "POST",
+
+body:
+JSON.stringify(payload)
+}
+);
+
+
+$("artistVideoMsg").textContent =
+id
+? "MUSIC VIDEO UPDATED."
+: "MUSIC VIDEO ADDED.";
+
+
+resetArtistMusicVideo();
+
+await loadAll();
+
+}
+catch(error){
+
+$("artistVideoMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteArtistMusicVideo(id){
+
+if(
+!confirm(
+"DELETE THIS ARTIST MUSIC VIDEO?"
+)
+) return;
+
+
+try{
+
+await api(
+`/artist-music-videos/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
 /* ===================================================== */
 /* RELEASES */
 /* ===================================================== */
@@ -6042,6 +6721,8 @@ ${esc(item.title || "")}
 }
 
 }
+
+
 /* ===================================================== */
 /* TRACKS */
 /* ===================================================== */
@@ -6364,8 +7045,6 @@ alert(error.message);
 }
 
 }
-
-
 /* ===================================================== */
 /* MAGAZINES */
 /* ===================================================== */
@@ -6395,8 +7074,8 @@ magazines.map(item=>`
 
 <div>
 
-${item.cover_url
-? `<img class="thumb resource-thumb" src="${esc(item.cover_url)}" alt="">`
+${item.cover_image_url
+? `<img class="thumb resource-thumb" src="${esc(item.cover_image_url)}" alt="">`
 : `<div class="thumb resource-thumb"></div>`
 }
 
@@ -6423,8 +7102,8 @@ ${Number(item.featured) === 1
 
 ${esc(item.description || "")}
 
-${item.issue_date
-? `<br>${esc(item.issue_date)}`
+${item.issue_label
+? `<br>${esc(item.issue_label)}`
 : ""
 }
 
@@ -6475,16 +7154,16 @@ $("magTitle").value =
 item.title || "";
 
 $("magLabel").value =
-item.issue_date || "";
+item.issue_label || "";
 
 $("magDesc").value =
 item.description || "";
 
 $("magUrl").value =
-item.issue_url || "";
+item.magazine_url || "";
 
 $("magCoverUrl").value =
-item.cover_url || "";
+item.cover_image_url || "";
 
 $("magSort").value =
 item.sort_order ?? 0;
@@ -6550,16 +7229,16 @@ const payload = {
 
 title,
 
-cover_url:
+cover_image_url:
 $("magCoverUrl").value.trim(),
 
-issue_url:
+magazine_url:
 $("magUrl").value.trim(),
 
 description:
 $("magDesc").value.trim(),
 
-issue_date:
+issue_label:
 $("magLabel").value.trim(),
 
 featured:
@@ -7249,7 +7928,6 @@ alert(error.message);
 /* ===================================================== */
 /* DAILY DECISIONS */
 /* ===================================================== */
-
 function renderDaily(){
 
 const list =
@@ -7301,12 +7979,7 @@ ${Number(item.featured) === 1
 
 <div class="meta">
 
-${esc(item.action_text || "")}
-
-${item.category
-? `<br>CATEGORY: ${esc(item.category)}`
-: ""
-}
+${esc(item.description || "")}
 
 ${item.scheduled_date
 ? `<br>SCHEDULED: ${esc(item.scheduled_date)}`
@@ -7360,7 +8033,7 @@ $("dailyText").value =
 item.decision_text || "";
 
 $("dailyDesc").value =
-item.action_text || "";
+item.description || "";
 
 $("dailyDate").value =
 item.scheduled_date || "";
@@ -7426,10 +8099,8 @@ const payload = {
 
 decision_text:text,
 
-action_text:
+description:
 $("dailyDesc").value.trim(),
-
-category:"GENERAL",
 
 featured:
 $("dailyFeat").checked ? 1 : 0,
@@ -7783,6 +8454,8 @@ alert(error.message);
 }
 
 }
+
+
 /* ===================================================== */
 /* CONTACT INQUIRIES */
 /* ===================================================== */
@@ -8014,6 +8687,94 @@ url;
 
 $("artistMsg").textContent =
 "PHOTO UPLOADED. SAVE THE ARTIST.";
+
+}
+
+}
+
+
+async function uploadLiveThumbnail(){
+
+const url =
+await upload(
+$("liveThumbFile").files[0],
+"boss-code-tv/live",
+"liveMsg"
+);
+
+if(url){
+
+$("liveThumbUrl").value =
+url;
+
+$("liveMsg").textContent =
+"LIVE / OFFLINE THUMBNAIL UPLOADED. SAVE LIVE SETTINGS.";
+
+}
+
+}
+
+
+async function uploadChallengeThumbnail(){
+
+const url =
+await upload(
+$("challengeThumbFile").files[0],
+"decision-makers/challenges",
+"challengeMsg"
+);
+
+if(url){
+
+$("challengeThumb").value =
+url;
+
+$("challengeMsg").textContent =
+"THUMBNAIL UPLOADED. SAVE THE CHALLENGE.";
+
+}
+
+}
+
+
+async function uploadArtistGalleryPhoto(){
+
+const url =
+await upload(
+$("artistGalleryFile").files[0],
+"music/artist-gallery",
+"artistGalleryMsg"
+);
+
+if(url){
+
+$("artistGalleryUrl").value =
+url;
+
+$("artistGalleryMsg").textContent =
+"PHOTO UPLOADED. SAVE THE PHOTO.";
+
+}
+
+}
+
+
+async function uploadArtistVideoThumbnail(){
+
+const url =
+await upload(
+$("artistVideoThumbFile").files[0],
+"music/videos/thumbnails",
+"artistVideoMsg"
+);
+
+if(url){
+
+$("artistVideoThumb").value =
+url;
+
+$("artistVideoMsg").textContent =
+"THUMBNAIL UPLOADED. SAVE THE MUSIC VIDEO.";
 
 }
 
@@ -8364,6 +9125,13 @@ clearLive
 );
 
 
+$("liveThumbUpload")
+.addEventListener(
+"click",
+uploadLiveThumbnail
+);
+
+
 /* ===================================================== */
 /* VIDEO EVENTS */
 /* ===================================================== */
@@ -8442,6 +9210,13 @@ resetChallenge
 );
 
 
+$("challengeThumbUpload")
+.addEventListener(
+"click",
+uploadChallengeThumbnail
+);
+
+
 $("resourceSave")
 .addEventListener(
 "click",
@@ -8492,6 +9267,48 @@ $("artistUpload")
 .addEventListener(
 "click",
 uploadArtistPhoto
+);
+
+
+$("artistGallerySave")
+.addEventListener(
+"click",
+saveArtistGallery
+);
+
+
+$("artistGalleryCancel")
+.addEventListener(
+"click",
+resetArtistGallery
+);
+
+
+$("artistGalleryUpload")
+.addEventListener(
+"click",
+uploadArtistGalleryPhoto
+);
+
+
+$("artistVideoSave")
+.addEventListener(
+"click",
+saveArtistMusicVideo
+);
+
+
+$("artistVideoCancel")
+.addEventListener(
+"click",
+resetArtistMusicVideo
+);
+
+
+$("artistVideoThumbUpload")
+.addEventListener(
+"click",
+uploadArtistVideoThumbnail
 );
 
 

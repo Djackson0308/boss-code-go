@@ -1,5 +1,4 @@
 const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
-const R2='https://pub-69ad8f1a82a844a8bfaf18afa69ed6fe.r2.dev';
 
 const $=id=>document.getElementById(id);
 const q=(s,r=document)=>r.querySelector(s);
@@ -12,6 +11,57 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
 '"':'&quot;',
 "'":'&#39;'
 }[c]));
+
+
+/* =========================================================
+   B.O.S.S CODE GO SHARED UI UPGRADES
+========================================================= */
+(function injectBossCodeGoStyles(){
+if(document.getElementById('boss-code-go-runtime-styles'))return;
+const style=document.createElement('style');
+style.id='boss-code-go-runtime-styles';
+style.textContent=`
+html{scrollbar-color:#F5C518 #111;scrollbar-width:thin}
+*{scrollbar-color:#F5C518 #111;scrollbar-width:thin}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:#111}
+*::-webkit-scrollbar-thumb{background:#F5C518;border-radius:999px;border:2px solid #111}
+.boss-return-home-bottom{display:block;width:min(420px,88%);margin:42px auto 22px;border:2px solid #d40000;border-radius:999px;background:#090909;color:#fff;padding:14px 20px;font:inherit;font-weight:900;letter-spacing:.08em;cursor:pointer}
+.boss-return-home-bottom:hover{background:#d40000}
+.music-track{grid-template-columns:58px 54px minmax(0,1fr) auto 45px!important}
+.track-cover{width:54px;height:54px;border-radius:10px;overflow:hidden;background:#111;border:1px solid #2a2a2a}
+.track-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.artist-media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.artist-media-card{border:1px solid #282828;border-radius:16px;background:#090909;overflow:hidden;color:#fff;padding:0;text-align:left;cursor:pointer}
+.artist-media-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+.artist-media-card.video img{aspect-ratio:16/9}
+.artist-media-card-body{padding:12px}
+.artist-media-card-body strong{display:block}
+.artist-media-card-body span{display:block;color:#F5C518;font-size:9px;font-weight:900;margin-top:4px}
+.artist-media-empty{padding:20px;border:1px dashed #333;border-radius:14px;color:#777;text-align:center}
+.artist-media-lightbox{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;padding:24px}
+.artist-media-lightbox.open{display:flex}
+.artist-media-lightbox img{max-width:92vw;max-height:86vh;object-fit:contain}
+.artist-media-lightbox button,.resource-viewer-close{position:absolute;top:20px;right:22px;width:48px;height:48px;border-radius:50%;border:2px solid #d40000;background:#000;color:#fff;font-size:24px;cursor:pointer}
+.resource-viewer{position:fixed;inset:0;z-index:21000;background:#000;display:none;padding:72px 16px 16px}
+.resource-viewer.open{display:block}
+.resource-viewer iframe{width:100%;height:100%;border:1px solid #333;border-radius:14px;background:#fff}
+.dm-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.dm-resource-card{background:#0b0b0b;border:1px solid #292929;border-radius:18px;overflow:hidden}
+.dm-resource-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
+.dm-resource-body{padding:16px}
+.dm-resource-body span{color:#F5C518;font-size:9px;font-weight:900}
+.dm-resource-body p{color:#999;line-height:1.5;margin:8px 0 14px}
+.dm-resource-button{border:2px solid #F5C518;border-radius:999px;background:transparent;color:#F5C518;padding:10px 14px;font-weight:900;cursor:pointer}
+.dm-session-media{width:150px;flex:0 0 150px;background:#000;position:relative}
+.dm-session-media img{width:100%;height:100%;min-height:150px;object-fit:cover;display:block}
+.dm-session-media iframe{width:100%;height:100%;min-height:150px;border:0;display:block}
+.dm-session-play{position:absolute;inset:0;border:0;background:rgba(0,0,0,.25);color:#fff;font-size:34px;cursor:pointer}
+.action-card-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:14px}
+@media(max-width:750px){.music-track{grid-template-columns:34px 46px minmax(0,1fr) 36px!important}.track-cover{width:46px;height:46px}.artist-media-grid,.dm-resource-grid{display:flex;overflow-x:auto}.artist-media-card,.dm-resource-card{flex:0 0 76%}.dm-session-media{width:110px;flex-basis:110px}}
+`;
+document.head.appendChild(style);
+})();
 
 
 /* =========================================================
@@ -56,6 +106,38 @@ const tv=$('boss-code-tv-screen');
 const dm=$('decision-makers-screen');
 const check=$('boss-checkin-screen');
 const music=$('music-screen');
+
+
+function ensureReturnHomeButtons(){
+const defs=[
+['boss-bite-screen','boss-bite-back'],
+['boss-code-tv-screen','boss-code-tv-back'],
+['decision-makers-screen','decision-makers-back'],
+['boss-checkin-screen','boss-checkin-back'],
+['music-screen','music-back'],
+['contact-screen','contact-back']
+];
+
+defs.forEach(([screenId,topId])=>{
+const screen=$(screenId);
+if(!screen)return;
+const top=$(topId);
+if(top)top.textContent='RETURN TO HOME';
+if(screen.querySelector('.boss-return-home-bottom'))return;
+const b=document.createElement('button');
+b.type='button';
+b.className='boss-return-home-bottom';
+b.textContent='RETURN TO HOME';
+b.addEventListener('click',()=>{
+if(screenId==='decision-makers-screen')stopDM();
+if(screenId==='music-screen'&&audio&&!audio.paused)audio.pause();
+showScreen(home);
+});
+const footer=screen.querySelector('.boss-footer');
+if(footer)footer.insertAdjacentElement('beforebegin',b);
+else screen.appendChild(b);
+});
+}
 
 
 /* =========================================================
@@ -430,6 +512,8 @@ return screen;
 const contact=
 ensureContactScreen();
 
+ensureReturnHomeButtons();
+
 
 /* =========================================================
    NAVIGATION EVENTS
@@ -769,159 +853,15 @@ button.textContent=
 
 }
 );
-
-
 /* =========================================================
    DAILY DECISION
+   ADMIN / BACKEND ONLY
 ========================================================= */
 
-const builtDaily=[
-
-[
-'Finish one thing you have been avoiding before you start something new.',
-'Choose the unfinished task that has been following you around and complete the next real step today.'
-],
-
-[
-'Stop waiting for somebody else to believe in an idea you already know deserves a chance.',
-'Take one action toward the idea without asking anyone for permission.'
-],
-
-[
-'Protect the first hour of your day from unnecessary noise.',
-'Give your first focused hour to something that moves your life forward.'
-],
-
-[
-'Do the important thing before the easy thing.',
-'Identify the task with the greatest impact and work on it first.'
-],
-
-[
-'Stop measuring your beginning against somebody else’s middle.',
-'Return your attention to one measurable step on your own path.'
-],
-
-[
-'Choose discipline over mood for one hour.',
-'Work on the goal for one uninterrupted hour whether you feel motivated or not.'
-],
-
-[
-'Make a decision your future self will thank you for.',
-'Choose one action today that improves tomorrow instead of only comforting today.'
-],
-
-[
-'Finish what you said you would finish.',
-'Pick one promise you made to yourself and honor it before the day ends.'
-],
-
-[
-'Do not let one bad moment become a bad day.',
-'Reset your attention and make the next decision a useful one.'
-],
-
-[
-'Choose progress that can be measured.',
-'Complete one task you can point to at the end of the day.'
-],
-
-[
-'Stop making fear sound like wisdom.',
-'Ask whether the concern is a real fact or simply discomfort about moving.'
-],
-
-[
-'Stop waiting for the perfect conditions.',
-'Use what you have and create the best next version possible.'
-],
-
-[
-'Protect your attention like it has value, because it does.',
-'Turn off one source of interruption during your most important work.'
-],
-
-[
-'Do not confuse being busy with moving forward.',
-'Remove one low value task and replace it with meaningful progress.'
-],
-
-[
-'Use your talent instead of only talking about it.',
-'Create, practice, publish or perform something today.'
-],
-
-[
-'Stop negotiating with a task you already decided matters.',
-'Start it now for ten minutes and let momentum take over.'
-],
-
-[
-'Create before you consume.',
-'Make something of your own before opening entertainment or social media.'
-],
-
-[
-'Stop waiting to feel confident before acting.',
-'Take the action that confidence is supposed to help you take.'
-],
-
-[
-'Turn one excuse into a plan.',
-'Take the obstacle you keep naming and write one practical way around it.'
-],
-
-[
-'Choose consistency over intensity.',
-'Do the smaller action you can repeat instead of waiting for a dramatic burst of motivation.'
-],
-
-[
-'Do not let perfection delay something useful.',
-'Release, send, post or finish the version that is ready enough to move.'
-],
-
-[
-'Make your next hour intentional.',
-'Decide exactly what the next sixty minutes are for before they disappear.'
-],
-
-[
-'Create a boundary before resentment creates one for you.',
-'Communicate one limit clearly and respectfully today.'
-],
-
-[
-'Stop using preparation to hide from execution.',
-'Move one idea from planning into real world action today.'
-],
-
-[
-'Do not let uncertainty become inactivity.',
-'Take the step that remains sensible even without knowing the whole path.'
-],
-
-[
-'Choose responsibility over excuses.',
-'Name what is within your control and take action on that part today.'
-],
-
-[
-'Make today’s decision something you can prove with action.',
-'Before the day ends, create visible evidence that you followed through.'
-]
-
-];
-
-
-let daily=[
-...builtDaily
-];
-
+let daily=[];
 
 const DK=
-'boss-code-daily-decision-v2';
+'boss-code-daily-decision-v3';
 
 const DAY=
 86400000;
@@ -930,7 +870,6 @@ const DAY=
 function dailyState(){
 
 let s;
-
 
 try{
 
@@ -955,17 +894,11 @@ if(
 
 s={
 
-i:
-Math.floor(
-now/DAY
-)%
-daily.length,
+i:0,
 
-t:
-now,
+t:now,
 
-seen:
-false
+seen:false
 
 };
 
@@ -981,9 +914,17 @@ DAY
 
 if(c>0){
 
+if(daily.length){
+
 s.i=
 (s.i+c)%
 daily.length;
+
+}else{
+
+s.i=0;
+
+}
 
 s.t+=
 c*DAY;
@@ -995,10 +936,13 @@ false;
 
 
 if(
-s.i>=
-daily.length
-)
+daily.length&&
+s.i>=daily.length
+){
+
 s.i=0;
+
+}
 
 
 localStorage.setItem(
@@ -1014,10 +958,46 @@ return s;
 
 function renderDaily(){
 
-if(
-!daily.length
-)
+const title=
+$('daily-decision-title');
+
+const move=
+$('daily-decision-move-text');
+
+const preview=
+$('daily-decision-home-preview');
+
+const number=
+$('daily-decision-number');
+
+const confirmation=
+$('daily-decision-confirmation');
+
+
+if(!daily.length){
+
+if(number)
+number.textContent=
+'TODAY';
+
+if(title)
+title.textContent=
+'CHECK BACK FOR TODAY’S DECISION';
+
+if(move)
+move.textContent=
+'New Daily Decisions are controlled from B.O.S.S CODE GO Admin.';
+
+if(preview)
+preview.textContent=
+'CHECK BACK FOR TODAY’S DECISION';
+
+if(confirmation)
+confirmation.textContent='';
+
 return;
+
+}
 
 
 const s=
@@ -1031,12 +1011,9 @@ if(!d)
 return;
 
 
-if(
-$('daily-decision-number')
-){
+if(number){
 
-$('daily-decision-number')
-.textContent=
+number.textContent=
 'DECISION '+
 String(
 s.i+1
@@ -1049,45 +1026,36 @@ s.i+1
 }
 
 
-if(
-$('daily-decision-title')
-){
+if(title){
 
-$('daily-decision-title')
-.textContent=
-d[0];
+title.textContent=
+d[0]||
+'';
 
 }
 
 
-if(
-$('daily-decision-move-text')
-){
+if(move){
 
-$('daily-decision-move-text')
-.textContent=
-d[1];
+move.textContent=
+d[1]||
+'';
 
 }
 
 
-if(
-$('daily-decision-home-preview')
-){
+if(preview){
 
-$('daily-decision-home-preview')
-.textContent=
-d[0];
+preview.textContent=
+d[0]||
+'';
 
 }
 
 
-if(
-$('daily-decision-confirmation')
-){
+if(confirmation){
 
-$('daily-decision-confirmation')
-.textContent=
+confirmation.textContent=
 s.seen
 ?
 'DECISION MADE. NOW MOVE.'
@@ -1100,6 +1068,10 @@ s.seen
 
 
 function openDaily(){
+
+if(!daily.length)
+return;
+
 
 const m=
 $('daily-decision-modal');
@@ -1193,6 +1165,10 @@ on(
 'click',
 ()=>{
 
+if(!daily.length)
+return;
+
+
 const s=
 dailyState();
 
@@ -1205,7 +1181,9 @@ DK,
 JSON.stringify(s)
 );
 
+
 renderDaily();
+
 
 setTimeout(
 ()=>closeDaily(false),
@@ -1245,6 +1223,7 @@ s.style.display=
 
 
 if(
+daily.length&&
 !dailyState().seen
 )
 openDaily();
@@ -1255,6 +1234,7 @@ openDaily();
 
 
 }else if(
+daily.length&&
 !dailyState().seen
 ){
 
@@ -1272,209 +1252,20 @@ openDaily();
 
 /* =========================================================
    MUSIC
+   BACKEND ONLY
 ========================================================= */
 
-const builtArtists=[
+let artists=[];
 
-{
+let activeArtist=null;
 
-id:
-'dez',
+let artistGalleryRows=[];
 
-name:
-'Dez Tha Reason',
+let artistMusicVideoRows=[];
 
-initials:
-'DTR',
+let trackIndex=-1;
 
-image:
-'Music/dez-tha-reason/artwork/Dez photo.jpg',
-
-tagline:
-'Music. Purpose. Perspective.',
-
-
-featuredRelease:{
-
-title:
-'RISE OF THE DECISION MAKER',
-
-type:
-'FEATURED PROJECT',
-
-artwork:
-'Music/dez-tha-reason/artwork/Rise Cover.jpg',
-
-description:
-'Listen to Dez Tha Reason directly inside B.O.S.S CODE Music.'
-
-},
-
-
-tracks:[
-
-[
-'Winners Delight',
-'Music/dez-tha-reason/music/1.Winners Delight.wav'
-],
-
-[
-'Greatness Is A Decision',
-'Music/dez-tha-reason/music/2.GREATNESS.wav'
-],
-
-[
-'Heavy Is The Head',
-'Music/dez-tha-reason/music/3.Heavy.wav'
-]
-
-]
-.map(
-x=>({
-
-title:
-x[0],
-
-album:
-'RISE OF THE DECISION MAKER',
-
-audioSources:[
-x[1]
-],
-
-artwork:
-'Music/dez-tha-reason/artwork/Rise Cover.jpg',
-
-status:
-'PLAY'
-
-})
-),
-
-
-releases:[
-
-{
-
-title:
-'RISE OF THE DECISION MAKER',
-
-type:
-'PROJECT',
-
-artwork:
-'Music/dez-tha-reason/artwork/Rise Cover.jpg',
-
-status:
-'Listen now'
-
-}
-
-]
-
-},
-
-
-{
-
-id:
-'fundamentals',
-
-name:
-'Fundamentals',
-
-initials:
-'FUN',
-
-image:
-'Music/fundamentals/artwork/fundamentals-photo.jpg',
-
-tagline:
-'Independent music from B.O.S.S CODE Music.',
-
-
-featuredRelease:{
-
-title:
-'RISE OF THE DECISION MAKER',
-
-type:
-'FEATURED RELEASE',
-
-artwork:
-'Music/fundamentals/artwork/Fun-album-cover.png',
-
-description:
-'Listen to Fundamentals directly inside B.O.S.S CODE Music.'
-
-},
-
-
-tracks:[
-
-{
-
-title:
-'Is There Something Wrong With Me',
-
-album:
-'RISE OF THE DECISION MAKER',
-
-audioSources:[
-
-'Music/fundamentals/music/Is There Something.mp3'
-
-],
-
-artwork:
-'Music/fundamentals/artwork/Fun-album-cover.png',
-
-status:
-'PLAY'
-
-}
-
-],
-
-
-releases:[
-
-{
-
-title:
-'RISE OF THE DECISION MAKER',
-
-type:
-'PROJECT',
-
-artwork:
-'Music/fundamentals/artwork/Fun-album-cover.png',
-
-status:
-'Listen now'
-
-}
-
-]
-
-}
-
-];
-
-
-let artists=[
-...builtArtists
-];
-
-
-let activeArtist=
-artists[0];
-
-let trackIndex=
--1;
-
-let sourceIndex=
-0;
+let sourceIndex=0;
 
 let musicQueue=[];
 
@@ -1482,6 +1273,37 @@ let activeReleaseId=null;
 
 const audio=
 $('boss-music-audio');
+
+
+function musicYoutubeId(url=''){
+
+for(
+const r of [
+
+/youtube\.com\/live\/([^?&/]+)/,
+
+/youtube\.com\/watch\?v=([^&]+)/,
+
+/youtu\.be\/([^?&/]+)/,
+
+/youtube\.com\/embed\/([^?&/]+)/,
+
+/youtube\.com\/shorts\/([^?&/]+)/
+]
+){
+
+const m=
+String(url)
+.match(r);
+
+if(m)
+return m[1];
+
+}
+
+return'';
+
+}
 
 
 function ensureArtistUI(){
@@ -1562,6 +1384,424 @@ b
 
 }
 
+
+ensureArtistMediaSections();
+
+}
+
+
+function ensureArtistMediaSections(){
+
+const screen=
+$('music-screen');
+
+if(!screen)
+return;
+
+
+const wrap=
+q(
+'#music-screen .music-wrap'
+);
+
+if(!wrap)
+return;
+
+
+const footer=
+q(
+'#music-screen .boss-footer'
+);
+
+
+if(
+!$('artist-gallery-section')
+){
+
+const section=
+document.createElement(
+'section'
+);
+
+section.id=
+'artist-gallery-section';
+
+section.className=
+'music-section';
+
+section.innerHTML=`
+
+<div class="music-section-heading">
+
+<div>
+
+<span>
+ARTIST MEDIA
+</span>
+
+<h2>
+PHOTO GALLERY
+</h2>
+
+</div>
+
+<div class="music-heading-line"></div>
+
+</div>
+
+<div
+id="artist-photo-gallery"
+class="artist-media-grid"
+></div>
+
+`;
+
+
+if(footer)
+footer.insertAdjacentElement(
+'beforebegin',
+section
+);
+else
+wrap.appendChild(section);
+
+}
+
+
+if(
+!$('artist-videos-section')
+){
+
+const section=
+document.createElement(
+'section'
+);
+
+section.id=
+'artist-videos-section';
+
+section.className=
+'music-section';
+
+section.innerHTML=`
+
+<div class="music-section-heading">
+
+<div>
+
+<span>
+WATCH
+</span>
+
+<h2>
+MUSIC VIDEOS
+</h2>
+
+</div>
+
+<div class="music-heading-line"></div>
+
+</div>
+
+<div
+id="artist-music-videos"
+class="artist-media-grid"
+></div>
+
+`;
+
+
+const gallery=
+$('artist-gallery-section');
+
+
+if(gallery)
+gallery.insertAdjacentElement(
+'afterend',
+section
+);
+else if(footer)
+footer.insertAdjacentElement(
+'beforebegin',
+section
+);
+else
+wrap.appendChild(section);
+
+}
+
+
+if(
+!$('artist-photo-lightbox')
+){
+
+const box=
+document.createElement(
+'div'
+);
+
+box.id=
+'artist-photo-lightbox';
+
+box.className=
+'artist-media-lightbox';
+
+box.innerHTML=`
+
+<button
+id="artist-photo-lightbox-close"
+type="button"
+aria-label="Close"
+>
+×
+</button>
+
+<img
+id="artist-photo-lightbox-image"
+alt=""
+>
+
+`;
+
+
+document.body.appendChild(box);
+
+
+on(
+'artist-photo-lightbox-close',
+'click',
+closeArtistPhoto
+);
+
+
+box.addEventListener(
+'click',
+e=>{
+
+if(
+e.target===
+box
+)
+closeArtistPhoto();
+
+}
+);
+
+}
+
+
+if(
+!$('artist-video-lightbox')
+){
+
+const box=
+document.createElement(
+'div'
+);
+
+box.id=
+'artist-video-lightbox';
+
+box.className=
+'artist-media-lightbox';
+
+box.innerHTML=`
+
+<button
+id="artist-video-lightbox-close"
+type="button"
+aria-label="Close"
+>
+×
+</button>
+
+<div
+style="
+width:min(1000px,94vw);
+aspect-ratio:16/9;
+background:#000;
+"
+>
+
+<iframe
+id="artist-video-lightbox-frame"
+title="Music Video"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+allowfullscreen
+style="
+width:100%;
+height:100%;
+border:0;
+display:block;
+"
+></iframe>
+
+</div>
+
+`;
+
+
+document.body.appendChild(box);
+
+
+on(
+'artist-video-lightbox-close',
+'click',
+closeArtistVideo
+);
+
+
+box.addEventListener(
+'click',
+e=>{
+
+if(
+e.target===
+box
+)
+closeArtistVideo();
+
+}
+);
+
+}
+
+}
+
+
+function openArtistPhoto(url){
+
+const box=
+$('artist-photo-lightbox');
+
+const image=
+$('artist-photo-lightbox-image');
+
+
+if(
+!box||
+!image||
+!url
+)
+return;
+
+
+image.src=
+url;
+
+
+box.classList.add(
+'open'
+);
+
+
+document.body.style.overflow=
+'hidden';
+
+}
+
+
+function closeArtistPhoto(){
+
+const box=
+$('artist-photo-lightbox');
+
+const image=
+$('artist-photo-lightbox-image');
+
+
+if(box)
+box.classList.remove(
+'open'
+);
+
+
+if(image)
+image.removeAttribute(
+'src'
+);
+
+
+document.body.style.overflow=
+'';
+
+}
+
+
+function openArtistVideo(item){
+
+const id=
+item.youtubeId||
+item.youtube_id||
+musicYoutubeId(
+item.youtubeUrl||
+item.youtube_url||
+''
+);
+
+
+if(!id)
+return;
+
+
+const box=
+$('artist-video-lightbox');
+
+const frame=
+$('artist-video-lightbox-frame');
+
+
+if(
+!box||
+!frame
+)
+return;
+
+
+if(
+audio&&
+!audio.paused
+)
+audio.pause();
+
+
+frame.src=
+`https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+
+
+box.classList.add(
+'open'
+);
+
+
+document.body.style.overflow=
+'hidden';
+
+}
+
+
+function closeArtistVideo(){
+
+const box=
+$('artist-video-lightbox');
+
+const frame=
+$('artist-video-lightbox-frame');
+
+
+if(box)
+box.classList.remove(
+'open'
+);
+
+
+if(frame)
+frame.src='';
+
+
+document.body.style.overflow=
+'';
+
 }
 
 
@@ -1579,6 +1819,41 @@ return;
 
 
 g.innerHTML='';
+
+
+if(!artists.length){
+
+g.innerHTML=`
+
+<div class="artist-media-empty">
+
+NO ARTISTS ARE PUBLISHED RIGHT NOW.
+
+</div>
+
+`;
+
+
+clearMusicArtistUI();
+
+return;
+
+}
+
+
+if(
+!activeArtist||
+!artists.some(
+a=>
+String(a.id)===
+String(activeArtist.id)
+)
+){
+
+activeArtist=
+artists[0];
+
+}
 
 
 artists.forEach(
@@ -1605,12 +1880,17 @@ activeArtist
 );
 
 
+const image=
+a.image||
+'images/boss-code-media-logo.png';
+
+
 b.innerHTML=`
 
 <div class="artist-card-image">
 
 <img
-src="${esc(a.image)}"
+src="${esc(image)}"
 alt="${esc(a.name)}"
 >
 
@@ -1643,6 +1923,121 @@ g.appendChild(b);
 
 
 updateArtistUI();
+
+renderArtistGallery();
+
+renderArtistMusicVideos();
+
+}
+
+
+function clearMusicArtistUI(){
+
+activeArtist=null;
+
+
+const b=
+$('selected-artist-banner');
+
+
+if(b){
+
+b.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="width:100%"
+>
+
+NO ARTISTS ARE PUBLISHED RIGHT NOW.
+
+</div>
+
+`;
+
+}
+
+
+const t=
+q(
+'.featured-release-info h2'
+);
+
+const ar=
+q(
+'.featured-artist'
+);
+
+const lab=
+q(
+'.featured-label'
+);
+
+const d=
+q(
+'.featured-description'
+);
+
+const c=
+q(
+'.placeholder-cover'
+);
+
+
+if(t)
+t.textContent=
+'NO RELEASE AVAILABLE';
+
+if(ar)
+ar.textContent=
+'B.O.S.S CODE MUSIC';
+
+if(lab)
+lab.textContent=
+'MUSIC';
+
+if(d)
+d.textContent=
+'New music will appear here when it is published from Admin.';
+
+
+if(c){
+
+c.innerHTML=`
+
+<img
+src="images/boss-code-media-logo.png"
+alt="B.O.S.S CODE MEDIA"
+>
+
+`;
+
+}
+
+
+if(
+$('music-track-list')
+)
+$('music-track-list').innerHTML=
+'<div class="artist-media-empty">NO TRACKS PUBLISHED.</div>';
+
+
+const releases=
+q(
+'.release-grid'
+);
+
+
+if(releases)
+releases.innerHTML=
+'<div class="artist-media-empty">NO RELEASES PUBLISHED.</div>';
+
+
+renderArtistGallery();
+
+renderArtistMusicVideos();
+
+resetPlayer();
 
 }
 
@@ -1688,12 +2083,25 @@ renderReleases();
 
 updateArtistUI();
 
+renderArtistGallery();
+
+renderArtistMusicVideos();
+
 resetPlayer();
 
 }
 
 
 function updateArtistUI(){
+
+if(!activeArtist){
+
+clearMusicArtistUI();
+
+return;
+
+}
+
 
 const b=
 $('selected-artist-banner');
@@ -1706,7 +2114,10 @@ b.innerHTML=`
 <div class="selected-artist-photo">
 
 <img
-src="${esc(activeArtist.image)}"
+src="${esc(
+activeArtist.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(activeArtist.name)}"
 >
 
@@ -1748,7 +2159,8 @@ q(
 if(im){
 
 im.src=
-activeArtist.image;
+activeArtist.image||
+'images/boss-code-media-logo.png';
 
 im.alt=
 activeArtist.name;
@@ -1758,10 +2170,6 @@ activeArtist.name;
 
 const f=
 activeArtist.featuredRelease;
-
-
-if(!f)
-return;
 
 
 const t=
@@ -1790,6 +2198,47 @@ q(
 );
 
 
+if(!f){
+
+if(t)
+t.textContent=
+'NO RELEASE AVAILABLE';
+
+if(ar)
+ar.textContent=
+activeArtist.name.toUpperCase();
+
+if(lab)
+lab.textContent=
+'B.O.S.S CODE MUSIC';
+
+if(d)
+d.textContent=
+'New releases will appear here when they are published.';
+
+
+if(c){
+
+c.innerHTML=`
+
+<img
+src="${esc(
+activeArtist.image||
+'images/boss-code-media-logo.png'
+)}"
+alt="${esc(activeArtist.name)}"
+>
+
+`;
+
+}
+
+
+return;
+
+}
+
+
 if(t)
 t.textContent=
 f.title;
@@ -1800,11 +2249,13 @@ activeArtist.name.toUpperCase();
 
 if(lab)
 lab.textContent=
-f.type;
+f.type||
+'FEATURED RELEASE';
 
 if(d)
 d.textContent=
-f.description;
+f.description||
+'';
 
 
 if(c){
@@ -1812,7 +2263,11 @@ if(c){
 c.innerHTML=`
 
 <img
-src="${esc(f.artwork)}"
+src="${esc(
+f.artwork||
+activeArtist.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(f.title)}"
 >
 
@@ -1824,6 +2279,7 @@ alt="${esc(f.title)}"
 const featuredButton=
 $('play-featured-release');
 
+
 if(featuredButton){
 
 const type=
@@ -1834,8 +2290,11 @@ f.type||
 )
 .toLowerCase();
 
+
 featuredButton.textContent=
-type.includes('single')
+type.includes(
+'single'
+)
 ?
 '▶ LISTEN NOW'
 :
@@ -1846,15 +2305,232 @@ type.includes('single')
 }
 
 
+function renderArtistGallery(){
+
+ensureArtistMediaSections();
+
+
+const g=
+$('artist-photo-gallery');
+
+
+if(!g)
+return;
+
+
+g.innerHTML='';
+
+
+if(!activeArtist){
+
+g.innerHTML=
+'<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
+
+return;
+
+}
+
+
+const rows=
+artistGalleryRows.filter(
+item=>
+String(item.artistId)===
+String(activeArtist.backendId)
+);
+
+
+if(!rows.length){
+
+g.innerHTML=
+'<div class="artist-media-empty">NO PHOTOS PUBLISHED FOR THIS ARTIST.</div>';
+
+return;
+
+}
+
+
+rows.forEach(
+item=>{
+
+const b=
+document.createElement(
+'button'
+);
+
+
+b.type=
+'button';
+
+b.className=
+'artist-media-card';
+
+
+b.innerHTML=`
+
+<img
+src="${esc(item.imageUrl)}"
+alt="${esc(item.caption||activeArtist.name)}"
+>
+
+<div class="artist-media-card-body">
+
+<strong>
+${esc(item.caption||activeArtist.name)}
+</strong>
+
+<span>
+PHOTO GALLERY
+</span>
+
+</div>
+
+`;
+
+
+b.addEventListener(
+'click',
+()=>openArtistPhoto(
+item.imageUrl
+)
+);
+
+
+g.appendChild(b);
+
+}
+);
+
+}
+
+
+function renderArtistMusicVideos(){
+
+ensureArtistMediaSections();
+
+
+const g=
+$('artist-music-videos');
+
+
+if(!g)
+return;
+
+
+g.innerHTML='';
+
+
+if(!activeArtist){
+
+g.innerHTML=
+'<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
+
+return;
+
+}
+
+
+const rows=
+artistMusicVideoRows.filter(
+item=>
+String(item.artistId)===
+String(activeArtist.backendId)
+);
+
+
+if(!rows.length){
+
+g.innerHTML=
+'<div class="artist-media-empty">NO MUSIC VIDEOS PUBLISHED FOR THIS ARTIST.</div>';
+
+return;
+
+}
+
+
+rows.forEach(
+item=>{
+
+const id=
+item.youtubeId||
+musicYoutubeId(
+item.youtubeUrl
+);
+
+
+if(!id)
+return;
+
+
+const thumb=
+item.thumbnailUrl||
+`https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+
+const b=
+document.createElement(
+'button'
+);
+
+
+b.type=
+'button';
+
+b.className=
+'artist-media-card video';
+
+
+b.innerHTML=`
+
+<img
+src="${esc(thumb)}"
+alt="${esc(item.title)}"
+>
+
+<div class="artist-media-card-body">
+
+<strong>
+${esc(item.title)}
+</strong>
+
+<span>
+▶ WATCH VIDEO
+</span>
+
+</div>
+
+`;
+
+
+b.addEventListener(
+'click',
+()=>openArtistVideo(
+item
+)
+);
+
+
+g.appendChild(b);
+
+}
+);
+
+}
+
+
 function releaseTrackIndexes(release){
 
-if(!release)
+if(
+!release||
+!activeArtist
+)
 return[];
+
 
 const rid=
 release.id??
 release.releaseId??
 null;
+
 
 const title=
 String(
@@ -1864,12 +2540,16 @@ release.title||
 .trim()
 .toLowerCase();
 
+
 return(
 activeArtist.tracks||
 []
 )
 .map(
-(t,i)=>({t,i})
+(t,i)=>({
+t,
+i
+})
 )
 .filter(
 x=>{
@@ -1879,9 +2559,11 @@ rid!==null&&
 rid!==undefined&&
 x.t.releaseId!==null&&
 x.t.releaseId!==undefined&&
-String(x.t.releaseId)===String(rid)
+String(x.t.releaseId)===
+String(rid)
 )
 return true;
+
 
 return(
 title&&
@@ -1890,7 +2572,8 @@ x.t.album||
 ''
 )
 .trim()
-.toLowerCase()===title
+.toLowerCase()===
+title
 );
 
 }
@@ -1909,18 +2592,23 @@ releaseTrackIndexes(
 release
 );
 
+
 if(!indexes.length)
 return;
 
+
 musicQueue=
 indexes;
+
 
 activeReleaseId=
 release.id??
 release.releaseId??
 release.title;
 
+
 renderTracks();
+
 
 playTrack(
 indexes[0]
@@ -1942,10 +2630,20 @@ return;
 g.innerHTML='';
 
 
-(
-activeArtist.tracks||
-[]
-)
+if(
+!activeArtist||
+!activeArtist.tracks?.length
+){
+
+g.innerHTML=
+'<div class="artist-media-empty">NO TRACKS PUBLISHED FOR THIS ARTIST.</div>';
+
+return;
+
+}
+
+
+activeArtist.tracks
 .forEach(
 (t,i)=>{
 
@@ -1958,8 +2656,16 @@ document.createElement(
 r.className=
 'music-track';
 
+
 r.dataset.track=
 i;
+
+
+const artwork=
+t.artwork||
+activeArtist.featuredRelease?.artwork||
+activeArtist.image||
+'images/boss-code-media-logo.png';
 
 
 r.innerHTML=`
@@ -1971,6 +2677,16 @@ ${String(i+1).padStart(2,'0')}
 </div>
 
 
+<div class="track-cover">
+
+<img
+src="${esc(artwork)}"
+alt="${esc(t.title)}"
+>
+
+</div>
+
+
 <div class="track-info">
 
 <strong>
@@ -1978,7 +2694,7 @@ ${esc(t.title)}
 </strong>
 
 <span>
-${esc(activeArtist.name)} • ${esc(t.album||'')}
+${esc(activeArtist.name)}${t.album?' • '+esc(t.album):''}
 </span>
 
 </div>
@@ -2025,10 +2741,20 @@ return;
 g.innerHTML='';
 
 
-(
-activeArtist.releases||
-[]
-)
+if(
+!activeArtist||
+!activeArtist.releases?.length
+){
+
+g.innerHTML=
+'<div class="artist-media-empty">NO RELEASES PUBLISHED FOR THIS ARTIST.</div>';
+
+return;
+
+}
+
+
+activeArtist.releases
 .forEach(
 r=>{
 
@@ -2041,8 +2767,10 @@ document.createElement(
 c.className=
 'release-card';
 
+
 c.style.cursor=
 'pointer';
+
 
 const type=
 String(
@@ -2051,6 +2779,7 @@ r.type||
 ''
 )
 .toLowerCase();
+
 
 const single=
 type.includes(
@@ -2063,7 +2792,11 @@ c.innerHTML=`
 <div class="release-placeholder">
 
 <img
-src="${esc(r.artwork||activeArtist.image)}"
+src="${esc(
+r.artwork||
+activeArtist.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(r.title)}"
 >
 
@@ -2099,9 +2832,14 @@ g.appendChild(c);
 );
 
 }
-
-
 function playTrack(i){
+
+if(
+!activeArtist||
+!audio
+)
+return;
+
 
 const t=
 (
@@ -2110,10 +2848,7 @@ activeArtist.tracks||
 )[i];
 
 
-if(
-!t||
-!audio
-)
+if(!t)
 return;
 
 
@@ -2171,7 +2906,12 @@ $('now-playing-art')
 .innerHTML=`
 
 <img
-src="${esc(t.artwork||activeArtist.featuredRelease?.artwork||activeArtist.image)}"
+src="${esc(
+t.artwork||
+activeArtist.featuredRelease?.artwork||
+activeArtist.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(t.title)}"
 >
 
@@ -2187,11 +2927,19 @@ loadSource(true);
 
 function loadSource(play){
 
+if(
+!activeArtist||
+!audio
+)
+return;
+
+
 const t=
 (
 activeArtist.tracks||
 []
 )[trackIndex];
+
 
 const src=
 t?.audioSources?.[
@@ -2199,10 +2947,7 @@ sourceIndex
 ];
 
 
-if(
-!src||
-!audio
-)
+if(!src)
 return;
 
 
@@ -2212,14 +2957,43 @@ src;
 audio.load();
 
 
-if(play)
+if(play){
+
 audio.play()
-.catch(()=>{});
+.catch(
+error=>
+console.warn(
+'Music playback could not start',
+error
+)
+);
+
+}
 
 }
 
 
 function resetPlayer(){
+
+if(audio){
+
+audio.pause();
+
+audio.removeAttribute(
+'src'
+);
+
+audio.load();
+
+}
+
+
+trackIndex=
+-1;
+
+sourceIndex=
+0;
+
 
 if(
 $('now-playing-title')
@@ -2234,22 +3008,30 @@ $('now-playing-artist')
 )
 $('now-playing-artist')
 .textContent=
-activeArtist.name;
+activeArtist
+?
+activeArtist.name
+:
+'B.O.S.S CODE MUSIC';
 
 
 if(
 $('now-playing-art')
 ){
 
+const artwork=
+
+activeArtist?.featuredRelease?.artwork||
+activeArtist?.image||
+'images/boss-code-media-logo.png';
+
+
 $('now-playing-art')
 .innerHTML=`
 
 <img
-src="${esc(
-activeArtist.featuredRelease?.artwork||
-activeArtist.image
-)}"
-alt="${esc(activeArtist.name)}"
+src="${esc(artwork)}"
+alt="B.O.S.S CODE MUSIC"
 >
 
 `;
@@ -2280,10 +3062,24 @@ $('music-duration')
 .textContent=
 '0:00';
 
+
+if(
+$('music-play-pause')
+)
+$('music-play-pause')
+.textContent=
+'▶';
+
 }
 
 
 function currentMusicQueue(){
+
+if(
+!activeArtist
+)
+return[];
+
 
 return musicQueue.length
 ?
@@ -2305,20 +3101,25 @@ function nextMusicTrack(){
 const queue=
 currentMusicQueue();
 
+
 if(!queue.length)
 return;
+
 
 let pos=
 queue.indexOf(
 trackIndex
 );
 
+
 pos=
 pos<0
 ?
 0
 :
-(pos+1)%queue.length;
+(pos+1)%
+queue.length;
+
 
 playTrack(
 queue[pos]
@@ -2332,20 +3133,28 @@ function previousMusicTrack(){
 const queue=
 currentMusicQueue();
 
+
 if(!queue.length)
 return;
+
 
 let pos=
 queue.indexOf(
 trackIndex
 );
 
+
 pos=
 pos<0
 ?
 queue.length-1
 :
-(pos-1+queue.length)%queue.length;
+(
+pos-1+
+queue.length
+)%
+queue.length;
+
 
 playTrack(
 queue[pos]
@@ -2360,10 +3169,16 @@ s=>
 ?
 '0:00'
 :
-Math.floor(s/60)+
-':'+
+Math.floor(
+s/60
+)
++
+':'
++
 String(
-Math.floor(s%60)
+Math.floor(
+s%60
+)
 )
 .padStart(
 2,
@@ -2376,7 +3191,10 @@ on(
 'click',
 ()=>{
 
-if(!audio)
+if(
+!audio||
+!activeArtist
+)
 return;
 
 
@@ -2424,6 +3242,10 @@ on(
 'click',
 ()=>{
 
+if(!activeArtist)
+return;
+
+
 if(
 activeArtist.featuredRelease
 ){
@@ -2435,6 +3257,7 @@ activeArtist.featuredRelease
 return;
 
 }
+
 
 if(
 activeArtist.tracks?.length
@@ -2459,13 +3282,16 @@ e=>{
 
 if(
 audio?.duration
-)
+){
+
 audio.currentTime=
 (
 +e.target.value/
 100
 )*
 audio.duration;
+
+}
 
 }
 );
@@ -2555,6 +3381,10 @@ audio.addEventListener(
 'error',
 ()=>{
 
+if(!activeArtist)
+return;
+
+
 const t=
 activeArtist.tracks?.[
 trackIndex
@@ -2585,104 +3415,23 @@ loadSource(true);
 
 /* =========================================================
    DECISION MAKERS
+   BACKEND ONLY
 ========================================================= */
 
-const dmVideos=[
+let dmVideos=[];
 
-[
-'Be Intentional',
-`${R2}/decision-makers/Be%20Intentional.mp4`,
-'Move through your day with intention instead of letting everything around you decide your direction.'
-],
+let dmSessions=[];
 
-[
-'Celebrity',
-`${R2}/decision-makers/Celebrity.mp4`,
-'A quick perspective on attention, influence and how we choose who gets access to our thinking.'
-],
+let dmChallenges=[];
 
-[
-'Congrats To You',
-`${R2}/decision-makers/Congrats-to-you.mp4`,
-'Sometimes you need to recognize the progress you have already made before rushing toward the next thing.'
-],
-
-[
-"Don't Be Afraid",
-`${R2}/decision-makers/Dont%20Be%20Affraid.mp4`,
-'Fear can speak loudly, but it does not have to make the decision.'
-],
-
-[
-"Don't Be Surprised",
-`${R2}/decision-makers/Dont%20Be%20Surprised.mp4`,
-'When you have put in the work, stop acting surprised when the opportunity finally arrives.'
-],
-
-[
-'One Life To Live',
-`${R2}/decision-makers/One%20Life%20To%20Live.mp4`,
-'You only get one life. Make decisions that reflect what really matters to you.'
-],
-
-[
-'Peace',
-`${R2}/decision-makers/Peace.mp4`,
-'Protecting your peace sometimes requires making a decision about what no longer deserves your energy.'
-],
-
-[
-"You're The Teacher",
-"Videos/Decision Makers/You're The Teacher.mp4",
-'Your choices are teaching people how to treat you and teaching you what you are willing to accept.'
-]
-
-]
-.map(
-x=>({
-
-title:
-x[0],
-
-file:
-x[1],
-
-description:
-x[2],
-
-category:
-'ON THE GO'
-
-})
-);
+let dmResources=[];
 
 
 function yt(url=''){
 
-for(
-const r of [
-
-/youtube\.com\/live\/([^?&/]+)/,
-
-/youtube\.com\/watch\?v=([^&]+)/,
-
-/youtu\.be\/([^?&/]+)/,
-
-/youtube\.com\/embed\/([^?&/]+)/,
-
-/youtube\.com\/shorts\/([^?&/]+)/
-]
-){
-
-const m=
-url.match(r);
-
-if(m)
-return m[1];
-
-}
-
-return'';
+return musicYoutubeId(
+url
+);
 
 }
 
@@ -2702,18 +3451,26 @@ return;
 row.innerHTML='';
 
 
+if(!dmVideos.length){
+
+row.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="width:100%"
+>
+NO DECISION MAKERS VIDEOS ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
 dmVideos.forEach(
 v=>{
-
-const c=
-document.createElement(
-'article'
-);
-
-
-c.className=
-'on-the-go-card';
-
 
 const id=
 v.youtubeId||
@@ -2723,50 +3480,18 @@ v.youtubeUrl||
 );
 
 
-const media=
-id
-?
-`
+if(!id)
+return;
 
-<iframe
-src="https://www.youtube.com/embed/${id}?rel=0"
-title="${esc(v.title)}"
-allowfullscreen
-style="
-width:100%;
-height:100%;
-display:block;
-border:0;
-background:#000;
-"
-></iframe>
 
-`
-:
-`
+const c=
+document.createElement(
+'article'
+);
 
-<video
-class="decision-maker-local-video"
-preload="metadata"
-controls
-playsinline
-style="
-width:100%;
-height:100%;
-display:block;
-object-fit:contain;
-background:#000;
-"
->
 
-<source
-src="${esc(v.file||'')}"
-type="video/mp4"
->
-
-</video>
-
-`;
+c.className=
+'on-the-go-card';
 
 
 c.innerHTML=`
@@ -2780,7 +3505,20 @@ overflow:hidden;
 "
 >
 
-${media}
+<iframe
+data-dm-youtube
+src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0&enablejsapi=1"
+title="${esc(v.title)}"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+allowfullscreen
+style="
+width:100%;
+height:100%;
+display:block;
+border:0;
+background:#000;
+"
+></iframe>
 
 <span
 class="coming-label"
@@ -2816,28 +3554,175 @@ row.appendChild(c);
 }
 );
 
-
-qa(
-'.decision-maker-local-video'
-)
-.forEach(
-v=>
-v.addEventListener(
-'play',
-()=>{
-
-qa(
-'.decision-maker-local-video'
-)
-.forEach(
-o=>{
-
-if(o!==v)
-o.pause();
-
 }
+
+
+function buildDMSessions(){
+
+const grid=
+q(
+'#decision-makers-screen .session-grid'
 );
 
+
+if(!grid)
+return;
+
+
+grid.innerHTML='';
+
+
+if(!dmSessions.length){
+
+grid.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO DECISION MAKER SESSIONS ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
+dmSessions.forEach(
+session=>{
+
+const id=
+session.youtubeId||
+yt(
+session.youtubeUrl||
+''
+);
+
+
+const number=
+String(
+session.sessionNumber||
+1
+)
+.padStart(
+2,
+'0'
+);
+
+
+const thumbnail=
+
+session.thumbnailUrl||
+(
+id
+?
+`https://img.youtube.com/vi/${id}/hqdefault.jpg`
+:
+''
+);
+
+
+const card=
+document.createElement(
+'article'
+);
+
+
+card.className=
+'session-card';
+
+
+const media=
+thumbnail
+?
+`
+
+<div
+class="dm-session-media"
+data-session-media
+>
+
+<img
+src="${esc(thumbnail)}"
+alt="${esc(session.title)}"
+>
+
+${id
+?
+`
+<button
+class="dm-session-play"
+type="button"
+aria-label="Play ${esc(session.title)}"
+>
+▶
+</button>
+`
+:
+''
+}
+
+</div>
+
+`
+:
+'';
+
+
+card.innerHTML=`
+
+${media}
+
+<div class="session-number">
+${number}
+</div>
+
+<div class="session-content">
+
+<span>
+FOCUSED SESSION
+</span>
+
+<h3>
+${esc(session.title)}
+</h3>
+
+<p>
+${esc(session.description||'')}
+</p>
+
+<div class="session-status">
+
+${id
+?
+'▶ WATCH SESSION'
+:
+'SESSION COMING SOON'
+}
+
+</div>
+
+</div>
+
+`;
+
+
+if(id){
+
+const play=
+q(
+'.dm-session-play',
+card
+);
+
+
+if(play){
+
+play.addEventListener(
+'click',
+()=>{
 
 if(
 audio&&
@@ -2845,9 +3730,542 @@ audio&&
 )
 audio.pause();
 
+
+const mediaBox=
+q(
+'[data-session-media]',
+card
+);
+
+
+if(!mediaBox)
+return;
+
+
+mediaBox.innerHTML=`
+
+<iframe
+data-dm-youtube
+src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&enablejsapi=1"
+title="${esc(session.title)}"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+allowfullscreen
+></iframe>
+
+`;
+
 }
+);
+
+}
+
+}
+
+
+grid.appendChild(
+card
+);
+
+}
+);
+
+}
+
+
+function buildDMChallenges(){
+
+const grid=
+q(
+'#decision-makers-screen .action-grid'
+);
+
+
+if(!grid)
+return;
+
+
+grid.innerHTML='';
+
+
+const message=
+$('decision-challenge-message');
+
+
+if(message)
+message.classList.remove(
+'show'
+);
+
+
+if(!dmChallenges.length){
+
+grid.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO TAKE ACTION CHALLENGES ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
+dmChallenges.forEach(
+challenge=>{
+
+const card=
+document.createElement(
+'article'
+);
+
+
+card.className=
+'action-card';
+
+
+const thumb=
+challenge.thumbnailUrl
+?
+`
+
+<img
+class="action-card-thumb"
+src="${esc(challenge.thumbnailUrl)}"
+alt="${esc(challenge.title)}"
+>
+
+`
+:
+'';
+
+
+card.innerHTML=`
+
+${thumb}
+
+<div class="action-number">
+
+${String(
+challenge.challengeNumber||
+1
+)
+.padStart(
+2,
+'0'
+)}
+
+</div>
+
+<h3>
+${esc(challenge.title)}
+</h3>
+
+<p>
+${esc(challenge.description||'')}
+</p>
+
+<button
+class="action-button"
+type="button"
+>
+${esc(
+challenge.buttonText||
+'ACCEPT CHALLENGE'
+)}
+</button>
+
+`;
+
+
+const button=
+q(
+'.action-button',
+card
+);
+
+
+if(button){
+
+button.addEventListener(
+'click',
+()=>{
+
+if(
+$('challenge-title')
+)
+$('challenge-title')
+.textContent=
+challenge.title||
+'YOU MADE THE DECISION.';
+
+
+if(
+$('challenge-copy')
+)
+$('challenge-copy')
+.textContent=
+challenge.completionMessage||
+'NOW TAKE ACTION.';
+
+
+if(message){
+
+message.classList.add(
+'show'
+);
+
+
+message.scrollIntoView({
+
+behavior:
+'smooth',
+
+block:
+'nearest'
+
+});
+
+}
+
+}
+);
+
+}
+
+
+grid.appendChild(
+card
+);
+
+}
+);
+
+}
+
+
+function ensureDMResourcesSection(){
+
+const screen=
+$('decision-makers-screen');
+
+
+if(!screen)
+return;
+
+
+if(
+!$('decision-maker-resources-section')
+){
+
+const section=
+document.createElement(
+'section'
+);
+
+
+section.id=
+'decision-maker-resources-section';
+
+section.className=
+'decision-section';
+
+
+section.innerHTML=`
+
+<div class="decision-heading">
+
+<div>
+
+<span class="decision-kicker">
+KEEP BUILDING
+</span>
+
+<h2>
+RESOURCES
+</h2>
+
+</div>
+
+<span class="red-line"></span>
+
+</div>
+
+<p class="decision-section-copy">
+Tools and resources to help you move from decision to action.
+</p>
+
+<div
+id="decision-maker-resource-grid"
+class="dm-resource-grid"
+></div>
+
+`;
+
+
+const footer=
+q(
+'#decision-makers-screen .boss-footer'
+);
+
+
+if(footer){
+
+footer.insertAdjacentElement(
+'beforebegin',
+section
+);
+
+}else{
+
+screen.appendChild(
+section
+);
+
+}
+
+}
+
+
+if(
+!$('dm-resource-viewer')
+){
+
+const viewer=
+document.createElement(
+'div'
+);
+
+
+viewer.id=
+'dm-resource-viewer';
+
+viewer.className=
+'resource-viewer';
+
+
+viewer.innerHTML=`
+
+<button
+id="dm-resource-viewer-close"
+class="resource-viewer-close"
+type="button"
+aria-label="Close resource"
+>
+×
+</button>
+
+<iframe
+id="dm-resource-viewer-frame"
+title="Decision Makers Resource"
+></iframe>
+
+`;
+
+
+document.body.appendChild(
+viewer
+);
+
+
+on(
+'dm-resource-viewer-close',
+'click',
+closeDMResource
+);
+
+}
+
+}
+
+
+function renderDMResources(){
+
+ensureDMResourcesSection();
+
+
+const grid=
+$('decision-maker-resource-grid');
+
+
+if(!grid)
+return;
+
+
+grid.innerHTML='';
+
+
+if(!dmResources.length){
+
+grid.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO RESOURCES ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
+dmResources.forEach(
+resource=>{
+
+const card=
+document.createElement(
+'article'
+);
+
+
+card.className=
+'dm-resource-card';
+
+
+const image=
+resource.coverUrl||
+'images/decision-makers-logo.png';
+
+
+card.innerHTML=`
+
+<img
+src="${esc(image)}"
+alt="${esc(resource.title)}"
+>
+
+<div class="dm-resource-body">
+
+<span>
+${esc(resource.type||'RESOURCE')}
+</span>
+
+<h3>
+${esc(resource.title)}
+</h3>
+
+<p>
+${esc(resource.description||'')}
+</p>
+
+${resource.fileUrl
+?
+`
+<button
+class="dm-resource-button"
+type="button"
+>
+${esc(
+resource.buttonText||
+'OPEN RESOURCE'
+)}
+</button>
+`
+:
+''
+}
+
+</div>
+
+`;
+
+
+const button=
+q(
+'.dm-resource-button',
+card
+);
+
+
+if(button){
+
+button.addEventListener(
+'click',
+()=>openDMResource(
+resource.fileUrl
 )
 );
+
+}
+
+
+grid.appendChild(
+card
+);
+
+}
+);
+
+}
+
+
+function openDMResource(url){
+
+if(!url)
+return;
+
+
+ensureDMResourcesSection();
+
+
+const viewer=
+$('dm-resource-viewer');
+
+const frame=
+$('dm-resource-viewer-frame');
+
+
+if(
+!viewer||
+!frame
+)
+return;
+
+
+frame.src=
+url;
+
+
+viewer.classList.add(
+'open'
+);
+
+
+document.body.style.overflow=
+'hidden';
+
+}
+
+
+function closeDMResource(){
+
+const viewer=
+$('dm-resource-viewer');
+
+const frame=
+$('dm-resource-viewer-frame');
+
+
+if(viewer)
+viewer.classList.remove(
+'open'
+);
+
+
+if(frame)
+frame.src='';
+
+
+document.body.style.overflow=
+'';
 
 }
 
@@ -2855,183 +4273,72 @@ audio.pause();
 function stopDM(){
 
 qa(
-'.decision-maker-local-video'
+'[data-dm-youtube]'
 )
 .forEach(
-v=>v.pause()
+frame=>{
+
+try{
+
+frame.contentWindow
+?.postMessage(
+
+JSON.stringify({
+
+event:
+'command',
+
+func:
+'pauseVideo',
+
+args:[]
+
+}),
+
+'*'
+
+);
+
+}catch{}
+
+}
 );
 
 }
 
 
-const challenges={
+function renderDecisionMakers(){
 
-decision:[
+buildDM();
 
-'YOU MADE THE DECISION.',
+buildDMSessions();
 
-'Write down the thing you have been putting off. Decide today that waiting is over.'
+buildDMChallenges();
 
-],
+renderDMResources();
 
-step:[
-
-'NOW MOVE.',
-
-'Complete one real action toward your goal before today ends.'
-
-],
-
-perfect:[
-
-'PROGRESS OVER PERFECT.',
-
-'Start before everything is polished. Improve while moving.'
-
-]
-
-};
+}
 
 
-qa(
-'.action-button'
-)
-.forEach(
-b=>
-b.addEventListener(
+on(
+'decision-makers-button',
 'click',
-()=>{
-
-const x=
-challenges[
-b.dataset.action
-];
-
-
-if(!x)
-return;
-
-
-if(
-$('challenge-title')
-)
-$('challenge-title')
-.textContent=
-x[0];
-
-
-if(
-$('challenge-copy')
-)
-$('challenge-copy')
-.textContent=
-x[1];
-
-
-$('decision-challenge-message')
-?.classList
-.add(
-'show'
+renderDecisionMakers
 );
-
-}
-)
-);
-
-
 /* =========================================================
    B.O.S.S CHECK IN
+   BACKEND CONTROLLED
 ========================================================= */
-
-const builtBank={
-
-APPROVAL:[
-
-'I change what I really want because I worry how people will react.',
-
-'I feel pressure to explain my decisions so other people approve of them.',
-
-'I hesitate to say no because I do not want to disappoint people.',
-
-'Praise from other people strongly affects how confident I feel about my choices.',
-
-'I sometimes choose what looks good instead of what is right for me.',
-
-'I avoid a decision if I think people close to me may criticize it.'
-
-],
-
-
-COMPARISON:[
-
-'Seeing other people succeed can make me question my own progress.',
-
-'I compare my timeline to people who are further ahead.',
-
-'Social media can make me feel like I should be doing more.',
-
-'I sometimes change goals because somebody else appears to be winning with something different.',
-
-'I judge my progress by what other people have instead of where I started.',
-
-'I can lose focus on my own plan when I see somebody else moving faster.'
-
-],
-
-
-CONFIDENCE:[
-
-'I delay action because I am not sure I can handle the result.',
-
-'I second guess decisions even after I have enough information.',
-
-'I sometimes need reassurance before I trust my own judgment.',
-
-'I avoid opportunities because I worry I may not be ready.',
-
-'A mistake can make me question my overall ability.',
-
-'I find it difficult to speak confidently about what I want.'
-
-],
-
-
-ACTION:[
-
-'I know what I need to do but still put it off.',
-
-'I spend more time planning than executing.',
-
-'I wait for motivation before doing important work.',
-
-'I sometimes let discomfort stop a decision I know is necessary.',
-
-'I start things but struggle to consistently finish them.',
-
-'I delay a useful move while waiting for the perfect time.'
-
-]
-
-};
-
 
 const bank={
 
-APPROVAL:[
-...builtBank.APPROVAL
-],
+APPROVAL:[],
 
-COMPARISON:[
-...builtBank.COMPARISON
-],
+COMPARISON:[],
 
-CONFIDENCE:[
-...builtBank.CONFIDENCE
-],
+CONFIDENCE:[],
 
-ACTION:[
-...builtBank.ACTION
-]
+ACTION:[]
 
 };
 
@@ -3081,9 +4388,7 @@ $('checkin-results')
 
 function startCheck(){
 
-cq=
-shuffle(
-
+const available=
 Object.entries(
 bank
 )
@@ -3105,8 +4410,59 @@ text
 })
 )
 
-)
+);
 
+
+if(!available.length){
+
+if(
+$('checkin-question-text')
+)
+$('checkin-question-text')
+.textContent=
+'NO CHECK IN QUESTIONS ARE PUBLISHED RIGHT NOW.';
+
+
+if(
+$('checkin-intro')
+)
+$('checkin-intro')
+.style.display=
+'none';
+
+
+if(
+$('checkin-questions')
+)
+$('checkin-questions')
+.style.display=
+'block';
+
+
+if(
+$('checkin-answers')
+)
+$('checkin-answers')
+.innerHTML=
+'<div class="artist-media-empty">CHECK BACK SOON.</div>';
+
+
+if(
+$('previous-question')
+)
+$('previous-question')
+.style.visibility=
+'hidden';
+
+
+return;
+
+}
+
+
+cq=
+shuffle(
+available
 );
 
 
@@ -3329,14 +4685,18 @@ ACTION:[]
 
 
 cq.forEach(
-(x,i)=>
+(x,i)=>{
 
+if(
+cats[x.cat]
+)
 cats[x.cat]
 .push(
 resp[i]??
 0
-)
+);
 
+}
 );
 
 
@@ -3348,6 +4708,16 @@ cats
 )
 .forEach(
 ([k,v])=>{
+
+if(!v.length){
+
+scores[k]=
+100;
+
+return;
+
+}
+
 
 scores[k]=
 100-
@@ -3484,7 +4854,8 @@ scores
 .sort(
 (a,b)=>
 a[1]-b[1]
-)[0][0];
+)[0]?.[0]||
+'ACTION';
 
 
 if(
@@ -3580,95 +4951,10 @@ showCheckIntro
 
 /* =========================================================
    THE BOSS BITE
+   BACKEND ONLY
 ========================================================= */
 
-const episodes=[
-
-{
-
-id:
-'trailer',
-
-title:
-'The Boss Bite Trailer',
-
-description:
-'Welcome to The Boss Bite. Fueling Your Hustle.',
-
-youtubeUrl:
-'https://youtu.be/wKAwLNXTf6g'
-
-},
-
-
-{
-
-id:
-'haitian',
-
-title:
-'Haitian Sensation',
-
-description:
-'The Boss Bite visits Haitian Sensation.',
-
-youtubeUrl:
-'https://youtu.be/D6GujKBRZX0'
-
-},
-
-
-{
-
-id:
-'spudz',
-
-title:
-'House of Spudz + Pickle Fest',
-
-description:
-'Loaded potatoes, big flavors and Pickle Fest.',
-
-youtubeUrl:
-'https://youtu.be/uLLjlAieS64'
-
-},
-
-
-{
-
-id:
-'rr',
-
-title:
-"The Coffee Shop That You Won't Want To Leave",
-
-description:
-'The Boss Bite visits R+R Coffee Bar.',
-
-youtubeUrl:
-'https://youtu.be/bRhah6mR2zk'
-
-},
-
-
-{
-
-id:
-'grizzly',
-
-title:
-'Did We Find The Coolest Coffee Shop Ever',
-
-description:
-'The Boss Bite visits Grizzly Bean Coffee.',
-
-youtubeUrl:
-'https://youtu.be/vxNr89y_5IY'
-
-}
-
-];
+const episodes=[];
 
 
 function buildEpisodes(){
@@ -3684,6 +4970,25 @@ return;
 g.innerHTML='';
 
 
+if(!episodes.length){
+
+g.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO BOSS BITE EPISODES ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+
+return;
+
+}
+
+
 episodes.forEach(
 e=>{
 
@@ -3691,6 +4996,10 @@ const id=
 yt(
 e.youtubeUrl
 );
+
+
+if(!id)
+return;
 
 
 const c=
@@ -3765,10 +5074,17 @@ if(
 return;
 
 
+if(
+audio&&
+!audio.paused
+)
+audio.pause();
+
+
 p.innerHTML=`
 
 <iframe
-src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0"
+src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
 title="${esc(title)}"
 allow="autoplay; encrypted-media; picture-in-picture"
 allowfullscreen
@@ -3807,11 +5123,61 @@ const p=
 $('featured-player');
 
 
-if(
-!e||
-!p
-)
+if(!p)
 return;
+
+
+if(!e){
+
+p.innerHTML=`
+
+<div
+style="
+min-height:280px;
+display:grid;
+place-items:center;
+text-align:center;
+background:#050505;
+color:#777;
+padding:30px;
+"
+>
+
+<div>
+
+<strong
+style="
+display:block;
+font-size:26px;
+color:#fff;
+margin-bottom:8px;
+"
+>
+THE BOSS BITE
+</strong>
+
+<p>
+New episodes will appear here when they are published from Admin.
+</p>
+
+</div>
+
+</div>
+
+`;
+
+
+if(
+$('featured-title')
+)
+$('featured-title')
+.textContent=
+'FUELING YOUR HUSTLE';
+
+
+return;
+
+}
 
 
 const id=
@@ -3820,10 +5186,14 @@ e.youtubeUrl
 );
 
 
+if(!id)
+return;
+
+
 p.innerHTML=`
 
 <iframe
-src="https://www.youtube.com/embed/${id}?rel=0"
+src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
 title="${esc(e.title)}"
 allowfullscreen
 ></iframe>
@@ -3843,66 +5213,19 @@ e.title;
 
 /* =========================================================
    B.O.S.S CODE TV
+   BACKEND ONLY
 ========================================================= */
 
-const tvVideos=[
-
-[
-'Xavier Simmons (Son Of DMX)',
-'wHHYCaypgvc'
-],
-
-[
-'Layzie Bone (Member of Bone Thugs-N-Harmony)',
-'4EJHi_E2JTo'
-],
-
-[
-'Cormega Part 1',
-'NukOMiQESl0'
-],
-
-[
-'Cormega Part 2',
-'CZfe1hiIJd4'
-],
-
-[
-'Steve Baughman (Grammy Award-Winning Engineer)',
-'54rw1X4dCKw'
-],
-
-[
-'James Starks (Super Bowl Winning RB)',
-'TADG86xTtSQ'
-],
-
-[
-'Eric Sattler (Filmmaker)',
-'T2myWEyUrTI'
-]
-
-]
-.map(
-x=>({
-
-title:
-x[0],
-
-id:
-x[1]
-
-})
-);
+const tvVideos=[];
 
 
 let live={
 
-on:
-false,
+on:false,
 
-id:
-''
+id:'',
+
+thumbnailUrl:''
 
 };
 
@@ -3920,8 +5243,33 @@ return;
 g.innerHTML='';
 
 
+if(!tvVideos.length){
+
+g.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO RECORDED B.O.S.S CODE TV VIDEOS ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+
+renderLive();
+
+return;
+
+}
+
+
 tvVideos.forEach(
 v=>{
+
+if(!v.id)
+return;
+
 
 const c=
 document.createElement(
@@ -3939,15 +5287,14 @@ c.innerHTML=`
 
 <div class="tv-media">
 
-
 <button
 class="tv-thumbnail"
 type="button"
-data-video-id="${v.id}"
+data-video-id="${esc(v.id)}"
 >
 
 <img
-src="https://img.youtube.com/vi/${v.id}/hqdefault.jpg"
+src="https://img.youtube.com/vi/${esc(v.id)}/hqdefault.jpg"
 alt="${esc(v.title)}"
 >
 
@@ -3955,7 +5302,6 @@ alt="${esc(v.title)}"
 </span>
 
 </button>
-
 
 </div>
 
@@ -4008,13 +5354,20 @@ b.closest(
 );
 
 
+if(
+audio&&
+!audio.paused
+)
+audio.pause();
+
+
 if(media){
 
 media.innerHTML=`
 
 <iframe
 class="tv-iframe"
-src="https://www.youtube.com/embed/${id}?autoplay=1&rel=0"
+src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
 allow="autoplay; encrypted-media; picture-in-picture"
 allowfullscreen
 ></iframe>
@@ -4095,8 +5448,9 @@ if(p){
 p.innerHTML=`
 
 <iframe
-src="https://www.youtube.com/embed/${live.id}?rel=0"
+src="https://www.youtube.com/embed/${encodeURIComponent(live.id)}?rel=0"
 title="B.O.S.S CODE TV LIVE"
+allow="autoplay; encrypted-media; picture-in-picture"
 allowfullscreen
 ></iframe>
 
@@ -4145,6 +5499,66 @@ badge.style.color=
 
 if(p){
 
+if(
+live.thumbnailUrl
+){
+
+p.innerHTML=`
+
+<div
+style="
+position:relative;
+width:100%;
+aspect-ratio:16/9;
+background:#050505;
+overflow:hidden;
+"
+>
+
+<img
+src="${esc(live.thumbnailUrl)}"
+alt="B.O.S.S CODE TV OFF AIR"
+style="
+width:100%;
+height:100%;
+object-fit:cover;
+display:block;
+"
+>
+
+<div
+style="
+position:absolute;
+inset:0;
+display:grid;
+place-items:center;
+background:rgba(0,0,0,.28);
+"
+>
+
+<span
+style="
+background:rgba(0,0,0,.84);
+border:2px solid #F5C518;
+border-radius:999px;
+padding:10px 18px;
+font-size:12px;
+font-weight:900;
+letter-spacing:.12em;
+color:#fff;
+"
+>
+OFF AIR
+</span>
+
+</div>
+
+</div>
+
+`;
+
+}else{
+
 p.innerHTML=`
 
 <div
@@ -4155,6 +5569,7 @@ place-items:center;
 text-align:center;
 background:#050505;
 color:#777;
+padding:30px;
 "
 >
 
@@ -4179,6 +5594,8 @@ Check back for the next live conversation, interview or event.
 </div>
 
 `;
+
+}
 
 }
 
@@ -4210,35 +5627,10 @@ copy.textContent=
 
 /* =========================================================
    BOSS BITE GALLERY
+   BACKEND ONLY
 ========================================================= */
 
-const builtGalleryPhotos=
-Array.from(
-{
-
-length:
-29
-
-},
-
-(_,i)=>({
-
-src:
-`images/Action photos/bossbite-${i+1}`,
-
-caption:
-'',
-
-location:
-''
-
-})
-);
-
-
-let galleryPhotos=[
-...builtGalleryPhotos
-];
+let galleryPhotos=[];
 
 
 const exts=[
@@ -4381,6 +5773,24 @@ return;
 g.innerHTML='';
 
 
+if(!galleryPhotos.length){
+
+g.innerHTML=`
+
+<div
+class="artist-media-empty"
+style="grid-column:1/-1"
+>
+NO BOSS BITE GALLERY PHOTOS ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
 galleryPhotos.forEach(
 (item,i)=>{
 
@@ -4442,6 +5852,10 @@ g.appendChild(b);
 
 function showGal(){
 
+if(!galleryPhotos.length)
+return;
+
+
 const im=
 $('gallery-large-image');
 
@@ -4492,6 +5906,10 @@ on(
 'click',
 ()=>{
 
+if(!galleryPhotos.length)
+return;
+
+
 gi=
 (gi+1)%
 galleryPhotos.length;
@@ -4506,6 +5924,10 @@ on(
 'gallery-previous',
 'click',
 ()=>{
+
+if(!galleryPhotos.length)
+return;
+
 
 gi=
 (
@@ -4522,321 +5944,10 @@ showGal();
 
 /* =========================================================
    BOSS BITE MAP
+   BACKEND ONLY
 ========================================================= */
 
-const builtRestaurants=[
-
-{
-
-id:
-'grizzly',
-
-name:
-'Grizzly Bean Coffee',
-
-category:
-'COFFEE • FOOD',
-
-description:
-'',
-
-address:
-'2560 E State St, Hermitage, PA 16148',
-
-image:
-'images/restaurants/Grizzly bean.jpg',
-
-episodeId:
-'grizzly',
-
-episodeUrl:
-'',
-
-c:[
--80.435,
-41.233
-]
-
-},
-
-
-{
-
-id:
-'haitian',
-
-name:
-'Haitian Sensation',
-
-category:
-'HAITIAN • CARIBBEAN • COFFEE',
-
-description:
-'',
-
-address:
-'76 Shenango Ave, Sharon, PA 16146',
-
-image:
-'images/restaurants/haitian sensation.png',
-
-episodeId:
-'haitian',
-
-episodeUrl:
-'',
-
-c:[
--80.508,
-41.233
-]
-
-},
-
-
-{
-
-id:
-'rr',
-
-name:
-'R+R Coffee Bar',
-
-category:
-'COFFEE • COMMUNITY',
-
-description:
-'',
-
-address:
-'2840 Lincoln Way E Unit H, Massillon, OH 44646',
-
-image:
-'images/restaurants/rr coffee.jpg',
-
-episodeId:
-'rr',
-
-episodeUrl:
-'',
-
-c:[
--81.482421,
-40.796612
-]
-
-},
-
-
-{
-
-id:
-'spudz',
-
-name:
-'House of Spudz',
-
-category:
-'LOADED POTATOES • COMFORT FOOD',
-
-description:
-'',
-
-address:
-'3974 Fulton Dr NW, Canton, OH 44718',
-
-image:
-'images/restaurants/house of spudz.jpeg',
-
-episodeId:
-'spudz',
-
-episodeUrl:
-'',
-
-c:[
--81.422358,
-40.835695
-]
-
-},
-
-
-{
-
-id:
-'century',
-
-name:
-'Century Farms',
-
-category:
-'VENUE • LOCAL EXPERIENCE',
-
-description:
-'',
-
-address:
-'1121 Canton Rd NW, Carrollton, OH 44615',
-
-image:
-'images/restaurants/century.jpeg',
-
-episodeId:
-'',
-
-episodeUrl:
-'',
-
-c:[
--81.085,
-40.588
-]
-
-},
-
-
-{
-
-id:
-'deli',
-
-name:
-'Deli On The Square',
-
-category:
-'DELI • LOCAL FOOD',
-
-description:
-'',
-
-address:
-'50 S Lisbon St, Carrollton, OH 44615',
-
-image:
-'images/restaurants/Deli on the square.jpeg',
-
-episodeId:
-'',
-
-episodeUrl:
-'',
-
-c:[
--81.086,
-40.572
-]
-
-},
-
-
-{
-
-id:
-'carroll-coffee',
-
-name:
-'Carroll County Coffee Company',
-
-category:
-'COFFEE',
-
-description:
-'',
-
-address:
-'704 Canton Rd NW # C, Carrollton, OH 44615',
-
-image:
-'images/restaurants/Carroll County.jpeg',
-
-episodeId:
-'',
-
-episodeUrl:
-'',
-
-c:[
--81.0916092,
-40.5820228
-]
-
-},
-
-
-{
-
-id:
-'betty',
-
-name:
-'Betty Kaye Bakery',
-
-category:
-'BAKERY • SWEETS',
-
-description:
-'',
-
-address:
-'72 W Main St, Carrollton, OH 44615',
-
-image:
-'images/restaurants/betty kaye.png',
-
-episodeId:
-'',
-
-episodeUrl:
-'',
-
-c:[
--81.087,
-40.572
-]
-
-},
-
-
-{
-
-id:
-'chop-house',
-
-name:
-'The Chop House Carrollton',
-
-category:
-'STEAKHOUSE • DINING',
-
-description:
-'',
-
-address:
-'1117 Canton Rd NW, Carrollton, OH 44615',
-
-image:
-'images/restaurants/The chop house.png',
-
-episodeId:
-'',
-
-episodeUrl:
-'',
-
-c:[
--81.085,
-40.588
-]
-
-}
-
-];
-
-
-const restaurants=[
-...builtRestaurants
-];
+const restaurants=[];
 
 
 let bossBiteMap=
@@ -4908,6 +6019,23 @@ return;
 l.innerHTML='';
 
 
+if(!restaurants.length){
+
+l.innerHTML=`
+
+<div
+class="artist-media-empty"
+>
+NO BOSS BITE MAP LOCATIONS ARE PUBLISHED RIGHT NOW.
+</div>
+
+`;
+
+return;
+
+}
+
+
 restaurants.forEach(
 r=>{
 
@@ -4931,7 +6059,10 @@ b.innerHTML=`
 
 <img
 class="restaurant-list-image"
-src="${esc(r.image)}"
+src="${esc(
+r.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(r.name)}"
 >
 
@@ -4980,7 +6111,10 @@ return`
 
 <img
 class="restaurant-popup-image"
-src="${esc(r.image)}"
+src="${esc(
+r.image||
+'images/boss-code-media-logo.png'
+)}"
 alt="${esc(r.name)}"
 >
 
@@ -5031,14 +6165,13 @@ ${esc(r.description)}
 
 
 ${
-r.episodeId||
+r.episodeUrl&&
 directEpisodeId
 ?
 `
 
 <button
 class="restaurant-action watch-episode-button"
-data-episode="${esc(r.episodeId||'')}"
 data-episode-url="${esc(r.episodeUrl||'')}"
 type="button"
 >
@@ -5439,7 +6572,9 @@ directUrl
 );
 
 
-if(directId){
+if(!directId)
+return;
+
 
 const restaurant=
 restaurants.find(
@@ -5457,34 +6592,6 @@ restaurant?.name||
 'The Boss Bite'
 
 );
-
-
-return;
-
-}
-
-
-const ep=
-episodes.find(
-x=>
-x.id===
-b.dataset.episode
-);
-
-
-if(ep){
-
-playEpisode(
-
-yt(
-ep.youtubeUrl
-),
-
-ep.title
-
-);
-
-}
 
 }
 );
@@ -5531,8 +6638,6 @@ window.open(
 );
 
 }
-
-
 /* =========================================================
    CLOUDFLARE BACKEND
 ========================================================= */
@@ -5541,10 +6646,7 @@ async function api(path){
 
 const r=
 await fetch(
-
-API+
-path,
-
+API+path,
 {
 
 cache:
@@ -5558,16 +6660,16 @@ Accept:
 }
 
 }
-
 );
 
 
-if(
-!r.ok
-)
+if(!r.ok){
+
 throw Error(
-r.status
+`API ${r.status}`
 );
+
+}
 
 
 const j=
@@ -5585,64 +6687,28 @@ j.data
 }
 
 
-const merge=
-(
-a,
-b,
-key
-)=>{
-
-const seen=
-new Set();
-
-
-return[
-...a,
-...b
-]
-.filter(
-x=>{
-
-const k=
-String(
-key(x)||
-''
-)
-.toLowerCase()
-.trim();
-
-
-if(
-k&&
-seen.has(k)
-)
-return false;
-
-
-if(k)
-seen.add(k);
-
-
-return true;
-
-}
-);
-
-};
-
-
 /* =========================================================
    VIDEO BACKEND
 ========================================================= */
 
 function applyVideos(rows){
 
+const published=
+(
+rows||
+[]
+)
+.filter(
+v=>
+Number(v.published)===1
+);
+
 
 /* DECISION MAKERS */
 
-const cdm=
+dmVideos=
+published
 
-rows
 .filter(
 v=>
 v.section===
@@ -5651,6 +6717,9 @@ v.section===
 
 .map(
 v=>({
+
+id:
+v.id,
 
 title:
 v.title||
@@ -5684,42 +6753,14 @@ v.youtubeId
 );
 
 
-if(
-cdm.length
-){
-
-dmVideos.splice(
-
-0,
-
-dmVideos.length,
-
-...merge(
-
-cdm,
-
-dmVideos,
-
-v=>
-v.youtubeId||
-v.file||
-v.title
-
-)
-
-);
-
-
 buildDM();
-
-}
 
 
 /* BOSS BITE */
 
-const cb=
+const bossBiteRows=
+published
 
-rows
 .filter(
 v=>
 v.section===
@@ -5730,7 +6771,6 @@ v.section===
 v=>({
 
 id:
-'cloud-'+
 v.id,
 
 title:
@@ -5738,16 +6778,13 @@ v.title||
 'The Boss Bite',
 
 description:
-
-v.description
-||
-
+v.description||
 [
-v.location_name,
-v.location_city
+v.business_name,
+v.location_name
 ]
 .filter(Boolean)
-.join(', '),
+.join(' • '),
 
 youtubeUrl:
 v.youtube_url||
@@ -5764,29 +6801,13 @@ v.youtubeUrl
 );
 
 
-if(
-cb.length
-){
-
 episodes.splice(
 
 0,
 
 episodes.length,
 
-...merge(
-
-cb,
-
-episodes,
-
-v=>
-yt(
-v.youtubeUrl
-)||
-v.title
-
-)
+...bossBiteRows
 
 );
 
@@ -5795,14 +6816,12 @@ buildEpisodes();
 
 loadFirstEpisode();
 
-}
 
+/* B.O.S.S CODE TV RECORDED */
 
-/* RECORDED B.O.S.S CODE TV */
+const recorded=
+published
 
-const ct=
-
-rows
 .filter(
 v=>
 v.section===
@@ -5812,16 +6831,16 @@ v.section===
 .map(
 v=>({
 
-title:
-v.title||
-'B.O.S.S CODE TV',
-
 id:
 v.youtube_id||
 yt(
 v.youtube_url||
 ''
-)
+),
+
+title:
+v.title||
+'B.O.S.S CODE TV'
 
 })
 )
@@ -5832,78 +6851,64 @@ v.id
 );
 
 
-if(
-ct.length
-){
-
 tvVideos.splice(
 
 0,
 
 tvVideos.length,
 
-...merge(
-
-ct,
-
-tvVideos,
-
-v=>
-v.id||
-v.title
-
-)
+...recorded
 
 );
 
 
 buildTv();
 
-}
 
+/* LIVE / OFF AIR THUMBNAIL */
 
-/* LIVE TV */
-
-const lv=
-
-rows.find(
+const liveRow=
+(
+rows||
+[]
+)
+.find(
 v=>
-
 v.section===
 'boss-code-tv-live'
-&&
-
-(
-v.youtube_id
-||
-yt(
-v.youtube_url||
-''
-)
-)
-
 );
 
 
-live=
-lv
+live={
+
+on:
+Boolean(
+liveRow&&
+Number(liveRow.published)===1&&
+(
+liveRow.youtube_id||
+yt(
+liveRow.youtube_url||
+''
+)
+)
+),
+
+id:
+liveRow
 ?
-{
-
-on:
-true,
-
-id:
-vSafeYoutubeId(lv)
-
-}
+(
+liveRow.youtube_id||
+yt(
+liveRow.youtube_url||
+''
+)
+)
 :
-{
+'',
 
-on:
-false,
-
-id:
+thumbnailUrl:
+liveRow?.thumbnail_url||
 ''
 
 };
@@ -5914,18 +6919,811 @@ renderLive();
 }
 
 
-function vSafeYoutubeId(v){
+/* =========================================================
+   DECISION MAKER PROGRAM BACKEND
+========================================================= */
 
-return(
-v.youtube_id
-||
-yt(
-v.youtube_url||
-''
+function applyDMSessions(rows){
+
+dmSessions=
+(
+rows||
+[]
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
 )
 ||
+Number(
+a.session_number||
+0
+)
+-
+Number(
+b.session_number||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+r.id,
+
+title:
+r.title||
+'Decision Makers Session',
+
+description:
+r.description||
+'',
+
+sessionNumber:
+Number(
+r.session_number||
+1
+),
+
+youtubeUrl:
+r.youtube_url||
+'',
+
+youtubeId:
+r.youtube_id||
+yt(
+r.youtube_url||
 ''
+),
+
+thumbnailUrl:
+r.thumbnail_url||
+'',
+
+featured:
+Number(
+r.featured||
+0
+)===1
+
+})
 );
+
+
+buildDMSessions();
+
+}
+
+
+function applyDMChallenges(rows){
+
+dmChallenges=
+(
+rows||
+[]
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
+||
+Number(
+a.challenge_number||
+0
+)
+-
+Number(
+b.challenge_number||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+r.id,
+
+title:
+r.title||
+'Take Action',
+
+description:
+r.description||
+'',
+
+challengeNumber:
+Number(
+r.challenge_number||
+1
+),
+
+buttonText:
+r.button_text||
+'ACCEPT CHALLENGE',
+
+completionMessage:
+r.completion_message||
+'NOW TAKE ACTION.',
+
+thumbnailUrl:
+r.thumbnail_url||
+''
+
+})
+);
+
+
+buildDMChallenges();
+
+}
+
+
+function applyDMResources(rows){
+
+dmResources=
+(
+rows||
+[]
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
+||
+
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+r.id,
+
+title:
+r.title||
+'Decision Makers Resource',
+
+description:
+r.description||
+'',
+
+type:
+r.resource_type||
+'RESOURCE',
+
+fileUrl:
+r.file_url||
+'',
+
+coverUrl:
+r.cover_image_url||
+'',
+
+buttonText:
+r.button_text||
+'OPEN RESOURCE'
+
+})
+);
+
+
+renderDMResources();
+
+}
+
+
+/* =========================================================
+   ARTIST PHOTO GALLERY BACKEND
+========================================================= */
+
+function applyArtistGallery(rows){
+
+artistGalleryRows=
+(
+rows||
+[]
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
+||
+
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+r.id,
+
+artistId:
+r.artist_id,
+
+imageUrl:
+r.image_url||
+'',
+
+caption:
+r.caption||
+''
+
+})
+)
+
+.filter(
+r=>
+r.artistId&&
+r.imageUrl
+);
+
+
+renderArtistGallery();
+
+}
+
+
+/* =========================================================
+   ARTIST MUSIC VIDEOS BACKEND
+========================================================= */
+
+function applyArtistMusicVideos(rows){
+
+artistMusicVideoRows=
+(
+rows||
+[]
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
+||
+
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+r.id,
+
+artistId:
+r.artist_id,
+
+title:
+r.title||
+'Music Video',
+
+youtubeUrl:
+r.youtube_url||
+'',
+
+youtubeId:
+r.youtube_id||
+yt(
+r.youtube_url||
+''
+),
+
+thumbnailUrl:
+r.thumbnail_url||
+''
+
+})
+)
+
+.filter(
+r=>
+r.artistId&&
+r.youtubeId
+);
+
+
+renderArtistMusicVideos();
+
+}
+
+
+/* =========================================================
+   MUSIC BACKEND
+   ADMIN IS THE ONLY SOURCE
+========================================================= */
+
+function applyMusic(
+A,
+R,
+T
+){
+
+const order=
+(x,y)=>
+
+Number(
+x?.sort_order||
+0
+)
+-
+Number(
+y?.sort_order||
+0
+)
+
+||
+
+Number(
+x?.track_number||
+0
+)
+-
+Number(
+y?.track_number||
+0
+)
+
+||
+
+Number(
+x?.id||
+0
+)
+-
+Number(
+y?.id||
+0
+);
+
+
+const publishedArtists=
+(
+A||
+[]
+)
+
+.filter(
+x=>
+Number(x.published)===1
+)
+
+.sort(
+order
+);
+
+
+const publishedReleases=
+(
+R||
+[]
+)
+
+.filter(
+x=>
+Number(x.published)===1
+)
+
+.sort(
+order
+);
+
+
+const publishedTracks=
+(
+T||
+[]
+)
+
+.filter(
+x=>
+Number(x.published)===1
+)
+
+.sort(
+order
+);
+
+
+const rebuilt=
+publishedArtists.map(
+a=>{
+
+const rs=
+publishedReleases
+
+.filter(
+r=>
+Number(r.artist_id)===
+Number(a.id)
+)
+
+.sort(
+order
+);
+
+
+const ts=
+publishedTracks
+
+.filter(
+t=>
+Number(t.artist_id)===
+Number(a.id)
+)
+
+.sort(
+order
+);
+
+
+const featured=
+rs.find(
+r=>
+Number(r.featured)===1
+)
+||
+rs[0]
+||
+null;
+
+
+const artistImage=
+
+a.artist_image_url
+||
+
+featured?.artwork_url
+||
+
+'images/boss-code-media-logo.png';
+
+
+return{
+
+id:
+'artist-'+
+a.id,
+
+backendId:
+a.id,
+
+name:
+a.name||
+'B.O.S.S CODE Artist',
+
+initials:
+String(
+a.name||
+'BC'
+)
+.split(/\s+/)
+.map(
+x=>
+x[0]
+)
+.join('')
+.slice(
+0,
+3
+)
+.toUpperCase(),
+
+image:
+artistImage,
+
+tagline:
+a.bio||
+'Independent music. Direct from the artist.',
+
+
+featuredRelease:
+featured
+?
+{
+
+id:
+featured.id,
+
+releaseId:
+featured.id,
+
+title:
+featured.title||
+'Release',
+
+type:
+'FEATURED RELEASE',
+
+releaseType:
+featured.release_type||
+'RELEASE',
+
+artwork:
+featured.artwork_url||
+artistImage,
+
+description:
+featured.description||
+`Listen to ${a.name} directly inside B.O.S.S CODE Music.`
+
+}
+:
+null,
+
+
+tracks:
+ts.map(
+t=>{
+
+const release=
+rs.find(
+r=>
+Number(r.id)===
+Number(t.release_id)
+);
+
+
+return{
+
+id:
+t.id,
+
+title:
+t.title||
+'Track',
+
+album:
+release?.title||
+'B.O.S.S CODE MUSIC',
+
+releaseId:
+t.release_id||
+release?.id||
+null,
+
+releaseType:
+release?.release_type||
+'',
+
+audioSources:[
+t.audio_url
+]
+.filter(Boolean),
+
+artwork:
+t.artwork_url||
+release?.artwork_url||
+artistImage,
+
+status:
+'PLAY',
+
+trackNumber:
+Number(
+t.track_number||
+0
+),
+
+sortOrder:
+Number(
+t.sort_order||
+0
+)
+
+};
+
+}
+)
+
+.filter(
+t=>
+t.audioSources.length
+),
+
+
+releases:
+rs.map(
+r=>({
+
+id:
+r.id,
+
+releaseId:
+r.id,
+
+title:
+r.title||
+'Release',
+
+type:
+String(
+r.release_type||
+'RELEASE'
+)
+.toUpperCase(),
+
+releaseType:
+r.release_type||
+'RELEASE',
+
+artwork:
+r.artwork_url||
+artistImage,
+
+description:
+r.description||
+'',
+
+status:
+'Listen now',
+
+sortOrder:
+Number(
+r.sort_order||
+0
+)
+
+})
+)
+
+};
+
+}
+);
+
+
+artists=
+rebuilt;
+
+
+if(!artists.length){
+
+activeArtist=null;
+
+musicQueue=[];
+
+activeReleaseId=null;
+
+clearMusicArtistUI();
+
+return;
+
+}
+
+
+if(activeArtist){
+
+activeArtist=
+artists.find(
+a=>
+String(a.backendId)===
+String(activeArtist.backendId)
+)
+||
+artists[0];
+
+}else{
+
+activeArtist=
+artists[0];
+
+}
+
+
+musicQueue=[];
+
+activeReleaseId=null;
+
+
+renderArtists();
+
+renderTracks();
+
+renderReleases();
+
+updateArtistUI();
+
+renderArtistGallery();
+
+renderArtistMusicVideos();
 
 }
 
@@ -5936,11 +7734,41 @@ v.youtube_url||
 
 function applyGallery(rows){
 
-const cloud=
-
+galleryPhotos=
 (
 rows||
 []
+)
+
+.filter(
+r=>
+Number(r.published)===1
+)
+
+.sort(
+(a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
+||
+
+Number(
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
 )
 
 .map(
@@ -5967,20 +7795,6 @@ x.src
 );
 
 
-galleryPhotos=
-
-merge(
-
-cloud,
-
-builtGalleryPhotos,
-
-x=>
-gallerySrc(x)
-
-);
-
-
 if(
 gi>=
 galleryPhotos.length
@@ -5994,53 +7808,12 @@ buildGallery();
 
 
 /* =========================================================
-   MAGAZINE BACKEND
-========================================================= */
-
-function applyMag(rows){
-
-if(
-!rows.length
-)
-return;
-
-
-const x=
-
-rows.find(
-r=>
-+r.featured===
-1
-)
-||
-rows[0];
-
-
-const b=
-
-q(
-'.app-menu a[href*="magazine.bosscodemedia.com"]'
-);
-
-
-if(
-b&&
-x.issue_url
-)
-b.href=
-x.issue_url;
-
-}
-
-
-/* =========================================================
    BOSS BITE MAP BACKEND
 ========================================================= */
 
 function applyLocations(rows){
 
 const cloud=
-
 (
 rows||
 []
@@ -6048,21 +7821,37 @@ rows||
 
 .filter(
 r=>
+Number(r.published)===1
+)
 
-r.published===
-undefined
+.sort(
+(a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
 ||
 
 Number(
-r.published
-)===
-1
-
+a.sort_order||
+0
+)
+-
+Number(
+b.sort_order||
+0
+)
 )
 
 .map(
 r=>{
-
 
 const lat=
 Number(
@@ -6077,11 +7866,12 @@ r.longitude
 
 
 const address=
-fullLocationAddress(r);
+fullLocationAddress(
+r
+);
 
 
 const locationLabel=
-
 [
 r.city,
 r.state
@@ -6117,9 +7907,6 @@ image:
 r.image_url||
 'images/boss-code-media-logo.png',
 
-episodeId:
-'',
-
 episodeUrl:
 r.episode_url||
 '',
@@ -6135,13 +7922,7 @@ lng,
 lat
 ]
 :
-null,
-
-sortOrder:
-Number(
-r.sort_order||
-0
-)
+null
 
 };
 
@@ -6155,34 +7936,13 @@ r.c
 );
 
 
-cloud.sort(
-(a,b)=>
-a.sortOrder-
-b.sortOrder
-);
-
-
-const combined=
-
-merge(
-
-cloud,
-
-builtRestaurants,
-
-r=>
-r.name
-
-);
-
-
 restaurants.splice(
 
 0,
 
 restaurants.length,
 
-...combined
+...cloud
 
 );
 
@@ -6218,7 +7978,6 @@ new Date()
 
 
 const published=
-
 (
 rows||
 []
@@ -6226,21 +7985,11 @@ rows||
 
 .filter(
 r=>
-
-r.published===
-undefined
-||
-
-Number(
-r.published
-)===
-1
-
+Number(r.published)===1
 );
 
 
 const scheduled=
-
 published.filter(
 r=>
 r.scheduled_date===
@@ -6249,7 +7998,6 @@ today
 
 
 const source=
-
 scheduled.length
 ?
 scheduled
@@ -6257,14 +8005,25 @@ scheduled
 published;
 
 
-const cloud=
-
+daily=
 [
 ...source
 ]
 
 .sort(
 (a,b)=>
+
+Number(
+b.featured||
+0
+)
+-
+Number(
+a.featured||
+0
+)
+
+||
 
 Number(
 a.sort_order||
@@ -6275,7 +8034,6 @@ Number(
 b.sort_order||
 0
 )
-
 )
 
 .map(
@@ -6284,7 +8042,7 @@ r=>[
 r.decision_text||
 '',
 
-r.action_text||
+r.description||
 ''
 
 ]
@@ -6292,23 +8050,8 @@ r.action_text||
 
 .filter(
 x=>
-x[0]&&
-x[1]
+x[0]
 );
-
-
-daily=
-
-cloud.length
-?
-[
-...cloud,
-...builtDaily
-]
-:
-[
-...builtDaily
-];
 
 
 const state=
@@ -6316,12 +8059,11 @@ dailyState();
 
 
 if(
-state.i>=
-daily.length
+daily.length&&
+state.i>=daily.length
 ){
 
-state.i=
-0;
+state.i=0;
 
 localStorage.setItem(
 DK,
@@ -6390,7 +8132,18 @@ return'';
 
 function applyCheckinQuestions(rows){
 
-const published=
+const nextBank={
+
+APPROVAL:[],
+
+COMPARISON:[],
+
+CONFIDENCE:[],
+
+ACTION:[]
+
+};
+
 
 (
 rows||
@@ -6399,16 +8152,7 @@ rows||
 
 .filter(
 r=>
-
-r.published===
-undefined
-||
-
-Number(
-r.published
-)===
-1
-
+Number(r.published)===1
 )
 
 .sort(
@@ -6423,24 +8167,9 @@ Number(
 b.sort_order||
 0
 )
+)
 
-);
-
-
-const cloudBank={
-
-APPROVAL:[],
-
-COMPARISON:[],
-
-CONFIDENCE:[],
-
-ACTION:[]
-
-};
-
-
-published.forEach(
+.forEach(
 r=>{
 
 const category=
@@ -6465,7 +8194,7 @@ return;
 
 
 if(
-!cloudBank[
+!nextBank[
 category
 ]
 .includes(
@@ -6473,7 +8202,7 @@ text
 )
 ){
 
-cloudBank[
+nextBank[
 category
 ]
 .push(
@@ -6503,416 +8232,412 @@ const category of[
 bank[
 category
 ]=
-merge(
-
-cloudBank[
+nextBank[
 category
-],
-
-builtBank[
-category
-],
-
-x=>x
-
-);
+];
 
 }
 
 
 console.info(
-
-'B.O.S.S Check In loaded',
-
-{
-
-approval:
-bank.APPROVAL.length,
-
-comparison:
-bank.COMPARISON.length,
-
-confidence:
-bank.CONFIDENCE.length,
-
-action:
-bank.ACTION.length
-
-}
-
+'B.O.S.S CHECK IN synced from Admin.'
 );
 
 }
 
 
 /* =========================================================
-   MUSIC BACKEND
+   MAGAZINE
+   OPEN INSIDE APP
 ========================================================= */
 
-function applyMusic(
-A,
-R,
-T
-){
-
-const published=x=>Number(x?.published)===1;
-
-const order=(x,y)=>
-(Number(x?.sort_order)||0)
--
-(Number(y?.sort_order)||0)
-||
-(Number(x?.track_number)||0)
--
-(Number(y?.track_number)||0)
-||
-(Number(x?.id)||0)
--
-(Number(y?.id)||0);
+let currentMagazineUrl='';
 
 
-const publishedArtists=
-(A||[])
-.filter(published)
-.sort(order);
+function applyMagazines(rows){
 
+const published=
+(
+rows||
+[]
+)
 
-const publishedReleases=
-(R||[])
-.filter(published)
-.sort(order);
-
-
-const publishedTracks=
-(T||[])
-.filter(published)
-.sort(order);
-
-
-publishedArtists.forEach(
-a=>{
-
-const rs=
-publishedReleases
 .filter(
 r=>
-+r.artist_id===
-+a.id
+Number(r.published)===1
 )
-.sort(order);
 
+.sort(
+(a,b)=>
 
-const ts=
-publishedTracks
-.filter(
-t=>
-+t.artist_id===
-+a.id
+Number(
+b.featured||
+0
 )
-.sort(order);
-
-
-const f=
-rs.find(
-r=>
-+r.featured===
-1
+-
+Number(
+a.featured||
+0
 )
+
 ||
-rs[0];
 
-
-const img=
-a.artist_image_url
-||
-f?.artwork_url
-||
-'images/boss-code-media-logo.png';
-
-
-const cloud={
-
-id:
-'cloud-'+a.id,
-
-name:
-a.name,
-
-initials:
-(a.name||'BC')
-.split(/\s+/)
-.map(
-x=>x[0]
+Number(
+a.sort_order||
+0
 )
-.join('')
-.slice(
-0,
-3
+-
+Number(
+b.sort_order||
+0
 )
-.toUpperCase(),
-
-image:
-img,
-
-tagline:
-a.bio||
-'Independent music. Direct from the artist.',
+);
 
 
-featuredRelease:
-f
-?
-{
-
-id:
-f.id,
-
-releaseId:
-f.id,
-
-title:
-f.title,
-
-type:
-'FEATURED RELEASE',
-
-releaseType:
-f.release_type||
-'RELEASE',
-
-artwork:
-f.artwork_url||
-img,
-
-description:
-f.description||
-`Listen to ${a.name} directly inside B.O.S.S CODE Music.`
+currentMagazineUrl=
+published[0]?.magazine_url||
+'';
 
 }
-:
-{
 
-title:
-a.name,
 
-type:
-'B.O.S.S CODE MUSIC',
+function ensureInternalWebStyles(){
 
-artwork:
-img,
+if(
+$('boss-internal-web-styles')
+)
+return;
 
-description:
-a.bio||
-''
+
+const style=
+document.createElement(
+'style'
+);
+
+
+style.id=
+'boss-internal-web-styles';
+
+
+style.textContent=`
+
+.boss-internal-screen{
+background:#000;
+min-height:100vh;
+color:#fff;
+}
+
+.boss-internal-wrap{
+width:min(1200px,100%);
+margin:auto;
+padding:16px;
+}
+
+.boss-internal-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:14px;
+}
+
+.boss-internal-title{
+font-size:18px;
+font-weight:900;
+}
+
+.boss-internal-back{
+border:2px solid #d40000;
+border-radius:999px;
+background:#090909;
+color:#fff;
+padding:11px 16px;
+font:inherit;
+font-weight:900;
+cursor:pointer;
+}
+
+.boss-internal-frame{
+display:block;
+width:100%;
+height:calc(100vh - 115px);
+min-height:650px;
+border:1px solid #252525;
+border-radius:16px;
+background:#fff;
+}
+
+.boss-internal-empty{
+min-height:60vh;
+display:grid;
+place-items:center;
+text-align:center;
+border:1px dashed #333;
+border-radius:18px;
+color:#888;
+padding:30px;
+}
+
+`;
+
+document.head.appendChild(
+style
+);
+
+}
+
+
+function ensureInternalScreen(){
+
+ensureInternalWebStyles();
+
+
+let screen=
+$('boss-internal-web-screen');
+
+
+if(screen)
+return screen;
+
+
+screen=
+document.createElement(
+'div'
+);
+
+
+screen.id=
+'boss-internal-web-screen';
+
+screen.className=
+'screen boss-internal-screen';
+
+
+screen.innerHTML=`
+
+<div class="boss-internal-wrap">
+
+<div class="boss-internal-head">
+
+<button
+id="boss-internal-back"
+class="boss-internal-back"
+type="button"
+>
+RETURN TO HOME
+</button>
+
+<div
+id="boss-internal-title"
+class="boss-internal-title"
+>
+B.O.S.S CODE
+</div>
+
+</div>
+
+<div
+id="boss-internal-content"
+></div>
+
+<button
+id="boss-internal-back-bottom"
+class="boss-return-home-bottom"
+type="button"
+>
+RETURN TO HOME
+</button>
+
+</div>
+
+`;
+
+
+document.body.appendChild(
+screen
+);
+
+
+const back=
+()=>{
+
+const frame=
+$('boss-internal-frame');
+
+
+if(frame)
+frame.src=
+'about:blank';
+
+
+showScreen(
+home
+);
+
+};
+
+
+on(
+'boss-internal-back',
+'click',
+back
+);
+
+
+on(
+'boss-internal-back-bottom',
+'click',
+back
+);
+
+
+return screen;
+
+}
+
+
+function openInternalWeb(
+title,
+url
+){
+
+const screen=
+ensureInternalScreen();
+
+
+if(
+$('boss-internal-title')
+)
+$('boss-internal-title')
+.textContent=
+title;
+
+
+const content=
+$('boss-internal-content');
+
+
+if(!content)
+return;
+
+
+if(!url){
+
+content.innerHTML=`
+
+<div class="boss-internal-empty">
+
+<div>
+
+<strong
+style="
+display:block;
+color:#fff;
+font-size:26px;
+margin-bottom:8px;
+"
+>
+NOT AVAILABLE YET
+</strong>
+
+<p>
+This content will appear when it is published from B.O.S.S CODE GO Admin.
+</p>
+
+</div>
+
+</div>
+
+`;
+
+
+showScreen(
+screen
+);
+
+return;
+
+}
+
+
+content.innerHTML=`
+
+<iframe
+id="boss-internal-frame"
+class="boss-internal-frame"
+src="${esc(url)}"
+title="${esc(title)}"
+allow="fullscreen"
+></iframe>
+
+`;
+
+
+showScreen(
+screen
+);
+
+}
+
+
+function setupInternalLinks(){
+
+const magazineButton=
+q(
+'.app-menu a[href*="magazine.bosscodemedia.com"]'
+);
+
+
+if(magazineButton){
+
+magazineButton.addEventListener(
+'click',
+e=>{
+
+e.preventDefault();
+
+e.stopImmediatePropagation();
+
+
+openInternalWeb(
+
+'B.O.S.S CODE MAGAZINE',
+
+currentMagazineUrl
+
+);
 
 },
-
-
-tracks:
-ts.map(
-t=>{
-
-const r=
-rs.find(
-x=>
-+x.id===
-+t.release_id
-);
-
-
-return{
-
-id:
-t.id,
-
-title:
-t.title,
-
-album:
-r?.title||
-t.release_title||
-'B.O.S.S CODE MUSIC',
-
-releaseId:
-t.release_id??
-r?.id??
-null,
-
-releaseType:
-r?.release_type||
-'',
-
-audioSources:[
-t.audio_url
-]
-.filter(Boolean),
-
-artwork:
-t.artwork_url||
-t.release_artwork_url||
-r?.artwork_url||
-img,
-
-status:
-'PLAY',
-
-trackNumber:
-Number(
-t.track_number
-)||
-0,
-
-sortOrder:
-Number(
-t.sort_order
-)||
-0
-
-};
-
-}
-),
-
-
-releases:
-rs.map(
-r=>({
-
-id:
-r.id,
-
-releaseId:
-r.id,
-
-title:
-r.title,
-
-type:
-String(
-r.release_type||
-'RELEASE'
-)
-.toUpperCase(),
-
-releaseType:
-r.release_type||
-'RELEASE',
-
-artwork:
-r.artwork_url||
-img,
-
-status:
-'Listen now',
-
-sortOrder:
-Number(
-r.sort_order
-)||
-0
-
-})
-)
-
-};
-
-
-const ex=
-artists.find(
-x=>
-x.name.toLowerCase()===
-cloud.name.toLowerCase()
-);
-
-
-if(!ex){
-
-artists.push(
-cloud
-);
-
-}else{
-
-ex.image=
-cloud.image;
-
-ex.tagline=
-cloud.tagline;
-
-
-if(
-cloud.tracks.length
-){
-
-ex.tracks=
-merge(
-
-cloud.tracks,
-
-ex.tracks||
-[],
-
-x=>
-x.title+
-'|'+
-x.album
-
+true
 );
 
 }
 
 
-if(
-cloud.releases.length
-){
+if(clothingButton){
 
-ex.releases=
-merge(
+clothingButton.addEventListener(
+'click',
+e=>{
 
-cloud.releases,
+e.preventDefault();
 
-ex.releases||
-[],
+e.stopImmediatePropagation();
 
-x=>
-x.title
+
+openInternalWeb(
+
+'THE CODE CLOTHING',
+
+'https://www.bosscodemedia.com/shop'
 
 );
 
-}
-
-
-if(f)
-ex.featuredRelease=
-cloud.featuredRelease;
-
-}
-
-}
+},
+true
 );
 
-
-activeArtist=
-artists.find(
-a=>
-a.name.toLowerCase()===
-activeArtist.name.toLowerCase()
-)
-||
-artists[0];
-
-musicQueue=[];
-
-activeReleaseId=null;
-
-
-renderArtists();
-
-renderTracks();
-
-renderReleases();
-
-updateArtistUI();
+}
 
 }
 
@@ -6924,11 +8649,10 @@ updateArtistUI();
 async function sync(){
 
 const results=
-
 await Promise.allSettled([
 
 api(
-'/videos'
+'/videos?all=1'
 ),
 
 api(
@@ -6937,6 +8661,14 @@ api(
 
 api(
 '/artists'
+),
+
+api(
+'/artist-gallery'
+),
+
+api(
+'/artist-music-videos'
 ),
 
 api(
@@ -6961,6 +8693,18 @@ api(
 
 api(
 '/checkin-questions'
+),
+
+api(
+'/decision-maker-sessions'
+),
+
+api(
+'/decision-maker-challenges'
+),
+
+api(
+'/decision-maker-resources'
 )
 
 ]);
@@ -6968,151 +8712,309 @@ api(
 
 const[
 
-v,
+videosResult,
 
-m,
+magazinesResult,
 
-a,
+artistsResult,
 
-r,
+artistGalleryResult,
 
-t,
+artistVideosResult,
 
-g,
+releasesResult,
 
-locations,
+tracksResult,
 
-decisions,
+galleryResult,
 
-checkinQuestions
+locationsResult,
+
+dailyResult,
+
+checkinResult,
+
+sessionsResult,
+
+challengesResult,
+
+resourcesResult
 
 ]=
 results;
 
 
 if(
-v.status===
+videosResult.status===
 'fulfilled'
-)
+){
+
 applyVideos(
-v.value
+videosResult.value
 );
+
+}else{
+
+console.warn(
+'Video sync failed',
+videosResult.reason
+);
+
+}
 
 
 if(
-m.status===
+magazinesResult.status===
 'fulfilled'
-)
-applyMag(
-m.value
+){
+
+applyMagazines(
+magazinesResult.value
 );
 
+}else{
 
-if(
-g.status===
-'fulfilled'
-)
-applyGallery(
-g.value
-);
+currentMagazineUrl='';
 
-
-if(
-locations.status===
-'fulfilled'
-)
-applyLocations(
-locations.value
-);
-
-
-if(
-decisions.status===
-'fulfilled'
-)
-applyDailyDecisions(
-decisions.value
-);
-
-
-if(
-checkinQuestions.status===
-'fulfilled'
-)
-applyCheckinQuestions(
-checkinQuestions.value
-);
+}
 
 
 if(
 
-a.status===
+artistsResult.status===
 'fulfilled'
 &&
 
-r.status===
+releasesResult.status===
 'fulfilled'
 &&
 
-t.status===
+tracksResult.status===
 'fulfilled'
 
 ){
 
 applyMusic(
 
-a.value,
+artistsResult.value,
 
-r.value,
+releasesResult.value,
 
-t.value
+tracksResult.value
 
 );
+
+}else{
+
+artists=[];
+
+activeArtist=null;
+
+clearMusicArtistUI();
+
+}
+
+
+if(
+artistGalleryResult.status===
+'fulfilled'
+){
+
+applyArtistGallery(
+artistGalleryResult.value
+);
+
+}else{
+
+artistGalleryRows=[];
+
+renderArtistGallery();
+
+}
+
+
+if(
+artistVideosResult.status===
+'fulfilled'
+){
+
+applyArtistMusicVideos(
+artistVideosResult.value
+);
+
+}else{
+
+artistMusicVideoRows=[];
+
+renderArtistMusicVideos();
+
+}
+
+
+if(
+galleryResult.status===
+'fulfilled'
+){
+
+applyGallery(
+galleryResult.value
+);
+
+}else{
+
+galleryPhotos=[];
+
+buildGallery();
+
+}
+
+
+if(
+locationsResult.status===
+'fulfilled'
+){
+
+applyLocations(
+locationsResult.value
+);
+
+}else{
+
+restaurants.splice(
+0,
+restaurants.length
+);
+
+buildRestaurantList();
+
+}
+
+
+if(
+dailyResult.status===
+'fulfilled'
+){
+
+applyDailyDecisions(
+dailyResult.value
+);
+
+}else{
+
+daily=[];
+
+renderDaily();
+
+}
+
+
+if(
+checkinResult.status===
+'fulfilled'
+){
+
+applyCheckinQuestions(
+checkinResult.value
+);
+
+}else{
+
+for(
+const category of[
+
+'APPROVAL',
+
+'COMPARISON',
+
+'CONFIDENCE',
+
+'ACTION'
+
+]
+){
+
+bank[
+category
+]=[];
+
+}
+
+}
+
+
+if(
+sessionsResult.status===
+'fulfilled'
+){
+
+applyDMSessions(
+sessionsResult.value
+);
+
+}else{
+
+dmSessions=[];
+
+buildDMSessions();
+
+}
+
+
+if(
+challengesResult.status===
+'fulfilled'
+){
+
+applyDMChallenges(
+challengesResult.value
+);
+
+}else{
+
+dmChallenges=[];
+
+buildDMChallenges();
+
+}
+
+
+if(
+resourcesResult.status===
+'fulfilled'
+){
+
+applyDMResources(
+resourcesResult.value
+);
+
+}else{
+
+dmResources=[];
+
+renderDMResources();
 
 }
 
 
 const failed=
-
-results
-
-.map(
-(x,i)=>({
-x,
-i
-})
-)
-
-.filter(
-o=>
-o.x.status===
+results.filter(
+x=>
+x.status===
 'rejected'
 );
 
 
-if(
-failed.length
-){
+if(failed.length){
 
 console.warn(
-
-'Some cloud content could not sync. Built in fallback content remains active.',
-
-failed.map(
-o=>
-o.x.reason
-)
-
+`${failed.length} B.O.S.S CODE GO cloud request(s) failed.`
 );
-
 
 }else{
 
-
 console.info(
-'B.O.S.S CODE GO synced'
+'B.O.S.S CODE GO synced from Admin.'
 );
-
 
 }
 
@@ -7122,6 +9024,9 @@ console.info(
 /* =========================================================
    START APP
 ========================================================= */
+
+setupInternalLinks();
+
 
 renderDaily();
 
@@ -7133,7 +9038,7 @@ renderTracks();
 renderReleases();
 
 
-buildDM();
+renderDecisionMakers();
 
 
 buildEpisodes();
