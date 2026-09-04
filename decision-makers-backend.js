@@ -1,46 +1,37 @@
 (() => {
-
     "use strict";
-
 
     /* ========================================================= */
     /* B.O.S.S CODE GO
-       DECISION MAKERS BACKEND
-    /* ========================================================= */
+       DECISION MAKERS RESOURCE BACKEND
 
+       IMPORTANT:
+       app.js now owns Decision Makers videos,
+       focused sessions and Take Action challenges.
+
+       This file owns ONLY Decision Maker resources.
+       That prevents duplicate cards and duplicate controls.
+    /* ========================================================= */
 
     const API =
         "https://boss-code-go-api.dezthareason4ever.workers.dev";
 
-
-    const CHALLENGE_STORAGE_KEY =
-        "boss-code-decision-maker-challenges-v1";
-
-
-    let backendSessions = [];
-    let backendChallenges = [];
     let backendResources = [];
-
 
     /* ========================================================= */
     /* HELPERS */
     /* ========================================================= */
 
-
     function escapeHTML(value) {
-
         return String(value ?? "")
             .replace(/&/g, "&amp;")
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
+            .replace(/\"/g, "&quot;")
             .replace(/'/g, "&#039;");
-
     }
 
-
     function published(item) {
-
         if (
             item.published === undefined ||
             item.published === null
@@ -49,907 +40,213 @@
         }
 
         return Number(item.published) === 1;
-
     }
 
-
-    function sortItems(items) {
-
+    function sortResources(items) {
         return [...items].sort((a, b) => {
+            const featuredDifference =
+                Number(b.featured ?? 0) -
+                Number(a.featured ?? 0);
 
-            const aSort =
-                Number(a.sort_order ?? 0);
-
-            const bSort =
-                Number(b.sort_order ?? 0);
-
-
-            if (aSort !== bSort) {
-                return aSort - bSort;
+            if (featuredDifference !== 0) {
+                return featuredDifference;
             }
 
+            const sortDifference =
+                Number(a.sort_order ?? 0) -
+                Number(b.sort_order ?? 0);
 
-            const aNumber =
-                Number(
-                    a.session_number ??
-                    a.challenge_number ??
-                    a.id ??
-                    0
-                );
+            if (sortDifference !== 0) {
+                return sortDifference;
+            }
 
-            const bNumber =
-                Number(
-                    b.session_number ??
-                    b.challenge_number ??
-                    b.id ??
-                    0
-                );
-
-
-            return aNumber - bNumber;
-
+            return (
+                Number(b.id ?? 0) -
+                Number(a.id ?? 0)
+            );
         });
-
     }
 
-
     async function getData(path) {
-
         const response =
             await fetch(
                 `${API}${path}`,
                 {
                     method: "GET",
+                    cache: "no-store",
                     headers: {
                         "Accept": "application/json"
                     }
                 }
             );
 
-
         if (!response.ok) {
-
             throw new Error(
                 `Request failed: ${response.status}`
             );
-
         }
-
 
         const json =
             await response.json();
-
 
         if (Array.isArray(json)) {
             return json;
         }
 
-
         if (Array.isArray(json.data)) {
             return json.data;
         }
 
-
         return [];
-
     }
 
+    function safeFilename(
+        text,
+        extension
+    ) {
+        const clean =
+            String(
+                text ||
+                "decision-maker-resource"
+            )
+                .trim()
+                .replace(/[^a-z0-9]+/gi, "-")
+                .replace(/^-+|-+$/g, "")
+                .toLowerCase();
 
-    function getYouTubeId(value) {
+        return `${
+            clean ||
+            "decision-maker-resource"
+        }${extension}`;
+    }
 
-        if (!value) {
-            return "";
+    function resourceExtension(
+        resource,
+        blob
+    ) {
+        const type =
+            String(
+                resource.resource_type ||
+                ""
+            ).toUpperCase();
+
+        const url =
+            String(
+                resource.file_url ||
+                ""
+            );
+
+        const urlMatch =
+            url.match(
+                /\.([a-z0-9]{2,6})(?:[?#].*)?$/i
+            );
+
+        if (urlMatch) {
+            return `.${urlMatch[1].toLowerCase()}`;
         }
-
-
-        const text =
-            String(value).trim();
-
 
         if (
-            /^[A-Za-z0-9_-]{11}$/.test(text)
+            blob?.type?.includes("pdf") ||
+            type.includes("PDF") ||
+            type.includes("BOOK") ||
+            type.includes("WORKBOOK") ||
+            type.includes("GUIDE")
         ) {
-            return text;
+            return ".pdf";
         }
 
-
-        try {
-
-            const url =
-                new URL(text);
-
-
-            if (
-                url.hostname.includes("youtu.be")
-            ) {
-
-                return url.pathname
-                    .replace("/", "")
-                    .split("?")[0];
-
-            }
-
-
-            if (
-                url.searchParams.get("v")
-            ) {
-
-                return url.searchParams.get("v");
-
-            }
-
-
-            const parts =
-                url.pathname
-                    .split("/")
-                    .filter(Boolean);
-
-
-            const liveIndex =
-                parts.indexOf("live");
-
-
-            if (
-                liveIndex !== -1 &&
-                parts[liveIndex + 1]
-            ) {
-
-                return parts[liveIndex + 1];
-
-            }
-
-
-            const embedIndex =
-                parts.indexOf("embed");
-
-
-            if (
-                embedIndex !== -1 &&
-                parts[embedIndex + 1]
-            ) {
-
-                return parts[embedIndex + 1];
-
-            }
-
-
-            const shortsIndex =
-                parts.indexOf("shorts");
-
-
-            if (
-                shortsIndex !== -1 &&
-                parts[shortsIndex + 1]
-            ) {
-
-                return parts[shortsIndex + 1];
-
-            }
-
-        }
-        catch (error) {
-
-            return "";
-
-        }
-
-
-        return "";
-
+        return ".pdf";
     }
-
-
-    function twoDigits(number) {
-
-        return String(
-            Number(number || 0)
-        ).padStart(2, "0");
-
-    }
-
 
     /* ========================================================= */
-    /* SESSION PLAYER */
-/* ========================================================= */
-
-
-    function ensureSessionPlayer() {
-
-        if (
-            document.getElementById(
-                "dm-session-player-overlay"
-            )
-        ) {
-            return;
-        }
-
-
-        const overlay =
-            document.createElement("div");
-
-
-        overlay.id =
-            "dm-session-player-overlay";
-
-
-        overlay.innerHTML = `
-
-            <div class="dm-session-player-shell">
-
-                <div class="dm-session-player-top">
-
-                    <div>
-                        <span>
-                            DECISION MAKER SESSION
-                        </span>
-
-                        <h3 id="dm-session-player-title">
-                            SESSION
-                        </h3>
-                    </div>
-
-                    <button
-                        id="dm-session-player-close"
-                        type="button"
-                        aria-label="Close Session"
-                    >
-                        ✕
-                    </button>
-
-                </div>
-
-                <div class="dm-session-video-wrap">
-
-                    <iframe
-                        id="dm-session-player-frame"
-                        src=""
-                        title="Decision Maker Session"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowfullscreen
-                    ></iframe>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        document.body.appendChild(
-            overlay
-        );
-
-
-        document
-            .getElementById(
-                "dm-session-player-close"
-            )
-            .addEventListener(
-                "click",
-                closeSessionPlayer
-            );
-
-
-        overlay.addEventListener(
-            "click",
-            function (event) {
-
-                if (
-                    event.target === overlay
-                ) {
-
-                    closeSessionPlayer();
-
-                }
-
-            }
-        );
-
-
-        document.addEventListener(
-            "keydown",
-            function (event) {
-
-                if (
-                    event.key === "Escape" &&
-                    overlay.classList.contains("show")
-                ) {
-
-                    closeSessionPlayer();
-
-                }
-
-            }
-        );
-
-    }
-
-
-    function openSessionPlayer(
-        title,
-        youtubeId
-    ) {
-
-        if (!youtubeId) {
-            return;
-        }
-
-
-        ensureSessionPlayer();
-
-
-        const overlay =
-            document.getElementById(
-                "dm-session-player-overlay"
-            );
-
-
-        const frame =
-            document.getElementById(
-                "dm-session-player-frame"
-            );
-
-
-        const titleElement =
-            document.getElementById(
-                "dm-session-player-title"
-            );
-
-
-        titleElement.textContent =
-            title || "SESSION";
-
-
-        frame.src =
-            `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0`;
-
-
-        overlay.classList.add(
-            "show"
-        );
-
-
-        document.body.style.overflow =
-            "hidden";
-
-    }
-
-
-    function closeSessionPlayer() {
-
-        const overlay =
-            document.getElementById(
-                "dm-session-player-overlay"
-            );
-
-
-        const frame =
-            document.getElementById(
-                "dm-session-player-frame"
-            );
-
-
-        if (frame) {
-            frame.src = "";
-        }
-
-
-        if (overlay) {
-            overlay.classList.remove("show");
-        }
-
-
-        document.body.style.overflow =
-            "";
-
-    }
-
-
-    /* ========================================================= */
-    /* DECISION MAKER SESSIONS */
+    /* RESOURCE SECTION */
     /* ========================================================= */
 
-
-    function renderSessions() {
-
-        const grid =
-            document.querySelector(
-                "#decision-makers-screen .session-grid"
-            );
-
-
-        if (!grid) {
-            return;
-        }
-
-
-        const sessions =
-            sortItems(
-                backendSessions.filter(
-                    published
+    function removeLegacyDuplicateResourceSections() {
+        const sections =
+            [
+                ...document.querySelectorAll(
+                    "#decision-makers-resources-section"
                 )
-            );
+            ];
 
-
-        /*
-        If nothing is published in Admin,
-        keep the existing placeholder sessions.
-        */
-
-        if (!sessions.length) {
+        if (sections.length <= 1) {
             return;
         }
 
-
-        grid.innerHTML = "";
-
-
-        sessions.forEach(
-            function (session) {
-
-                const article =
-                    document.createElement(
-                        "article"
-                    );
-
-
-                article.className =
-                    "session-card";
-
-
-                const youtubeId =
-                    session.youtube_id ||
-                    getYouTubeId(
-                        session.youtube_url
-                    );
-
-
-                const number =
-                    session.session_number ||
-                    session.id ||
-                    1;
-
-
-                const buttonHTML =
-                    youtubeId
-                        ? `
-                            <button
-                                class="dm-watch-session-button"
-                                type="button"
-                            >
-                                ▶ WATCH SESSION
-                            </button>
-                        `
-                        : `
-                            <div class="session-status">
-                                SESSION COMING SOON
-                            </div>
-                        `;
-
-
-                article.innerHTML = `
-
-                    <div class="session-number">
-                        ${twoDigits(number)}
-                    </div>
-
-                    <div class="session-content">
-
-                        <span>
-                            FOCUSED SESSION
-                        </span>
-
-                        <h3>
-                            ${escapeHTML(session.title || "")}
-                        </h3>
-
-                        <p>
-                            ${escapeHTML(session.description || "")}
-                        </p>
-
-                        ${buttonHTML}
-
-                    </div>
-
-                `;
-
-
-                if (youtubeId) {
-
-                    const button =
-                        article.querySelector(
-                            ".dm-watch-session-button"
-                        );
-
-
-                    button.addEventListener(
-                        "click",
-                        function () {
-
-                            openSessionPlayer(
-                                session.title,
-                                youtubeId
-                            );
-
-                        }
-                    );
-
-                }
-
-
-                grid.appendChild(
-                    article
-                );
-
-            }
-        );
-
+        sections
+            .slice(1)
+            .forEach(
+                section =>
+                    section.remove()
+            );
     }
-
-
-    /* ========================================================= */
-    /* CHALLENGE STORAGE */
-    /* ========================================================= */
-
-
-    function loadChallengeState() {
-
-        try {
-
-            return JSON.parse(
-                localStorage.getItem(
-                    CHALLENGE_STORAGE_KEY
-                )
-            ) || {};
-
-        }
-        catch (error) {
-
-            return {};
-
-        }
-
-    }
-
-
-    function saveChallengeState(
-        state
-    ) {
-
-        try {
-
-            localStorage.setItem(
-                CHALLENGE_STORAGE_KEY,
-                JSON.stringify(state)
-            );
-
-        }
-        catch (error) {
-
-            console.warn(
-                "Could not save Decision Makers challenge state."
-            );
-
-        }
-
-    }
-
-
-    function challengeKey(
-        challenge
-    ) {
-
-        return String(
-            challenge.id ??
-            challenge.challenge_number ??
-            challenge.title
-        );
-
-    }
-
-
-    /* ========================================================= */
-    /* TAKE ACTION CHALLENGES */
-    /* ========================================================= */
-
-
-    function showChallengeMessage(
-        challenge
-    ) {
-
-        const box =
-            document.getElementById(
-                "decision-challenge-message"
-            );
-
-
-        const title =
-            document.getElementById(
-                "challenge-title"
-            );
-
-
-        const copy =
-            document.getElementById(
-                "challenge-copy"
-            );
-
-
-        if (title) {
-
-            title.textContent =
-                challenge.title ||
-                "YOU MADE THE DECISION.";
-
-        }
-
-
-        if (copy) {
-
-            copy.textContent =
-                challenge.completion_message ||
-                "NOW TAKE ACTION.";
-
-        }
-
-
-        if (box) {
-
-            box.classList.add(
-                "show"
-            );
-
-
-            setTimeout(
-                function () {
-
-                    box.scrollIntoView({
-                        behavior: "smooth",
-                        block: "nearest"
-                    });
-
-                },
-                100
-            );
-
-        }
-
-    }
-
-
-    function acceptChallenge(
-        challenge,
-        button
-    ) {
-
-        const state =
-            loadChallengeState();
-
-
-        const key =
-            challengeKey(
-                challenge
-            );
-
-
-        state[key] = {
-            accepted: true,
-            accepted_at:
-                new Date().toISOString()
-        };
-
-
-        saveChallengeState(
-            state
-        );
-
-
-        button.textContent =
-            "CHALLENGE ACCEPTED ✓";
-
-
-        button.classList.add(
-            "accepted"
-        );
-
-
-        button.disabled =
-            true;
-
-
-        showChallengeMessage(
-            challenge
-        );
-
-    }
-
-
-    function renderChallenges() {
-
-        const grid =
-            document.querySelector(
-                "#decision-makers-screen .action-grid"
-            );
-
-
-        if (!grid) {
-            return;
-        }
-
-
-        const challenges =
-            sortItems(
-                backendChallenges.filter(
-                    published
-                )
-            );
-
-
-        /*
-        Keep the original three challenges
-        if Admin has none published.
-        */
-
-        if (!challenges.length) {
-            return;
-        }
-
-
-        const state =
-            loadChallengeState();
-
-
-        grid.innerHTML = "";
-
-
-        challenges.forEach(
-            function (challenge) {
-
-                const card =
-                    document.createElement(
-                        "article"
-                    );
-
-
-                card.className =
-                    "action-card";
-
-
-                const number =
-                    challenge.challenge_number ||
-                    challenge.id ||
-                    1;
-
-
-                const key =
-                    challengeKey(
-                        challenge
-                    );
-
-
-                const accepted =
-                    Boolean(
-                        state[key] &&
-                        state[key].accepted
-                    );
-
-
-                card.innerHTML = `
-
-                    <div class="action-number">
-                        ${twoDigits(number)}
-                    </div>
-
-                    <h3>
-                        ${escapeHTML(challenge.title || "")}
-                    </h3>
-
-                    <p>
-                        ${escapeHTML(challenge.description || "")}
-                    </p>
-
-                    <button
-                        class="action-button ${accepted ? "accepted" : ""}"
-                        type="button"
-                        ${accepted ? "disabled" : ""}
-                    >
-                        ${
-                            accepted
-                                ? "CHALLENGE ACCEPTED ✓"
-                                : escapeHTML(
-                                    challenge.button_text ||
-                                    "ACCEPT CHALLENGE"
-                                )
-                        }
-                    </button>
-
-                `;
-
-
-                const button =
-                    card.querySelector(
-                        ".action-button"
-                    );
-
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        acceptChallenge(
-                            challenge,
-                            button
-                        );
-
-                    }
-                );
-
-
-                grid.appendChild(
-                    card
-                );
-
-            }
-        );
-
-    }
-
-
-    /* ========================================================= */
-    /* DECISION MAKERS RESOURCES */
-    /* ========================================================= */
-
 
     function resourceSection() {
+        removeLegacyDuplicateResourceSections();
 
         let section =
             document.getElementById(
                 "decision-makers-resources-section"
             );
 
-
         if (section) {
+            section.innerHTML = `
+                <div class="decision-heading">
+                    <div>
+                        <span class="decision-kicker">
+                            KEEP BUILDING
+                        </span>
+
+                        <h2>
+                            DECISION MAKER RESOURCES
+                        </h2>
+                    </div>
+
+                    <span class="red-line"></span>
+                </div>
+
+                <p class="decision-section-copy">
+                    Tools designed to help you turn the decision into action.
+                </p>
+
+                <div
+                    id="decision-makers-resource-grid"
+                    class="dm-resource-grid"
+                ></div>
+            `;
+
             return section;
         }
-
 
         const screen =
             document.getElementById(
                 "decision-makers-screen"
             );
 
-
         if (!screen) {
             return null;
         }
-
 
         const footer =
             screen.querySelector(
                 ".boss-footer"
             );
 
-
         section =
             document.createElement(
                 "section"
             );
 
-
         section.id =
             "decision-makers-resources-section";
-
 
         section.className =
             "decision-section dm-resource-section";
 
-
         section.innerHTML = `
-
             <div class="decision-heading">
-
                 <div>
-
                     <span class="decision-kicker">
                         KEEP BUILDING
                     </span>
@@ -957,11 +254,9 @@
                     <h2>
                         DECISION MAKER RESOURCES
                     </h2>
-
                 </div>
 
                 <span class="red-line"></span>
-
             </div>
 
             <p class="decision-section-copy">
@@ -972,191 +267,125 @@
                 id="decision-makers-resource-grid"
                 class="dm-resource-grid"
             ></div>
-
         `;
 
-
         if (footer) {
-
             screen.insertBefore(
                 section,
                 footer
             );
-
         }
         else {
-
             screen.appendChild(
                 section
             );
-
         }
 
-
         return section;
-
     }
 
-
-    function safeFilename(
-        text,
-        extension
-    ) {
-
-        const clean =
-            String(text || "decision-maker-resource")
-                .trim()
-                .replace(/[^a-z0-9]+/gi, "-")
-                .replace(/^-+|-+$/g, "")
-                .toLowerCase();
-
-
-        return `${clean || "decision-maker-resource"}${extension}`;
-
-    }
-
+    /* ========================================================= */
+    /* RESOURCE DOWNLOAD */
+    /* ========================================================= */
 
     async function downloadResource(
         resource,
         button
     ) {
-
         const url =
             String(
-                resource.file_url || ""
+                resource.file_url ||
+                ""
             ).trim();
-
 
         if (!url) {
             return;
         }
 
-
         const originalText =
             button.textContent;
-
 
         button.disabled =
             true;
 
-
         button.textContent =
             "PREPARING DOWNLOAD...";
 
-
         try {
-
             const response =
-                await fetch(url);
-
+                await fetch(
+                    url,
+                    {
+                        cache: "no-store"
+                    }
+                );
 
             if (!response.ok) {
-
                 throw new Error(
                     "Download failed."
                 );
-
             }
-
 
             const blob =
                 await response.blob();
-
 
             const objectURL =
                 URL.createObjectURL(
                     blob
                 );
 
-
-            const type =
-                String(
-                    resource.resource_type ||
-                    ""
-                ).toUpperCase();
-
-
-            let extension =
-                ".pdf";
-
-
-            if (
-                blob.type.includes("pdf") ||
-                type.includes("PDF") ||
-                type.includes("BOOK") ||
-                type.includes("WORKBOOK") ||
-                type.includes("GUIDE")
-            ) {
-
-                extension = ".pdf";
-
-            }
-
-
             const anchor =
                 document.createElement(
                     "a"
                 );
 
-
             anchor.href =
                 objectURL;
-
 
             anchor.download =
                 safeFilename(
                     resource.title,
-                    extension
+                    resourceExtension(
+                        resource,
+                        blob
+                    )
                 );
-
 
             document.body.appendChild(
                 anchor
             );
 
-
             anchor.click();
-
-
             anchor.remove();
-
 
             setTimeout(
                 function () {
-
                     URL.revokeObjectURL(
                         objectURL
                     );
-
                 },
                 1000
             );
 
-
             button.textContent =
                 "DOWNLOAD STARTED ✓";
 
-
             setTimeout(
                 function () {
-
                     button.textContent =
                         originalText;
 
                     button.disabled =
                         false;
-
                 },
                 2000
             );
-
         }
         catch (error) {
-
             /*
-            If the R2 CORS settings prevent
-            JavaScript from fetching the PDF,
-            fall back to opening the file directly.
+            Some direct file hosts do not allow
+            browser fetch because of CORS.
+            In that case use the actual file URL.
             */
 
             window.open(
@@ -1165,106 +394,108 @@
                 "noopener,noreferrer"
             );
 
-
             button.textContent =
                 originalText;
 
-
             button.disabled =
                 false;
-
         }
-
     }
-
+        /* ========================================================= */
+    /* RESOURCE RENDERER */
+    /* ========================================================= */
 
     function renderResources() {
-
         const resources =
-            sortItems(
+            sortResources(
                 backendResources.filter(
                     function (item) {
-
                         return (
                             published(item) &&
                             String(
-                                item.file_url || ""
+                                item.file_url ||
+                                ""
                             ).trim()
                         );
-
                     }
                 )
             );
 
-
         /*
-        Do not show an empty Resources section.
-        It appears only after a resource has
-        been uploaded and published in Admin.
+        No published resources means no empty
+        resource section should be visible.
         */
 
         if (!resources.length) {
-
             const existing =
                 document.getElementById(
                     "decision-makers-resources-section"
                 );
 
-
             if (existing) {
                 existing.remove();
             }
 
-
             return;
-
         }
-
 
         const section =
             resourceSection();
 
-
         if (!section) {
             return;
         }
-
 
         const grid =
             document.getElementById(
                 "decision-makers-resource-grid"
             );
 
-
         if (!grid) {
             return;
         }
 
-
         grid.innerHTML = "";
-
 
         resources.forEach(
             function (resource) {
-
                 const card =
                     document.createElement(
                         "article"
                     );
 
-
                 card.className =
                     "dm-resource-card";
 
+                card.dataset.resourceId =
+                    String(
+                        resource.id ??
+                        ""
+                    );
 
                 const cover =
                     String(
-                        resource.cover_image_url || ""
+                        resource.cover_image_url ||
+                        ""
                     ).trim();
 
+                const resourceType =
+                    resource.resource_type ||
+                    "RESOURCE";
+
+                const title =
+                    resource.title ||
+                    "DECISION MAKER RESOURCE";
+
+                const description =
+                    resource.description ||
+                    "";
+
+                const buttonText =
+                    resource.button_text ||
+                    "DOWNLOAD FREE SAMPLE";
 
                 card.innerHTML = `
-
                     ${
                         cover
                             ? `
@@ -1272,13 +503,18 @@
 
                                     <img
                                         src="${escapeHTML(cover)}"
-                                        alt="${escapeHTML(resource.title || "Decision Maker Resource")}"
+                                        alt="${escapeHTML(title)}"
                                     >
 
                                 </div>
                             `
                             : `
-                                <div class="dm-resource-cover dm-resource-cover-placeholder">
+                                <div
+                                    class="
+                                        dm-resource-cover
+                                        dm-resource-cover-placeholder
+                                    "
+                                >
 
                                     <span>
                                         DECISION MAKERS
@@ -1288,6 +524,10 @@
                                         RESOURCE
                                     </strong>
 
+                                    <small>
+                                        GREATNESS IS A DECISION
+                                    </small>
+
                                 </div>
                             `
                     }
@@ -1295,198 +535,129 @@
                     <div class="dm-resource-content">
 
                         <span class="dm-resource-type">
-                            ${escapeHTML(resource.resource_type || "RESOURCE")}
+                            ${escapeHTML(resourceType)}
                         </span>
 
                         <h3>
-                            ${escapeHTML(resource.title || "")}
+                            ${escapeHTML(title)}
                         </h3>
 
-                        <p>
-                            ${escapeHTML(resource.description || "")}
-                        </p>
+                        ${
+                            description
+                                ? `
+                                    <p>
+                                        ${escapeHTML(description)}
+                                    </p>
+                                `
+                                : ""
+                        }
 
                         <button
                             class="dm-resource-download"
                             type="button"
+                            data-resource-id="${escapeHTML(
+                                resource.id ??
+                                ""
+                            )}"
                         >
-                            ${escapeHTML(
-                                resource.button_text ||
-                                "DOWNLOAD FREE SAMPLE"
-                            )}
+                            ${escapeHTML(buttonText)}
                         </button>
 
                     </div>
-
                 `;
-
 
                 const button =
                     card.querySelector(
                         ".dm-resource-download"
                     );
 
-
-                button.addEventListener(
-                    "click",
-                    function () {
-
-                        downloadResource(
-                            resource,
-                            button
-                        );
-
-                    }
-                );
-
+                if (button) {
+                    button.addEventListener(
+                        "click",
+                        function () {
+                            downloadResource(
+                                resource,
+                                button
+                            );
+                        }
+                    );
+                }
 
                 grid.appendChild(
                     card
                 );
-
             }
         );
 
+        /*
+        app.js keeps RETURN TO HOME immediately
+        above the company footer.
+
+        Because this resource section is created
+        dynamically, move that existing button
+        back to its proper position afterward.
+        */
+
+        const screen =
+            document.getElementById(
+                "decision-makers-screen"
+            );
+
+        const footer =
+            screen?.querySelector(
+                ".boss-footer"
+            );
+
+        const returnHome =
+            screen?.querySelector(
+                ".boss-return-home-bottom"
+            );
+
+        if (
+            footer &&
+            returnHome
+        ) {
+            footer.insertAdjacentElement(
+                "beforebegin",
+                returnHome
+            );
+        }
     }
 
 
     /* ========================================================= */
-    /* STYLES */
+    /* B.O.S.S CODE RESOURCE STYLES */
     /* ========================================================= */
 
-
     function installStyles() {
-
-        if (
+        const existing =
             document.getElementById(
                 "decision-makers-backend-styles"
-            )
-        ) {
-            return;
-        }
+            );
 
+        if (existing) {
+            existing.remove();
+        }
 
         const style =
             document.createElement(
                 "style"
             );
 
-
         style.id =
             "decision-makers-backend-styles";
 
-
         style.textContent = `
 
-            .dm-watch-session-button,
-            .dm-resource-download {
-                border: 1px solid #e32636;
-                background: #e32636;
-                color: #fff;
-                font: inherit;
-                font-size: 12px;
-                font-weight: 900;
-                letter-spacing: 1px;
-                padding: 12px 16px;
-                border-radius: 999px;
-                cursor: pointer;
-                margin-top: 10px;
-            }
+            /* ==============================================
+               RESOURCE SECTION
+            ============================================== */
 
-
-            .dm-watch-session-button:hover,
-            .dm-resource-download:hover {
-                transform: translateY(-1px);
-            }
-
-
-            .action-button.accepted {
-                background: #f5c518;
-                border-color: #f5c518;
-                color: #000;
-                opacity: 1;
-            }
-
-
-            #dm-session-player-overlay {
-                position: fixed;
-                inset: 0;
-                z-index: 999999;
-                background: rgba(0,0,0,.94);
-                display: none;
-                align-items: center;
-                justify-content: center;
-                padding: 18px;
-            }
-
-
-            #dm-session-player-overlay.show {
-                display: flex;
-            }
-
-
-            .dm-session-player-shell {
-                width: min(100%, 1000px);
-                background: #090909;
-                border: 1px solid #333;
-                border-radius: 18px;
-                overflow: hidden;
-                box-shadow: 0 25px 80px rgba(0,0,0,.55);
-            }
-
-
-            .dm-session-player-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 20px;
-                padding: 18px 20px;
-                border-bottom: 1px solid #222;
-            }
-
-
-            .dm-session-player-top span {
-                display: block;
-                color: #f5c518;
-                font-size: 10px;
-                font-weight: 900;
-                letter-spacing: 2px;
-                margin-bottom: 4px;
-            }
-
-
-            .dm-session-player-top h3 {
-                color: #fff;
-                margin: 0;
-                font-size: 18px;
-            }
-
-
-            #dm-session-player-close {
-                width: 42px;
-                height: 42px;
-                min-width: 42px;
-                border-radius: 50%;
-                border: 1px solid #444;
-                background: #111;
-                color: #fff;
-                font-size: 18px;
-                cursor: pointer;
-            }
-
-
-            .dm-session-video-wrap {
+            .dm-resource-section {
                 width: 100%;
-                aspect-ratio: 16 / 9;
-                background: #000;
-            }
-
-
-            .dm-session-video-wrap iframe {
-                width: 100%;
-                height: 100%;
-                border: 0;
-                display: block;
+                max-width: 1100px;
+                margin-left: auto;
+                margin-right: auto;
             }
 
 
@@ -1495,211 +666,416 @@
                 grid-template-columns:
                     repeat(
                         auto-fit,
-                        minmax(230px, 1fr)
+                        minmax(240px, 1fr)
                     );
-                gap: 18px;
-                margin-top: 22px;
+                gap: 22px;
+                margin-top: 24px;
             }
 
+
+            /* ==============================================
+               RESOURCE CARD
+            ============================================== */
 
             .dm-resource-card {
+                position: relative;
                 overflow: hidden;
-                border: 1px solid #2a2a2a;
-                border-radius: 18px;
-                background: #0b0b0b;
+
+                background:
+                    linear-gradient(
+                        145deg,
+                        #101010,
+                        #050505
+                    );
+
+                border:
+                    2px solid #F5C518;
+
+                border-radius:
+                    20px;
+
+                box-shadow:
+                    0 18px 45px
+                    rgba(
+                        0,
+                        0,
+                        0,
+                        .35
+                    );
+
+                color:
+                    #fff;
             }
 
 
+            .dm-resource-card::before {
+                content: "";
+
+                position:
+                    absolute;
+
+                left:
+                    0;
+
+                top:
+                    0;
+
+                width:
+                    100%;
+
+                height:
+                    4px;
+
+                background:
+                    #F5C518;
+
+                z-index:
+                    2;
+            }
+
+
+            /* ==============================================
+               COVER
+            ============================================== */
+
             .dm-resource-cover {
-                width: 100%;
-                aspect-ratio: 4 / 5;
-                background: #111;
-                overflow: hidden;
+                width:
+                    100%;
+
+                aspect-ratio:
+                    4 / 5;
+
+                background:
+                    #050505;
+
+                overflow:
+                    hidden;
+
+                border-bottom:
+                    1px solid #282828;
             }
 
 
             .dm-resource-cover img {
-                width: 100%;
-                height: 100%;
-                display: block;
-                object-fit: cover;
+                display:
+                    block;
+
+                width:
+                    100%;
+
+                height:
+                    100%;
+
+                object-fit:
+                    cover;
             }
 
 
             .dm-resource-cover-placeholder {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                padding: 25px;
-                border-bottom: 1px solid #222;
+                display:
+                    flex;
+
+                flex-direction:
+                    column;
+
+                align-items:
+                    center;
+
+                justify-content:
+                    center;
+
+                text-align:
+                    center;
+
+                padding:
+                    30px;
+
+                background:
+                    radial-gradient(
+                        circle at center,
+                        rgba(
+                            245,
+                            197,
+                            24,
+                            .12
+                        ),
+                        transparent 65%
+                    ),
+                    #050505;
             }
 
 
             .dm-resource-cover-placeholder span {
-                color: #f5c518;
-                font-size: 11px;
-                font-weight: 900;
-                letter-spacing: 2px;
+                color:
+                    #F5C518;
+
+                font-size:
+                    11px;
+
+                font-weight:
+                    900;
+
+                letter-spacing:
+                    2px;
             }
 
 
             .dm-resource-cover-placeholder strong {
-                color: #fff;
-                font-size: 28px;
-                margin-top: 8px;
+                margin-top:
+                    10px;
+
+                color:
+                    #fff;
+
+                font-size:
+                    30px;
+
+                font-weight:
+                    900;
+
+                letter-spacing:
+                    1px;
             }
 
 
+            .dm-resource-cover-placeholder small {
+                margin-top:
+                    12px;
+
+                color:
+                    #777;
+
+                font-size:
+                    8px;
+
+                font-weight:
+                    900;
+
+                letter-spacing:
+                    1.5px;
+            }
+
+
+            /* ==============================================
+               RESOURCE CONTENT
+            ============================================== */
+
             .dm-resource-content {
-                padding: 18px;
+                padding:
+                    20px;
             }
 
 
             .dm-resource-type {
-                color: #f5c518;
-                font-size: 10px;
-                font-weight: 900;
-                letter-spacing: 1.6px;
+                display:
+                    block;
+
+                color:
+                    #F5C518;
+
+                font-size:
+                    9px;
+
+                font-weight:
+                    900;
+
+                letter-spacing:
+                    1.8px;
+
+                margin-bottom:
+                    7px;
             }
 
 
             .dm-resource-content h3 {
-                margin: 8px 0 8px;
-                color: #fff;
-                font-size: 20px;
+                margin:
+                    0 0 9px;
+
+                color:
+                    #fff;
+
+                font-size:
+                    21px;
+
+                line-height:
+                    1.2;
             }
 
 
             .dm-resource-content p {
-                color: #ccc;
-                font-size: 14px;
-                line-height: 1.5;
-                margin: 0 0 6px;
+                margin:
+                    0;
+
+                color:
+                    #aaa;
+
+                font-size:
+                    13px;
+
+                line-height:
+                    1.55;
             }
 
+
+            /* ==============================================
+               YELLOW + BLACK DOWNLOAD BUTTON
+            ============================================== */
 
             .dm-resource-download {
-                width: 100%;
-                margin-top: 14px;
+                display:
+                    block;
+
+                width:
+                    100%;
+
+                min-height:
+                    48px;
+
+                margin-top:
+                    18px;
+
+                padding:
+                    12px 18px;
+
+                border:
+                    2px solid #F5C518;
+
+                border-radius:
+                    999px;
+
+                background:
+                    #F5C518;
+
+                color:
+                    #000;
+
+                font:
+                    inherit;
+
+                font-size:
+                    11px;
+
+                font-weight:
+                    900;
+
+                letter-spacing:
+                    1px;
+
+                cursor:
+                    pointer;
+
+                transition:
+                    transform .16s ease,
+                    background .16s ease,
+                    color .16s ease;
             }
 
 
-            @media (max-width: 600px) {
+            .dm-resource-download:hover {
+                transform:
+                    translateY(-1px);
 
-                .dm-session-player-shell {
-                    border-radius: 12px;
-                }
+                background:
+                    #000;
+
+                color:
+                    #F5C518;
+            }
 
 
-                .dm-session-player-top {
-                    padding: 14px;
-                }
+            .dm-resource-download:active {
+                transform:
+                    scale(.985);
+            }
 
 
-                .dm-session-player-top h3 {
-                    font-size: 15px;
-                }
+            .dm-resource-download:disabled {
+                cursor:
+                    wait;
 
+                opacity:
+                    .75;
+            }
+
+
+            /* ==============================================
+               MOBILE
+            ============================================== */
+
+            @media (
+                max-width: 700px
+            ) {
 
                 .dm-resource-grid {
-                    grid-template-columns: 1fr;
+                    grid-template-columns:
+                        1fr;
+
+                    gap:
+                        18px;
+                }
+
+
+                .dm-resource-card {
+                    width:
+                        100%;
+                }
+
+
+                .dm-resource-content {
+                    padding:
+                        18px;
+                }
+
+
+                .dm-resource-content h3 {
+                    font-size:
+                        19px;
+                }
+
+
+                .dm-resource-download {
+                    min-height:
+                        50px;
+
+                    font-size:
+                        10px;
                 }
 
             }
 
         `;
 
-
         document.head.appendChild(
             style
         );
-
     }
 
 
     /* ========================================================= */
-    /* LOAD BACKEND CONTENT */
+    /* LOAD RESOURCE CONTENT */
     /* ========================================================= */
 
-
-    async function loadDecisionMakerBackend() {
-
+    async function loadDecisionMakerResources() {
         installStyles();
 
-
-        const results =
-            await Promise.allSettled([
-
-                getData(
-                    "/decision-maker-sessions"
-                ),
-
-                getData(
-                    "/decision-maker-challenges"
-                ),
-
-                getData(
-                    "/decision-maker-resources"
-                )
-
-            ]);
-
-
-        if (
-            results[0].status ===
-            "fulfilled"
-        ) {
-
-            backendSessions =
-                results[0].value;
-
-            renderSessions();
-
-        }
-
-
-        if (
-            results[1].status ===
-            "fulfilled"
-        ) {
-
-            backendChallenges =
-                results[1].value;
-
-            renderChallenges();
-
-        }
-
-
-        if (
-            results[2].status ===
-            "fulfilled"
-        ) {
-
+        try {
             backendResources =
-                results[2].value;
+                await getData(
+                    "/decision-maker-resources"
+                );
 
             renderResources();
 
-        }
-
-
-        if (
-            results.some(
-                result =>
-                    result.status ===
-                    "rejected"
-            )
-        ) {
-
-            console.warn(
-                "Some Decision Makers backend content could not be loaded."
+            console.info(
+                "Decision Makers resources loaded."
             );
-
         }
-
+        catch (error) {
+            console.warn(
+                "Decision Makers resources could not be loaded.",
+                error
+            );
+        }
     }
 
 
@@ -1707,23 +1083,17 @@
     /* START */
     /* ========================================================= */
 
-
     if (
         document.readyState ===
         "loading"
     ) {
-
         document.addEventListener(
             "DOMContentLoaded",
-            loadDecisionMakerBackend
+            loadDecisionMakerResources
         );
-
     }
     else {
-
-        loadDecisionMakerBackend();
-
+        loadDecisionMakerResources();
     }
-
 
 })();

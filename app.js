@@ -14,53 +14,1832 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
 
 
 /* =========================================================
+   APP ANALYTICS + PROMOTIONAL ADS
+========================================================= */
+
+const ANALYTICS_VISITOR_KEY='boss-code-go-visitor-id-v1';
+const DEMOGRAPHICS_PROMPT_KEY='boss-code-go-demographics-prompted-v1';
+const DEMOGRAPHICS_PROFILE_KEY='boss-code-go-demographics-profile-v1';
+const SONG_QUALIFIED_SECONDS=15;
+
+function makeBossId(prefix='id'){
+try{
+if(globalThis.crypto?.randomUUID)return `${prefix}-${globalThis.crypto.randomUUID()}`;
+}catch{}
+return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function visitorId(){
+let id='';
+try{id=localStorage.getItem(ANALYTICS_VISITOR_KEY)||'';}catch{}
+if(!id){
+id=makeBossId('visitor');
+try{localStorage.setItem(ANALYTICS_VISITOR_KEY,id);}catch{}
+}
+return id;
+}
+
+const BOSS_VISITOR_ID=visitorId();
+const BOSS_SESSION_ID=makeBossId('visit');
+
+function analyticsSectionFromScreen(screen){
+const id=screen?.id||'';
+return({
+'home-screen':'home',
+'boss-bite-screen':'boss-bite',
+'boss-code-tv-screen':'boss-code-tv',
+'decision-makers-screen':'decision-makers',
+'boss-checkin-screen':'boss-checkin',
+'music-screen':'music',
+'contact-screen':'contact'
+})[id]||'';
+}
+
+function trackAnalytics(eventType,options={}){
+const payload={
+event_type:eventType,
+section:options.section||'',
+item_id:String(options.itemId??''),
+item_title:String(options.itemTitle??''),
+visitor_id:BOSS_VISITOR_ID,
+session_id:BOSS_SESSION_ID
+};
+
+if(options.valueNumeric!==undefined&&options.valueNumeric!==null){
+payload.value_numeric=options.valueNumeric;
+}
+
+if(options.detail!==undefined){
+payload.detail=options.detail;
+}
+
+fetch(`${API}/analytics/events`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Accept':'application/json'},
+body:JSON.stringify(payload),
+keepalive:true
+}).catch(()=>{});
+}
+
+function trackPageOpen(section,title=''){
+if(!section)return;
+trackAnalytics('page_open',{
+section,
+itemTitle:title||section
+});
+}
+
+function currentAnalyticsSection(target){
+const screen=target?.closest?.('.screen')||q('.screen.active-screen');
+let section=analyticsSectionFromScreen(screen);
+
+if(!section&&target?.closest?.('.maplibregl-popup'))section='boss-bite';
+
+if(!section&&target?.closest?.('#boss-internal-web-screen')){
+
+const title=
+$('boss-internal-title')
+?.textContent
+?.toUpperCase()||
+'';
+
+if(
+title.includes(
+'MAGAZINE'
+)
+)
+section='magazine';
+
+else if(
+title.includes(
+'CLOTHING'
+)
+)
+section='the-code-clothing';
+
+else
+section='internal';
+
+}
+
+return section||'unknown';
+}
+
+
+// Broad button / link analytics.
+// Specific events below add deeper meaning.
+
+document.addEventListener(
+'click',
+event=>{
+
+const control=
+event.target.closest?.(
+'button,a'
+);
+
+if(!control)
+return;
+
+if(
+control.dataset.analyticsIgnore===
+'1'
+)
+return;
+
+
+const label=
+(
+control.dataset.analyticsTitle||
+control.getAttribute(
+'aria-label'
+)||
+control.textContent||
+control.getAttribute(
+'href'
+)||
+'BUTTON'
+)
+
+.replace(
+/\s+/g,
+' '
+)
+
+.trim()
+
+.slice(
+0,
+220
+);
+
+
+trackAnalytics(
+'button_click',
+{
+
+section:
+currentAnalyticsSection(
+control
+),
+
+itemId:
+control.id||
+control.dataset.restaurant||
+'',
+
+itemTitle:
+label
+
+}
+);
+
+},
+true
+);
+
+
+let promoAds=[];
+
+let promoAdsLoaded=false;
+
+const promoShownThisVisit=
+new Set();
+
+let activePromoContext=
+null;
+
+
+function applyPromoAds(rows){
+
+promoAds=
+(
+rows||
+[]
+)
+
+.filter(
+row=>
+Number(
+row.published
+)===
+1
+)
+
+.sort(
+(a,b)=>
+
+Number(
+b.priority||
+0
+)
+-
+Number(
+a.priority||
+0
+)
+
+||
+
+Number(
+b.id||
+0
+)
+-
+Number(
+a.id||
+0
+)
+
+);
+
+
+promoAdsLoaded=
+true;
+
+}
+
+
+function todayKey(){
+
+const d=
+new Date();
+
+
+return`${
+
+d.getFullYear()
+
+}-${
+String(
+d.getMonth()+
+1
+)
+.padStart(
+2,
+'0'
+)
+
+}-${
+String(
+d.getDate()
+)
+.padStart(
+2,
+'0'
+)
+}`;
+
+}
+
+
+function adFrequencyAllows(ad){
+
+const mode=
+String(
+ad.frequency_mode||
+'once_per_visit'
+)
+.toLowerCase();
+
+
+const id=
+String(
+ad.id||
+''
+);
+
+
+if(!id)
+return false;
+
+
+if(
+mode===
+'every_time'
+)
+return true;
+
+
+if(
+mode===
+'once_per_day'
+){
+
+try{
+
+return localStorage.getItem(
+`boss-code-ad-day-${id}`
+)!==
+todayKey();
+
+}catch{
+
+return true;
+
+}
+
+}
+
+
+return !promoShownThisVisit.has(
+id
+);
+
+}
+
+
+function markAdShown(ad){
+
+const mode=
+String(
+ad.frequency_mode||
+'once_per_visit'
+)
+.toLowerCase();
+
+
+const id=
+String(
+ad.id||
+''
+);
+
+
+if(!id)
+return;
+
+
+if(
+mode===
+'once_per_day'
+){
+
+try{
+
+localStorage.setItem(
+`boss-code-ad-day-${id}`,
+todayKey()
+);
+
+}catch{}
+
+}
+else if(
+mode!==
+'every_time'
+){
+
+promoShownThisVisit.add(
+id
+);
+
+}
+
+}
+
+
+function adMatchesSection(
+ad,
+section
+){
+
+const target=
+String(
+ad.target_section||
+'all'
+)
+.toLowerCase();
+
+
+return(
+target===
+'all'
+||
+target===
+section
+);
+
+}
+
+
+function activeAdForSection(
+section
+){
+
+return promoAds.find(
+ad=>
+adMatchesSection(
+ad,
+section
+)
+&&
+adFrequencyAllows(
+ad
+)
+)
+||
+null;
+
+}
+
+
+function ensurePromoAdUI(){
+
+if(
+$('boss-promo-ad-overlay')
+)
+return;
+
+
+const overlay=
+document.createElement(
+'div'
+);
+
+
+overlay.id=
+'boss-promo-ad-overlay';
+
+overlay.className=
+'boss-promo-ad-overlay';
+
+overlay.setAttribute(
+'aria-hidden',
+'true'
+);
+
+
+overlay.innerHTML=`
+
+<div
+class="boss-promo-ad-card"
+role="dialog"
+aria-modal="true"
+aria-label="Sponsored message"
+>
+
+<button
+id="boss-promo-ad-close"
+class="boss-promo-ad-close"
+type="button"
+aria-label="Close ad"
+data-analytics-ignore="1"
+>
+×
+</button>
+
+<div class="boss-promo-ad-sponsored">
+SPONSORED
+</div>
+
+<div
+id="boss-promo-ad-media"
+class="boss-promo-ad-media"
+></div>
+
+<div class="boss-promo-ad-copy">
+
+<h2 id="boss-promo-ad-headline"></h2>
+
+<p id="boss-promo-ad-description"></p>
+
+<button
+id="boss-promo-ad-cta"
+class="boss-promo-ad-cta"
+type="button"
+data-analytics-ignore="1"
+>
+LEARN MORE
+</button>
+
+</div>
+
+</div>
+
+`;
+
+
+document.body.appendChild(
+overlay
+);
+
+
+on(
+'boss-promo-ad-close',
+'click',
+()=>finishPromoAd(false)
+);
+
+
+on(
+'boss-promo-ad-cta',
+'click',
+()=>finishPromoAd(true)
+);
+
+}
+
+
+async function refreshPromoAdsForSection(
+section
+){
+
+try{
+
+const rows=
+await Promise.race([
+
+api(
+'/promo-ads'
+),
+
+new Promise(
+resolve=>
+setTimeout(
+()=>resolve(null),
+1200
+)
+)
+
+]);
+
+
+if(
+rows===
+null
+)
+return;
+
+
+if(
+Array.isArray(
+rows
+)
+)
+applyPromoAds(
+rows
+);
+
+}catch{}
+
+}
+
+
+async function openWithPromo(
+section,
+next
+){
+
+if(
+typeof next!==
+'function'
+)
+return;
+
+
+if(
+!promoAdsLoaded
+){
+
+await refreshPromoAdsForSection(
+section
+);
+
+}
+
+
+const ad=
+activeAdForSection(
+section
+);
+
+
+if(!ad){
+
+next();
+
+return;
+
+}
+
+
+ensurePromoAdUI();
+
+markAdShown(
+ad
+);
+
+
+activePromoContext={
+
+ad,
+
+section,
+
+next
+
+};
+
+
+const media=
+$('boss-promo-ad-media');
+
+const headline=
+$('boss-promo-ad-headline');
+
+const description=
+$('boss-promo-ad-description');
+
+const cta=
+$('boss-promo-ad-cta');
+
+const overlay=
+$('boss-promo-ad-overlay');
+
+
+if(media){
+
+const url=
+esc(
+ad.media_url||
+''
+);
+
+
+if(
+String(
+ad.media_type||
+'image'
+)
+.toLowerCase()===
+'video'
+){
+
+media.innerHTML=`
+
+<video
+src="${url}"
+autoplay
+muted
+controls
+playsinline
+preload="metadata"
+></video>
+
+`;
+
+}
+else{
+
+media.innerHTML=`
+
+<img
+src="${url}"
+alt="${esc(
+ad.headline||
+ad.campaign_name||
+'Sponsored message'
+)}"
+>
+
+`;
+
+}
+
+}
+
+
+if(headline){
+
+headline.textContent=
+ad.headline||
+ad.campaign_name||
+'SPONSORED';
+
+
+headline.style.display=
+headline.textContent
+?
+'block'
+:
+'none';
+
+}
+
+
+if(description){
+
+description.textContent=
+ad.description||
+'';
+
+
+description.style.display=
+ad.description
+?
+'block'
+:
+'none';
+
+}
+
+
+if(cta){
+
+cta.textContent=
+ad.cta_text||
+'LEARN MORE';
+
+}
+
+
+if(overlay){
+
+overlay.classList.add(
+'open'
+);
+
+overlay.setAttribute(
+'aria-hidden',
+'false'
+);
+
+}
+
+
+document.body.style.overflow=
+'hidden';
+
+
+trackAnalytics(
+'ad_impression',
+{
+
+section,
+
+itemId:
+ad.id,
+
+itemTitle:
+ad.campaign_name||
+ad.headline||
+'PROMOTIONAL AD',
+
+detail:{
+
+advertiser:
+ad.advertiser_name||
+'',
+
+media_type:
+ad.media_type||
+'image'
+
+}
+
+}
+);
+
+}
+
+
+function finishPromoAd(
+clicked
+){
+
+const context=
+activePromoContext;
+
+
+if(!context)
+return;
+
+
+const{
+ad,
+section,
+next
+}=
+context;
+
+
+activePromoContext=
+null;
+
+
+const overlay=
+$('boss-promo-ad-overlay');
+
+const media=
+$('boss-promo-ad-media');
+
+
+if(overlay){
+
+overlay.classList.remove(
+'open'
+);
+
+overlay.setAttribute(
+'aria-hidden',
+'true'
+);
+
+}
+
+
+if(media)
+media.innerHTML='';
+
+
+document.body.style.overflow=
+'';
+
+
+if(clicked){
+
+trackAnalytics(
+'ad_click',
+{
+
+section,
+
+itemId:
+ad.id,
+
+itemTitle:
+ad.campaign_name||
+ad.headline||
+'PROMOTIONAL AD',
+
+detail:{
+
+advertiser:
+ad.advertiser_name||
+''
+
+}
+
+}
+);
+
+
+const link=
+String(
+ad.link_url||
+''
+)
+.trim();
+
+
+if(link){
+
+try{
+
+window.open(
+
+link,
+
+'_blank',
+
+'noopener,noreferrer'
+
+);
+
+}catch{}
+
+}
+
+}
+
+
+next();
+
+}
+
+
+function ensureDemographicsPrompt(){
+
+if(
+$('boss-demographics-overlay')
+)
+return;
+
+
+let prompted=
+false;
+
+
+try{
+
+prompted=
+localStorage.getItem(
+DEMOGRAPHICS_PROMPT_KEY
+)===
+'1';
+
+}catch{}
+
+
+if(prompted)
+return;
+
+
+const overlay=
+document.createElement(
+'div'
+);
+
+
+overlay.id=
+'boss-demographics-overlay';
+
+overlay.className=
+'boss-demographics-overlay';
+
+
+overlay.innerHTML=`
+
+<div
+class="boss-demographics-card"
+role="dialog"
+aria-modal="true"
+aria-label="Optional audience information"
+>
+
+<span>
+OPTIONAL
+</span>
+
+<h2>
+HELP US UNDERSTAND OUR AUDIENCE
+</h2>
+
+<p>
+This information is voluntary and is used only for aggregate B.O.S.S CODE GO analytics.
+</p>
+
+<label>
+AGE RANGE
+</label>
+
+<select id="boss-demo-age">
+
+<option value="">
+CHOOSE ONE
+</option>
+
+<option value="under-18">
+UNDER 18
+</option>
+
+<option value="18-24">
+18 TO 24
+</option>
+
+<option value="25-34">
+25 TO 34
+</option>
+
+<option value="35-44">
+35 TO 44
+</option>
+
+<option value="45-54">
+45 TO 54
+</option>
+
+<option value="55-64">
+55 TO 64
+</option>
+
+<option value="65+">
+65+
+</option>
+
+<option value="prefer-not-to-say">
+PREFER NOT TO SAY
+</option>
+
+</select>
+
+<label>
+GENDER
+</label>
+
+<select id="boss-demo-gender">
+
+<option value="">
+CHOOSE ONE
+</option>
+
+<option value="male">
+MALE
+</option>
+
+<option value="female">
+FEMALE
+</option>
+
+<option value="nonbinary">
+NONBINARY
+</option>
+
+<option value="prefer-not-to-say">
+PREFER NOT TO SAY
+</option>
+
+</select>
+
+
+<div class="boss-demographics-actions">
+
+<button
+id="boss-demo-save"
+type="button"
+>
+SAVE OPTIONAL INFO
+</button>
+
+<button
+id="boss-demo-skip"
+type="button"
+>
+SKIP
+</button>
+
+</div>
+
+</div>
+
+`;
+
+
+document.body.appendChild(
+overlay
+);
+
+
+on(
+'boss-demo-skip',
+'click',
+()=>closeDemographicsPrompt(
+true
+)
+);
+
+
+on(
+'boss-demo-save',
+'click',
+saveDemographicsProfile
+);
+
+}
+
+
+function showDemographicsPromptIfAppropriate(){
+
+let prompted=
+false;
+
+
+try{
+
+prompted=
+localStorage.getItem(
+DEMOGRAPHICS_PROMPT_KEY
+)===
+'1';
+
+}catch{}
+
+
+if(prompted)
+return;
+
+
+if(
+!home?.classList.contains(
+'active-screen'
+)
+)
+return;
+
+
+if(
+$('daily-decision-modal')
+?.classList
+.contains(
+'open'
+)
+)
+return;
+
+
+if(
+$('boss-promo-ad-overlay')
+?.classList
+.contains(
+'open'
+)
+)
+return;
+
+
+ensureDemographicsPrompt();
+
+
+const overlay=
+$('boss-demographics-overlay');
+
+
+if(overlay){
+
+overlay.classList.add(
+'open'
+);
+
+document.body.style.overflow=
+'hidden';
+
+}
+
+}
+
+
+function closeDemographicsPrompt(
+markPrompted=true
+){
+
+const overlay=
+$('boss-demographics-overlay');
+
+
+if(overlay)
+overlay.classList.remove(
+'open'
+);
+
+
+document.body.style.overflow=
+'';
+
+
+if(markPrompted){
+
+try{
+
+localStorage.setItem(
+DEMOGRAPHICS_PROMPT_KEY,
+'1'
+);
+
+}catch{}
+
+}
+
+}
+
+
+async function saveDemographicsProfile(){
+
+const age=
+$('boss-demo-age')
+?.value||
+'';
+
+
+const gender=
+$('boss-demo-gender')
+?.value||
+'';
+
+
+if(
+!age&&
+!gender
+)
+return;
+
+
+try{
+
+await fetch(
+`${API}/analytics/profile`,
+{
+
+method:
+'POST',
+
+headers:{
+
+'Content-Type':
+'application/json',
+
+'Accept':
+'application/json'
+
+},
+
+body:
+JSON.stringify({
+
+visitor_id:
+BOSS_VISITOR_ID,
+
+age_range:
+age||
+'prefer-not-to-say',
+
+gender:
+gender||
+'prefer-not-to-say'
+
+})
+
+}
+);
+
+
+try{
+
+localStorage.setItem(
+
+DEMOGRAPHICS_PROFILE_KEY,
+
+JSON.stringify({
+
+age_range:
+age,
+
+gender
+
+})
+
+);
+
+
+localStorage.setItem(
+DEMOGRAPHICS_PROMPT_KEY,
+'1'
+);
+
+}catch{}
+
+
+closeDemographicsPrompt(
+false
+);
+
+}catch{}
+
+}
+
+
+/* =========================================================
    B.O.S.S CODE GO SHARED UI UPGRADES
 ========================================================= */
+
 (function injectBossCodeGoStyles(){
-if(document.getElementById('boss-code-go-runtime-styles'))return;
-const style=document.createElement('style');
-style.id='boss-code-go-runtime-styles';
+
+if(
+document.getElementById(
+'boss-code-go-runtime-styles'
+)
+)
+return;
+
+
+const style=
+document.createElement(
+'style'
+);
+
+
+style.id=
+'boss-code-go-runtime-styles';
+
+
 style.textContent=`
-html{scrollbar-color:#F5C518 #111;scrollbar-width:thin}
-*{scrollbar-color:#F5C518 #111;scrollbar-width:thin}
-*::-webkit-scrollbar{width:10px;height:10px}
-*::-webkit-scrollbar-track{background:#111}
-*::-webkit-scrollbar-thumb{background:#F5C518;border-radius:999px;border:2px solid #111}
-.boss-return-home-bottom{display:block;width:min(420px,88%);margin:42px auto 22px;border:2px solid #d40000;border-radius:999px;background:#090909;color:#fff;padding:14px 20px;font:inherit;font-weight:900;letter-spacing:.08em;cursor:pointer}
-.boss-return-home-bottom:hover{background:#d40000}
-.music-track{grid-template-columns:58px 54px minmax(0,1fr) auto 45px!important}
-.track-cover{width:54px;height:54px;border-radius:10px;overflow:hidden;background:#111;border:1px solid #2a2a2a}
-.track-cover img{width:100%;height:100%;object-fit:cover;display:block}
-.artist-media-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.artist-media-card{border:1px solid #282828;border-radius:16px;background:#090909;overflow:hidden;color:#fff;padding:0;text-align:left;cursor:pointer}
-.artist-media-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
-.artist-media-card.video img{aspect-ratio:16/9}
-.artist-media-card-body{padding:12px}
-.artist-media-card-body strong{display:block}
-.artist-media-card-body span{display:block;color:#F5C518;font-size:9px;font-weight:900;margin-top:4px}
-.artist-media-empty{padding:20px;border:1px dashed #333;border-radius:14px;color:#777;text-align:center}
-.artist-media-lightbox{position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,.96);display:none;align-items:center;justify-content:center;padding:24px}
-.artist-media-lightbox.open{display:flex}
-.artist-media-lightbox img{max-width:92vw;max-height:86vh;object-fit:contain}
-.artist-media-lightbox button,.resource-viewer-close{position:absolute;top:20px;right:22px;width:48px;height:48px;border-radius:50%;border:2px solid #d40000;background:#000;color:#fff;font-size:24px;cursor:pointer}
-.resource-viewer{position:fixed;inset:0;z-index:21000;background:#000;display:none;padding:72px 16px 16px}
-.resource-viewer.open{display:block}
-.resource-viewer iframe{width:100%;height:100%;border:1px solid #333;border-radius:14px;background:#fff}
-.dm-resource-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.dm-resource-card{background:#0b0b0b;border:1px solid #292929;border-radius:18px;overflow:hidden}
-.dm-resource-card img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block}
-.dm-resource-body{padding:16px}
-.dm-resource-body span{color:#F5C518;font-size:9px;font-weight:900}
-.dm-resource-body p{color:#999;line-height:1.5;margin:8px 0 14px}
-.dm-resource-button{border:2px solid #F5C518;border-radius:999px;background:transparent;color:#F5C518;padding:10px 14px;font-weight:900;cursor:pointer}
-.dm-session-media{width:150px;flex:0 0 150px;background:#000;position:relative}
-.dm-session-media img{width:100%;height:100%;min-height:150px;object-fit:cover;display:block}
-.dm-session-media iframe{width:100%;height:100%;min-height:150px;border:0;display:block}
-.dm-session-play{position:absolute;inset:0;border:0;background:rgba(0,0,0,.25);color:#fff;font-size:34px;cursor:pointer}
-.action-card-thumb{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:14px}
-@media(max-width:750px){.music-track{grid-template-columns:34px 46px minmax(0,1fr) 36px!important}.track-cover{width:46px;height:46px}.artist-media-grid,.dm-resource-grid{display:flex;overflow-x:auto}.artist-media-card,.dm-resource-card{flex:0 0 76%}.dm-session-media{width:110px;flex-basis:110px}}
+
+html{
+scrollbar-color:#F5C518 #111;
+scrollbar-width:thin
+}
+
+*{
+scrollbar-color:#F5C518 #111;
+scrollbar-width:thin
+}
+
+*::-webkit-scrollbar{
+width:10px;
+height:10px
+}
+
+*::-webkit-scrollbar-track{
+background:#111
+}
+
+*::-webkit-scrollbar-thumb{
+background:#F5C518;
+border-radius:999px;
+border:2px solid #111
+}
+
+.boss-return-home-bottom{
+display:block;
+width:min(420px,88%);
+margin:42px auto 22px;
+border:2px solid #d40000;
+border-radius:999px;
+background:#090909;
+color:#fff;
+padding:14px 20px;
+font:inherit;
+font-weight:900;
+letter-spacing:.08em;
+cursor:pointer
+}
+
+.boss-return-home-bottom:hover{
+background:#d40000
+}
+
+.music-track{
+grid-template-columns:58px 54px minmax(0,1fr) auto 45px!important
+}
+
+.track-cover{
+width:54px;
+height:54px;
+border-radius:10px;
+overflow:hidden;
+background:#111;
+border:1px solid #2a2a2a
+}
+
+.track-cover img{
+width:100%;
+height:100%;
+object-fit:cover;
+display:block
+}
+
+.artist-media-grid{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:14px
+}
+
+.artist-media-card{
+border:1px solid #282828;
+border-radius:16px;
+background:#090909;
+overflow:hidden;
+color:#fff;
+padding:0;
+text-align:left;
+cursor:pointer
+}
+
+.artist-media-card img{
+width:100%;
+aspect-ratio:1/1;
+object-fit:cover;
+display:block
+}
+
+.artist-media-card.video img{
+aspect-ratio:16/9
+}
+
+.artist-media-card-body{
+padding:12px
+}
+
+.artist-media-card-body strong{
+display:block
+}
+
+.artist-media-card-body span{
+display:block;
+color:#F5C518;
+font-size:9px;
+font-weight:900;
+margin-top:4px
+}
+
+.artist-media-empty{
+padding:20px;
+border:1px dashed #333;
+border-radius:14px;
+color:#777;
+text-align:center
+}
+
+.artist-media-lightbox{
+position:fixed;
+inset:0;
+z-index:20000;
+background:rgba(0,0,0,.96);
+display:none;
+align-items:center;
+justify-content:center;
+padding:24px
+}
+
+.artist-media-lightbox.open{
+display:flex
+}
+
+.artist-media-lightbox img{
+max-width:92vw;
+max-height:86vh;
+object-fit:contain
+}
+
+.artist-media-lightbox button,
+.resource-viewer-close{
+position:absolute;
+top:20px;
+right:22px;
+width:48px;
+height:48px;
+border-radius:50%;
+border:2px solid #d40000;
+background:#000;
+color:#fff;
+font-size:24px;
+cursor:pointer
+}
+
+.resource-viewer{
+position:fixed;
+inset:0;
+z-index:21000;
+background:#000;
+display:none;
+padding:72px 16px 16px
+}
+
+.resource-viewer.open{
+display:block
+}
+
+.resource-viewer iframe{
+width:100%;
+height:100%;
+border:1px solid #333;
+border-radius:14px;
+background:#fff
+}
+
+.dm-resource-grid{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:16px
+}
+
+.dm-resource-card{
+background:#0b0b0b;
+border:1px solid #292929;
+border-radius:18px;
+overflow:hidden
+}
+
+.dm-resource-card img{
+width:100%;
+aspect-ratio:3/4;
+object-fit:cover;
+display:block
+}
+
+.dm-resource-body{
+padding:16px
+}
+
+.dm-resource-body span{
+color:#F5C518;
+font-size:9px;
+font-weight:900
+}
+
+.dm-resource-body p{
+color:#999;
+line-height:1.5;
+margin:8px 0 14px
+}
+
+.dm-resource-button{
+border:2px solid #F5C518;
+border-radius:999px;
+background:transparent;
+color:#F5C518;
+padding:10px 14px;
+font-weight:900;
+cursor:pointer
+}
+
+.dm-session-media{
+width:150px;
+flex:0 0 150px;
+background:#000;
+position:relative
+}
+
+.dm-session-media img{
+width:100%;
+height:100%;
+min-height:150px;
+object-fit:cover;
+display:block
+}
+
+.dm-session-media iframe{
+width:100%;
+height:100%;
+min-height:150px;
+border:0;
+display:block
+}
+
+.dm-session-play{
+position:absolute;
+inset:0;
+border:0;
+background:rgba(0,0,0,.25);
+color:#fff;
+font-size:34px;
+cursor:pointer
+}
+
+.action-card-thumb{
+width:100%;
+aspect-ratio:16/9;
+object-fit:cover;
+border-radius:12px;
+margin-bottom:14px
+}
+
+.boss-promo-ad-overlay,
+.boss-demographics-overlay{
+position:fixed;
+inset:0;
+z-index:30000;
+background:rgba(0,0,0,.94);
+display:none;
+align-items:center;
+justify-content:center;
+padding:20px
+}
+
+.boss-promo-ad-overlay.open,
+.boss-demographics-overlay.open{
+display:flex
+}
+
+.boss-promo-ad-card{
+position:relative;
+width:min(560px,100%);
+max-height:92vh;
+overflow:auto;
+background:#080808;
+border:1px solid #333;
+border-radius:22px;
+box-shadow:0 24px 70px rgba(0,0,0,.65)
+}
+
+.boss-promo-ad-close{
+position:absolute;
+z-index:3;
+top:12px;
+right:12px;
+width:42px;
+height:42px;
+border-radius:50%;
+border:2px solid #fff;
+background:rgba(0,0,0,.82);
+color:#fff;
+font-size:26px;
+line-height:1;
+cursor:pointer
+}
+
+.boss-promo-ad-sponsored{
+position:absolute;
+z-index:2;
+top:16px;
+left:16px;
+background:#F5C518;
+color:#000;
+border-radius:999px;
+padding:7px 10px;
+font-size:9px;
+font-weight:900;
+letter-spacing:.12em
+}
+
+.boss-promo-ad-media{
+background:#000;
+min-height:180px
+}
+
+.boss-promo-ad-media img,
+.boss-promo-ad-media video{
+display:block;
+width:100%;
+max-height:56vh;
+object-fit:contain;
+background:#000
+}
+
+.boss-promo-ad-copy{
+padding:18px
+}
+
+.boss-promo-ad-copy h2{
+font-size:24px;
+line-height:1.1;
+margin:0 0 8px
+}
+
+.boss-promo-ad-copy p{
+color:#aaa;
+line-height:1.5;
+margin:0 0 15px
+}
+
+.boss-promo-ad-cta{
+width:100%;
+border:0;
+border-radius:999px;
+background:#d40000;
+color:#fff;
+padding:14px;
+font:inherit;
+font-weight:900;
+cursor:pointer
+}
+
+.boss-demographics-card{
+width:min(470px,100%);
+background:#090909;
+border:1px solid #333;
+border-radius:22px;
+padding:22px
+}
+
+.boss-demographics-card>span{
+color:#F5C518;
+font-size:9px;
+font-weight:900;
+letter-spacing:.14em
+}
+
+.boss-demographics-card h2{
+font-size:24px;
+margin:6px 0 8px
+}
+
+.boss-demographics-card p{
+color:#999;
+line-height:1.5;
+margin-bottom:16px
+}
+
+.boss-demographics-card label{
+display:block;
+font-size:9px;
+font-weight:900;
+margin:12px 0 6px
+}
+
+.boss-demographics-card select{
+width:100%;
+min-height:46px;
+border:1px solid #333;
+border-radius:12px;
+background:#050505;
+color:#fff;
+padding:0 12px
+}
+
+.boss-demographics-actions{
+display:flex;
+gap:10px;
+margin-top:16px
+}
+
+.boss-demographics-actions button{
+flex:1;
+border-radius:999px;
+padding:12px;
+border:1px solid #333;
+background:#151515;
+color:#fff;
+font-weight:900;
+cursor:pointer
+}
+
+#boss-demo-save{
+background:#d40000;
+border-color:#d40000
+}
+
+.magazine-issue-grid{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:16px;
+padding:12px 0 24px
+}
+
+.magazine-issue-card{
+display:block;
+border:1px solid #292929;
+border-radius:18px;
+background:#090909;
+color:#fff;
+overflow:hidden;
+text-align:left;
+cursor:pointer;
+padding:0
+}
+
+.magazine-issue-card img{
+width:100%;
+aspect-ratio:3/4;
+object-fit:cover;
+background:#111;
+display:block
+}
+
+.magazine-issue-card div{
+padding:14px
+}
+
+.magazine-issue-card small{
+display:block;
+color:#F5C518;
+font-weight:900;
+margin-bottom:5px
+}
+
+.magazine-issue-card strong{
+display:block;
+font-size:17px
+}
+
+.magazine-issue-card p{
+color:#999;
+line-height:1.4;
+margin-top:7px
+}
+
+@media(max-width:750px){
+
+.music-track{
+grid-template-columns:34px 46px minmax(0,1fr) 36px!important
+}
+
+.track-cover{
+width:46px;
+height:46px
+}
+
+.artist-media-grid,
+.dm-resource-grid,
+.magazine-issue-grid{
+display:flex;
+overflow-x:auto
+}
+
+.artist-media-card,
+.dm-resource-card,
+.magazine-issue-card{
+flex:0 0 76%
+}
+
+.dm-session-media{
+width:110px;
+flex-basis:110px
+}
+
+.boss-demographics-actions{
+flex-direction:column
+}
+
+}
+
 `;
-document.head.appendChild(style);
+
+
+document.head.appendChild(
+style
+);
+
 })();
 
 
@@ -69,74 +1848,242 @@ document.head.appendChild(style);
 ========================================================= */
 
 function showScreen(s){
-if(!s)return;
 
-qa('.screen').forEach(x=>
-x.classList.remove('active-screen')
+if(!s)
+return;
+
+
+qa(
+'.screen'
+)
+.forEach(
+x=>
+x.classList.remove(
+'active-screen'
+)
 );
 
-s.classList.add('active-screen');
+
+s.classList.add(
+'active-screen'
+);
+
+
+ensureReturnHomeButtons();
+
+
+const section=
+analyticsSectionFromScreen(
+s
+);
+
+
+if(section)
+trackPageOpen(
+section
+);
+
 
 window.scrollTo({
+
 top:0,
-behavior:'smooth'
+
+behavior:
+'smooth'
+
 });
 
+
 if(
-s.id==='boss-bite-screen'&&
+s.id===
+'boss-bite-screen'
+&&
 bossBiteMap
 ){
+
 setTimeout(
+
 ()=>bossBiteMap.resize(),
+
 250
+
 );
+
 }
+
 
 if(
-s.id==='boss-code-tv-screen'
+s.id===
+'boss-code-tv-screen'
 ){
+
 renderLive();
+
 }
+
 }
 
 
-const home=$('home-screen');
-const bite=$('boss-bite-screen');
-const tv=$('boss-code-tv-screen');
-const dm=$('decision-makers-screen');
-const check=$('boss-checkin-screen');
-const music=$('music-screen');
+const home=
+$('home-screen');
+
+const bite=
+$('boss-bite-screen');
+
+const tv=
+$('boss-code-tv-screen');
+
+const dm=
+$('decision-makers-screen');
+
+const check=
+$('boss-checkin-screen');
+
+const music=
+$('music-screen');
 
 
 function ensureReturnHomeButtons(){
+
 const defs=[
-['boss-bite-screen','boss-bite-back'],
-['boss-code-tv-screen','boss-code-tv-back'],
-['decision-makers-screen','decision-makers-back'],
-['boss-checkin-screen','boss-checkin-back'],
-['music-screen','music-back'],
-['contact-screen','contact-back']
+
+[
+'boss-bite-screen',
+'boss-bite-back'
+],
+
+[
+'boss-code-tv-screen',
+'boss-code-tv-back'
+],
+
+[
+'decision-makers-screen',
+'decision-makers-back'
+],
+
+[
+'boss-checkin-screen',
+'boss-checkin-back'
+],
+
+[
+'music-screen',
+'music-back'
+],
+
+[
+'contact-screen',
+'contact-back'
+]
+
 ];
 
-defs.forEach(([screenId,topId])=>{
-const screen=$(screenId);
-if(!screen)return;
-const top=$(topId);
-if(top)top.textContent='RETURN TO HOME';
-if(screen.querySelector('.boss-return-home-bottom'))return;
-const b=document.createElement('button');
-b.type='button';
-b.className='boss-return-home-bottom';
-b.textContent='RETURN TO HOME';
-b.addEventListener('click',()=>{
-if(screenId==='decision-makers-screen')stopDM();
-if(screenId==='music-screen'&&audio&&!audio.paused)audio.pause();
-showScreen(home);
-});
-const footer=screen.querySelector('.boss-footer');
-if(footer)footer.insertAdjacentElement('beforebegin',b);
-else screen.appendChild(b);
-});
+
+defs.forEach(
+([
+screenId,
+topId
+])=>{
+
+const screen=
+$(screenId);
+
+
+if(!screen)
+return;
+
+
+const top=
+$(topId);
+
+
+if(top)
+top.textContent=
+'RETURN TO HOME';
+
+
+let b=
+screen.querySelector(
+'.boss-return-home-bottom'
+);
+
+
+if(!b){
+
+b=
+document.createElement(
+'button'
+);
+
+
+b.type=
+'button';
+
+b.className=
+'boss-return-home-bottom';
+
+b.textContent=
+'RETURN TO HOME';
+
+
+b.addEventListener(
+'click',
+()=>{
+
+if(
+screenId===
+'decision-makers-screen'
+)
+stopDM();
+
+
+if(
+screenId===
+'music-screen'
+&&
+audio
+&&
+!audio.paused
+)
+audio.pause();
+
+
+showScreen(
+home
+);
+
+}
+);
+
+}
+
+
+const footer=
+screen.querySelector(
+'.boss-footer, .contact-footer'
+);
+
+
+if(footer){
+
+footer.insertAdjacentElement(
+'beforebegin',
+b
+);
+
+}
+else{
+
+screen.appendChild(
+b
+);
+
+}
+
+}
+);
+
 }
 
 
@@ -146,19 +2093,27 @@ else screen.appendChild(b);
 
 function ensureContactScreen(){
 
-let screen=$('contact-screen');
+let screen=
+$('contact-screen');
+
 
 if(screen)
 return screen;
 
 
-if(!$('boss-code-contact-styles')){
+if(
+!$('boss-code-contact-styles')
+){
 
 const style=
-document.createElement('style');
+document.createElement(
+'style'
+);
+
 
 style.id=
 'boss-code-contact-styles';
+
 
 style.textContent=`
 
@@ -334,19 +2289,26 @@ border-radius:22px;
 
 `;
 
-document.head.appendChild(style);
+
+document.head.appendChild(
+style
+);
 
 }
 
 
 screen=
-document.createElement('div');
+document.createElement(
+'div'
+);
+
 
 screen.id=
 'contact-screen';
 
 screen.className=
 'screen';
+
 
 screen.innerHTML=`
 
@@ -502,7 +2464,11 @@ GREATNESS IS A DECISION
 
 `;
 
-document.body.appendChild(screen);
+
+document.body.appendChild(
+screen
+);
+
 
 return screen;
 
@@ -511,6 +2477,7 @@ return screen;
 
 const contact=
 ensureContactScreen();
+
 
 ensureReturnHomeButtons();
 
@@ -522,31 +2489,53 @@ ensureReturnHomeButtons();
 on(
 'boss-bite-button',
 'click',
+()=>openWithPromo(
+'boss-bite',
 ()=>{
-showScreen(bite);
-initMap();
-}
+
+showScreen(
+bite
 );
+
+initMap();
+
+}
+)
+);
+
 
 on(
 'boss-bite-back',
 'click',
-()=>showScreen(home)
+()=>showScreen(
+home
+)
 );
 
 
 on(
 'boss-code-tv-button',
 'click',
-()=>showScreen(tv)
+()=>openWithPromo(
+'boss-code-tv',
+()=>showScreen(
+tv
+)
+)
 );
+
 
 on(
 'boss-code-tv-back',
 'click',
 ()=>{
+
 buildTv();
-showScreen(home);
+
+showScreen(
+home
+);
+
 }
 );
 
@@ -554,15 +2543,26 @@ showScreen(home);
 on(
 'decision-makers-button',
 'click',
-()=>showScreen(dm)
+()=>openWithPromo(
+'decision-makers',
+()=>showScreen(
+dm
+)
+)
 );
+
 
 on(
 'decision-makers-back',
 'click',
 ()=>{
+
 stopDM();
-showScreen(home);
+
+showScreen(
+home
+);
+
 }
 );
 
@@ -570,27 +2570,47 @@ showScreen(home);
 on(
 'boss-checkin-button',
 'click',
+()=>openWithPromo(
+'boss-checkin',
 ()=>{
-showScreen(check);
-showCheckIntro();
-}
+
+showScreen(
+check
 );
+
+showCheckIntro();
+
+}
+)
+);
+
 
 on(
 'boss-checkin-back',
 'click',
-()=>showScreen(home)
+()=>showScreen(
+home
+)
 );
 
 
 on(
 'music-button',
 'click',
+()=>openWithPromo(
+'music',
 ()=>{
-showScreen(music);
-renderArtists();
-}
+
+showScreen(
+music
 );
+
+renderArtists();
+
+}
+)
+);
+
 
 on(
 'music-back',
@@ -603,7 +2623,10 @@ audio&&
 )
 audio.pause();
 
-showScreen(home);
+
+showScreen(
+home
+);
 
 }
 );
@@ -612,20 +2635,30 @@ showScreen(home);
 on(
 'contact-button',
 'click',
-()=>showScreen(contact)
+()=>showScreen(
+contact
+)
 );
+
 
 on(
 'contact-back',
 'click',
-()=>showScreen(home)
+()=>showScreen(
+home
+)
 );
 
 
 on(
 'go-to-decision-makers',
 'click',
-()=>showScreen(dm)
+()=>openWithPromo(
+'decision-makers',
+()=>showScreen(
+dm
+)
+)
 );
 
 
@@ -644,16 +2677,19 @@ $('contact-name')
 .trim()||
 '';
 
+
 const email=
 $('contact-email')
 ?.value
 .trim()||
 '';
 
+
 const inquiryType=
 $('contact-type')
 ?.value||
 'General Inquiry';
+
 
 const message=
 $('contact-message')
@@ -661,8 +2697,10 @@ $('contact-message')
 .trim()||
 '';
 
+
 const status=
 $('contact-status');
+
 
 const button=
 $('contact-submit');
@@ -700,7 +2738,9 @@ return;
 
 
 if(
-!/^\S+@\S+\.\S+$/.test(email)
+!/^\S+@\S+\.\S+$/.test(
+email
+)
 ){
 
 if(status){
@@ -720,7 +2760,8 @@ return;
 
 if(button){
 
-button.disabled=true;
+button.disabled=
+true;
 
 button.textContent=
 'SENDING...';
@@ -732,8 +2773,10 @@ try{
 
 const r=
 await fetch(
+
 API+
 '/contact-inquiries',
+
 {
 
 method:
@@ -764,6 +2807,7 @@ message
 })
 
 }
+
 );
 
 
@@ -780,30 +2824,48 @@ await r.json();
 
 if(
 !r.ok||
-data.success===false
+data.success===
+false
 ){
 
 throw Error(
+
 data.error||
 data.message||
 'Unable to send message.'
+
 );
 
 }
 
 
-if($('contact-name'))
-$('contact-name').value='';
+if(
+$('contact-name')
+)
+$('contact-name')
+.value='';
 
-if($('contact-email'))
-$('contact-email').value='';
 
-if($('contact-type'))
-$('contact-type').value=
+if(
+$('contact-email')
+)
+$('contact-email')
+.value='';
+
+
+if(
+$('contact-type')
+)
+$('contact-type')
+.value=
 'General Inquiry';
 
-if($('contact-message'))
-$('contact-message').value='';
+
+if(
+$('contact-message')
+)
+$('contact-message')
+.value='';
 
 
 if(status){
@@ -820,8 +2882,11 @@ status.textContent=
 }catch(e){
 
 console.warn(
+
 'Contact form error',
+
 e
+
 );
 
 
@@ -841,7 +2906,8 @@ status.textContent=
 
 if(button){
 
-button.disabled=false;
+button.disabled=
+false;
 
 button.textContent=
 'SEND MESSAGE';
@@ -853,15 +2919,161 @@ button.textContent=
 
 }
 );
+
+
 /* =========================================================
    DAILY DECISION
-   ADMIN / BACKEND ONLY
+   PERMANENT BANK + ADMIN ADDITIONS
 ========================================================= */
 
-let daily=[];
+const builtDaily=[
+
+[
+'Finish one thing you have been avoiding before you start something new.',
+'Choose the unfinished task that has been following you around and complete the next real step today.'
+],
+
+[
+'Stop waiting for somebody else to believe in an idea you already know deserves a chance.',
+'Take one action toward the idea without asking anyone for permission.'
+],
+
+[
+'Protect the first hour of your day from unnecessary noise.',
+'Give your first focused hour to something that moves your life forward.'
+],
+
+[
+'Do the important thing before the easy thing.',
+'Identify the task with the greatest impact and work on it first.'
+],
+
+[
+'Stop measuring your beginning against somebody else’s middle.',
+'Return your attention to one measurable step on your own path.'
+],
+
+[
+'Choose discipline over mood for one hour.',
+'Work on the goal for one uninterrupted hour whether you feel motivated or not.'
+],
+
+[
+'Make a decision your future self will thank you for.',
+'Choose one action today that improves tomorrow instead of only comforting today.'
+],
+
+[
+'Finish what you said you would finish.',
+'Pick one promise you made to yourself and honor it before the day ends.'
+],
+
+[
+'Do not let one bad moment become a bad day.',
+'Reset your attention and make the next decision a useful one.'
+],
+
+[
+'Choose progress that can be measured.',
+'Complete one task you can point to at the end of the day.'
+],
+
+[
+'Stop making fear sound like wisdom.',
+'Ask whether the concern is a real fact or simply discomfort about moving.'
+],
+
+[
+'Stop waiting for the perfect conditions.',
+'Use what you have and create the best next version possible.'
+],
+
+[
+'Protect your attention like it has value, because it does.',
+'Turn off one source of interruption during your most important work.'
+],
+
+[
+'Do not confuse being busy with moving forward.',
+'Remove one low value task and replace it with meaningful progress.'
+],
+
+[
+'Use your talent instead of only talking about it.',
+'Create, practice, publish or perform something today.'
+],
+
+[
+'Stop negotiating with a task you already decided matters.',
+'Start it now for ten minutes and let momentum take over.'
+],
+
+[
+'Create before you consume.',
+'Make something of your own before opening entertainment or social media.'
+],
+
+[
+'Stop waiting to feel confident before acting.',
+'Take the action that confidence is supposed to help you take.'
+],
+
+[
+'Turn one excuse into a plan.',
+'Take the obstacle you keep naming and write one practical way around it.'
+],
+
+[
+'Choose consistency over intensity.',
+'Do the smaller action you can repeat instead of waiting for a dramatic burst of motivation.'
+],
+
+[
+'Do not let perfection delay something useful.',
+'Release, send, post or finish the version that is ready enough to move.'
+],
+
+[
+'Make your next hour intentional.',
+'Decide exactly what the next sixty minutes are for before they disappear.'
+],
+
+[
+'Create a boundary before resentment creates one for you.',
+'Communicate one limit clearly and respectfully today.'
+],
+
+[
+'Stop using preparation to hide from execution.',
+'Move one idea from planning into real world action today.'
+],
+
+[
+'Do not let uncertainty become inactivity.',
+'Take the step that remains sensible even without knowing the whole path.'
+],
+
+[
+'Choose responsibility over excuses.',
+'Name what is within your control and take action on that part today.'
+],
+
+[
+'Make today’s decision something you can prove with action.',
+'Before the day ends, create visible evidence that you followed through.'
+]
+
+];
+
+
+let daily=[
+...builtDaily
+];
+
 
 const DK=
 'boss-code-daily-decision-v3';
+
 
 const DAY=
 86400000;
@@ -871,12 +3083,18 @@ function dailyState(){
 
 let s;
 
+
 try{
 
 s=
 JSON.parse(
-localStorage.getItem(DK)||
+
+localStorage.getItem(
+DK
+)
+||
 'null'
+
 );
 
 }catch{}
@@ -888,17 +3106,31 @@ Date.now();
 
 if(
 !s||
-!Number.isInteger(s.i)||
+!Number.isInteger(
+s.i
+)||
 !s.t
 ){
 
 s={
 
-i:0,
+i:
+daily.length
+?
+Math.floor(
+now/
+DAY
+)
+%
+daily.length
+:
+0,
 
-t:now,
+t:
+now,
 
-seen:false
+seen:
+false
 
 };
 
@@ -907,27 +3139,47 @@ seen:false
 
 const c=
 Math.floor(
-(now-s.t)/
+
+(
+now-
+s.t
+)
+/
 DAY
+
 );
 
 
-if(c>0){
+if(
+c>
+0
+){
 
-if(daily.length){
+if(
+daily.length
+){
 
 s.i=
-(s.i+c)%
+(
+s.i+
+c
+)
+%
 daily.length;
 
-}else{
+}
+else{
 
-s.i=0;
+s.i=
+0;
 
 }
 
+
 s.t+=
-c*DAY;
+c*
+DAY;
+
 
 s.seen=
 false;
@@ -937,17 +3189,24 @@ false;
 
 if(
 daily.length&&
-s.i>=daily.length
+s.i>=
+daily.length
 ){
 
-s.i=0;
+s.i=
+0;
 
 }
 
 
 localStorage.setItem(
+
 DK,
-JSON.stringify(s)
+
+JSON.stringify(
+s
+)
+
 );
 
 
@@ -961,39 +3220,66 @@ function renderDaily(){
 const title=
 $('daily-decision-title');
 
+
 const move=
 $('daily-decision-move-text');
+
 
 const preview=
 $('daily-decision-home-preview');
 
+
 const number=
 $('daily-decision-number');
+
 
 const confirmation=
 $('daily-decision-confirmation');
 
 
-if(!daily.length){
+if(
+!daily.length
+){
 
-if(number)
+if(number){
+
 number.textContent=
 'TODAY';
 
-if(title)
+}
+
+
+if(title){
+
 title.textContent=
 'CHECK BACK FOR TODAY’S DECISION';
 
-if(move)
+}
+
+
+if(move){
+
 move.textContent=
 'New Daily Decisions are controlled from B.O.S.S CODE GO Admin.';
 
-if(preview)
+}
+
+
+if(preview){
+
 preview.textContent=
 'CHECK BACK FOR TODAY’S DECISION';
 
-if(confirmation)
-confirmation.textContent='';
+}
+
+
+if(confirmation){
+
+confirmation.textContent=
+'';
+
+}
+
 
 return;
 
@@ -1003,8 +3289,11 @@ return;
 const s=
 dailyState();
 
+
 const d=
-daily[s.i];
+daily[
+s.i
+];
 
 
 if(!d)
@@ -1016,7 +3305,8 @@ if(number){
 number.textContent=
 'DECISION '+
 String(
-s.i+1
+s.i+
+1
 )
 .padStart(
 3,
@@ -1069,8 +3359,38 @@ s.seen
 
 function openDaily(){
 
-if(!daily.length)
+if(
+!daily.length
+)
 return;
+
+
+const state=
+dailyState();
+
+
+const current=
+daily[
+state.i
+];
+
+
+trackAnalytics(
+'daily_decision_view',
+{
+
+section:
+'home',
+
+itemId:
+state.i,
+
+itemTitle:
+current?.[0]||
+"TODAY'S DECISION"
+
+}
+);
 
 
 const m=
@@ -1114,13 +3434,19 @@ if(mark){
 const s=
 dailyState();
 
+
 s.seen=
 true;
 
 
 localStorage.setItem(
+
 DK,
-JSON.stringify(s)
+
+JSON.stringify(
+s
+)
+
 );
 
 }
@@ -1131,6 +3457,7 @@ if(m){
 m.classList.remove(
 'open'
 );
+
 
 m.setAttribute(
 'aria-hidden',
@@ -1165,20 +3492,52 @@ on(
 'click',
 ()=>{
 
-if(!daily.length)
+if(
+!daily.length
+)
 return;
 
 
 const s=
 dailyState();
 
+
 s.seen=
 true;
 
 
 localStorage.setItem(
+
 DK,
-JSON.stringify(s)
+
+JSON.stringify(
+s
+)
+
+);
+
+
+const current=
+daily[
+s.i
+];
+
+
+trackAnalytics(
+'daily_decision_made',
+{
+
+section:
+'home',
+
+itemId:
+s.i,
+
+itemTitle:
+current?.[0]||
+"TODAY'S DECISION"
+
+}
 );
 
 
@@ -1186,8 +3545,13 @@ renderDaily();
 
 
 setTimeout(
-()=>closeDaily(false),
+
+()=>closeDaily(
+false
+),
+
 600
+
 );
 
 }
@@ -1225,15 +3589,18 @@ s.style.display=
 if(
 daily.length&&
 !dailyState().seen
-)
+){
+
 openDaily();
+
+}
 
 },
 700
 );
 
-
-}else if(
+}
+else if(
 daily.length&&
 !dailyState().seen
 ){
@@ -1248,8 +3615,6 @@ openDaily();
 
 }
 );
-
-
 /* =========================================================
    MUSIC
    BACKEND ONLY
@@ -1271,6 +3636,14 @@ let musicQueue=[];
 
 let activeReleaseId=null;
 
+let musicAnalyticsTrack=null;
+
+let musicAnalyticsLastTime=0;
+
+let musicAnalyticsQualifiedSeconds=0;
+
+let musicAnalyticsQualifiedSent=false;
+
 const audio=
 $('boss-music-audio');
 
@@ -1278,7 +3651,7 @@ $('boss-music-audio');
 function musicYoutubeId(url=''){
 
 for(
-const r of [
+const r of[
 
 /youtube\.com\/live\/([^?&/]+)/,
 
@@ -1312,7 +3685,6 @@ const h=
 q(
 '#music-screen .music-header'
 );
-
 
 if(!h)
 return;
@@ -1457,13 +3829,21 @@ class="artist-media-grid"
 `;
 
 
-if(footer)
+if(footer){
+
 footer.insertAdjacentElement(
 'beforebegin',
 section
 );
-else
-wrap.appendChild(section);
+
+}
+else{
+
+wrap.appendChild(
+section
+);
+
+}
 
 }
 
@@ -1515,18 +3895,29 @@ const gallery=
 $('artist-gallery-section');
 
 
-if(gallery)
+if(gallery){
+
 gallery.insertAdjacentElement(
 'afterend',
 section
 );
-else if(footer)
+
+}
+else if(footer){
+
 footer.insertAdjacentElement(
 'beforebegin',
 section
 );
-else
-wrap.appendChild(section);
+
+}
+else{
+
+wrap.appendChild(
+section
+);
+
+}
 
 }
 
@@ -1564,7 +3955,9 @@ alt=""
 `;
 
 
-document.body.appendChild(box);
+document.body.appendChild(
+box
+);
 
 
 on(
@@ -1581,8 +3974,11 @@ e=>{
 if(
 e.target===
 box
-)
+){
+
 closeArtistPhoto();
+
+}
 
 }
 );
@@ -1641,7 +4037,9 @@ display:block;
 `;
 
 
-document.body.appendChild(box);
+document.body.appendChild(
+box
+);
 
 
 on(
@@ -1658,8 +4056,11 @@ e=>{
 if(
 e.target===
 box
-)
+){
+
 closeArtistVideo();
+
+}
 
 }
 );
@@ -1710,16 +4111,22 @@ const image=
 $('artist-photo-lightbox-image');
 
 
-if(box)
+if(box){
+
 box.classList.remove(
 'open'
 );
 
+}
 
-if(image)
+
+if(image){
+
 image.removeAttribute(
 'src'
 );
+
+}
 
 
 document.body.style.overflow=
@@ -1761,8 +4168,39 @@ return;
 if(
 audio&&
 !audio.paused
-)
+){
+
 audio.pause();
+
+}
+
+
+trackAnalytics(
+'video_play',
+{
+
+section:
+'music',
+
+itemId:
+item.id||
+item.backendId||
+id,
+
+itemTitle:
+item.title||
+'MUSIC VIDEO',
+
+detail:{
+
+artist:
+activeArtist?.name||
+''
+
+}
+
+}
+);
 
 
 frame.src=
@@ -1789,14 +4227,20 @@ const frame=
 $('artist-video-lightbox-frame');
 
 
-if(box)
+if(box){
+
 box.classList.remove(
 'open'
 );
 
+}
 
-if(frame)
+
+if(frame){
+
 frame.src='';
+
+}
 
 
 document.body.style.overflow=
@@ -1821,14 +4265,14 @@ return;
 g.innerHTML='';
 
 
-if(!artists.length){
+if(
+!artists.length
+){
 
 g.innerHTML=`
 
 <div class="artist-media-empty">
-
 NO ARTISTS ARE PUBLISHED RIGHT NOW.
-
 </div>
 
 `;
@@ -1868,6 +4312,7 @@ document.createElement(
 b.type=
 'button';
 
+
 b.className=
 'artist-card'+
 (
@@ -1896,7 +4341,6 @@ alt="${esc(a.name)}"
 
 </div>
 
-
 <div class="artist-card-body">
 
 <span>
@@ -1916,7 +4360,9 @@ b.onclick=
 ()=>loadArtist(a);
 
 
-g.appendChild(b);
+g.appendChild(
+b
+);
 
 }
 );
@@ -1933,7 +4379,8 @@ renderArtistMusicVideos();
 
 function clearMusicArtistUI(){
 
-activeArtist=null;
+activeArtist=
+null;
 
 
 const b=
@@ -1948,9 +4395,7 @@ b.innerHTML=`
 class="artist-media-empty"
 style="width:100%"
 >
-
 NO ARTISTS ARE PUBLISHED RIGHT NOW.
-
 </div>
 
 `;
@@ -1958,52 +4403,67 @@ NO ARTISTS ARE PUBLISHED RIGHT NOW.
 }
 
 
-const t=
+const title=
 q(
 '.featured-release-info h2'
 );
 
-const ar=
+const artist=
 q(
 '.featured-artist'
 );
 
-const lab=
+const label=
 q(
 '.featured-label'
 );
 
-const d=
+const description=
 q(
 '.featured-description'
 );
 
-const c=
+const cover=
 q(
 '.placeholder-cover'
 );
 
 
-if(t)
-t.textContent=
+if(title){
+
+title.textContent=
 'NO RELEASE AVAILABLE';
 
-if(ar)
-ar.textContent=
+}
+
+
+if(artist){
+
+artist.textContent=
 'B.O.S.S CODE MUSIC';
 
-if(lab)
-lab.textContent=
+}
+
+
+if(label){
+
+label.textContent=
 'MUSIC';
 
-if(d)
-d.textContent=
+}
+
+
+if(description){
+
+description.textContent=
 'New music will appear here when it is published from Admin.';
 
+}
 
-if(c){
 
-c.innerHTML=`
+if(cover){
+
+cover.innerHTML=`
 
 <img
 src="images/boss-code-media-logo.png"
@@ -2017,9 +4477,12 @@ alt="B.O.S.S CODE MEDIA"
 
 if(
 $('music-track-list')
-)
+){
+
 $('music-track-list').innerHTML=
 '<div class="artist-media-empty">NO TRACKS PUBLISHED.</div>';
+
+}
 
 
 const releases=
@@ -2028,9 +4491,12 @@ q(
 );
 
 
-if(releases)
+if(releases){
+
 releases.innerHTML=
 '<div class="artist-media-empty">NO RELEASES PUBLISHED.</div>';
+
+}
 
 
 renderArtistGallery();
@@ -2064,6 +4530,7 @@ audio.load();
 activeArtist=
 a;
 
+
 trackIndex=
 -1;
 
@@ -2072,7 +4539,8 @@ sourceIndex=
 
 musicQueue=[];
 
-activeReleaseId=null;
+activeReleaseId=
+null;
 
 
 renderArtists();
@@ -2094,7 +4562,9 @@ resetPlayer();
 
 function updateArtistUI(){
 
-if(!activeArtist){
+if(
+!activeArtist
+){
 
 clearMusicArtistUI();
 
@@ -2103,13 +4573,13 @@ return;
 }
 
 
-const b=
+const banner=
 $('selected-artist-banner');
 
 
-if(b){
+if(banner){
 
-b.innerHTML=`
+banner.innerHTML=`
 
 <div class="selected-artist-photo">
 
@@ -2122,7 +4592,6 @@ alt="${esc(activeArtist.name)}"
 >
 
 </div>
-
 
 <div class="selected-artist-info">
 
@@ -2143,83 +4612,101 @@ ${esc(activeArtist.tagline||'')}
 `;
 
 
-b.classList.add(
+banner.classList.add(
 'show'
 );
 
 }
 
 
-const im=
+const logo=
 q(
 '#music-screen .music-artist-logo'
 );
 
 
-if(im){
+if(logo){
 
-im.src=
+logo.src=
 activeArtist.image||
 'images/boss-code-media-logo.png';
 
-im.alt=
+
+logo.alt=
 activeArtist.name;
 
 }
 
 
-const f=
+const featured=
 activeArtist.featuredRelease;
 
 
-const t=
+const title=
 q(
 '.featured-release-info h2'
 );
 
-const ar=
+const artist=
 q(
 '.featured-artist'
 );
 
-const lab=
+const label=
 q(
 '.featured-label'
 );
 
-const d=
+const description=
 q(
 '.featured-description'
 );
 
-const c=
+const cover=
 q(
 '.placeholder-cover'
 );
 
 
-if(!f){
+if(
+!featured
+){
 
-if(t)
-t.textContent=
+if(title){
+
+title.textContent=
 'NO RELEASE AVAILABLE';
 
-if(ar)
-ar.textContent=
+}
+
+
+if(artist){
+
+artist.textContent=
 activeArtist.name.toUpperCase();
 
-if(lab)
-lab.textContent=
+}
+
+
+if(label){
+
+label.textContent=
 'B.O.S.S CODE MUSIC';
 
-if(d)
-d.textContent=
+}
+
+
+if(description){
+
+description.textContent=
 'New releases will appear here when they are published.';
 
+}
 
-if(c){
 
-c.innerHTML=`
+if(cover){
+
+cover.innerHTML=`
 
 <img
 src="${esc(
@@ -2239,36 +4726,51 @@ return;
 }
 
 
-if(t)
-t.textContent=
-f.title;
+if(title){
 
-if(ar)
-ar.textContent=
+title.textContent=
+featured.title;
+
+}
+
+
+if(artist){
+
+artist.textContent=
 activeArtist.name.toUpperCase();
 
-if(lab)
-lab.textContent=
-f.type||
+}
+
+
+if(label){
+
+label.textContent=
+featured.type||
 'FEATURED RELEASE';
 
-if(d)
-d.textContent=
-f.description||
+}
+
+
+if(description){
+
+description.textContent=
+featured.description||
 '';
 
+}
 
-if(c){
 
-c.innerHTML=`
+if(cover){
+
+cover.innerHTML=`
 
 <img
 src="${esc(
-f.artwork||
+featured.artwork||
 activeArtist.image||
 'images/boss-code-media-logo.png'
 )}"
-alt="${esc(f.title)}"
+alt="${esc(featured.title)}"
 >
 
 `;
@@ -2284,8 +4786,8 @@ if(featuredButton){
 
 const type=
 String(
-f.releaseType||
-f.type||
+featured.releaseType||
+featured.type||
 ''
 )
 .toLowerCase();
@@ -2321,7 +4823,9 @@ return;
 g.innerHTML='';
 
 
-if(!activeArtist){
+if(
+!activeArtist
+){
 
 g.innerHTML=
 '<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
@@ -2339,7 +4843,9 @@ String(activeArtist.backendId)
 );
 
 
-if(!rows.length){
+if(
+!rows.length
+){
 
 g.innerHTML=
 '<div class="artist-media-empty">NO PHOTOS PUBLISHED FOR THIS ARTIST.</div>';
@@ -2369,13 +4875,19 @@ b.innerHTML=`
 
 <img
 src="${esc(item.imageUrl)}"
-alt="${esc(item.caption||activeArtist.name)}"
+alt="${esc(
+item.caption||
+activeArtist.name
+)}"
 >
 
 <div class="artist-media-card-body">
 
 <strong>
-${esc(item.caption||activeArtist.name)}
+${esc(
+item.caption||
+activeArtist.name
+)}
 </strong>
 
 <span>
@@ -2395,7 +4907,9 @@ item.imageUrl
 );
 
 
-g.appendChild(b);
+g.appendChild(
+b
+);
 
 }
 );
@@ -2419,7 +4933,9 @@ return;
 g.innerHTML='';
 
 
-if(!activeArtist){
+if(
+!activeArtist
+){
 
 g.innerHTML=
 '<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
@@ -2437,7 +4953,9 @@ String(activeArtist.backendId)
 );
 
 
-if(!rows.length){
+if(
+!rows.length
+){
 
 g.innerHTML=
 '<div class="artist-media-empty">NO MUSIC VIDEOS PUBLISHED FOR THIS ARTIST.</div>';
@@ -2509,7 +5027,9 @@ item
 );
 
 
-g.appendChild(b);
+g.appendChild(
+b
+);
 
 }
 );
@@ -2517,7 +5037,9 @@ g.appendChild(b);
 }
 
 
-function releaseTrackIndexes(release){
+function releaseTrackIndexes(
+release
+){
 
 if(
 !release||
@@ -2526,7 +5048,7 @@ if(
 return[];
 
 
-const rid=
+const releaseId=
 release.id??
 release.releaseId??
 null;
@@ -2545,30 +5067,35 @@ return(
 activeArtist.tracks||
 []
 )
+
 .map(
 (t,i)=>({
 t,
 i
 })
 )
+
 .filter(
-x=>{
+item=>{
 
 if(
-rid!==null&&
-rid!==undefined&&
-x.t.releaseId!==null&&
-x.t.releaseId!==undefined&&
-String(x.t.releaseId)===
-String(rid)
-)
+releaseId!==null&&
+releaseId!==undefined&&
+item.t.releaseId!==null&&
+item.t.releaseId!==undefined&&
+String(item.t.releaseId)===
+String(releaseId)
+){
+
 return true;
+
+}
 
 
 return(
 title&&
 String(
-x.t.album||
+item.t.album||
 ''
 )
 .trim()
@@ -2578,14 +5105,18 @@ title
 
 }
 )
+
 .map(
-x=>x.i
+item=>
+item.i
 );
 
 }
 
 
-function playRelease(release){
+function playRelease(
+release
+){
 
 const indexes=
 releaseTrackIndexes(
@@ -2593,7 +5124,9 @@ release
 );
 
 
-if(!indexes.length)
+if(
+!indexes.length
+)
 return;
 
 
@@ -2643,21 +5176,20 @@ return;
 }
 
 
-activeArtist.tracks
-.forEach(
+activeArtist.tracks.forEach(
 (t,i)=>{
 
-const r=
+const row=
 document.createElement(
 'article'
 );
 
 
-r.className=
+row.className=
 'music-track';
 
 
-r.dataset.track=
+row.dataset.track=
 i;
 
 
@@ -2668,14 +5200,11 @@ activeArtist.image||
 'images/boss-code-media-logo.png';
 
 
-r.innerHTML=`
+row.innerHTML=`
 
 <div class="track-number">
-
 ${String(i+1).padStart(2,'0')}
-
 </div>
-
 
 <div class="track-cover">
 
@@ -2685,7 +5214,6 @@ alt="${esc(t.title)}"
 >
 
 </div>
-
 
 <div class="track-info">
 
@@ -2699,13 +5227,9 @@ ${esc(activeArtist.name)}${t.album?' • '+esc(t.album):''}
 
 </div>
 
-
 <div class="track-status">
-
 ${esc(t.status||'PLAY')}
-
 </div>
-
 
 <div class="track-play-icon">
 ▶
@@ -2714,11 +5238,13 @@ ${esc(t.status||'PLAY')}
 `;
 
 
-r.onclick=
+row.onclick=
 ()=>playTrack(i);
 
 
-g.appendChild(r);
+g.appendChild(
+row
+);
 
 }
 );
@@ -2754,28 +5280,27 @@ return;
 }
 
 
-activeArtist.releases
-.forEach(
-r=>{
+activeArtist.releases.forEach(
+release=>{
 
-const c=
+const card=
 document.createElement(
 'article'
 );
 
 
-c.className=
+card.className=
 'release-card';
 
 
-c.style.cursor=
+card.style.cursor=
 'pointer';
 
 
 const type=
 String(
-r.releaseType||
-r.type||
+release.releaseType||
+release.type||
 ''
 )
 .toLowerCase();
@@ -2787,30 +5312,29 @@ type.includes(
 );
 
 
-c.innerHTML=`
+card.innerHTML=`
 
 <div class="release-placeholder">
 
 <img
 src="${esc(
-r.artwork||
+release.artwork||
 activeArtist.image||
 'images/boss-code-media-logo.png'
 )}"
-alt="${esc(r.title)}"
+alt="${esc(release.title)}"
 >
 
 </div>
 
-
 <div class="release-info">
 
 <span>
-${esc(r.type||'RELEASE')}
+${esc(release.type||'RELEASE')}
 </span>
 
 <h3>
-${esc(r.title)}
+${esc(release.title)}
 </h3>
 
 <p>
@@ -2822,16 +5346,199 @@ ${single?'▶ PLAY SINGLE':'▶ PLAY ALBUM'}
 `;
 
 
-c.onclick=
-()=>playRelease(r);
+card.onclick=
+()=>playRelease(
+release
+);
 
 
-g.appendChild(c);
+g.appendChild(
+card
+);
 
 }
 );
 
 }
+
+
+/* =========================================================
+   MUSIC ANALYTICS
+========================================================= */
+
+function resetMusicAnalyticsForTrack(
+track,
+index
+){
+
+musicAnalyticsTrack={
+
+itemId:
+track.backendId||
+track.id||
+`${activeArtist?.backendId||activeArtist?.id||'artist'}:${index}`,
+
+itemTitle:
+track.title||
+'TRACK',
+
+artist:
+activeArtist?.name||
+'',
+
+album:
+track.album||
+''
+
+};
+
+
+musicAnalyticsLastTime=
+0;
+
+
+musicAnalyticsQualifiedSeconds=
+0;
+
+
+musicAnalyticsQualifiedSent=
+false;
+
+
+trackAnalytics(
+'song_start',
+{
+
+section:
+'music',
+
+itemId:
+musicAnalyticsTrack.itemId,
+
+itemTitle:
+musicAnalyticsTrack.itemTitle,
+
+detail:{
+
+artist:
+musicAnalyticsTrack.artist,
+
+album:
+musicAnalyticsTrack.album
+
+}
+
+}
+);
+
+}
+
+
+function updateQualifiedMusicListen(){
+
+if(
+!audio||
+!musicAnalyticsTrack||
+musicAnalyticsQualifiedSent||
+audio.paused
+)
+return;
+
+
+const current=
+Number(
+audio.currentTime||
+0
+);
+
+
+if(
+Number.isFinite(
+musicAnalyticsLastTime
+)&&
+musicAnalyticsLastTime>0
+){
+
+const delta=
+current-
+musicAnalyticsLastTime;
+
+
+/*
+Do not count a large jump as listening.
+This prevents seeking ahead from creating
+a false qualified listen.
+*/
+
+if(
+delta>0&&
+delta<2.5
+){
+
+musicAnalyticsQualifiedSeconds+=
+delta;
+
+}
+
+}
+
+
+musicAnalyticsLastTime=
+current;
+
+
+if(
+musicAnalyticsQualifiedSeconds>=
+SONG_QUALIFIED_SECONDS
+){
+
+musicAnalyticsQualifiedSent=
+true;
+
+
+trackAnalytics(
+'song_qualified_listen',
+{
+
+section:
+'music',
+
+itemId:
+musicAnalyticsTrack.itemId,
+
+itemTitle:
+musicAnalyticsTrack.itemTitle,
+
+valueNumeric:
+Math.round(
+musicAnalyticsQualifiedSeconds
+),
+
+detail:{
+
+artist:
+musicAnalyticsTrack.artist,
+
+album:
+musicAnalyticsTrack.album,
+
+qualified_seconds:
+SONG_QUALIFIED_SECONDS
+
+}
+
+}
+);
+
+}
+
+}
+
+
+/* =========================================================
+   MUSIC PLAYER
+========================================================= */
+
 function playTrack(i){
 
 if(
@@ -2841,19 +5548,20 @@ if(
 return;
 
 
-const t=
+const track=
 (
 activeArtist.tracks||
 []
 )[i];
 
 
-if(!t)
+if(!track)
 return;
 
 
 trackIndex=
 i;
+
 
 sourceIndex=
 0;
@@ -2863,8 +5571,8 @@ qa(
 '.music-track'
 )
 .forEach(
-x=>
-x.classList.remove(
+item=>
+item.classList.remove(
 'active'
 )
 );
@@ -2876,26 +5584,35 @@ q(
 );
 
 
-if(row)
+if(row){
+
 row.classList.add(
 'active'
 );
 
+}
+
 
 if(
 $('now-playing-title')
-)
+){
+
 $('now-playing-title')
 .textContent=
-t.title;
+track.title;
+
+}
 
 
 if(
 $('now-playing-artist')
-)
+){
+
 $('now-playing-artist')
 .textContent=
 activeArtist.name;
+
+}
 
 
 if(
@@ -2907,12 +5624,12 @@ $('now-playing-art')
 
 <img
 src="${esc(
-t.artwork||
+track.artwork||
 activeArtist.featuredRelease?.artwork||
 activeArtist.image||
 'images/boss-code-media-logo.png'
 )}"
-alt="${esc(t.title)}"
+alt="${esc(track.title)}"
 >
 
 `;
@@ -2920,12 +5637,22 @@ alt="${esc(t.title)}"
 }
 
 
-loadSource(true);
+resetMusicAnalyticsForTrack(
+track,
+i
+);
+
+
+loadSource(
+true
+);
 
 }
 
 
-function loadSource(play){
+function loadSource(
+play
+){
 
 if(
 !activeArtist||
@@ -2934,7 +5661,7 @@ if(
 return;
 
 
-const t=
+const track=
 (
 activeArtist.tracks||
 []
@@ -2942,7 +5669,7 @@ activeArtist.tracks||
 
 
 const src=
-t?.audioSources?.[
+track?.audioSources?.[
 sourceIndex
 ];
 
@@ -2953,6 +5680,7 @@ return;
 
 audio.src=
 src;
+
 
 audio.load();
 
@@ -2979,9 +5707,11 @@ if(audio){
 
 audio.pause();
 
+
 audio.removeAttribute(
 'src'
 );
+
 
 audio.load();
 
@@ -2991,21 +5721,42 @@ audio.load();
 trackIndex=
 -1;
 
+
 sourceIndex=
 0;
 
 
+musicAnalyticsTrack=
+null;
+
+
+musicAnalyticsLastTime=
+0;
+
+
+musicAnalyticsQualifiedSeconds=
+0;
+
+
+musicAnalyticsQualifiedSent=
+false;
+
+
 if(
 $('now-playing-title')
-)
+){
+
 $('now-playing-title')
 .textContent=
 'SELECT A TRACK';
 
+}
+
 
 if(
 $('now-playing-artist')
-)
+){
+
 $('now-playing-artist')
 .textContent=
 activeArtist
@@ -3014,13 +5765,14 @@ activeArtist.name
 :
 'B.O.S.S CODE MUSIC';
 
+}
+
 
 if(
 $('now-playing-art')
 ){
 
 const artwork=
-
 activeArtist?.featuredRelease?.artwork||
 activeArtist?.image||
 'images/boss-code-media-logo.png';
@@ -3041,34 +5793,46 @@ alt="B.O.S.S CODE MUSIC"
 
 if(
 $('music-progress')
-)
+){
+
 $('music-progress')
 .value=
 0;
 
+}
+
 
 if(
 $('music-current-time')
-)
+){
+
 $('music-current-time')
 .textContent=
 '0:00';
 
+}
+
 
 if(
 $('music-duration')
-)
+){
+
 $('music-duration')
 .textContent=
 '0:00';
+
+}
 
 
 if(
 $('music-play-pause')
-)
+){
+
 $('music-play-pause')
 .textContent=
 '▶';
+
+}
 
 }
 
@@ -3102,27 +5866,32 @@ const queue=
 currentMusicQueue();
 
 
-if(!queue.length)
+if(
+!queue.length
+)
 return;
 
 
-let pos=
+let position=
 queue.indexOf(
 trackIndex
 );
 
 
-pos=
-pos<0
+position=
+position<0
 ?
 0
 :
-(pos+1)%
+(
+position+
+1
+)%
 queue.length;
 
 
 playTrack(
-queue[pos]
+queue[position]
 );
 
 }
@@ -3134,50 +5903,58 @@ const queue=
 currentMusicQueue();
 
 
-if(!queue.length)
+if(
+!queue.length
+)
 return;
 
 
-let pos=
+let position=
 queue.indexOf(
 trackIndex
 );
 
 
-pos=
-pos<0
+position=
+position<0
 ?
-queue.length-1
+queue.length-
+1
 :
 (
-pos-1+
+position-
+1+
 queue.length
 )%
 queue.length;
 
 
 playTrack(
-queue[pos]
+queue[position]
 );
 
 }
 
 
 const fmt=
-s=>
-!Number.isFinite(s)
+seconds=>
+!Number.isFinite(
+seconds
+)
 ?
 '0:00'
 :
 Math.floor(
-s/60
+seconds/
+60
 )
 +
 ':'
 +
 String(
 Math.floor(
-s%60
+seconds%
+60
 )
 )
 .padStart(
@@ -3185,6 +5962,10 @@ s%60
 '0'
 );
 
+
+/* =========================================================
+   MUSIC CONTROLS
+========================================================= */
 
 on(
 'music-play-pause',
@@ -3204,20 +5985,32 @@ trackIndex<0
 
 if(
 activeArtist.tracks?.length
-)
-playTrack(0);
+){
+
+playTrack(
+0
+);
+
+}
 
 return;
 
 }
 
 
+if(
 audio.paused
-?
+){
+
 audio.play()
-.catch(()=>{})
-:
+.catch(()=>{});
+
+}
+else{
+
 audio.pause();
+
+}
 
 }
 );
@@ -3242,7 +6035,9 @@ on(
 'click',
 ()=>{
 
-if(!activeArtist)
+if(
+!activeArtist
+)
 return;
 
 
@@ -3265,9 +6060,13 @@ activeArtist.tracks?.length
 
 musicQueue=[];
 
-activeReleaseId=null;
+activeReleaseId=
+null;
 
-playTrack(0);
+
+playTrack(
+0
+);
 
 }
 
@@ -3278,7 +6077,7 @@ playTrack(0);
 on(
 'music-progress',
 'input',
-e=>{
+event=>{
 
 if(
 audio?.duration
@@ -3286,7 +6085,9 @@ audio?.duration
 
 audio.currentTime=
 (
-+e.target.value/
+Number(
+event.target.value
+)/
 100
 )*
 audio.duration;
@@ -3304,12 +6105,22 @@ audio.addEventListener(
 'play',
 ()=>{
 
+musicAnalyticsLastTime=
+Number(
+audio.currentTime||
+0
+);
+
+
 if(
 $('music-play-pause')
-)
+){
+
 $('music-play-pause')
 .textContent=
 'Ⅱ';
+
+}
 
 }
 );
@@ -3319,12 +6130,22 @@ audio.addEventListener(
 'pause',
 ()=>{
 
+musicAnalyticsLastTime=
+Number(
+audio.currentTime||
+0
+);
+
+
 if(
 $('music-play-pause')
-)
+){
+
 $('music-play-pause')
 .textContent=
 '▶';
+
+}
 
 }
 );
@@ -3334,29 +6155,39 @@ audio.addEventListener(
 'timeupdate',
 ()=>{
 
+updateQualifiedMusicListen();
+
+
 if(
 $('music-current-time')
-)
+){
+
 $('music-current-time')
 .textContent=
 fmt(
 audio.currentTime
 );
 
+}
+
 
 if(
 $('music-duration')
-)
+){
+
 $('music-duration')
 .textContent=
 fmt(
 audio.duration
 );
 
+}
+
 
 if(
 $('music-progress')
-)
+){
+
 $('music-progress')
 .value=
 audio.duration
@@ -3366,6 +6197,8 @@ audio.duration*
 100
 :
 0;
+
+}
 
 }
 );
@@ -3381,28 +6214,34 @@ audio.addEventListener(
 'error',
 ()=>{
 
-if(!activeArtist)
+if(
+!activeArtist
+)
 return;
 
 
-const t=
+const track=
 activeArtist.tracks?.[
 trackIndex
 ];
 
 
 if(
-t&&
+track&&
 sourceIndex<
 (
-t.audioSources?.length||
+track.audioSources?.length||
 0
-)-1
+)-
+1
 ){
 
 sourceIndex++;
 
-loadSource(true);
+
+loadSource(
+true
+);
 
 }
 
@@ -3411,11 +6250,11 @@ loadSource(true);
 
 
 }
-
-
 /* =========================================================
    DECISION MAKERS
-   BACKEND ONLY
+   APP VIDEO DISPLAY
+   PROGRAM RESOURCES REMAIN OWNED BY
+   decision-makers-backend.js
 ========================================================= */
 
 let dmVideos=[];
@@ -3424,14 +6263,85 @@ let dmSessions=[];
 
 let dmChallenges=[];
 
-let dmResources=[];
-
 
 function yt(url=''){
 
 return musicYoutubeId(
 url
 );
+
+}
+
+
+function playDMVideoInBox(
+box,
+videoId,
+title,
+analyticsId,
+type='video'
+){
+
+if(
+!box||
+!videoId
+)
+return;
+
+
+if(
+audio&&
+!audio.paused
+){
+
+audio.pause();
+
+}
+
+
+trackAnalytics(
+'video_play',
+{
+
+section:
+'decision-makers',
+
+itemId:
+analyticsId||
+videoId,
+
+itemTitle:
+title||
+'DECISION MAKERS VIDEO',
+
+detail:{
+
+video_type:
+type
+
+}
+
+}
+);
+
+
+box.innerHTML=`
+
+<iframe
+data-dm-youtube
+src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1"
+title="${esc(title||'Decision Makers')}"
+allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+allowfullscreen
+style="
+width:100%;
+height:100%;
+display:block;
+border:0;
+background:#000;
+"
+></iframe>
+
+`;
 
 }
 
@@ -3451,7 +6361,9 @@ return;
 row.innerHTML='';
 
 
-if(!dmVideos.length){
+if(
+!dmVideos.length
+){
 
 row.innerHTML=`
 
@@ -3484,6 +6396,11 @@ if(!id)
 return;
 
 
+const thumbnail=
+v.thumbnailUrl||
+`https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+
 const c=
 document.createElement(
 'article'
@@ -3498,27 +6415,37 @@ c.innerHTML=`
 
 <div
 class="decision-placeholder-video"
+data-dm-quick-media
 style="
 aspect-ratio:9/16;
 background:#000;
 overflow:hidden;
+position:relative;
 "
 >
 
-<iframe
-data-dm-youtube
-src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0&enablejsapi=1"
-title="${esc(v.title)}"
-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-allowfullscreen
+<img
+src="${esc(thumbnail)}"
+alt="${esc(v.title)}"
 style="
 width:100%;
 height:100%;
+object-fit:cover;
 display:block;
-border:0;
-background:#000;
 "
-></iframe>
+>
+
+<button
+class="dm-session-play"
+type="button"
+aria-label="Play ${esc(v.title)}"
+style="
+position:absolute;
+inset:0;
+"
+>
+▶
+</button>
 
 <span
 class="coming-label"
@@ -3528,7 +6455,6 @@ ${esc(v.category||'ON THE GO')}
 </span>
 
 </div>
-
 
 <div class="decision-card-body">
 
@@ -3549,7 +6475,51 @@ ${esc(v.description||'')}
 `;
 
 
-row.appendChild(c);
+const play=
+q(
+'.dm-session-play',
+c
+);
+
+
+if(play){
+
+play.addEventListener(
+'click',
+()=>{
+
+const media=
+q(
+'[data-dm-quick-media]',
+c
+);
+
+
+playDMVideoInBox(
+
+media,
+
+id,
+
+v.title,
+
+v.backendId||
+v.id||
+id,
+
+'on-the-go'
+
+);
+
+}
+);
+
+}
+
+
+row.appendChild(
+c
+);
 
 }
 );
@@ -3572,7 +6542,9 @@ return;
 grid.innerHTML='';
 
 
-if(!dmSessions.length){
+if(
+!dmSessions.length
+){
 
 grid.innerHTML=`
 
@@ -3652,6 +6624,7 @@ alt="${esc(session.title)}"
 ${id
 ?
 `
+
 <button
 class="dm-session-play"
 type="button"
@@ -3659,6 +6632,7 @@ aria-label="Play ${esc(session.title)}"
 >
 ▶
 </button>
+
 `
 :
 ''
@@ -3724,13 +6698,6 @@ play.addEventListener(
 'click',
 ()=>{
 
-if(
-audio&&
-!audio.paused
-)
-audio.pause();
-
-
 const mediaBox=
 q(
 '[data-session-media]',
@@ -3738,21 +6705,21 @@ card
 );
 
 
-if(!mediaBox)
-return;
+playDMVideoInBox(
 
+mediaBox,
 
-mediaBox.innerHTML=`
+id,
 
-<iframe
-data-dm-youtube
-src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0&enablejsapi=1"
-title="${esc(session.title)}"
-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-allowfullscreen
-></iframe>
+session.title,
 
-`;
+session.backendId||
+session.id||
+id,
+
+'session'
+
+);
 
 }
 );
@@ -3791,13 +6758,18 @@ const message=
 $('decision-challenge-message');
 
 
-if(message)
+if(message){
+
 message.classList.remove(
 'show'
 );
 
+}
 
-if(!dmChallenges.length){
+
+if(
+!dmChallenges.length
+){
 
 grid.innerHTML=`
 
@@ -3895,22 +6867,37 @@ button.addEventListener(
 'click',
 ()=>{
 
+button.classList.add(
+'accepted'
+);
+
+
+button.textContent=
+'CHALLENGE ACCEPTED ✓';
+
+
 if(
 $('challenge-title')
-)
+){
+
 $('challenge-title')
 .textContent=
 challenge.title||
 'YOU MADE THE DECISION.';
 
+}
+
 
 if(
 $('challenge-copy')
-)
+){
+
 $('challenge-copy')
 .textContent=
 challenge.completionMessage||
 'NOW TAKE ACTION.';
+
+}
 
 
 if(message){
@@ -3948,326 +6935,18 @@ card
 }
 
 
-function ensureDMResourcesSection(){
-
-const screen=
-$('decision-makers-screen');
-
-
-if(!screen)
-return;
-
-
-if(
-!$('decision-maker-resources-section')
-){
-
-const section=
-document.createElement(
-'section'
-);
-
-
-section.id=
-'decision-maker-resources-section';
-
-section.className=
-'decision-section';
-
-
-section.innerHTML=`
-
-<div class="decision-heading">
-
-<div>
-
-<span class="decision-kicker">
-KEEP BUILDING
-</span>
-
-<h2>
-RESOURCES
-</h2>
-
-</div>
-
-<span class="red-line"></span>
-
-</div>
-
-<p class="decision-section-copy">
-Tools and resources to help you move from decision to action.
-</p>
-
-<div
-id="decision-maker-resource-grid"
-class="dm-resource-grid"
-></div>
-
-`;
-
-
-const footer=
-q(
-'#decision-makers-screen .boss-footer'
-);
-
-
-if(footer){
-
-footer.insertAdjacentElement(
-'beforebegin',
-section
-);
-
-}else{
-
-screen.appendChild(
-section
-);
-
-}
-
-}
-
-
-if(
-!$('dm-resource-viewer')
-){
-
-const viewer=
-document.createElement(
-'div'
-);
-
-
-viewer.id=
-'dm-resource-viewer';
-
-viewer.className=
-'resource-viewer';
-
-
-viewer.innerHTML=`
-
-<button
-id="dm-resource-viewer-close"
-class="resource-viewer-close"
-type="button"
-aria-label="Close resource"
->
-×
-</button>
-
-<iframe
-id="dm-resource-viewer-frame"
-title="Decision Makers Resource"
-></iframe>
-
-`;
-
-
-document.body.appendChild(
-viewer
-);
-
-
-on(
-'dm-resource-viewer-close',
-'click',
-closeDMResource
-);
-
-}
-
-}
-
-
-function renderDMResources(){
-
-ensureDMResourcesSection();
-
-
-const grid=
-$('decision-maker-resource-grid');
-
-
-if(!grid)
-return;
-
-
-grid.innerHTML='';
-
-
-if(!dmResources.length){
-
-grid.innerHTML=`
-
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO RESOURCES ARE PUBLISHED RIGHT NOW.
-</div>
-
-`;
-
-return;
-
-}
-
-
-dmResources.forEach(
-resource=>{
-
-const card=
-document.createElement(
-'article'
-);
-
-
-card.className=
-'dm-resource-card';
-
-
-const image=
-resource.coverUrl||
-'images/decision-makers-logo.png';
-
-
-card.innerHTML=`
-
-<img
-src="${esc(image)}"
-alt="${esc(resource.title)}"
->
-
-<div class="dm-resource-body">
-
-<span>
-${esc(resource.type||'RESOURCE')}
-</span>
-
-<h3>
-${esc(resource.title)}
-</h3>
-
-<p>
-${esc(resource.description||'')}
-</p>
-
-${resource.fileUrl
-?
-`
-<button
-class="dm-resource-button"
-type="button"
->
-${esc(
-resource.buttonText||
-'OPEN RESOURCE'
-)}
-</button>
-`
-:
-''
-}
-
-</div>
-
-`;
-
-
-const button=
-q(
-'.dm-resource-button',
-card
-);
-
-
-if(button){
-
-button.addEventListener(
-'click',
-()=>openDMResource(
-resource.fileUrl
-)
-);
-
-}
-
-
-grid.appendChild(
-card
-);
-
-}
-);
-
-}
-
-
-function openDMResource(url){
-
-if(!url)
-return;
-
-
-ensureDMResourcesSection();
-
-
-const viewer=
-$('dm-resource-viewer');
-
-const frame=
-$('dm-resource-viewer-frame');
-
-
-if(
-!viewer||
-!frame
-)
-return;
-
-
-frame.src=
-url;
-
-
-viewer.classList.add(
-'open'
-);
-
-
-document.body.style.overflow=
-'hidden';
-
-}
-
-
-function closeDMResource(){
-
-const viewer=
-$('dm-resource-viewer');
-
-const frame=
-$('dm-resource-viewer-frame');
-
-
-if(viewer)
-viewer.classList.remove(
-'open'
-);
-
-
-if(frame)
-frame.src='';
-
-
-document.body.style.overflow=
-'';
-
-}
+/*
+IMPORTANT:
+Decision Maker resources are intentionally NOT
+rendered by app.js.
+
+decision-makers-backend.js owns the official
+Decision Maker Resource section.
+
+This removes the duplicate lower resource card
+that was appearing beneath the original
+black/yellow DOWNLOAD FREE SAMPLE card.
+*/
 
 
 function stopDM(){
@@ -4315,8 +6994,6 @@ buildDMSessions();
 
 buildDMChallenges();
 
-renderDMResources();
-
 }
 
 
@@ -4325,20 +7002,102 @@ on(
 'click',
 renderDecisionMakers
 );
+
+
 /* =========================================================
    B.O.S.S CHECK IN
-   BACKEND CONTROLLED
+   PERMANENT BUILT IN BANK + ADMIN ADDITIONS
 ========================================================= */
+
+const builtBank={
+
+APPROVAL:[
+
+'I change what I really want because I worry how people will react.',
+
+'I feel pressure to explain my decisions so other people approve of them.',
+
+'I hesitate to say no because I do not want to disappoint people.',
+
+'Praise from other people strongly affects how confident I feel about my choices.',
+
+'I sometimes choose what looks good instead of what is right for me.',
+
+'I avoid a decision if I think people close to me may criticize it.'
+
+],
+
+
+COMPARISON:[
+
+'Seeing other people succeed can make me question my own progress.',
+
+'I compare my timeline to people who are further ahead.',
+
+'Social media can make me feel like I should be doing more.',
+
+'I sometimes change goals because somebody else appears to be winning with something different.',
+
+'I judge my progress by what other people have instead of where I started.',
+
+'I can lose focus on my own plan when I see somebody else moving faster.'
+
+],
+
+
+CONFIDENCE:[
+
+'I delay action because I am not sure I can handle the result.',
+
+'I second guess decisions even after I have enough information.',
+
+'I sometimes need reassurance before I trust my own judgment.',
+
+'I avoid opportunities because I worry I may not be ready.',
+
+'A mistake can make me question my overall ability.',
+
+'I find it difficult to speak confidently about what I want.'
+
+],
+
+
+ACTION:[
+
+'I know what I need to do but still put it off.',
+
+'I spend more time planning than executing.',
+
+'I wait for motivation before doing important work.',
+
+'I sometimes let discomfort stop a decision I know is necessary.',
+
+'I start things but struggle to consistently finish them.',
+
+'I delay a useful move while waiting for the perfect time.'
+
+]
+
+};
+
 
 const bank={
 
-APPROVAL:[],
+APPROVAL:[
+...builtBank.APPROVAL
+],
 
-COMPARISON:[],
+COMPARISON:[
+...builtBank.COMPARISON
+],
 
-CONFIDENCE:[],
+CONFIDENCE:[
+...builtBank.CONFIDENCE
+],
 
-ACTION:[]
+ACTION:[
+...builtBank.ACTION
+]
 
 };
 
@@ -4362,26 +7121,35 @@ function showCheckIntro(){
 
 if(
 $('checkin-intro')
-)
+){
+
 $('checkin-intro')
 .style.display=
 'flex';
 
+}
+
 
 if(
 $('checkin-questions')
-)
+){
+
 $('checkin-questions')
 .style.display=
 'none';
 
+}
+
 
 if(
 $('checkin-results')
-)
+){
+
 $('checkin-results')
 .style.display=
 'none';
+
+}
 
 }
 
@@ -4395,11 +7163,15 @@ bank
 .flatMap(
 ([cat,arr])=>
 
-shuffle(arr)
+shuffle(
+arr
+)
+
 .slice(
 0,
 3
 )
+
 .map(
 text=>({
 
@@ -4413,51 +7185,83 @@ text
 );
 
 
-if(!available.length){
+if(
+!available.length
+){
 
 if(
 $('checkin-question-text')
-)
+){
+
 $('checkin-question-text')
 .textContent=
-'NO CHECK IN QUESTIONS ARE PUBLISHED RIGHT NOW.';
+'NO CHECK IN QUESTIONS ARE AVAILABLE RIGHT NOW.';
+
+}
 
 
 if(
 $('checkin-intro')
-)
+){
+
 $('checkin-intro')
 .style.display=
 'none';
 
+}
+
 
 if(
 $('checkin-questions')
-)
+){
+
 $('checkin-questions')
 .style.display=
 'block';
 
+}
+
 
 if(
 $('checkin-answers')
-)
+){
+
 $('checkin-answers')
 .innerHTML=
+
 '<div class="artist-media-empty">CHECK BACK SOON.</div>';
+
+}
 
 
 if(
 $('previous-question')
-)
+){
+
 $('previous-question')
 .style.visibility=
 'hidden';
+
+}
 
 
 return;
 
 }
+
+
+trackAnalytics(
+'checkin_start',
+{
+
+section:
+'boss-checkin',
+
+itemTitle:
+'B.O.S.S CHECK IN'
+
+}
+);
 
 
 cq=
@@ -4469,32 +7273,47 @@ available
 ci=
 0;
 
+
 resp=
-[];
+new Array(
+cq.length
+)
+.fill(
+null
+);
 
 
 if(
 $('checkin-intro')
-)
+){
+
 $('checkin-intro')
 .style.display=
 'none';
 
+}
+
 
 if(
 $('checkin-results')
-)
+){
+
 $('checkin-results')
 .style.display=
 'none';
+
+}
 
 
 if(
 $('checkin-questions')
-)
+){
+
 $('checkin-questions')
 .style.display=
 'block';
+
+}
 
 
 renderQ();
@@ -4505,7 +7324,9 @@ renderQ();
 function renderQ(){
 
 const x=
-cq[ci];
+cq[
+ci
+];
 
 
 if(!x)
@@ -4513,57 +7334,77 @@ return;
 
 
 const n=
-ci+1;
+ci+
+1;
+
 
 const total=
 cq.length;
 
+
 const p=
 Math.round(
+
 n/
 total*
 100
+
 );
 
 
 if(
 $('question-count')
-)
+){
+
 $('question-count')
 .textContent=
 `QUESTION ${n} OF ${total}`;
 
+}
+
 
 if(
 $('progress-percent')
-)
+){
+
 $('progress-percent')
 .textContent=
 `${p}%`;
 
+}
+
 
 if(
 $('checkin-progress-bar')
-)
+){
+
 $('checkin-progress-bar')
 .style.width=
 `${p}%`;
 
+}
+
 
 if(
 $('question-category')
-)
+){
+
 $('question-category')
 .textContent=
 x.cat;
 
+}
+
 
 if(
 $('checkin-question-text')
-)
+){
+
 $('checkin-question-text')
 .textContent=
 x.text;
+
+}
 
 
 const a=
@@ -4578,7 +7419,6 @@ a.innerHTML='';
 
 
 [
-
 [
 'NEVER',
 0
@@ -4617,30 +7457,50 @@ document.createElement(
 b.type=
 'button';
 
+
 b.className=
 'checkin-answer-button';
+
 
 b.textContent=
 lab;
 
 
+if(
+resp[
+ci
+]===
+val
+){
+
+b.classList.add(
+'selected'
+);
+
+}
+
+
 b.onclick=
 ()=>{
 
-resp[ci]=
+resp[
+ci
+]=
 val;
 
 
 if(
 ci<
-total-1
+total-
+1
 ){
 
 ci++;
 
 renderQ();
 
-}else{
+}
+else{
 
 finishCheck();
 
@@ -4649,7 +7509,9 @@ finishCheck();
 };
 
 
-a.appendChild(b);
+a.appendChild(
+b
+);
 
 }
 );
@@ -4657,7 +7519,8 @@ a.appendChild(b);
 
 if(
 $('previous-question')
-)
+){
+
 $('previous-question')
 .style.visibility=
 ci
@@ -4665,6 +7528,8 @@ ci
 'visible'
 :
 'hidden';
+
+}
 
 }
 
@@ -4688,13 +7553,22 @@ cq.forEach(
 (x,i)=>{
 
 if(
-cats[x.cat]
-)
-cats[x.cat]
+cats[
+x.cat
+]
+){
+
+cats[
+x.cat
+]
 .push(
-resp[i]??
+resp[
+i
+]??
 0
 );
+
+}
 
 }
 );
@@ -4709,9 +7583,13 @@ cats
 .forEach(
 ([k,v])=>{
 
-if(!v.length){
+if(
+!v.length
+){
 
-scores[k]=
+scores[
+k
+]=
 100;
 
 return;
@@ -4719,18 +7597,22 @@ return;
 }
 
 
-scores[k]=
+scores[
+k
+]=
 100-
 Math.round(
 
 v.reduce(
 (a,b)=>a+b,
 0
-)/
+)
+/
 (
 v.length*
 4
-)*
+)
+*
 100
 
 );
@@ -4748,7 +7630,8 @@ scores
 .reduce(
 (a,b)=>a+b,
 0
-)/
+)
+/
 4
 
 );
@@ -4756,26 +7639,35 @@ scores
 
 if(
 $('checkin-questions')
-)
+){
+
 $('checkin-questions')
 .style.display=
 'none';
 
+}
+
 
 if(
 $('checkin-results')
-)
+){
+
 $('checkin-results')
 .style.display=
 'block';
 
+}
+
 
 if(
 $('boss-score')
-)
+){
+
 $('boss-score')
 .textContent=
 overall;
+
+}
 
 
 if(
@@ -4829,19 +7721,33 @@ k.toLowerCase();
 
 
 if(
-$(`${id}-score`)
+$(
+`${id}-score`
 )
-$(`${id}-score`)
+){
+
+$(
+`${id}-score`
+)
 .textContent=
 v;
 
+}
+
 
 if(
-$(`${id}-meter`)
+$(
+`${id}-meter`
 )
-$(`${id}-meter`)
+){
+
+$(
+`${id}-meter`
+)
 .style.width=
 `${v}%`;
+
+}
 
 }
 );
@@ -4851,19 +7757,25 @@ const weak=
 Object.entries(
 scores
 )
+
 .sort(
 (a,b)=>
-a[1]-b[1]
-)[0]?.[0]||
+a[1]-
+b[1]
+)[0]?.[0]
+||
 'ACTION';
 
 
 if(
 $('weakest-category')
-)
+){
+
 $('weakest-category')
 .textContent=
 weak;
+
+}
 
 
 if(
@@ -4885,7 +7797,9 @@ CONFIDENCE:
 ACTION:
 'The issue may not be clarity. It may be execution.'
 
-}[weak];
+}[
+weak
+];
 
 }
 
@@ -4909,9 +7823,69 @@ CONFIDENCE:
 ACTION:
 'Complete the next obvious step before planning anything else.'
 
-}[weak];
+}[
+weak
+];
 
 }
+
+
+/*
+Store the overall score in value_numeric
+so the dashboard can calculate averages
+and score ranges.
+
+Category scores are included in detail
+for future category reporting.
+*/
+
+trackAnalytics(
+'checkin_complete',
+{
+
+section:
+'boss-checkin',
+
+itemTitle:
+'B.O.S.S CHECK IN',
+
+valueNumeric:
+overall,
+
+detail:{
+
+approval:
+scores.APPROVAL,
+
+comparison:
+scores.COMPARISON,
+
+confidence:
+scores.CONFIDENCE,
+
+action:
+scores.ACTION,
+
+weakest_category:
+weak,
+
+questions_answered:
+cq.length
+
+}
+
+}
+);
+
+
+window.scrollTo({
+
+top:0,
+
+behavior:
+'smooth'
+
+});
 
 }
 
@@ -4929,7 +7903,8 @@ on(
 ()=>{
 
 if(
-ci>0
+ci>
+0
 ){
 
 ci--;
@@ -4947,11 +7922,9 @@ on(
 'click',
 showCheckIntro
 );
-
-
 /* =========================================================
    THE BOSS BITE
-   BACKEND ONLY
+   BACKEND MANAGED
 ========================================================= */
 
 const episodes=[];
@@ -4970,7 +7943,9 @@ return;
 g.innerHTML='';
 
 
-if(!episodes.length){
+if(
+!episodes.length
+){
 
 g.innerHTML=`
 
@@ -4982,7 +7957,6 @@ NO BOSS BITE EPISODES ARE PUBLISHED RIGHT NOW.
 </div>
 
 `;
-
 
 return;
 
@@ -5017,7 +7991,12 @@ c.innerHTML=`
 <div class="episode-thumbnail">
 
 <img
-src="https://img.youtube.com/vi/${id}/hqdefault.jpg"
+src="${
+esc(
+e.thumbnailUrl||
+`https://img.youtube.com/vi/${id}/hqdefault.jpg`
+)
+}"
 alt="${esc(e.title)}"
 >
 
@@ -5026,7 +8005,6 @@ alt="${esc(e.title)}"
 </div>
 
 </div>
-
 
 <div class="episode-info">
 
@@ -5045,12 +8023,21 @@ ${esc(e.description||'')}
 
 c.onclick=
 ()=>playEpisode(
+
 id,
-e.title
+
+e.title,
+
+e.backendId||
+e.id||
+id
+
 );
 
 
-g.appendChild(c);
+g.appendChild(
+c
+);
 
 }
 );
@@ -5060,7 +8047,8 @@ g.appendChild(c);
 
 function playEpisode(
 id,
-title
+title,
+itemId=''
 ){
 
 const p=
@@ -5077,8 +8065,30 @@ return;
 if(
 audio&&
 !audio.paused
-)
+){
+
 audio.pause();
+
+}
+
+
+trackAnalytics(
+'video_play',
+{
+
+section:
+'boss-bite',
+
+itemId:
+itemId||
+id,
+
+itemTitle:
+title||
+'THE BOSS BITE'
+
+}
+);
 
 
 p.innerHTML=`
@@ -5095,10 +8105,13 @@ allowfullscreen
 
 if(
 $('featured-title')
-)
+){
+
 $('featured-title')
 .textContent=
 title;
+
+}
 
 
 p.scrollIntoView({
@@ -5169,10 +8182,13 @@ New episodes will appear here when they are published from Admin.
 
 if(
 $('featured-title')
-)
+){
+
 $('featured-title')
 .textContent=
 'FUELING YOUR HUSTLE';
+
+}
 
 
 return;
@@ -5203,17 +8219,20 @@ allowfullscreen
 
 if(
 $('featured-title')
-)
+){
+
 $('featured-title')
 .textContent=
 e.title;
 
 }
 
+}
+
 
 /* =========================================================
    B.O.S.S CODE TV
-   BACKEND ONLY
+   BACKEND MANAGED
 ========================================================= */
 
 const tvVideos=[];
@@ -5243,7 +8262,9 @@ return;
 g.innerHTML='';
 
 
-if(!tvVideos.length){
+if(
+!tvVideos.length
+){
 
 g.innerHTML=`
 
@@ -5281,6 +8302,11 @@ c.className=
 'tv-card';
 
 
+const thumbnail=
+v.thumbnailUrl||
+`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
+
+
 c.innerHTML=`
 
 <div class="tv-player">
@@ -5291,10 +8317,12 @@ c.innerHTML=`
 class="tv-thumbnail"
 type="button"
 data-video-id="${esc(v.id)}"
+data-video-backend-id="${esc(v.backendId||'')}"
+data-video-title="${esc(v.title)}"
 >
 
 <img
-src="https://img.youtube.com/vi/${esc(v.id)}/hqdefault.jpg"
+src="${esc(thumbnail)}"
 alt="${esc(v.title)}"
 >
 
@@ -5307,19 +8335,33 @@ alt="${esc(v.title)}"
 
 </div>
 
-
 <div class="tv-card-body">
 
 <h3>
 ${esc(v.title)}
 </h3>
 
+${v.description
+?
+`
+
+<p>
+${esc(v.description)}
+</p>
+
+`
+:
+''
+}
+
 </div>
 
 `;
 
 
-g.appendChild(c);
+g.appendChild(
+c
+);
 
 }
 );
@@ -5348,6 +8390,17 @@ return;
 const id=
 b.dataset.videoId;
 
+
+const backendId=
+b.dataset.videoBackendId||
+id;
+
+
+const title=
+b.dataset.videoTitle||
+'B.O.S.S CODE TV';
+
+
 const media=
 b.closest(
 '.tv-media'
@@ -5357,8 +8410,28 @@ b.closest(
 if(
 audio&&
 !audio.paused
-)
+){
+
 audio.pause();
+
+}
+
+
+trackAnalytics(
+'video_play',
+{
+
+section:
+'boss-code-tv',
+
+itemId:
+backendId,
+
+itemTitle:
+title
+
+}
+);
 
 
 if(media){
@@ -5368,6 +8441,7 @@ media.innerHTML=`
 <iframe
 class="tv-iframe"
 src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
+title="${esc(title)}"
 allow="autoplay; encrypted-media; picture-in-picture"
 allowfullscreen
 ></iframe>
@@ -5398,11 +8472,13 @@ q(
 s
 );
 
+
 const badge=
 q(
 '.boss-tv-live-badge',
 s
 );
+
 
 const lab=
 q(
@@ -5410,11 +8486,13 @@ q(
 s
 );
 
+
 const title=
 q(
 '.boss-tv-live-bottom strong',
 s
 );
+
 
 const copy=
 q(
@@ -5428,14 +8506,15 @@ live.on&&
 live.id
 ){
 
-
 if(badge){
 
 badge.innerHTML=
 '<span class="live-dot"></span> LIVE';
 
+
 badge.style.background=
 '#d40000';
+
 
 badge.style.color=
 '#fff';
@@ -5464,23 +8543,30 @@ if(lab){
 lab.textContent=
 'LIVE BROADCAST';
 
+
 lab.style.color=
 '#d40000';
 
 }
 
 
-if(title)
+if(title){
+
 title.textContent=
 'B.O.S.S CODE MEDIA LIVE STREAM';
 
+}
 
-if(copy)
+
+if(copy){
+
 copy.textContent=
 'Watch the current B.O.S.S CODE MEDIA broadcast live inside B.O.S.S CODE GO.';
 
+}
 
-}else{
+}
+else{
 
 
 if(badge){
@@ -5488,8 +8574,10 @@ if(badge){
 badge.textContent=
 'OFF AIR';
 
+
 badge.style.background=
 '#181818';
+
 
 badge.style.color=
 '#888';
@@ -5557,7 +8645,8 @@ OFF AIR
 
 `;
 
-}else{
+}
+else{
 
 p.innerHTML=`
 
@@ -5605,20 +8694,27 @@ if(lab){
 lab.textContent=
 'CURRENT STATUS';
 
+
 lab.style.color=
 '#F5C518';
 
 }
 
 
-if(title)
+if(title){
+
 title.textContent=
 'B.O.S.S CODE TV IS CURRENTLY OFF AIR';
 
+}
 
-if(copy)
+
+if(copy){
+
 copy.textContent=
 'Previously recorded interviews and conversations are available below.';
+
+}
 
 }
 
@@ -5627,7 +8723,7 @@ copy.textContent=
 
 /* =========================================================
    BOSS BITE GALLERY
-   BACKEND ONLY
+   BACKEND MANAGED
 ========================================================= */
 
 let galleryPhotos=[];
@@ -5668,8 +8764,11 @@ function galleryAlt(item){
 if(
 typeof item===
 'string'
-)
+){
+
 return'Boss Bite photo';
+
+}
 
 
 return[
@@ -5679,9 +8778,17 @@ item?.caption,
 item?.location
 
 ]
-.filter(Boolean)
-.join(' • ')
+
+.filter(
+Boolean
+)
+
+.join(
+' • '
+)
+
 ||
+
 'Boss Bite photo';
 
 }
@@ -5694,11 +8801,16 @@ src=''
 return(
 
 /^(https?:|data:|blob:)/i
-.test(src)
+.test(
+src
+)
+
 ||
 
 /\.(jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i
-.test(src)
+.test(
+src
+)
 
 );
 
@@ -5712,7 +8824,9 @@ n=0
 ){
 
 const base=
-gallerySrc(item);
+gallerySrc(
+item
+);
 
 
 if(
@@ -5727,7 +8841,9 @@ null;
 
 
 if(
-isDirectImage(base)
+isDirectImage(
+base
+)
 ){
 
 img.src=
@@ -5752,9 +8868,14 @@ exts[n];
 
 img.onerror=
 ()=>setImg(
+
 img,
+
 item,
-n+1
+
+n+
+1
+
 );
 
 }
@@ -5773,7 +8894,9 @@ return;
 g.innerHTML='';
 
 
-if(!galleryPhotos.length){
+if(
+!galleryPhotos.length
+){
 
 g.innerHTML=`
 
@@ -5799,6 +8922,7 @@ document.createElement(
 'button'
 );
 
+
 const im=
 document.createElement(
 'img'
@@ -5808,21 +8932,29 @@ document.createElement(
 b.type=
 'button';
 
+
 b.className=
 'gallery-photo';
 
 
 im.alt=
-galleryAlt(item);
-
-
-setImg(
-im,
+galleryAlt(
 item
 );
 
 
-b.appendChild(im);
+setImg(
+
+im,
+
+item
+
+);
+
+
+b.appendChild(
+im
+);
 
 
 b.onclick=
@@ -5831,7 +8963,9 @@ b.onclick=
 gi=
 i;
 
+
 showGal();
+
 
 $('gallery-lightbox')
 ?.classList
@@ -5839,10 +8973,16 @@ $('gallery-lightbox')
 'open'
 );
 
+
+document.body.style.overflow=
+'hidden';
+
 };
 
 
-g.appendChild(b);
+g.appendChild(
+b
+);
 
 }
 );
@@ -5852,25 +8992,36 @@ g.appendChild(b);
 
 function showGal(){
 
-if(!galleryPhotos.length)
+if(
+!galleryPhotos.length
+)
 return;
 
 
 const im=
 $('gallery-large-image');
 
+
 const item=
-galleryPhotos[gi];
+galleryPhotos[
+gi
+];
 
 
 if(im){
 
 im.alt=
-galleryAlt(item);
+galleryAlt(
+item
+);
+
 
 setImg(
+
 im,
+
 item
+
 );
 
 }
@@ -5878,10 +9029,13 @@ item
 
 if(
 $('gallery-counter')
-)
+){
+
 $('gallery-counter')
 .textContent=
 `${gi+1} / ${galleryPhotos.length}`;
+
+}
 
 }
 
@@ -5897,6 +9051,10 @@ $('gallery-lightbox')
 'open'
 );
 
+
+document.body.style.overflow=
+'';
+
 }
 );
 
@@ -5906,13 +9064,20 @@ on(
 'click',
 ()=>{
 
-if(!galleryPhotos.length)
+if(
+!galleryPhotos.length
+)
 return;
 
 
 gi=
-(gi+1)%
+(
+gi+
+1
+)
+%
 galleryPhotos.length;
+
 
 showGal();
 
@@ -5925,16 +9090,21 @@ on(
 'click',
 ()=>{
 
-if(!galleryPhotos.length)
+if(
+!galleryPhotos.length
+)
 return;
 
 
 gi=
 (
-gi-1+
+gi-
+1+
 galleryPhotos.length
-)%
+)
+%
 galleryPhotos.length;
+
 
 showGal();
 
@@ -5944,7 +9114,7 @@ showGal();
 
 /* =========================================================
    BOSS BITE MAP
-   BACKEND ONLY
+   BACKEND MANAGED
 ========================================================= */
 
 const restaurants=[];
@@ -5953,6 +9123,7 @@ const restaurants=[];
 let bossBiteMap=
 null;
 
+
 let mapLoaded=
 false;
 
@@ -5960,7 +9131,9 @@ false;
 const marks={};
 
 
-function fullLocationAddress(row){
+function fullLocationAddress(
+row
+){
 
 return[
 
@@ -5971,8 +9144,14 @@ row.city,
 row.state
 
 ]
-.filter(Boolean)
-.join(', ');
+
+.filter(
+Boolean
+)
+
+.join(
+', '
+);
 
 }
 
@@ -5984,22 +9163,35 @@ lng
 
 return(
 
-Number.isFinite(lat)
+Number.isFinite(
+lat
+)
+
 &&
 
-Number.isFinite(lng)
+Number.isFinite(
+lng
+)
+
 &&
 
-lat>=-90
+lat>=
+-90
+
 &&
 
-lat<=90
+lat<=
+90
+
 &&
 
-lng>=-180
+lng>=
+-180
+
 &&
 
-lng<=180
+lng<=
+180
 
 );
 
@@ -6019,13 +9211,13 @@ return;
 l.innerHTML='';
 
 
-if(!restaurants.length){
+if(
+!restaurants.length
+){
 
 l.innerHTML=`
 
-<div
-class="artist-media-empty"
->
+<div class="artist-media-empty">
 NO BOSS BITE MAP LOCATIONS ARE PUBLISHED RIGHT NOW.
 </div>
 
@@ -6048,8 +9240,10 @@ document.createElement(
 b.type=
 'button';
 
+
 b.className=
 'restaurant-list-item';
+
 
 b.dataset.restaurant=
 r.id;
@@ -6065,7 +9259,6 @@ r.image||
 )}"
 alt="${esc(r.name)}"
 >
-
 
 <div class="restaurant-list-info">
 
@@ -6083,12 +9276,42 @@ ${esc(r.category||'BOSS BITE STOP')}
 
 
 b.onclick=
-()=>focusRestaurant(
+()=>{
+
+trackAnalytics(
+'boss_bite_pin_click',
+{
+
+section:
+'boss-bite',
+
+itemId:
+r.id,
+
+itemTitle:
+r.name,
+
+detail:{
+
+source:
+'restaurant_list'
+
+}
+
+}
+);
+
+
+focusRestaurant(
 r.id
 );
 
+};
 
-l.appendChild(b);
+
+l.appendChild(
+b
+);
 
 }
 );
@@ -6096,7 +9319,9 @@ l.appendChild(b);
 }
 
 
-function popup(r){
+function popup(
+r
+){
 
 const directEpisodeId=
 yt(
@@ -6105,9 +9330,18 @@ r.episodeUrl||
 );
 
 
+const directionsAddress=
+r.address||
+r.name||
+'';
+
+
 return`
 
-<div class="restaurant-popup">
+<div
+class="restaurant-popup"
+data-restaurant-popup="${esc(r.id)}"
+>
 
 <img
 class="restaurant-popup-image"
@@ -6118,30 +9352,32 @@ r.image||
 alt="${esc(r.name)}"
 >
 
-
 <div class="restaurant-popup-body">
 
 <h3>
 ${esc(r.name)}
 </h3>
 
-
 <div class="restaurant-category">
 
-${esc(r.category||'BOSS BITE STOP')}
+${esc(
+r.category||
+'BOSS BITE STOP'
+)}
 
 </div>
-
 
 <div class="restaurant-address">
 
-${esc(r.address)}
+${esc(
+r.address||
+''
+)}
 
 </div>
 
 
-${
-r.description
+${r.description
 ?
 `
 
@@ -6153,9 +9389,7 @@ line-height:1.45;
 color:#555;
 "
 >
-
 ${esc(r.description)}
-
 </div>
 
 `
@@ -6164,15 +9398,15 @@ ${esc(r.description)}
 }
 
 
-${
-r.episodeUrl&&
+${r.episodeUrl&&
 directEpisodeId
 ?
 `
 
 <button
 class="restaurant-action watch-episode-button"
-data-episode-url="${esc(r.episodeUrl||'')}"
+data-restaurant-id="${esc(r.id)}"
+data-episode-url="${esc(r.episodeUrl)}"
 type="button"
 >
 ▶ WATCH EPISODE
@@ -6186,13 +9420,13 @@ type="button"
 
 <a
 class="restaurant-action directions-button"
-href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r.address)}"
+data-restaurant-id="${esc(r.id)}"
+href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(directionsAddress)}"
 target="_blank"
 rel="noopener noreferrer"
 >
 📍 GET DIRECTIONS
 </a>
-
 
 </div>
 
@@ -6213,13 +9447,17 @@ id=>{
 
 try{
 
-marks[id]
+marks[
+id
+]
 ?.remove();
 
 }catch{}
 
 
-delete marks[id];
+delete marks[
+id
+];
 
 }
 );
@@ -6239,6 +9477,24 @@ return;
 clearMapMarkers();
 
 
+if(
+!restaurants.length
+){
+
+$('map-loading')
+?.classList
+.add(
+'hidden'
+);
+
+
+bossBiteMap.resize();
+
+return;
+
+}
+
+
 const bounds=
 new maplibregl.LngLatBounds();
 
@@ -6252,17 +9508,26 @@ r=>{
 
 if(
 
-!Array.isArray(r.c)
+!Array.isArray(
+r.c
+)
+
 ||
 
-r.c.length!==2
+r.c.length!==
+2
+
 ||
 
 !validCoordinates(
 
-Number(r.c[1]),
+Number(
+r.c[1]
+),
 
-Number(r.c[0])
+Number(
+r.c[0]
+)
 
 )
 
@@ -6282,6 +9547,37 @@ el.className=
 
 el.innerHTML=
 '<img src="images/boss-bite-pin.png" alt="">';
+
+
+el.addEventListener(
+'click',
+()=>{
+
+trackAnalytics(
+'boss_bite_pin_click',
+{
+
+section:
+'boss-bite',
+
+itemId:
+r.id,
+
+itemTitle:
+r.name,
+
+detail:{
+
+source:
+'map_pin'
+
+}
+
+}
+);
+
+}
+);
 
 
 const m=
@@ -6313,7 +9609,9 @@ maxWidth:
 })
 
 .setHTML(
-popup(r)
+popup(
+r
+)
 )
 
 )
@@ -6323,7 +9621,9 @@ bossBiteMap
 );
 
 
-marks[r.id]=
+marks[
+r.id
+]=
 m;
 
 
@@ -6379,6 +9679,7 @@ function initMap(){
 if(
 
 !$('boss-bite-map')
+
 ||
 
 typeof maplibregl===
@@ -6395,8 +9696,13 @@ bossBiteMap
 bossBiteMap.resize();
 
 
-if(mapLoaded)
+if(
+mapLoaded
+){
+
 addMapMarkers();
+
+}
 
 
 return;
@@ -6415,8 +9721,11 @@ style:
 'https://tiles.openfreemap.org/styles/dark',
 
 center:[
+
 -80.9,
+
 40.85
+
 ],
 
 zoom:
@@ -6446,6 +9755,7 @@ bossBiteMap.on(
 mapLoaded=
 true;
 
+
 addMapMarkers();
 
 }
@@ -6454,7 +9764,9 @@ addMapMarkers();
 }
 
 
-function focusRestaurant(id){
+function focusRestaurant(
+id
+){
 
 if(
 !bossBiteMap
@@ -6464,7 +9776,9 @@ initMap();
 
 
 setTimeout(
-()=>focusRestaurant(id),
+()=>focusRestaurant(
+id
+),
 600
 );
 
@@ -6475,7 +9789,9 @@ return;
 
 
 const m=
-marks[id];
+marks[
+id
+];
 
 
 if(!m)
@@ -6489,8 +9805,11 @@ m.getLngLat();
 bossBiteMap.flyTo({
 
 center:[
+
 p.lng,
+
 p.lat
+
 ],
 
 zoom:
@@ -6507,9 +9826,11 @@ qa(
 )
 .forEach(
 item=>
+
 item.classList.remove(
 'selected'
 )
+
 );
 
 
@@ -6519,8 +9840,12 @@ qa(
 )
 .find(
 item=>
+
 item.dataset.restaurant===
-String(id)
+String(
+id
+)
+
 );
 
 
@@ -6537,8 +9862,11 @@ setTimeout(
 if(
 !m.getPopup()
 .isOpen()
-)
+){
+
 m.togglePopup();
+
+}
 
 },
 500
@@ -6547,22 +9875,32 @@ m.togglePopup();
 }
 
 
+/* =========================================================
+   BOSS BITE POPUP ACTIONS
+========================================================= */
+
 document.addEventListener(
 'click',
 e=>{
 
-const b=
+const watch=
 e.target.closest(
 '.watch-episode-button'
 );
 
 
-if(!b)
-return;
+if(watch){
+
+e.preventDefault();
+
+
+const restaurantId=
+watch.dataset.restaurantId||
+'';
 
 
 const directUrl=
-b.dataset.episodeUrl||
+watch.dataset.episodeUrl||
 '';
 
 
@@ -6572,15 +9910,52 @@ directUrl
 );
 
 
-if(!directId)
-return;
-
-
 const restaurant=
 restaurants.find(
 r=>
+
+String(
+r.id
+)===
+String(
+restaurantId
+)
+
+)
+||
+
+restaurants.find(
+r=>
+
 r.episodeUrl===
 directUrl
+
+);
+
+
+if(
+!directId
+)
+return;
+
+
+trackAnalytics(
+'watch_episode_click',
+{
+
+section:
+'boss-bite',
+
+itemId:
+restaurant?.id||
+restaurantId||
+directId,
+
+itemTitle:
+restaurant?.name||
+'THE BOSS BITE'
+
+}
 );
 
 
@@ -6589,55 +9964,89 @@ playEpisode(
 directId,
 
 restaurant?.name||
-'The Boss Bite'
+'The Boss Bite',
+
+restaurant?.id||
+directId
 
 );
+
+
+return;
+
+}
+
+
+const directions=
+e.target.closest(
+'.directions-button'
+);
+
+
+if(directions){
+
+const restaurantId=
+directions.dataset.restaurantId||
+'';
+
+
+const restaurant=
+restaurants.find(
+r=>
+
+String(
+r.id
+)===
+String(
+restaurantId
+)
+
+);
+
+
+trackAnalytics(
+'directions_click',
+{
+
+section:
+'boss-bite',
+
+itemId:
+restaurant?.id||
+restaurantId,
+
+itemTitle:
+restaurant?.name||
+'BOSS BITE STOP',
+
+detail:{
+
+address:
+restaurant?.address||
+''
+
+}
 
 }
 );
 
+}
 
+}
+);
 /* =========================================================
-   CLOTHING
+   THE CODE CLOTHING BUTTON
 ========================================================= */
 
 const clothingButton=
-
-qa(
-'.app-menu .app-button'
-)
-
-.find(
-button=>
-
+qa('.app-menu .app-button')
+.find(button=>
 button.textContent
 .toUpperCase()
-.includes(
-'THE CODE CLOTHING'
-)
-
+.includes('THE CODE CLOTHING')
 );
 
 
-if(clothingButton){
-
-clothingButton
-.addEventListener(
-'click',
-()=>{
-
-window.open(
-
-'https://www.bosscodemedia.com/shop',
-
-'_blank'
-
-);
-
-}
-);
-
-}
 /* =========================================================
    CLOUDFLARE BACKEND
 ========================================================= */
@@ -6648,20 +10057,12 @@ const r=
 await fetch(
 API+path,
 {
-
-cache:
-'no-store',
-
+cache:'no-store',
 headers:{
-
-Accept:
-'application/json'
-
+Accept:'application/json'
 }
-
 }
 );
-
 
 if(!r.ok){
 
@@ -6671,10 +10072,8 @@ throw Error(
 
 }
 
-
 const j=
 await r.json();
-
 
 return Array.isArray(
 j.data
@@ -6694,10 +10093,7 @@ j.data
 function applyVideos(rows){
 
 const published=
-(
-rows||
-[]
-)
+(rows||[])
 .filter(
 v=>
 Number(v.published)===1
@@ -6721,6 +10117,9 @@ v=>({
 id:
 v.id,
 
+backendId:
+v.id,
+
 title:
 v.title||
 'Decision Makers',
@@ -6735,6 +10134,10 @@ yt(
 v.youtube_url||
 ''
 ),
+
+thumbnailUrl:
+v.thumbnail_url||
+'',
 
 category:
 v.category||
@@ -6773,6 +10176,9 @@ v=>({
 id:
 v.id,
 
+backendId:
+v.id,
+
 title:
 v.title||
 'The Boss Bite',
@@ -6788,6 +10194,10 @@ v.location_name
 
 youtubeUrl:
 v.youtube_url||
+'',
+
+thumbnailUrl:
+v.thumbnail_url||
 ''
 
 })
@@ -6831,6 +10241,9 @@ v.section===
 .map(
 v=>({
 
+backendId:
+v.id,
+
 id:
 v.youtube_id||
 yt(
@@ -6840,7 +10253,15 @@ v.youtube_url||
 
 title:
 v.title||
-'B.O.S.S CODE TV'
+'B.O.S.S CODE TV',
+
+description:
+v.description||
+'',
+
+thumbnailUrl:
+v.thumbnail_url||
+''
 
 })
 )
@@ -6868,10 +10289,7 @@ buildTv();
 /* LIVE / OFF AIR THUMBNAIL */
 
 const liveRow=
-(
-rows||
-[]
-)
+(rows||[])
 .find(
 v=>
 v.section===
@@ -6883,22 +10301,33 @@ live={
 
 on:
 Boolean(
+
 liveRow&&
-Number(liveRow.published)===1&&
+
+Number(
+liveRow.published
+)===
+1
+
+&&
+
 (
-liveRow.youtube_id||
+liveRow.youtube_id
+||
 yt(
 liveRow.youtube_url||
 ''
 )
 )
+
 ),
 
 id:
 liveRow
 ?
 (
-liveRow.youtube_id||
+liveRow.youtube_id
+||
 yt(
 liveRow.youtube_url||
 ''
@@ -6926,10 +10355,7 @@ renderLive();
 function applyDMSessions(rows){
 
 dmSessions=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -6938,6 +10364,7 @@ Number(r.published)===1
 
 .sort(
 (a,b)=>
+
 Number(
 a.sort_order||
 0
@@ -6947,7 +10374,9 @@ Number(
 b.sort_order||
 0
 )
+
 ||
+
 Number(
 a.session_number||
 0
@@ -6963,6 +10392,9 @@ b.session_number||
 r=>({
 
 id:
+r.id,
+
+backendId:
 r.id,
 
 title:
@@ -6998,7 +10430,8 @@ featured:
 Number(
 r.featured||
 0
-)===1
+)===
+1
 
 })
 );
@@ -7012,10 +10445,7 @@ buildDMSessions();
 function applyDMChallenges(rows){
 
 dmChallenges=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -7024,6 +10454,7 @@ Number(r.published)===1
 
 .sort(
 (a,b)=>
+
 Number(
 a.sort_order||
 0
@@ -7033,7 +10464,9 @@ Number(
 b.sort_order||
 0
 )
+
 ||
+
 Number(
 a.challenge_number||
 0
@@ -7049,6 +10482,9 @@ b.challenge_number||
 r=>({
 
 id:
+r.id,
+
+backendId:
 r.id,
 
 title:
@@ -7086,82 +10522,70 @@ buildDMChallenges();
 }
 
 
-function applyDMResources(rows){
+/* =========================================================
+   RESOURCE ANALYTICS
 
-dmResources=
-(
-rows||
-[]
-)
+   RESOURCE DISPLAY IS OWNED BY
+   decision-makers-backend.js
+========================================================= */
 
-.filter(
-r=>
-Number(r.published)===1
-)
+document.addEventListener(
+'click',
+e=>{
 
-.sort(
-(a,b)=>
-
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
-
-||
-
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
-
-.map(
-r=>({
-
-id:
-r.id,
-
-title:
-r.title||
-'Decision Makers Resource',
-
-description:
-r.description||
-'',
-
-type:
-r.resource_type||
-'RESOURCE',
-
-fileUrl:
-r.file_url||
-'',
-
-coverUrl:
-r.cover_image_url||
-'',
-
-buttonText:
-r.button_text||
-'OPEN RESOURCE'
-
-})
+const button=
+e.target.closest?.(
+'.dm-resource-download, .dm-resource-button'
 );
 
 
-renderDMResources();
+if(!button)
+return;
+
+
+const card=
+button.closest?.(
+'.dm-resource-card'
+);
+
+
+const title=
+card?.querySelector?.(
+'h3'
+)
+?.textContent
+?.trim()
+
+||
+
+button.textContent
+?.trim()
+
+||
+
+'DECISION MAKERS RESOURCE';
+
+
+trackAnalytics(
+'resource_click',
+{
+
+section:
+'decision-makers',
+
+itemId:
+button.dataset.resourceId||
+'',
+
+itemTitle:
+title
 
 }
+);
+
+},
+true
+);
 
 
 /* =========================================================
@@ -7171,10 +10595,7 @@ renderDMResources();
 function applyArtistGallery(rows){
 
 artistGalleryRows=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -7236,6 +10657,8 @@ r.imageUrl
 
 renderArtistGallery();
 
+repositionReturnHomeButtons();
+
 }
 
 
@@ -7246,10 +10669,7 @@ renderArtistGallery();
 function applyArtistMusicVideos(rows){
 
 artistMusicVideoRows=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -7322,12 +10742,14 @@ r.youtubeId
 
 renderArtistMusicVideos();
 
+repositionReturnHomeButtons();
+
 }
 
 
 /* =========================================================
    MUSIC BACKEND
-   ADMIN IS THE ONLY SOURCE
+   ADMIN IS THE SOURCE OF MUSIC CONTENT
 ========================================================= */
 
 function applyMusic(
@@ -7375,10 +10797,7 @@ y?.id||
 
 
 const publishedArtists=
-(
-A||
-[]
-)
+(A||[])
 
 .filter(
 x=>
@@ -7391,10 +10810,7 @@ order
 
 
 const publishedReleases=
-(
-R||
-[]
-)
+(R||[])
 
 .filter(
 x=>
@@ -7407,10 +10823,7 @@ order
 
 
 const publishedTracks=
-(
-T||
-[]
-)
+(T||[])
 
 .filter(
 x=>
@@ -7459,18 +10872,24 @@ rs.find(
 r=>
 Number(r.featured)===1
 )
+
 ||
+
 rs[0]
+
 ||
+
 null;
 
 
 const artistImage=
 
 a.artist_image_url
+
 ||
 
 featured?.artwork_url
+
 ||
 
 'images/boss-code-media-logo.png';
@@ -7494,16 +10913,25 @@ String(
 a.name||
 'BC'
 )
-.split(/\s+/)
+
+.split(
+/\s+/
+)
+
 .map(
 x=>
 x[0]
 )
-.join('')
+
+.join(
+''
+)
+
 .slice(
 0,
 3
 )
+
 .toUpperCase(),
 
 image:
@@ -7566,6 +10994,9 @@ return{
 id:
 t.id,
 
+backendId:
+t.id,
+
 title:
 t.title||
 'Track',
@@ -7586,7 +11017,9 @@ release?.release_type||
 audioSources:[
 t.audio_url
 ]
-.filter(Boolean),
+.filter(
+Boolean
+),
 
 artwork:
 t.artwork_url||
@@ -7674,22 +11107,31 @@ artists=
 rebuilt;
 
 
-if(!artists.length){
+if(
+!artists.length
+){
 
-activeArtist=null;
+activeArtist=
+null;
 
 musicQueue=[];
 
-activeReleaseId=null;
+activeReleaseId=
+null;
+
 
 clearMusicArtistUI();
+
+repositionReturnHomeButtons();
 
 return;
 
 }
 
 
-if(activeArtist){
+if(
+activeArtist
+){
 
 activeArtist=
 artists.find(
@@ -7697,10 +11139,13 @@ a=>
 String(a.backendId)===
 String(activeArtist.backendId)
 )
+
 ||
+
 artists[0];
 
-}else{
+}
+else{
 
 activeArtist=
 artists[0];
@@ -7710,7 +11155,8 @@ artists[0];
 
 musicQueue=[];
 
-activeReleaseId=null;
+activeReleaseId=
+null;
 
 
 renderArtists();
@@ -7725,6 +11171,8 @@ renderArtistGallery();
 
 renderArtistMusicVideos();
 
+repositionReturnHomeButtons();
+
 }
 
 
@@ -7735,10 +11183,7 @@ renderArtistMusicVideos();
 function applyGallery(rows){
 
 galleryPhotos=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -7798,11 +11243,17 @@ x.src
 if(
 gi>=
 galleryPhotos.length
-)
-gi=0;
+){
+
+gi=
+0;
+
+}
 
 
 buildGallery();
+
+repositionReturnHomeButtons();
 
 }
 
@@ -7814,10 +11265,7 @@ buildGallery();
 function applyLocations(rows){
 
 const cloud=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -7876,14 +11324,23 @@ const locationLabel=
 r.city,
 r.state
 ]
-.filter(Boolean)
-.join(' • ');
+
+.filter(
+Boolean
+)
+
+.join(
+' • '
+);
 
 
 return{
 
 id:
 'cloud-location-'+
+r.id,
+
+backendId:
 r.id,
 
 name:
@@ -7959,18 +11416,25 @@ addMapMarkers();
 
 }
 
+
+repositionReturnHomeButtons();
+
 }
 
 
 /* =========================================================
    DAILY DECISION BACKEND
+
+   ADMIN CONTENT IS ADDITIVE TO THE PERMANENT BANK
 ========================================================= */
 
 function applyDailyDecisions(rows){
 
 const today=
 new Date()
+
 .toISOString()
+
 .slice(
 0,
 10
@@ -7978,10 +11442,7 @@ new Date()
 
 
 const published=
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -8005,7 +11466,7 @@ scheduled
 published;
 
 
-daily=
+const cloud=
 [
 ...source
 ]
@@ -8042,6 +11503,7 @@ r=>[
 r.decision_text||
 '',
 
+r.action_text||
 r.description||
 ''
 
@@ -8054,20 +11516,72 @@ x[0]
 );
 
 
+const seen=
+new Set();
+
+
+daily=
+[
+...cloud,
+...builtDaily
+]
+
+.filter(
+item=>{
+
+const key=
+String(
+item?.[0]||
+''
+)
+
+.trim()
+
+.toLowerCase();
+
+
+if(
+!key||
+seen.has(
+key
+)
+)
+return false;
+
+
+seen.add(
+key
+);
+
+
+return true;
+
+}
+);
+
+
 const state=
 dailyState();
 
 
 if(
 daily.length&&
-state.i>=daily.length
+state.i>=
+daily.length
 ){
 
-state.i=0;
+state.i=
+0;
+
 
 localStorage.setItem(
+
 DK,
-JSON.stringify(state)
+
+JSON.stringify(
+state
+)
+
 );
 
 }
@@ -8080,6 +11594,8 @@ renderDaily();
 
 /* =========================================================
    B.O.S.S CHECK IN BACKEND
+
+   ADMIN QUESTIONS ARE ADDITIVE TO THE PERMANENT BANK
 ========================================================= */
 
 function normalizeCheckinCategory(category){
@@ -8089,7 +11605,9 @@ String(
 category||
 ''
 )
+
 .trim()
+
 .toUpperCase();
 
 
@@ -8132,7 +11650,7 @@ return'';
 
 function applyCheckinQuestions(rows){
 
-const nextBank={
+const cloudBank={
 
 APPROVAL:[],
 
@@ -8145,10 +11663,7 @@ ACTION:[]
 };
 
 
-(
-rows||
-[]
-)
+(rows||[])
 
 .filter(
 r=>
@@ -8183,6 +11698,7 @@ String(
 r.question_text||
 ''
 )
+
 .trim();
 
 
@@ -8194,7 +11710,7 @@ return;
 
 
 if(
-!nextBank[
+!cloudBank[
 category
 ]
 .includes(
@@ -8202,7 +11718,7 @@ text
 )
 ){
 
-nextBank[
+cloudBank[
 category
 ]
 .push(
@@ -8229,18 +11745,78 @@ const category of[
 ]
 ){
 
+const seen=
+new Set();
+
+
 bank[
 category
 ]=
-nextBank[
+[
+...cloudBank[
 category
-];
+],
+...builtBank[
+category
+]
+]
+
+.filter(
+text=>{
+
+const key=
+String(
+text||
+''
+)
+
+.trim()
+
+.toLowerCase();
+
+
+if(
+!key||
+seen.has(
+key
+)
+)
+return false;
+
+
+seen.add(
+key
+);
+
+
+return true;
+
+}
+);
 
 }
 
 
 console.info(
-'B.O.S.S CHECK IN synced from Admin.'
+
+'B.O.S.S CHECK IN loaded with permanent questions + Admin additions.',
+
+{
+
+approval:
+bank.APPROVAL.length,
+
+comparison:
+bank.COMPARISON.length,
+
+confidence:
+bank.CONFIDENCE.length,
+
+action:
+bank.ACTION.length
+
+}
+
 );
 
 }
@@ -8248,19 +11824,54 @@ console.info(
 
 /* =========================================================
    MAGAZINE
-   OPEN INSIDE APP
+
+   PERMANENT READER + ADMIN ISSUES
+
+   ALWAYS OPENS INSIDE THE APP
 ========================================================= */
 
-let currentMagazineUrl='';
+const BUILT_MAGAZINE={
+
+id:
+'built-magazine-reader',
+
+title:
+'B.O.S.S CODE MAGAZINE',
+
+description:
+'Read B.O.S.S CODE Magazine inside B.O.S.S CODE GO.',
+
+coverImageUrl:
+'images/magazine-logo.png',
+
+magazineUrl:
+'https://magazine.bosscodemedia.com',
+
+issueLabel:
+'B.O.S.S CODE MAGAZINE',
+
+featured:
+false,
+
+builtIn:
+true
+
+};
+
+
+let magazineIssues=[
+BUILT_MAGAZINE
+];
+
+
+let currentMagazineUrl=
+BUILT_MAGAZINE.magazineUrl;
 
 
 function applyMagazines(rows){
 
-const published=
-(
-rows||
-[]
-)
+const adminIssues=
+(rows||[])
 
 .filter(
 r=>
@@ -8291,15 +11902,134 @@ Number(
 b.sort_order||
 0
 )
+
+||
+
+Number(
+b.id||
+0
+)
+-
+Number(
+a.id||
+0
+)
+)
+
+.map(
+r=>({
+
+id:
+'admin-magazine-'+
+r.id,
+
+backendId:
+r.id,
+
+title:
+r.title||
+'B.O.S.S CODE MAGAZINE',
+
+description:
+r.description||
+'',
+
+coverImageUrl:
+r.cover_image_url||
+'images/magazine-logo.png',
+
+magazineUrl:
+r.magazine_url||
+'',
+
+issueLabel:
+r.issue_label||
+'MAGAZINE ISSUE',
+
+featured:
+Number(
+r.featured||
+0
+)===
+1,
+
+builtIn:
+false
+
+})
+)
+
+.filter(
+issue=>
+issue.magazineUrl
 );
 
 
-currentMagazineUrl=
-published[0]?.magazine_url||
-'';
+const urls=
+new Set(
+
+adminIssues.map(
+issue=>
+
+String(
+issue.magazineUrl
+)
+
+.trim()
+
+.toLowerCase()
+
+)
+
+);
+
+
+magazineIssues=
+[
+...adminIssues,
+
+...(
+urls.has(
+BUILT_MAGAZINE.magazineUrl
+.toLowerCase()
+)
+?
+[]
+:
+[
+BUILT_MAGAZINE
+]
+)
+
+];
+
+
+if(
+!magazineIssues.length
+){
+
+magazineIssues=[
+BUILT_MAGAZINE
+];
 
 }
 
+
+currentMagazineUrl=
+
+magazineIssues[0]
+?.magazineUrl
+
+||
+
+BUILT_MAGAZINE.magazineUrl;
+
+}
+
+
+/* =========================================================
+   INTERNAL APP WEB VIEW
+========================================================= */
 
 function ensureInternalWebStyles(){
 
@@ -8324,13 +12054,13 @@ style.textContent=`
 .boss-internal-screen{
 background:#000;
 min-height:100vh;
-color:#fff;
+color:#fff
 }
 
 .boss-internal-wrap{
 width:min(1200px,100%);
 margin:auto;
-padding:16px;
+padding:16px
 }
 
 .boss-internal-head{
@@ -8338,12 +12068,12 @@ display:flex;
 align-items:center;
 justify-content:space-between;
 gap:12px;
-margin-bottom:14px;
+margin-bottom:14px
 }
 
 .boss-internal-title{
 font-size:18px;
-font-weight:900;
+font-weight:900
 }
 
 .boss-internal-back{
@@ -8354,7 +12084,7 @@ color:#fff;
 padding:11px 16px;
 font:inherit;
 font-weight:900;
-cursor:pointer;
+cursor:pointer
 }
 
 .boss-internal-frame{
@@ -8364,7 +12094,7 @@ height:calc(100vh - 115px);
 min-height:650px;
 border:1px solid #252525;
 border-radius:16px;
-background:#fff;
+background:#fff
 }
 
 .boss-internal-empty{
@@ -8375,10 +12105,17 @@ text-align:center;
 border:1px dashed #333;
 border-radius:18px;
 color:#888;
-padding:30px;
+padding:30px
+}
+
+.magazine-library-copy{
+color:#999;
+line-height:1.5;
+margin:0 0 18px
 }
 
 `;
+
 
 document.head.appendChild(
 style
@@ -8408,6 +12145,7 @@ document.createElement(
 
 screen.id=
 'boss-internal-web-screen';
+
 
 screen.className=
 'screen boss-internal-screen';
@@ -8465,9 +12203,12 @@ const frame=
 $('boss-internal-frame');
 
 
-if(frame)
+if(frame){
+
 frame.src=
 'about:blank';
+
+}
 
 
 showScreen(
@@ -8507,10 +12248,13 @@ ensureInternalScreen();
 
 if(
 $('boss-internal-title')
-)
+){
+
 $('boss-internal-title')
 .textContent=
 title;
+
+}
 
 
 const content=
@@ -8555,6 +12299,7 @@ showScreen(
 screen
 );
 
+
 return;
 
 }
@@ -8580,6 +12325,226 @@ screen
 }
 
 
+/* =========================================================
+   MAGAZINE ISSUE READER
+========================================================= */
+
+function openMagazineIssue(issue){
+
+if(
+!issue?.magazineUrl
+)
+return;
+
+
+trackAnalytics(
+'magazine_open',
+{
+
+section:
+'magazine',
+
+itemId:
+issue.backendId||
+issue.id||
+'',
+
+itemTitle:
+issue.title||
+'B.O.S.S CODE MAGAZINE',
+
+detail:{
+
+issue_label:
+issue.issueLabel||
+'',
+
+built_in:
+Boolean(
+issue.builtIn
+)
+
+}
+
+}
+);
+
+
+openInternalWeb(
+
+issue.title||
+'B.O.S.S CODE MAGAZINE',
+
+issue.magazineUrl
+
+);
+
+}
+
+
+function openMagazineHub(){
+
+const issues=
+magazineIssues.length
+?
+magazineIssues
+:
+[
+BUILT_MAGAZINE
+];
+
+
+if(
+issues.length===
+1
+){
+
+openMagazineIssue(
+issues[0]
+);
+
+
+return;
+
+}
+
+
+const screen=
+ensureInternalScreen();
+
+
+if(
+$('boss-internal-title')
+){
+
+$('boss-internal-title')
+.textContent=
+'B.O.S.S CODE MAGAZINE';
+
+}
+
+
+const content=
+$('boss-internal-content');
+
+
+if(!content)
+return;
+
+
+content.innerHTML=`
+
+<p class="magazine-library-copy">
+Choose an issue to read inside B.O.S.S CODE GO.
+</p>
+
+<div
+id="boss-magazine-issue-grid"
+class="magazine-issue-grid"
+></div>
+
+`;
+
+
+const grid=
+$('boss-magazine-issue-grid');
+
+
+issues.forEach(
+issue=>{
+
+const card=
+document.createElement(
+'button'
+);
+
+
+card.type=
+'button';
+
+
+card.className=
+'magazine-issue-card';
+
+
+card.innerHTML=`
+
+<img
+src="${esc(
+issue.coverImageUrl||
+'images/magazine-logo.png'
+)}"
+alt="${esc(
+issue.title||
+'B.O.S.S CODE MAGAZINE'
+)}"
+>
+
+<div>
+
+<small>
+${esc(
+issue.issueLabel||
+'MAGAZINE ISSUE'
+)}
+</small>
+
+<strong>
+${esc(
+issue.title||
+'B.O.S.S CODE MAGAZINE'
+)}
+</strong>
+
+${issue.description
+?
+`
+<p>
+${esc(issue.description)}
+</p>
+`
+:
+''
+}
+
+</div>
+
+`;
+
+
+card.addEventListener(
+'click',
+()=>openMagazineIssue(
+issue
+)
+);
+
+
+grid.appendChild(
+card
+);
+
+}
+);
+
+
+trackPageOpen(
+'magazine',
+'B.O.S.S CODE MAGAZINE'
+);
+
+
+showScreen(
+screen
+);
+
+}
+
+
+/* =========================================================
+   MAGAZINE + CLOTHING HOME LINKS
+========================================================= */
+
 function setupInternalLinks(){
 
 const magazineButton=
@@ -8588,7 +12553,9 @@ q(
 );
 
 
-if(magazineButton){
+if(
+magazineButton
+){
 
 magazineButton.addEventListener(
 'click',
@@ -8599,11 +12566,11 @@ e.preventDefault();
 e.stopImmediatePropagation();
 
 
-openInternalWeb(
+openWithPromo(
 
-'B.O.S.S CODE MAGAZINE',
+'magazine',
 
-currentMagazineUrl
+openMagazineHub
 
 );
 
@@ -8614,7 +12581,9 @@ true
 }
 
 
-if(clothingButton){
+if(
+clothingButton
+){
 
 clothingButton.addEventListener(
 'click',
@@ -8625,6 +12594,18 @@ e.preventDefault();
 e.stopImmediatePropagation();
 
 
+openWithPromo(
+
+'the-code-clothing',
+
+()=>{
+
+trackPageOpen(
+'the-code-clothing',
+'THE CODE CLOTHING'
+);
+
+
 openInternalWeb(
 
 'THE CODE CLOTHING',
@@ -8633,11 +12614,147 @@ openInternalWeb(
 
 );
 
+}
+
+);
+
 },
 true
 );
 
 }
+
+}
+
+
+/* =========================================================
+   KEEP BOTTOM RETURN HOME
+   AT THE TRUE END OF EACH PAGE
+========================================================= */
+
+function repositionReturnHomeButtons(){
+
+for(
+const screenId of[
+
+'boss-bite-screen',
+
+'boss-code-tv-screen',
+
+'decision-makers-screen',
+
+'boss-checkin-screen',
+
+'music-screen',
+
+'contact-screen'
+
+]
+){
+
+const screen=
+$(screenId);
+
+
+if(!screen)
+continue;
+
+
+const button=
+screen.querySelector(
+'.boss-return-home-bottom'
+);
+
+
+if(!button)
+continue;
+
+
+const footer=
+screen.querySelector(
+'.boss-footer, .contact-footer'
+);
+
+
+if(footer){
+
+if(
+button.nextElementSibling!==
+footer
+){
+
+footer.insertAdjacentElement(
+'beforebegin',
+button
+);
+
+}
+
+}
+else if(
+screen.lastElementChild!==
+button
+){
+
+screen.appendChild(
+button
+);
+
+}
+
+}
+
+}
+
+
+let returnHomeRepositionTimer=
+0;
+
+
+const returnHomeObserver=
+new MutationObserver(
+()=>{
+
+clearTimeout(
+returnHomeRepositionTimer
+);
+
+
+returnHomeRepositionTimer=
+setTimeout(
+
+repositionReturnHomeButtons,
+
+40
+
+);
+
+}
+);
+
+
+for(
+const screen of
+qa(
+'.screen'
+)
+){
+
+returnHomeObserver.observe(
+
+screen,
+
+{
+
+childList:
+true,
+
+subtree:
+true
+
+}
+
+);
 
 }
 
@@ -8704,7 +12821,7 @@ api(
 ),
 
 api(
-'/decision-maker-resources'
+'/promo-ads'
 )
 
 ]);
@@ -8738,11 +12855,13 @@ sessionsResult,
 
 challengesResult,
 
-resourcesResult
+promoResult
 
 ]=
 results;
 
+
+/* VIDEOS */
 
 if(
 videosResult.status===
@@ -8753,15 +12872,21 @@ applyVideos(
 videosResult.value
 );
 
-}else{
+}
+else{
 
 console.warn(
+
 'Video sync failed',
+
 videosResult.reason
+
 );
 
 }
 
+
+/* MAGAZINES */
 
 if(
 magazinesResult.status===
@@ -8772,21 +12897,32 @@ applyMagazines(
 magazinesResult.value
 );
 
-}else{
+}
+else{
 
-currentMagazineUrl='';
+magazineIssues=[
+BUILT_MAGAZINE
+];
+
+
+currentMagazineUrl=
+BUILT_MAGAZINE.magazineUrl;
 
 }
 
+
+/* MUSIC */
 
 if(
 
 artistsResult.status===
 'fulfilled'
+
 &&
 
 releasesResult.status===
 'fulfilled'
+
 &&
 
 tracksResult.status===
@@ -8804,16 +12940,21 @@ tracksResult.value
 
 );
 
-}else{
+}
+else{
 
 artists=[];
 
-activeArtist=null;
+activeArtist=
+null;
+
 
 clearMusicArtistUI();
 
 }
 
+
+/* ARTIST GALLERY */
 
 if(
 artistGalleryResult.status===
@@ -8824,7 +12965,8 @@ applyArtistGallery(
 artistGalleryResult.value
 );
 
-}else{
+}
+else{
 
 artistGalleryRows=[];
 
@@ -8832,6 +12974,8 @@ renderArtistGallery();
 
 }
 
+
+/* ARTIST MUSIC VIDEOS */
 
 if(
 artistVideosResult.status===
@@ -8842,7 +12986,8 @@ applyArtistMusicVideos(
 artistVideosResult.value
 );
 
-}else{
+}
+else{
 
 artistMusicVideoRows=[];
 
@@ -8850,6 +12995,8 @@ renderArtistMusicVideos();
 
 }
 
+
+/* BOSS BITE GALLERY */
 
 if(
 galleryResult.status===
@@ -8860,7 +13007,8 @@ applyGallery(
 galleryResult.value
 );
 
-}else{
+}
+else{
 
 galleryPhotos=[];
 
@@ -8868,6 +13016,8 @@ buildGallery();
 
 }
 
+
+/* BOSS BITE LOCATIONS */
 
 if(
 locationsResult.status===
@@ -8878,17 +13028,24 @@ applyLocations(
 locationsResult.value
 );
 
-}else{
+}
+else{
 
 restaurants.splice(
+
 0,
+
 restaurants.length
+
 );
+
 
 buildRestaurantList();
 
 }
 
+
+/* DAILY DECISION */
 
 if(
 dailyResult.status===
@@ -8899,14 +13056,20 @@ applyDailyDecisions(
 dailyResult.value
 );
 
-}else{
+}
+else{
 
-daily=[];
+daily=[
+...builtDaily
+];
+
 
 renderDaily();
 
 }
 
+
+/* CHECK IN */
 
 if(
 checkinResult.status===
@@ -8917,7 +13080,8 @@ applyCheckinQuestions(
 checkinResult.value
 );
 
-}else{
+}
+else{
 
 for(
 const category of[
@@ -8935,12 +13099,19 @@ const category of[
 
 bank[
 category
-]=[];
+]=
+[
+...builtBank[
+category
+]
+];
 
 }
 
 }
 
+
+/* DECISION MAKER SESSIONS */
 
 if(
 sessionsResult.status===
@@ -8951,7 +13122,8 @@ applyDMSessions(
 sessionsResult.value
 );
 
-}else{
+}
+else{
 
 dmSessions=[];
 
@@ -8959,6 +13131,8 @@ buildDMSessions();
 
 }
 
+
+/* DECISION MAKER CHALLENGES */
 
 if(
 challengesResult.status===
@@ -8969,7 +13143,8 @@ applyDMChallenges(
 challengesResult.value
 );
 
-}else{
+}
+else{
 
 dmChallenges=[];
 
@@ -8978,22 +13153,29 @@ buildDMChallenges();
 }
 
 
+/* PROMOTIONAL ADS */
+
 if(
-resourcesResult.status===
+promoResult.status===
 'fulfilled'
 ){
 
-applyDMResources(
-resourcesResult.value
+applyPromoAds(
+promoResult.value
 );
 
-}else{
+}
+else{
 
-dmResources=[];
+promoAds=[];
 
-renderDMResources();
+promoAdsLoaded=
+true;
 
 }
+
+
+repositionReturnHomeButtons();
 
 
 const failed=
@@ -9004,19 +13186,120 @@ x.status===
 );
 
 
-if(failed.length){
+if(
+failed.length
+){
 
 console.warn(
+
 `${failed.length} B.O.S.S CODE GO cloud request(s) failed.`
+
 );
 
-}else{
+}
+else{
 
 console.info(
 'B.O.S.S CODE GO synced from Admin.'
 );
 
 }
+
+}
+
+
+/* =========================================================
+   OPTIONAL DEMOGRAPHICS PROMPT
+========================================================= */
+
+function scheduleDemographicsPrompt(
+attempt=0
+){
+
+setTimeout(
+()=>{
+
+let prompted=
+false;
+
+
+try{
+
+prompted=
+localStorage.getItem(
+DEMOGRAPHICS_PROMPT_KEY
+)===
+'1';
+
+}catch{}
+
+
+if(prompted)
+return;
+
+
+const dailyOpen=
+$('daily-decision-modal')
+?.classList
+.contains(
+'open'
+);
+
+
+const adOpen=
+$('boss-promo-ad-overlay')
+?.classList
+.contains(
+'open'
+);
+
+
+if(
+
+dailyOpen
+
+||
+
+adOpen
+
+||
+
+!home?.classList.contains(
+'active-screen'
+)
+
+){
+
+if(
+attempt<
+12
+){
+
+scheduleDemographicsPrompt(
+attempt+
+1
+);
+
+}
+
+
+return;
+
+}
+
+
+showDemographicsPromptIfAppropriate();
+
+},
+
+attempt===
+0
+?
+5000
+:
+2000
+
+);
 
 }
 
@@ -9030,28 +13313,42 @@ setupInternalLinks();
 
 renderDaily();
 
-
 renderArtists();
 
 renderTracks();
 
 renderReleases();
 
-
 renderDecisionMakers();
-
 
 buildEpisodes();
 
 loadFirstEpisode();
 
-
 buildTv();
-
 
 buildGallery();
 
 buildRestaurantList();
 
+repositionReturnHomeButtons();
+
+
+trackAnalytics(
+'app_visit',
+{
+
+section:
+'app',
+
+itemTitle:
+'B.O.S.S CODE GO APP OPEN'
+
+}
+);
+
 
 sync();
+
+
+scheduleDemographicsPrompt();

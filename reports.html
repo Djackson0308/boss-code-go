@@ -1,0 +1,2189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1.0"
+>
+
+<title>
+B.O.S.S CODE GO Reports
+</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+background:#000;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
+min-height:100vh;
+}
+
+button,
+input,
+select{
+font:inherit;
+}
+
+.wrap{
+width:min(1120px,calc(100% - 28px));
+margin:auto;
+padding:28px 0 70px;
+}
+
+.header{
+text-align:center;
+margin-bottom:26px;
+}
+
+.logo{
+width:min(390px,100%);
+}
+
+.gold{
+color:#F5C518;
+}
+
+.muted{
+color:#858585;
+}
+
+.card{
+background:linear-gradient(145deg,#111,#050505);
+border:1px solid #282828;
+border-radius:22px;
+padding:22px;
+margin-bottom:20px;
+}
+
+.head{
+display:flex;
+justify-content:space-between;
+gap:15px;
+align-items:flex-start;
+margin-bottom:18px;
+}
+
+.head small{
+color:#F5C518;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+}
+
+.head h2{
+font-size:25px;
+margin-top:5px;
+}
+
+.status{
+padding:8px 12px;
+border-radius:999px;
+background:#181818;
+color:#888;
+font-size:10px;
+font-weight:900;
+}
+
+.status.ok{
+background:#102518;
+color:#72e59a;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:14px;
+}
+
+.field label{
+display:block;
+font-size:10px;
+font-weight:900;
+margin-bottom:7px;
+}
+
+.input,
+.select{
+width:100%;
+border:1px solid #303030;
+border-radius:13px;
+background:#080808;
+color:#fff;
+outline:none;
+min-height:50px;
+padding:0 14px;
+}
+
+.actions{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-top:15px;
+}
+
+.btn{
+min-height:44px;
+padding:0 17px;
+border-radius:999px;
+font-size:10px;
+font-weight:900;
+cursor:pointer;
+}
+
+.red{
+background:#d40000;
+color:#fff;
+border:0;
+}
+
+.outline{
+background:transparent;
+color:#F5C518;
+border:1px solid #F5C518;
+}
+
+.gray{
+background:#161616;
+color:#fff;
+border:1px solid #333;
+}
+
+.summary{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:12px;
+margin:16px 0 20px;
+}
+
+.stat{
+background:#090909;
+border:1px solid #272727;
+border-radius:16px;
+padding:16px;
+}
+
+.stat strong{
+display:block;
+font-size:24px;
+line-height:1;
+color:#F5C518;
+margin-bottom:7px;
+}
+
+.stat span{
+display:block;
+color:#888;
+font-size:9px;
+font-weight:900;
+letter-spacing:.08em;
+}
+
+.columns{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:14px;
+}
+
+.box{
+background:#080808;
+border:1px solid #242424;
+border-radius:16px;
+padding:15px;
+}
+
+.box h3{
+font-size:13px;
+margin-bottom:12px;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+gap:12px;
+padding:9px 0;
+border-bottom:1px solid #1d1d1d;
+font-size:10px;
+}
+
+.row:last-child{
+border-bottom:0;
+}
+
+.row span{
+color:#aaa;
+}
+
+.row strong{
+color:#F5C518;
+text-align:right;
+}
+
+.client-card{
+border:1px solid #333;
+border-radius:18px;
+padding:18px;
+background:#080808;
+margin-bottom:16px;
+}
+
+.client-card h3{
+font-size:22px;
+margin-bottom:5px;
+}
+
+.client-card p{
+color:#aaa;
+font-size:11px;
+line-height:1.55;
+margin-top:4px;
+}
+
+.empty{
+color:#777;
+font-size:10px;
+}
+
+.message{
+min-height:18px;
+margin-top:10px;
+color:#F5C518;
+font-size:10px;
+font-weight:900;
+}
+
+.login{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.97);
+z-index:100;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.login.hide{
+display:none;
+}
+
+.loginbox{
+width:min(460px,100%);
+background:#0b0b0b;
+border:1px solid #292929;
+border-radius:22px;
+padding:24px;
+}
+
+.loginbox h2{
+font-size:26px;
+margin:7px 0;
+}
+
+.loginbox p{
+color:#888;
+font-size:11px;
+line-height:1.5;
+margin-bottom:18px;
+}
+
+.print-only{
+display:none;
+}
+
+@media(max-width:800px){
+
+.summary{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.columns{
+grid-template-columns:1fr;
+}
+
+}
+
+@media(max-width:700px){
+
+.grid{
+grid-template-columns:1fr;
+}
+
+.head{
+display:block;
+}
+
+.status{
+display:inline-block;
+margin-top:10px;
+}
+
+}
+
+@media(max-width:480px){
+
+.summary{
+grid-template-columns:1fr;
+}
+
+}
+
+@media print{
+
+body{
+background:#fff;
+color:#111;
+}
+
+.wrap{
+width:100%;
+padding:0 18px;
+}
+
+.header{
+margin-bottom:18px;
+}
+
+.logo{
+max-width:260px;
+}
+
+.card{
+background:#fff;
+border:0;
+border-radius:0;
+padding:0;
+margin:0;
+}
+
+.controls,
+.login,
+.no-print{
+display:none!important;
+}
+
+.print-only{
+display:block;
+}
+
+.summary{
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:8px;
+}
+
+.stat,
+.box,
+.client-card{
+background:#fff;
+border-color:#bbb;
+color:#111;
+break-inside:avoid;
+}
+
+.stat strong,
+.row strong,
+.gold{
+color:#111;
+}
+
+.stat span,
+.row span,
+.muted,
+.client-card p{
+color:#555;
+}
+
+.columns{
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.box{
+margin-bottom:8px;
+}
+
+.head{
+border-bottom:3px solid #F5C518;
+padding-bottom:10px;
+}
+
+.report-footer{
+display:block!important;
+border-top:1px solid #bbb;
+margin-top:20px;
+padding-top:8px;
+font-size:9px;
+color:#666;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+<div
+id="login"
+class="login"
+>
+
+<div class="loginbox">
+
+<div class="gold">
+PRIVATE REPORTING
+</div>
+
+<h2>
+B.O.S.S CODE GO REPORTS
+</h2>
+
+<p>
+Enter the same ADMIN_KEY used by your Admin page.
+</p>
+
+<div class="field">
+
+<label>
+ADMIN KEY
+</label>
+
+<input
+id="adminKey"
+class="input"
+type="password"
+autocomplete="off"
+>
+
+</div>
+
+<div class="actions">
+
+<button
+id="unlock"
+class="btn red"
+>
+UNLOCK REPORTS
+</button>
+
+</div>
+
+<div
+id="loginMsg"
+class="message"
+></div>
+
+</div>
+
+</div>
+
+
+<main class="wrap">
+
+
+<header class="header">
+
+<img
+class="logo"
+src="images/boss-code-go-logo.png"
+alt="B.O.S.S CODE GO"
+>
+
+<div class="gold">
+PRIVATE ANALYTICS REPORTING
+</div>
+
+<h1>
+REPORTS
+</h1>
+
+<p class="muted">
+Download numbers or create a client-ready advertising report.
+</p>
+
+</header>
+
+
+<section class="card controls">
+
+<div class="head">
+
+<div>
+
+<small>
+REPORT CONTROL
+</small>
+
+<h2>
+BUILD REPORT
+</h2>
+
+</div>
+
+<div
+id="status"
+class="status"
+>
+READY
+</div>
+
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+REPORTING PERIOD
+</label>
+
+<select
+id="days"
+class="select"
+>
+
+<option value="1">
+TODAY / LAST 24 HOURS
+</option>
+
+<option value="7">
+LAST 7 DAYS
+</option>
+
+<option
+value="30"
+selected
+>
+LAST 30 DAYS
+</option>
+
+<option value="90">
+LAST 90 DAYS
+</option>
+
+<option value="365">
+LAST 365 DAYS
+</option>
+
+</select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+REPORT SCOPE
+</label>
+
+<select
+id="scope"
+class="select"
+>
+
+<option value="all">
+FULL APP REPORT
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="refresh"
+class="btn outline"
+>
+REFRESH DATA
+</button>
+
+<button
+id="csv"
+class="btn outline"
+>
+DOWNLOAD CSV
+</button>
+
+<button
+id="print"
+class="btn red"
+>
+PRINT / SAVE PDF
+</button>
+
+<button
+id="lock"
+class="btn gray"
+>
+LOCK REPORTS
+</button>
+
+</div>
+
+<div
+id="msg"
+class="message"
+></div>
+
+</section>
+
+
+<section class="card">
+
+<div class="head">
+
+<div>
+
+<small id="reportKicker">
+LIVE DATA
+</small>
+
+<h2 id="reportTitle">
+APP ANALYTICS REPORT
+</h2>
+
+</div>
+
+<div
+id="periodLabel"
+class="status ok"
+>
+LAST 30 DAYS
+</div>
+
+</div>
+
+<p
+id="reportSubtitle"
+class="muted"
+style="font-size:11px;line-height:1.5;margin-bottom:14px"
+>
+B.O.S.S CODE GO app performance.
+</p>
+
+<div id="clientInfo"></div>
+
+<div
+id="summary"
+class="summary"
+></div>
+
+<div
+id="sections"
+class="columns"
+></div>
+
+<div class="print-only report-footer">
+
+B.O.S.S CODE MEDIA GROUP • Greatness is a Decision •
+
+<span id="printGenerated"></span>
+
+</div>
+
+</section>
+
+</main>
+
+
+<script>
+
+const API =
+"https://boss-code-go-api.dezthareason4ever.workers.dev";
+
+
+let KEY =
+sessionStorage.getItem(
+"boss-code-admin-key"
+) || "";
+
+
+let analytics =
+null;
+
+let ads = [];
+
+
+const $ =
+id =>
+document.getElementById(id);
+
+
+const esc =
+value =>
+String(value ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+
+const metric =
+value =>
+Number(value || 0)
+.toLocaleString();
+
+
+const avg =
+value =>
+Number.isFinite(
+Number(value)
+)
+? Number(value).toFixed(1)
+: "0.0";
+
+
+async function api(path){
+
+const headers =
+new Headers();
+
+
+if(KEY){
+
+headers.set(
+"X-Admin-Key",
+KEY
+);
+
+}
+
+
+const response =
+await fetch(
+API + path,
+{
+headers
+}
+);
+
+
+const data =
+await response
+.json()
+.catch(
+()=>({
+success:false,
+error:"Bad response"
+})
+);
+
+
+if(
+!response.ok ||
+data.success === false
+){
+
+throw Error(
+data.error ||
+"Request failed"
+);
+
+}
+
+
+return data;
+
+}
+
+
+function periodText(){
+
+return $("days")
+.options[
+$("days").selectedIndex
+]
+?.textContent
+?.trim() || "";
+
+}
+
+
+function selectedAd(){
+
+const value =
+$("scope").value;
+
+
+if(value === "all"){
+
+return null;
+
+}
+
+
+return ads.find(
+item =>
+String(item.id) ===
+String(value)
+) || null;
+
+}
+
+
+function selectedPerformance(ad){
+
+return (
+analytics?.ad_performance || []
+)
+.find(
+item =>
+String(item.ad_id) ===
+String(ad.id)
+) || {
+
+campaign_name:
+ad.campaign_name || "",
+
+impressions:0,
+
+clicks:0,
+
+ctr:0
+
+};
+
+}
+
+
+async function load(){
+
+try{
+
+$("status").textContent =
+"UPDATING";
+
+$("status")
+.classList
+.remove("ok");
+
+
+const [
+analyticsResult,
+adsResult
+] =
+await Promise.all([
+
+api(
+`/analytics/dashboard?days=${Number($("days").value || 30)}`
+),
+
+api(
+"/promo-ads?all=1"
+)
+
+]);
+
+
+analytics =
+analyticsResult.data || {};
+
+ads =
+adsResult.data || [];
+
+
+fillScope();
+
+render();
+
+
+$("status").textContent =
+"LIVE";
+
+$("status")
+.classList
+.add("ok");
+
+
+$("msg").textContent =
+"REPORT DATA UPDATED.";
+
+
+setTimeout(
+()=>{
+
+$("msg").textContent =
+"";
+
+},
+1200
+);
+
+}
+catch(error){
+
+$("status").textContent =
+"ERROR";
+
+$("status")
+.classList
+.remove("ok");
+
+$("msg").textContent =
+error.message;
+
+}
+
+}
+
+
+function fillScope(){
+
+const current =
+$("scope").value || "all";
+
+
+$("scope").innerHTML =
+
+'<option value="all">FULL APP REPORT</option>' +
+
+ads.map(item=>`
+
+<option value="${Number(item.id)}">
+
+${esc(
+item.campaign_name ||
+"PROMOTIONAL CAMPAIGN"
+)}
+
+${item.advertiser_name
+? ` — ${esc(item.advertiser_name)}`
+: ""
+}
+
+</option>
+
+`).join("");
+
+
+if(
+current !== "all" &&
+ads.some(
+item =>
+String(item.id) ===
+String(current)
+)
+){
+
+$("scope").value =
+current;
+
+}
+else{
+
+$("scope").value =
+"all";
+
+}
+
+}
+
+
+function stat(
+value,
+label
+){
+
+return `
+
+<div class="stat">
+
+<strong>
+${value}
+</strong>
+
+<span>
+${label}
+</span>
+
+</div>
+
+`;
+
+}
+
+
+function rows(
+title,
+items,
+label,
+value
+){
+
+return `
+
+<div class="box">
+
+<h3>
+${esc(title)}
+</h3>
+
+${items?.length
+
+? items.map(item=>`
+
+<div class="row">
+
+<span>
+${label(item)}
+</span>
+
+<strong>
+${value(item)}
+</strong>
+
+</div>
+
+`).join("")
+
+: '<div class="empty">NO DATA YET.</div>'
+
+}
+
+</div>
+
+`;
+
+}
+
+
+function render(){
+
+$("periodLabel").textContent =
+periodText();
+
+
+$("printGenerated").textContent =
+`Generated ${new Date().toLocaleString()}`;
+
+
+const ad =
+selectedAd();
+
+
+if(ad){
+
+renderCampaign(ad);
+
+return;
+
+}
+
+
+renderFull();
+
+}
+
+
+function renderFull(){
+
+const today =
+analytics?.today || {};
+
+
+const summary =
+analytics?.summary || {};
+
+
+const ctr =
+Number(
+summary.ad_impressions || 0
+) > 0
+
+? (
+Number(
+summary.ad_clicks || 0
+) /
+
+Number(
+summary.ad_impressions || 0
+) *
+
+100
+).toFixed(1)
+
+: "0.0";
+
+
+$("reportKicker").textContent =
+"LIVE DATA";
+
+
+$("reportTitle").textContent =
+"APP ANALYTICS REPORT";
+
+
+$("reportSubtitle").textContent =
+"B.O.S.S CODE GO app performance.";
+
+
+$("clientInfo").innerHTML =
+"";
+
+
+$("summary").innerHTML =
+
+stat(
+metric(today.visitors_today),
+"VISITORS TODAY"
+) +
+
+stat(
+metric(today.visits_today),
+"APP VISITS TODAY"
+) +
+
+stat(
+metric(summary.qualified_song_listens),
+"QUALIFIED SONG LISTENS"
+) +
+
+stat(
+metric(summary.song_starts),
+"SONG STARTS"
+) +
+
+stat(
+metric(summary.checkin_completions),
+"CHECK INS COMPLETED"
+) +
+
+stat(
+avg(summary.average_checkin_score),
+"AVERAGE CHECK IN SCORE"
+) +
+
+stat(
+metric(summary.ad_impressions),
+"AD IMPRESSIONS"
+) +
+
+stat(
+`${ctr}%`,
+"AD CLICK THROUGH RATE"
+);
+
+
+$("sections").innerHTML =
+
+rows(
+"TOP APP SECTIONS",
+analytics?.top_sections,
+item =>
+esc(
+item.section ||
+"UNKNOWN"
+),
+item =>
+`${metric(item.opens)} OPENS`
+) +
+
+rows(
+"TOP BUTTON CLICKS",
+analytics?.top_buttons,
+item =>
+`
+${esc(item.item_title || "BUTTON")}
+<br>
+<span class="muted">
+${esc(item.section || "")}
+</span>
+`,
+item =>
+`${metric(item.clicks)} CLICKS`
+) +
+
+rows(
+"TOP SONGS",
+analytics?.top_songs,
+item =>
+esc(
+item.item_title ||
+"SONG"
+),
+item =>
+`${metric(item.qualified_listens)} LISTENS / ${metric(item.starts)} STARTS`
+) +
+
+rows(
+"AD PERFORMANCE",
+analytics?.ad_performance,
+item =>
+esc(
+item.campaign_name ||
+"CAMPAIGN"
+),
+item =>
+`${metric(item.impressions)} IMP / ${metric(item.clicks)} CLICKS / ${avg(item.ctr)}%`
+) +
+
+rows(
+"VISITOR LOCATIONS",
+analytics?.locations,
+item =>
+esc(
+[
+item.city,
+item.region,
+item.country
+]
+.filter(Boolean)
+.join(", ") ||
+"UNKNOWN"
+),
+item =>
+`${metric(item.visitors)} VISITORS`
+) +
+
+rows(
+"AGE RANGE",
+analytics?.age_ranges,
+item =>
+esc(
+String(
+item.age_range || ""
+)
+.replaceAll("-"," ")
+.toUpperCase()
+),
+item =>
+metric(item.visitors)
+) +
+
+rows(
+"GENDER",
+analytics?.genders,
+item =>
+esc(
+String(
+item.gender || ""
+)
+.replaceAll("-"," ")
+.toUpperCase()
+),
+item =>
+metric(item.visitors)
+) +
+
+rows(
+"B.O.S.S CHECK IN SCORES",
+analytics?.checkin_score_ranges,
+item =>
+`${esc(item.score_range || "")} SCORE`,
+item =>
+`${metric(item.checkins)} CHECK INS`
+);
+
+}
+
+
+function renderCampaign(ad){
+
+const performance =
+selectedPerformance(ad);
+
+
+$("reportKicker").textContent =
+"CLIENT REPORT";
+
+
+$("reportTitle").textContent =
+"AD PERFORMANCE REPORT";
+
+
+$("reportSubtitle").textContent =
+"B.O.S.S CODE GO promotional campaign results.";
+
+
+$("clientInfo").innerHTML = `
+
+<div class="client-card">
+
+<h3>
+${esc(
+ad.campaign_name ||
+"PROMOTIONAL CAMPAIGN"
+)}
+</h3>
+
+<p>
+<strong>Advertiser:</strong>
+${esc(ad.advertiser_name || "")}
+</p>
+
+<p>
+<strong>Placement:</strong>
+${esc(
+String(
+ad.target_section || "all"
+)
+.replaceAll("-"," ")
+.toUpperCase()
+)}
+</p>
+
+<p>
+<strong>Media:</strong>
+${esc(
+String(
+ad.media_type || "image"
+)
+.toUpperCase()
+)}
+</p>
+
+${ad.headline
+? `
+<p>
+<strong>Headline:</strong>
+${esc(ad.headline)}
+</p>
+`
+: ""
+}
+
+${ad.start_at
+? `
+<p>
+<strong>Campaign Start:</strong>
+${esc(ad.start_at)}
+</p>
+`
+: ""
+}
+
+${ad.end_at
+? `
+<p>
+<strong>Campaign End:</strong>
+${esc(ad.end_at)}
+</p>
+`
+: ""
+}
+
+</div>
+
+`;
+
+
+$("summary").innerHTML =
+
+stat(
+metric(performance.impressions),
+"IMPRESSIONS"
+) +
+
+stat(
+metric(performance.clicks),
+"CLICKS"
+) +
+
+stat(
+`${avg(performance.ctr)}%`,
+"CLICK THROUGH RATE"
+) +
+
+stat(
+esc(
+ad.cta_text ||
+"LEARN MORE"
+),
+"CALL TO ACTION"
+);
+
+
+$("sections").innerHTML = `
+
+<div
+class="box"
+style="grid-column:1/-1"
+>
+
+<h3>
+CAMPAIGN SUMMARY
+</h3>
+
+<div class="row">
+
+<span>
+Campaign
+</span>
+
+<strong>
+${esc(ad.campaign_name || "")}
+</strong>
+
+</div>
+
+<div class="row">
+
+<span>
+Advertiser
+</span>
+
+<strong>
+${esc(ad.advertiser_name || "")}
+</strong>
+
+</div>
+
+<div class="row">
+
+<span>
+Trigger Section
+</span>
+
+<strong>
+
+${esc(
+String(
+ad.target_section || "all"
+)
+.replaceAll("-"," ")
+.toUpperCase()
+)}
+
+</strong>
+
+</div>
+
+<div class="row">
+
+<span>
+Impressions
+</span>
+
+<strong>
+${metric(performance.impressions)}
+</strong>
+
+</div>
+
+<div class="row">
+
+<span>
+Clicks
+</span>
+
+<strong>
+${metric(performance.clicks)}
+</strong>
+
+</div>
+
+<div class="row">
+
+<span>
+CTR
+</span>
+
+<strong>
+${avg(performance.ctr)}%
+</strong>
+
+</div>
+
+</div>
+
+`;
+
+}
+
+
+function cell(value){
+
+return `"${String(value ?? "")
+.replace(/"/g,'""')}"`;
+
+}
+
+
+function saveCsv(
+name,
+rows
+){
+
+const csv =
+rows.map(
+row =>
+row.map(cell).join(",")
+)
+.join("\r\n");
+
+
+const blob =
+new Blob(
+[
+"\uFEFF" + csv
+],
+{
+type:
+"text/csv;charset=utf-8;"
+}
+);
+
+
+const url =
+URL.createObjectURL(blob);
+
+
+const a =
+document.createElement("a");
+
+
+a.href =
+url;
+
+a.download =
+name;
+
+
+document.body
+.appendChild(a);
+
+
+a.click();
+
+a.remove();
+
+
+setTimeout(
+()=>{
+
+URL.revokeObjectURL(url);
+
+},
+1000
+);
+
+}
+
+
+function safe(value){
+
+return String(
+value ||
+"report"
+)
+.toLowerCase()
+.replace(
+/[^a-z0-9]+/g,
+"-"
+)
+.replace(
+/^-+|-+$/g,
+""
+) ||
+"report";
+
+}
+
+
+function downloadCsv(){
+
+if(!analytics){
+
+$("msg").textContent =
+"LOAD DATA FIRST.";
+
+return;
+
+}
+
+
+const ad =
+selectedAd();
+
+
+if(ad){
+
+const performance =
+selectedPerformance(ad);
+
+
+saveCsv(
+
+`boss-code-go-${safe(ad.campaign_name)}-${$("days").value}-day-report.csv`,
+
+[
+
+[
+"B.O.S.S CODE GO CLIENT AD PERFORMANCE REPORT"
+],
+
+[
+"Reporting Period",
+periodText()
+],
+
+[
+"Generated",
+new Date().toLocaleString()
+],
+
+[],
+
+[
+"Campaign",
+ad.campaign_name || ""
+],
+
+[
+"Advertiser",
+ad.advertiser_name || ""
+],
+
+[
+"Trigger Section",
+ad.target_section || "all"
+],
+
+[
+"Media Type",
+ad.media_type || "image"
+],
+
+[
+"Headline",
+ad.headline || ""
+],
+
+[
+"CTA",
+ad.cta_text || ""
+],
+
+[
+"Campaign Start",
+ad.start_at || ""
+],
+
+[
+"Campaign End",
+ad.end_at || ""
+],
+
+[],
+
+[
+"Metric",
+"Value"
+],
+
+[
+"Impressions",
+performance.impressions || 0
+],
+
+[
+"Clicks",
+performance.clicks || 0
+],
+
+[
+"Click Through Rate",
+`${avg(performance.ctr)}%`
+]
+
+]
+
+);
+
+
+$("msg").textContent =
+"CLIENT CSV DOWNLOADED.";
+
+return;
+
+}
+
+
+const today =
+analytics.today || {};
+
+
+const summary =
+analytics.summary || {};
+
+
+const report = [
+
+[
+"B.O.S.S CODE GO ANALYTICS REPORT"
+],
+
+[
+"Reporting Period",
+periodText()
+],
+
+[
+"Generated",
+new Date().toLocaleString()
+],
+
+[],
+
+[
+"SUMMARY"
+],
+
+[
+"Metric",
+"Value"
+],
+
+[
+"Visitors Today",
+today.visitors_today || 0
+],
+
+[
+"App Visits Today",
+today.visits_today || 0
+],
+
+[
+"Unique Visitors",
+summary.unique_visitors || 0
+],
+
+[
+"Total Visits",
+summary.total_visits || 0
+],
+
+[
+"Total Events",
+summary.total_events || 0
+],
+
+[
+"Song Starts",
+summary.song_starts || 0
+],
+
+[
+"Qualified Song Listens",
+summary.qualified_song_listens || 0
+],
+
+[
+"Check In Starts",
+summary.checkin_starts || 0
+],
+
+[
+"Check Ins Completed",
+summary.checkin_completions || 0
+],
+
+[
+"Average Check In Score",
+avg(summary.average_checkin_score)
+],
+
+[
+"Ad Impressions",
+summary.ad_impressions || 0
+],
+
+[
+"Ad Clicks",
+summary.ad_clicks || 0
+]
+
+];
+
+
+report.push(
+[],
+[
+"TOP APP SECTIONS"
+],
+[
+"Section",
+"Opens",
+"Unique Visitors"
+]
+);
+
+
+(
+analytics.top_sections || []
+)
+.forEach(
+item =>
+report.push([
+item.section || "",
+item.opens || 0,
+item.unique_visitors || 0
+])
+);
+
+
+report.push(
+[],
+[
+"TOP BUTTON CLICKS"
+],
+[
+"Button",
+"Section",
+"Clicks"
+]
+);
+
+
+(
+analytics.top_buttons || []
+)
+.forEach(
+item =>
+report.push([
+item.item_title || "",
+item.section || "",
+item.clicks || 0
+])
+);
+
+
+report.push(
+[],
+[
+"TOP SONGS"
+],
+[
+"Song",
+"Starts",
+"Qualified Listens",
+"Unique Listeners"
+]
+);
+
+
+(
+analytics.top_songs || []
+)
+.forEach(
+item =>
+report.push([
+item.item_title || "",
+item.starts || 0,
+item.qualified_listens || 0,
+item.unique_listeners || 0
+])
+);
+
+
+report.push(
+[],
+[
+"AD PERFORMANCE"
+],
+[
+"Campaign",
+"Impressions",
+"Clicks",
+"CTR"
+]
+);
+
+
+(
+analytics.ad_performance || []
+)
+.forEach(
+item =>
+report.push([
+item.campaign_name || "",
+item.impressions || 0,
+item.clicks || 0,
+`${avg(item.ctr)}%`
+])
+);
+
+
+report.push(
+[],
+[
+"VISITOR LOCATIONS"
+],
+[
+"City",
+"Region",
+"Country",
+"Visitors"
+]
+);
+
+
+(
+analytics.locations || []
+)
+.forEach(
+item =>
+report.push([
+item.city || "",
+item.region || "",
+item.country || "",
+item.visitors || 0
+])
+);
+
+
+report.push(
+[],
+[
+"AGE RANGE"
+],
+[
+"Age Range",
+"Visitors"
+]
+);
+
+
+(
+analytics.age_ranges || []
+)
+.forEach(
+item =>
+report.push([
+item.age_range || "",
+item.visitors || 0
+])
+);
+
+
+report.push(
+[],
+[
+"GENDER"
+],
+[
+"Gender",
+"Visitors"
+]
+);
+
+
+(
+analytics.genders || []
+)
+.forEach(
+item =>
+report.push([
+item.gender || "",
+item.visitors || 0
+])
+);
+
+
+report.push(
+[],
+[
+"CHECK IN SCORES"
+],
+[
+"Score Range",
+"Check Ins"
+]
+);
+
+
+(
+analytics.checkin_score_ranges || []
+)
+.forEach(
+item =>
+report.push([
+item.score_range || "",
+item.checkins || 0
+])
+);
+
+
+saveCsv(
+
+`boss-code-go-analytics-${$("days").value}-day-report.csv`,
+
+report
+
+);
+
+
+$("msg").textContent =
+"ANALYTICS CSV DOWNLOADED.";
+
+}
+
+
+async function unlock(){
+
+KEY =
+$("adminKey")
+.value
+.trim();
+
+
+if(!KEY){
+
+$("loginMsg").textContent =
+"ENTER YOUR ADMIN KEY.";
+
+return;
+
+}
+
+
+sessionStorage.setItem(
+"boss-code-admin-key",
+KEY
+);
+
+
+try{
+
+await api(
+"/videos?all=1"
+);
+
+
+$("login")
+.classList
+.add("hide");
+
+
+await load();
+
+}
+catch(error){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("loginMsg").textContent =
+"COULD NOT CONNECT.";
+
+}
+
+}
+
+
+function lock(){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("login")
+.classList
+.remove("hide");
+
+}
+
+
+$("unlock").onclick =
+unlock;
+
+
+$("adminKey").onkeydown =
+event=>{
+
+if(
+event.key === "Enter"
+){
+
+unlock();
+
+}
+
+};
+
+
+$("refresh").onclick =
+load;
+
+
+$("days").onchange =
+load;
+
+
+$("scope").onchange =
+render;
+
+
+$("csv").onclick =
+downloadCsv;
+
+
+$("print").onclick =
+()=>window.print();
+
+
+$("lock").onclick =
+lock;
+
+
+if(KEY){
+
+$("adminKey").value =
+KEY;
+
+
+api(
+"/videos?all=1"
+)
+.then(()=>{
+
+$("login")
+.classList
+.add("hide");
+
+load();
+
+})
+.catch(()=>{
+
+KEY = "";
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+});
+
+}
+
+</script>
+
+</body>
+</html>

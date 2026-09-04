@@ -451,6 +451,122 @@ grid-template-columns:1fr;
 
 }
 
+
+/* =========================================================
+   ANALYTICS + PROMOTIONAL ADS
+   ========================================================= */
+
+.analytics-grid{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:12px;
+margin:16px 0 20px;
+}
+
+.analytics-stat{
+background:#090909;
+border:1px solid #272727;
+border-radius:16px;
+padding:16px;
+}
+
+.analytics-stat strong{
+display:block;
+font-size:24px;
+line-height:1;
+color:#F5C518;
+margin-bottom:7px;
+}
+
+.analytics-stat span{
+display:block;
+color:#888;
+font-size:9px;
+font-weight:900;
+letter-spacing:.08em;
+}
+
+.analytics-columns{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:14px;
+margin-top:15px;
+}
+
+.analytics-box{
+background:#080808;
+border:1px solid #242424;
+border-radius:16px;
+padding:15px;
+}
+
+.analytics-box h3{
+font-size:13px;
+margin-bottom:12px;
+color:#fff;
+}
+
+.analytics-row{
+display:flex;
+justify-content:space-between;
+gap:12px;
+padding:9px 0;
+border-bottom:1px solid #1d1d1d;
+font-size:10px;
+}
+
+.analytics-row:last-child{
+border-bottom:0;
+}
+
+.analytics-row span{
+color:#aaa;
+}
+
+.analytics-row strong{
+color:#F5C518;
+text-align:right;
+}
+
+.ad-preview{
+width:100%;
+aspect-ratio:16/9;
+border-radius:11px;
+overflow:hidden;
+background:#111;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.ad-preview img,
+.ad-preview video{
+width:100%;
+height:100%;
+display:block;
+object-fit:cover;
+}
+
+@media(max-width:800px){
+
+.analytics-grid{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.analytics-columns{
+grid-template-columns:1fr;
+}
+
+}
+
+@media(max-width:480px){
+
+.analytics-grid{
+grid-template-columns:1fr;
+}
+
+}
+
 </style>
 
 </head>
@@ -668,7 +784,10 @@ placeholder="Thumbnail shown when the live broadcast is off air"
 style="margin-top:8px"
 >
 
-<p class="section-note" style="margin-top:8px;margin-bottom:0">
+<p
+class="section-note"
+style="margin-top:8px;margin-bottom:0"
+>
 This image remains visible when the live stream is turned off, so viewers never see YouTube's Video Unavailable screen.
 </p>
 
@@ -1101,6 +1220,8 @@ type="checkbox"
 </div>
 
 </div>
+
+
 <div class="actions">
 
 <button
@@ -2003,8 +2124,6 @@ class="list"
 </div>
 
 </section>
-
-
 <!-- ===================================================== -->
 <!-- MUSIC MANAGER -->
 <!-- ===================================================== -->
@@ -2012,21 +2131,11 @@ class="list"
 <section class="card">
 
 <div class="head">
-
 <div>
-
-<small>
-MUSIC
-</small>
-
-<h2>
-MUSIC MANAGER
-</h2>
-
+<small>MUSIC</small>
+<h2>MUSIC MANAGER</h2>
 </div>
-
 </div>
-
 
 <div class="tabs">
 
@@ -2066,6 +2175,8 @@ MUSIC VIDEOS
 </button>
 
 </div>
+
+
 <!-- ARTISTS -->
 
 <div
@@ -2608,7 +2719,6 @@ Choose an artist, upload photos, and control exactly which images appear in that
 <button id="artistGallerySave" class="btn red">ADD PHOTO</button>
 <button id="artistGalleryCancel" class="btn outline" hidden>CANCEL EDIT</button>
 </div>
-
 <div id="artistGalleryMsg" class="message"></div>
 <div id="artistGalleryList" class="list"></div>
 
@@ -2645,12 +2755,10 @@ Add YouTube music videos to each artist. The app will only show videos that are 
 
 <div class="field full">
 <label>OPTIONAL CUSTOM THUMBNAIL</label>
-
 <div class="file-row">
 <input id="artistVideoThumbFile" class="input" type="file" accept="image/*">
 <button id="artistVideoThumbUpload" class="btn outline" type="button">UPLOAD THUMBNAIL</button>
 </div>
-
 <input id="artistVideoThumb" class="input" type="url" placeholder="Leave blank to use the YouTube thumbnail in the app" style="margin-top:8px">
 </div>
 
@@ -2670,13 +2778,14 @@ Add YouTube music videos to each artist. The app will only show videos that are 
 <button id="artistVideoSave" class="btn red">ADD MUSIC VIDEO</button>
 <button id="artistVideoCancel" class="btn outline" hidden>CANCEL EDIT</button>
 </div>
-
 <div id="artistVideoMsg" class="message"></div>
 <div id="artistVideoList" class="list"></div>
 
 </div>
 
 </section>
+
+
 <!-- ===================================================== -->
 <!-- MAGAZINE MANAGER -->
 <!-- ===================================================== -->
@@ -3177,6 +3286,8 @@ class="list"
 ></div>
 
 </section>
+
+
 <!-- ===================================================== -->
 <!-- DAILY DECISION -->
 <!-- ===================================================== -->
@@ -3431,6 +3542,364 @@ class="list"
 </section>
 
 
+
+<!-- ===================================================== -->
+<!-- PROMOTIONAL ADS -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+
+<div>
+<small>ADVERTISING</small>
+<h2>PROMOTIONAL AD MANAGER</h2>
+</div>
+
+<div
+id="promoAdCount"
+class="status"
+>
+0 ACTIVE
+</div>
+
+</div>
+
+<p class="section-note">
+Create photo or video ads and choose which app section triggers them. Users can close the ad and continue into the selected section.
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>CAMPAIGN NAME</label>
+<input
+id="promoCampaign"
+class="input"
+placeholder="Example: House of Spudz September Campaign"
+>
+</div>
+
+<div class="field">
+<label>ADVERTISER NAME</label>
+<input
+id="promoAdvertiser"
+class="input"
+placeholder="Business or sponsor name"
+>
+</div>
+
+<div class="field">
+<label>MEDIA TYPE</label>
+<select
+id="promoMediaType"
+class="select"
+>
+<option value="image">PHOTO AD</option>
+<option value="video">VIDEO AD</option>
+</select>
+</div>
+
+<div class="field">
+<label>TRIGGER SECTION</label>
+<select
+id="promoTarget"
+class="select"
+>
+<option value="all">ALL SECTIONS</option>
+<option value="magazine">MAGAZINE</option>
+<option value="boss-code-tv">B.O.S.S CODE TV</option>
+<option value="boss-bite">THE BOSS BITE</option>
+<option value="decision-makers">DECISION MAKERS</option>
+<option value="music">MUSIC</option>
+<option value="the-code-clothing">THE CODE CLOTHING</option>
+<option value="boss-checkin">B.O.S.S CHECK IN</option>
+</select>
+</div>
+
+<div class="field full">
+<label>PHOTO / VIDEO URL</label>
+
+<div class="file-row">
+
+<input
+id="promoMediaUrl"
+class="input"
+type="url"
+placeholder="Upload below or paste a media URL"
+>
+
+<button
+id="promoMediaUpload"
+class="btn outline"
+type="button"
+>
+UPLOAD MEDIA
+</button>
+
+</div>
+
+<input
+id="promoMediaFile"
+type="file"
+accept="image/*,video/*"
+style="margin-top:8px;width:100%;"
+>
+
+</div>
+
+<div class="field">
+<label>HEADLINE</label>
+<input
+id="promoHeadline"
+class="input"
+>
+</div>
+
+<div class="field">
+<label>BUTTON TEXT</label>
+<input
+id="promoCta"
+class="input"
+value="LEARN MORE"
+>
+</div>
+
+<div class="field full">
+<label>DESCRIPTION</label>
+<textarea
+id="promoDescription"
+class="textarea"
+></textarea>
+</div>
+
+<div class="field full">
+<label>CLICK LINK</label>
+<input
+id="promoLink"
+class="input"
+type="url"
+placeholder="https://..."
+>
+</div>
+
+<div class="field">
+<label>HOW OFTEN TO SHOW</label>
+<select
+id="promoFrequency"
+class="select"
+>
+<option value="once_per_visit">ONCE PER APP VISIT</option>
+<option value="once_per_day">ONCE PER DAY</option>
+<option value="every_time">EVERY TIME SECTION OPENS</option>
+</select>
+</div>
+
+<div class="field">
+<label>PRIORITY</label>
+<input
+id="promoPriority"
+class="input"
+type="number"
+value="0"
+>
+</div>
+
+<div class="field">
+<label>START DATE / TIME</label>
+<input
+id="promoStart"
+class="input"
+type="datetime-local"
+>
+</div>
+
+<div class="field">
+<label>END DATE / TIME</label>
+<input
+id="promoEnd"
+class="input"
+type="datetime-local"
+>
+</div>
+
+</div>
+
+<div class="toggle-row">
+
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Allow this campaign to appear in the app.</em>
+</div>
+<label class="switch">
+<input
+id="promoPublished"
+type="checkbox"
+checked
+>
+<span class="slider"></span>
+</label>
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+id="promoSave"
+class="btn red"
+>
+ADD PROMOTIONAL AD
+</button>
+
+<button
+id="promoCancel"
+class="btn outline"
+hidden
+>
+CANCEL EDIT
+</button>
+
+</div>
+
+<div
+id="promoMsg"
+class="message"
+></div>
+
+<div
+id="promoList"
+class="list"
+></div>
+
+</section>
+
+
+<!-- ===================================================== -->
+<!-- ANALYTICS -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+
+<div>
+<small>LIVE DATA</small>
+<h2>APP ANALYTICS</h2>
+</div>
+
+<div
+id="analyticsStatus"
+class="status"
+>
+LIVE
+</div>
+
+</div>
+
+<p class="section-note">
+Track visitors, button activity, music listening, B.O.S.S CHECK IN results, advertising performance and approximate visitor location. Raw IP addresses are not stored.
+</p>
+
+<div class="grid">
+
+<div class="field">
+<label>REPORTING PERIOD</label>
+
+<select
+id="analyticsDays"
+class="select"
+>
+<option value="1">TODAY / LAST 24 HOURS</option>
+<option value="7">LAST 7 DAYS</option>
+<option value="30" selected>LAST 30 DAYS</option>
+<option value="90">LAST 90 DAYS</option>
+<option value="365">LAST 365 DAYS</option>
+</select>
+
+</div>
+
+<div class="field">
+<label>UPDATE DATA</label>
+
+<button
+id="analyticsRefresh"
+class="btn outline"
+style="width:100%;min-height:50px;"
+>
+REFRESH ANALYTICS
+</button>
+
+</div>
+
+</div>
+
+<div
+id="analyticsSummary"
+class="analytics-grid"
+></div>
+
+<div class="analytics-columns">
+
+<div class="analytics-box">
+<h3>TOP APP SECTIONS</h3>
+<div id="analyticsSections"></div>
+</div>
+
+<div class="analytics-box">
+<h3>TOP BUTTON CLICKS</h3>
+<div id="analyticsButtons"></div>
+</div>
+
+<div class="analytics-box">
+<h3>TOP SONGS</h3>
+<div id="analyticsSongs"></div>
+</div>
+
+<div class="analytics-box">
+<h3>AD PERFORMANCE</h3>
+<div id="analyticsAds"></div>
+</div>
+
+<div class="analytics-box">
+<h3>VISITOR LOCATIONS</h3>
+<div id="analyticsLocations"></div>
+</div>
+
+<div class="analytics-box">
+<h3>AGE RANGE</h3>
+<div id="analyticsAges"></div>
+</div>
+
+<div class="analytics-box">
+<h3>GENDER</h3>
+<div id="analyticsGenders"></div>
+</div>
+
+<div class="analytics-box">
+<h3>B.O.S.S CHECK IN SCORES</h3>
+<div id="analyticsScores"></div>
+</div>
+
+</div>
+
+<div
+class="analytics-box"
+style="margin-top:14px;"
+>
+<h3>RECENT ACTIVITY</h3>
+<div id="analyticsRecent"></div>
+</div>
+
+<div
+id="analyticsMsg"
+class="message"
+></div>
+
+</section>
+
+
 <!-- ===================================================== -->
 <!-- CONTACT INQUIRIES -->
 <!-- ===================================================== -->
@@ -3482,8 +3951,6 @@ class="list"
 
 
 </main>
-
-
 <script>
 
 const API =
@@ -3504,6 +3971,8 @@ let locations = [];
 let dailyDecisions = [];
 let checkinQuestions = [];
 let contacts = [];
+let promoAds = [];
+let analyticsData = null;
 
 let dmSessions = [];
 let dmChallenges = [];
@@ -3530,7 +3999,8 @@ checkin:null,
 
 session:null,
 challenge:null,
-resource:null
+resource:null,
+promoAd:null
 
 };
 
@@ -3866,7 +4336,9 @@ api("/checkin-questions?all=1"),
 api("/decision-maker-sessions?all=1"),
 api("/decision-maker-challenges?all=1"),
 api("/decision-maker-resources?all=1"),
-api("/contact-inquiries")
+api("/contact-inquiries"),
+api("/promo-ads?all=1"),
+api(`/analytics/dashboard?days=${Number($("analyticsDays")?.value || 30)}`)
 
 ]);
 
@@ -3885,6 +4357,8 @@ dmSessions = results[11].data || [];
 dmChallenges = results[12].data || [];
 dmResources = results[13].data || [];
 contacts = results[14].data || [];
+promoAds = results[15].data || [];
+analyticsData = results[16].data || null;
 
 renderAll();
 
@@ -3939,6 +4413,8 @@ renderChallenges();
 renderResources();
 
 renderContacts();
+renderPromoAds();
+renderAnalytics();
 
 }
 
@@ -4538,6 +5014,8 @@ alert(error.message);
 }
 
 }
+
+
 /* ===================================================== */
 /* DECISION MAKER SESSIONS */
 /* ===================================================== */
@@ -5137,6 +5615,8 @@ alert(error.message);
 }
 
 }
+
+
 /* ===================================================== */
 /* DECISION MAKER RESOURCES */
 /* ===================================================== */
@@ -5519,8 +5999,6 @@ $("resourceMsg").textContent =
 }
 
 }
-
-
 /* ===================================================== */
 /* ARTISTS */
 /* ===================================================== */
@@ -5789,12 +6267,7 @@ ${esc(item.name || "")}
 "artistGalleryArtist",
 "artistVideoArtist"
 ].forEach(id=>{
-
-if($(id)){
-$(id).innerHTML =
-options;
-}
-
+if($(id)) $(id).innerHTML = options;
 });
 
 }
@@ -5806,11 +6279,9 @@ options;
 
 function renderArtistGallery(){
 
-const list =
-$("artistGalleryList");
+const list = $("artistGalleryList");
 
 if(!list) return;
-
 
 if(!artistGallery.length){
 
@@ -5821,28 +6292,23 @@ return;
 
 }
 
-
 list.innerHTML =
 artistGallery.map(item=>{
 
 const artist =
 artists.find(
-x =>
-Number(x.id) ===
-Number(item.artist_id)
+x=>Number(x.id)===Number(item.artist_id)
 );
 
-
 return `
+
 <div class="item">
 
 <div>
-
 ${item.image_url
 ? `<img class="thumb" src="${esc(item.image_url)}" alt="">`
 : `<div class="thumb"></div>`
 }
-
 </div>
 
 <div>
@@ -5853,11 +6319,11 @@ ${esc(artist?.name || "Artist Photo")}
 
 <div class="badges">
 
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+<span class="badge ${Number(item.published)===1 ? "pub" : "draft"}">
+${Number(item.published)===1 ? "PUBLISHED" : "DRAFT"}
 </span>
 
-${Number(item.featured) === 1
+${Number(item.featured)===1
 ? '<span class="badge featured">FEATURED</span>'
 : ""
 }
@@ -5900,12 +6366,10 @@ function editArtistGallery(id){
 
 const item =
 artistGallery.find(
-x =>
-Number(x.id) === Number(id)
+x=>Number(x.id)===Number(id)
 );
 
 if(!item) return;
-
 
 edit.artistGallery =
 item.id;
@@ -5923,10 +6387,10 @@ $("artistGallerySort").value =
 item.sort_order ?? 0;
 
 $("artistGalleryPub").checked =
-Number(item.published) === 1;
+Number(item.published)===1;
 
 $("artistGalleryFeat").checked =
-Number(item.featured) === 1;
+Number(item.featured)===1;
 
 $("artistGallerySave").textContent =
 "UPDATE PHOTO";
@@ -5945,6 +6409,7 @@ $("artistGalleryCaption").value = "";
 $("artistGalleryUrl").value = "";
 $("artistGalleryFile").value = "";
 $("artistGallerySort").value = 0;
+
 $("artistGalleryPub").checked = true;
 $("artistGalleryFeat").checked = false;
 
@@ -5971,10 +6436,7 @@ $("artistGalleryUrl")
 .trim();
 
 
-if(
-!artistId ||
-!imageUrl
-){
+if(!artistId || !imageUrl){
 
 $("artistGalleryMsg").textContent =
 "CHOOSE AN ARTIST AND ADD A PHOTO.";
@@ -5986,11 +6448,9 @@ return;
 
 const payload = {
 
-artist_id:
-artistId,
+artist_id:artistId,
 
-image_url:
-imageUrl,
+image_url:imageUrl,
 
 caption:
 $("artistGalleryCaption").value.trim(),
@@ -6015,7 +6475,6 @@ try{
 const id =
 edit.artistGallery;
 
-
 await api(
 id
 ? `/artist-gallery/${id}`
@@ -6029,12 +6488,10 @@ JSON.stringify(payload)
 }
 );
 
-
 $("artistGalleryMsg").textContent =
 id
 ? "PHOTO UPDATED."
 : "PHOTO ADDED.";
-
 
 resetArtistGallery();
 
@@ -6058,7 +6515,6 @@ if(
 "DELETE THIS ARTIST PHOTO?"
 )
 ) return;
-
 
 try{
 
@@ -6108,11 +6564,8 @@ artistMusicVideos.map(item=>{
 
 const artist =
 artists.find(
-x =>
-Number(x.id) ===
-Number(item.artist_id)
+x=>Number(x.id)===Number(item.artist_id)
 );
-
 
 const thumb =
 item.thumbnail_url ||
@@ -6122,8 +6575,8 @@ item.youtube_id
 : ""
 );
 
-
 return `
+
 <div class="item">
 
 <div>
@@ -6141,11 +6594,11 @@ ${thumb
 
 <div class="badges">
 
-<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+<span class="badge ${Number(item.published)===1 ? "pub" : "draft"}">
+${Number(item.published)===1 ? "PUBLISHED" : "DRAFT"}
 </span>
 
-${Number(item.featured) === 1
+${Number(item.featured)===1
 ? '<span class="badge featured">FEATURED</span>'
 : ""
 }
@@ -6194,12 +6647,10 @@ function editArtistMusicVideo(id){
 
 const item =
 artistMusicVideos.find(
-x =>
-Number(x.id) === Number(id)
+x=>Number(x.id)===Number(id)
 );
 
 if(!item) return;
-
 
 edit.artistVideo =
 item.id;
@@ -6220,10 +6671,10 @@ $("artistVideoSort").value =
 item.sort_order ?? 0;
 
 $("artistVideoPub").checked =
-Number(item.published) === 1;
+Number(item.published)===1;
 
 $("artistVideoFeat").checked =
-Number(item.featured) === 1;
+Number(item.featured)===1;
 
 $("artistVideoSave").textContent =
 "UPDATE MUSIC VIDEO";
@@ -6243,6 +6694,7 @@ $("artistVideoUrl").value = "";
 $("artistVideoThumb").value = "";
 $("artistVideoThumbFile").value = "";
 $("artistVideoSort").value = 0;
+
 $("artistVideoPub").checked = true;
 $("artistVideoFeat").checked = false;
 
@@ -6277,11 +6729,7 @@ const youtubeId =
 yid(youtubeUrl);
 
 
-if(
-!artistId ||
-!title ||
-!youtubeId
-){
+if(!artistId || !title || !youtubeId){
 
 $("artistVideoMsg").textContent =
 "CHOOSE AN ARTIST, ADD A TITLE AND A VALID YOUTUBE LINK.";
@@ -6293,8 +6741,7 @@ return;
 
 const payload = {
 
-artist_id:
-artistId,
+artist_id:artistId,
 
 title,
 
@@ -6327,7 +6774,6 @@ try{
 const id =
 edit.artistVideo;
 
-
 await api(
 id
 ? `/artist-music-videos/${id}`
@@ -6341,12 +6787,10 @@ JSON.stringify(payload)
 }
 );
 
-
 $("artistVideoMsg").textContent =
 id
 ? "MUSIC VIDEO UPDATED."
 : "MUSIC VIDEO ADDED.";
-
 
 resetArtistMusicVideo();
 
@@ -6371,7 +6815,6 @@ if(
 )
 ) return;
 
-
 try{
 
 await api(
@@ -6391,6 +6834,8 @@ alert(error.message);
 }
 
 }
+
+
 /* ===================================================== */
 /* RELEASES */
 /* ===================================================== */
@@ -6425,6 +6870,7 @@ Number(item.artist_id)
 
 
 return `
+
 <div class="item">
 
 <div>
@@ -7045,6 +7491,8 @@ alert(error.message);
 }
 
 }
+
+
 /* ===================================================== */
 /* MAGAZINES */
 /* ===================================================== */
@@ -7928,6 +8376,7 @@ alert(error.message);
 /* ===================================================== */
 /* DAILY DECISIONS */
 /* ===================================================== */
+
 function renderDaily(){
 
 const list =
@@ -8914,6 +9363,1015 @@ $("locationMsg").textContent =
 
 
 /* ===================================================== */
+/* PROMOTIONAL ADS */
+/* ===================================================== */
+
+function promoMediaPreview(item){
+
+const url =
+esc(item.media_url || "");
+
+
+if(!url){
+
+return '<div class="ad-preview"></div>';
+
+}
+
+
+if(
+String(item.media_type || "")
+.toLowerCase() === "video"
+){
+
+return `
+<div class="ad-preview">
+
+<video
+src="${url}"
+muted
+playsinline
+preload="metadata"
+></video>
+
+</div>
+`;
+
+}
+
+
+return `
+<div class="ad-preview">
+
+<img
+src="${url}"
+alt=""
+>
+
+</div>
+`;
+
+}
+
+
+function renderPromoAds(){
+
+const list =
+$("promoList");
+
+if(!list) return;
+
+
+const now =
+Date.now();
+
+
+const activeCount =
+promoAds.filter(item=>{
+
+if(
+Number(item.published) !== 1
+){
+
+return false;
+
+}
+
+
+const start =
+item.start_at
+? Date.parse(item.start_at)
+: NaN;
+
+const end =
+item.end_at
+? Date.parse(item.end_at)
+: NaN;
+
+
+if(
+Number.isFinite(start) &&
+start > now
+){
+
+return false;
+
+}
+
+
+if(
+Number.isFinite(end) &&
+end < now
+){
+
+return false;
+
+}
+
+
+return true;
+
+}).length;
+
+
+$("promoAdCount").textContent =
+`${activeCount} ACTIVE`;
+
+$("promoAdCount")
+.classList
+.toggle(
+"ok",
+activeCount > 0
+);
+
+
+if(!promoAds.length){
+
+list.innerHTML =
+'<div class="empty">NO PROMOTIONAL ADS ADDED YET.</div>';
+
+return;
+
+}
+
+
+list.innerHTML =
+promoAds
+.map(item=>`
+
+<div class="item">
+
+<div>
+${promoMediaPreview(item)}
+</div>
+
+<div>
+
+<h3>
+${esc(item.campaign_name || "PROMOTIONAL AD")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+<span class="badge">
+${esc(String(item.media_type || "image").toUpperCase())}
+</span>
+
+<span class="badge">
+${esc(String(item.target_section || "all").toUpperCase())}
+</span>
+
+<span class="badge">
+${esc(String(item.frequency_mode || "once_per_visit").replaceAll("_"," ").toUpperCase())}
+</span>
+
+</div>
+
+<div class="meta">
+
+${item.advertiser_name
+? `ADVERTISER: ${esc(item.advertiser_name)}<br>`
+: ""
+}
+
+${item.headline
+? `${esc(item.headline)}<br>`
+: ""
+}
+
+${item.start_at
+? `START: ${esc(item.start_at)}<br>`
+: ""
+}
+
+${item.end_at
+? `END: ${esc(item.end_at)}<br>`
+: ""
+}
+
+PRIORITY:
+${Number(item.priority || 0)}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editPromoAd(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deletePromoAd(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`)
+.join("");
+
+}
+
+
+function editPromoAd(id){
+
+const item =
+promoAds.find(
+x =>
+Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+
+edit.promoAd =
+item.id;
+
+
+$("promoCampaign").value =
+item.campaign_name || "";
+
+$("promoAdvertiser").value =
+item.advertiser_name || "";
+
+$("promoMediaType").value =
+item.media_type || "image";
+
+$("promoTarget").value =
+item.target_section || "all";
+
+$("promoMediaUrl").value =
+item.media_url || "";
+
+$("promoHeadline").value =
+item.headline || "";
+
+$("promoDescription").value =
+item.description || "";
+
+$("promoLink").value =
+item.link_url || "";
+
+$("promoCta").value =
+item.cta_text || "LEARN MORE";
+
+$("promoFrequency").value =
+item.frequency_mode || "once_per_visit";
+
+$("promoPriority").value =
+item.priority ?? 0;
+
+$("promoStart").value =
+toDateTimeLocalValue(
+item.start_at
+);
+
+$("promoEnd").value =
+toDateTimeLocalValue(
+item.end_at
+);
+
+$("promoPublished").checked =
+Number(item.published) === 1;
+
+
+$("promoSave").textContent =
+"UPDATE PROMOTIONAL AD";
+
+$("promoCancel").hidden =
+false;
+
+
+$("promoMsg").textContent =
+`EDITING: ${item.campaign_name || "PROMOTIONAL AD"}`;
+
+}
+
+
+function resetPromoAd(){
+
+edit.promoAd =
+null;
+
+$("promoCampaign").value =
+"";
+
+$("promoAdvertiser").value =
+"";
+
+$("promoMediaType").value =
+"image";
+
+$("promoTarget").value =
+"all";
+
+$("promoMediaUrl").value =
+"";
+
+$("promoMediaFile").value =
+"";
+
+$("promoHeadline").value =
+"";
+
+$("promoDescription").value =
+"";
+
+$("promoLink").value =
+"";
+
+$("promoCta").value =
+"LEARN MORE";
+
+$("promoFrequency").value =
+"once_per_visit";
+
+$("promoPriority").value =
+0;
+
+$("promoStart").value =
+"";
+
+$("promoEnd").value =
+"";
+
+$("promoPublished").checked =
+true;
+
+
+$("promoSave").textContent =
+"ADD PROMOTIONAL AD";
+
+$("promoCancel").hidden =
+true;
+
+$("promoMsg").textContent =
+"";
+
+}
+
+
+function toDateTimeLocalValue(value){
+
+if(!value){
+
+return "";
+
+}
+
+return String(value)
+.replace(" ","T")
+.slice(0,16);
+
+}
+
+
+async function savePromoAd(){
+
+const campaignName =
+$("promoCampaign")
+.value
+.trim();
+
+const mediaUrl =
+$("promoMediaUrl")
+.value
+.trim();
+
+
+if(!campaignName){
+
+$("promoMsg").textContent =
+"CAMPAIGN NAME IS REQUIRED.";
+
+return;
+
+}
+
+
+if(!mediaUrl){
+
+$("promoMsg").textContent =
+"UPLOAD OR ENTER A PHOTO / VIDEO URL.";
+
+return;
+
+}
+
+
+const payload = {
+
+campaign_name:
+campaignName,
+
+advertiser_name:
+$("promoAdvertiser")
+.value
+.trim(),
+
+media_type:
+$("promoMediaType")
+.value,
+
+media_url:
+mediaUrl,
+
+headline:
+$("promoHeadline")
+.value
+.trim(),
+
+description:
+$("promoDescription")
+.value
+.trim(),
+
+link_url:
+$("promoLink")
+.value
+.trim(),
+
+cta_text:
+$("promoCta")
+.value
+.trim() ||
+"LEARN MORE",
+
+target_section:
+$("promoTarget")
+.value,
+
+frequency_mode:
+$("promoFrequency")
+.value,
+
+start_at:
+$("promoStart")
+.value
+.trim(),
+
+end_at:
+$("promoEnd")
+.value
+.trim(),
+
+priority:
+numberValue(
+"promoPriority",
+0
+),
+
+published:
+$("promoPublished")
+.checked
+? 1
+: 0
+
+};
+
+
+try{
+
+if(edit.promoAd){
+
+await api(
+`/promo-ads/${edit.promoAd}`,
+{
+method:"PUT",
+body:
+JSON.stringify(payload)
+}
+);
+
+$("promoMsg").textContent =
+"PROMOTIONAL AD UPDATED.";
+
+}
+else{
+
+await api(
+"/promo-ads",
+{
+method:"POST",
+body:
+JSON.stringify(payload)
+}
+);
+
+$("promoMsg").textContent =
+"PROMOTIONAL AD ADDED.";
+
+}
+
+
+resetPromoAd();
+
+await loadAll();
+
+}
+catch(error){
+
+$("promoMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deletePromoAd(id){
+
+if(
+!confirm(
+"DELETE THIS PROMOTIONAL AD?"
+)
+){
+
+return;
+
+}
+
+
+try{
+
+await api(
+`/promo-ads/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+async function uploadPromoMedia(){
+
+const file =
+$("promoMediaFile")
+.files[0];
+
+
+if(!file){
+
+$("promoMsg").textContent =
+"CHOOSE A PHOTO OR VIDEO FIRST.";
+
+return;
+
+}
+
+
+const mediaType =
+file.type.startsWith("video/")
+? "video"
+: "image";
+
+
+const url =
+await upload(
+file,
+"promotional-ads",
+"promoMsg"
+);
+
+
+if(url){
+
+$("promoMediaUrl").value =
+url;
+
+$("promoMediaType").value =
+mediaType;
+
+$("promoMsg").textContent =
+"AD MEDIA UPLOADED. SAVE THE CAMPAIGN.";
+
+}
+
+}
+/* ===================================================== */
+/* ANALYTICS */
+/* ===================================================== */
+
+function formatMetric(value){
+
+const number =
+Number(value || 0);
+
+if(
+!Number.isFinite(number)
+){
+
+return "0";
+
+}
+
+return number.toLocaleString();
+
+}
+
+
+function formatAverage(value){
+
+const number =
+Number(value);
+
+if(
+!Number.isFinite(number)
+){
+
+return "0";
+
+}
+
+return number.toFixed(1);
+
+}
+
+
+function analyticsRows(
+id,
+rows,
+labelFn,
+valueFn
+){
+
+const el =
+$(id);
+
+if(!el) return;
+
+
+if(
+!Array.isArray(rows) ||
+!rows.length
+){
+
+el.innerHTML =
+'<div class="muted" style="font-size:10px;">NO DATA YET.</div>';
+
+return;
+
+}
+
+
+el.innerHTML =
+rows.map(item=>`
+
+<div class="analytics-row">
+
+<span>
+${labelFn(item)}
+</span>
+
+<strong>
+${valueFn(item)}
+</strong>
+
+</div>
+
+`).join("");
+
+}
+
+
+function renderAnalytics(){
+
+if(!analyticsData){
+
+return;
+
+}
+
+
+const today =
+analyticsData.today || {};
+
+const summary =
+analyticsData.summary || {};
+
+
+const impressions =
+Number(
+summary.ad_impressions || 0
+);
+
+const clicks =
+Number(
+summary.ad_clicks || 0
+);
+
+const ctr =
+impressions > 0
+? (
+clicks /
+impressions *
+100
+).toFixed(1)
+: "0.0";
+
+
+const checkinStarts =
+Number(
+summary.checkin_starts || 0
+);
+
+const checkinCompletions =
+Number(
+summary.checkin_completions || 0
+);
+
+const completionRate =
+checkinStarts > 0
+? (
+checkinCompletions /
+checkinStarts *
+100
+).toFixed(1)
+: "0.0";
+
+
+$("analyticsSummary").innerHTML = `
+
+<div class="analytics-stat">
+<strong>${formatMetric(today.visitors_today)}</strong>
+<span>VISITORS TODAY</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${formatMetric(today.visits_today)}</strong>
+<span>APP VISITS TODAY</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${formatMetric(summary.qualified_song_listens)}</strong>
+<span>QUALIFIED SONG LISTENS</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${formatMetric(summary.song_starts)}</strong>
+<span>SONG STARTS</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${formatMetric(summary.checkin_completions)}</strong>
+<span>CHECK INS COMPLETED</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${formatAverage(summary.average_checkin_score)}</strong>
+<span>AVERAGE CHECK IN SCORE</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${completionRate}%</strong>
+<span>CHECK IN COMPLETION RATE</span>
+</div>
+
+<div class="analytics-stat">
+<strong>${ctr}%</strong>
+<span>AD CLICK THROUGH RATE</span>
+</div>
+
+`;
+
+
+analyticsRows(
+"analyticsSections",
+analyticsData.top_sections,
+item =>
+esc(item.section || "UNKNOWN"),
+item =>
+`${formatMetric(item.opens)} OPENS`
+);
+
+
+analyticsRows(
+"analyticsButtons",
+analyticsData.top_buttons,
+item =>
+`${esc(item.item_title || "BUTTON")} <span class="muted">(${esc(item.section || "")})</span>`,
+item =>
+`${formatMetric(item.clicks)} CLICKS`
+);
+
+
+analyticsRows(
+"analyticsSongs",
+analyticsData.top_songs,
+item =>
+esc(item.item_title || "SONG"),
+item =>
+`${formatMetric(item.qualified_listens)} LISTENS / ${formatMetric(item.starts)} STARTS`
+);
+
+
+analyticsRows(
+"analyticsAds",
+analyticsData.ad_performance,
+item =>
+esc(item.campaign_name || "CAMPAIGN"),
+item =>
+`${formatMetric(item.impressions)} IMP / ${formatMetric(item.clicks)} CLICKS / ${formatAverage(item.ctr)}%`
+);
+
+
+analyticsRows(
+"analyticsLocations",
+analyticsData.locations,
+item =>
+esc(
+[
+item.city,
+item.region,
+item.country
+]
+.filter(Boolean)
+.join(", ") ||
+"UNKNOWN"
+),
+item =>
+`${formatMetric(item.visitors)} VISITORS`
+);
+
+
+analyticsRows(
+"analyticsAges",
+analyticsData.age_ranges,
+item =>
+esc(
+String(item.age_range || "")
+.replaceAll("-"," ")
+.toUpperCase()
+),
+item =>
+`${formatMetric(item.visitors)}`
+);
+
+
+analyticsRows(
+"analyticsGenders",
+analyticsData.genders,
+item =>
+esc(
+String(item.gender || "")
+.replaceAll("-"," ")
+.toUpperCase()
+),
+item =>
+`${formatMetric(item.visitors)}`
+);
+
+
+analyticsRows(
+"analyticsScores",
+analyticsData.checkin_score_ranges,
+item =>
+`${esc(item.score_range || "")} SCORE`,
+item =>
+`${formatMetric(item.checkins)} CHECK INS`
+);
+
+
+analyticsRows(
+"analyticsRecent",
+analyticsData.recent_events,
+item =>{
+
+const place =
+[
+item.city,
+item.region,
+item.country
+]
+.filter(Boolean)
+.join(", ");
+
+return `
+${esc(
+String(item.event_type || "")
+.replaceAll("_"," ")
+.toUpperCase()
+)}
+${item.item_title
+? ` — ${esc(item.item_title)}`
+: ""
+}
+${place
+? `<br><span class="muted">${esc(place)}</span>`
+: ""
+}
+`;
+
+},
+item =>
+esc(
+item.created_at || ""
+)
+);
+
+
+$("analyticsStatus").textContent =
+"LIVE";
+
+$("analyticsStatus")
+.classList
+.add("ok");
+
+}
+
+
+async function loadAnalyticsOnly(){
+
+try{
+
+$("analyticsStatus").textContent =
+"UPDATING";
+
+$("analyticsStatus")
+.classList
+.remove("ok");
+
+
+const days =
+Number(
+$("analyticsDays")
+.value ||
+30
+);
+
+
+const result =
+await api(
+`/analytics/dashboard?days=${days}`
+);
+
+
+analyticsData =
+result.data || null;
+
+
+renderAnalytics();
+
+
+$("analyticsMsg").textContent =
+"ANALYTICS UPDATED.";
+
+setTimeout(
+()=>{
+
+if($("analyticsMsg")){
+
+$("analyticsMsg").textContent =
+"";
+
+}
+
+},
+1500
+);
+
+}
+catch(error){
+
+$("analyticsStatus").textContent =
+"ERROR";
+
+$("analyticsStatus")
+.classList
+.remove("ok");
+
+$("analyticsMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+/* ===================================================== */
 /* TABS */
 /* ===================================================== */
 
@@ -9476,6 +10934,73 @@ $("checkinCancel")
 .addEventListener(
 "click",
 resetCheckin
+);
+
+
+/* ===================================================== */
+/* PROMOTIONAL AD EVENTS */
+/* ===================================================== */
+
+$("promoSave")
+.addEventListener(
+"click",
+savePromoAd
+);
+
+
+$("promoCancel")
+.addEventListener(
+"click",
+resetPromoAd
+);
+
+
+$("promoMediaUpload")
+.addEventListener(
+"click",
+uploadPromoMedia
+);
+
+
+/* ===================================================== */
+/* ANALYTICS EVENTS */
+/* ===================================================== */
+
+$("analyticsRefresh")
+.addEventListener(
+"click",
+loadAnalyticsOnly
+);
+
+
+$("analyticsDays")
+.addEventListener(
+"change",
+loadAnalyticsOnly
+);
+
+
+/*
+  Keep the private dashboard reasonably fresh
+  while the Admin page is open.
+*/
+
+setInterval(
+()=>{
+
+if(
+KEY &&
+$("login")
+.classList
+.contains("hide")
+){
+
+loadAnalyticsOnly();
+
+}
+
+},
+30000
 );
 
 
