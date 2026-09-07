@@ -1,0 +1,3572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Decision Makers Course Builder</title>
+
+<style>
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+}
+
+body{
+background:#000;
+color:#fff;
+font-family:Arial,Helvetica,sans-serif;
+min-height:100vh;
+}
+
+button,
+input,
+select,
+textarea{
+font:inherit;
+}
+
+button{
+cursor:pointer;
+}
+
+:root{
+--gold:#F5C518;
+--red:#d40000;
+--panel:#0b0b0b;
+--line:#2a2a2a;
+--muted:#888;
+}
+
+.wrap{
+width:min(1380px,calc(100% - 24px));
+margin:auto;
+padding:22px 0 60px;
+}
+
+.header{
+text-align:center;
+margin-bottom:18px;
+}
+
+.logo{
+width:min(360px,100%);
+}
+
+.gold{
+color:var(--gold);
+}
+
+.muted{
+color:var(--muted);
+}
+
+.topbar,
+.panel{
+background:linear-gradient(145deg,#111,#050505);
+border:1px solid var(--line);
+border-radius:20px;
+padding:18px;
+margin-bottom:16px;
+}
+
+.topbar{
+display:flex;
+gap:12px;
+align-items:center;
+justify-content:space-between;
+flex-wrap:wrap;
+}
+
+.topbar .left,
+.actions{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
+}
+
+.btn{
+min-height:42px;
+padding:0 16px;
+border-radius:999px;
+font-size:10px;
+font-weight:900;
+letter-spacing:.04em;
+}
+
+.red{
+background:var(--red);
+color:#fff;
+border:0;
+}
+
+.outline{
+background:transparent;
+color:var(--gold);
+border:1px solid var(--gold);
+}
+
+.gray{
+background:#161616;
+color:#fff;
+border:1px solid #333;
+}
+
+.danger{
+background:#2a0909;
+color:#ff8b8b;
+border:1px solid #6d1b1b;
+}
+
+.status{
+padding:8px 12px;
+border-radius:999px;
+background:#181818;
+color:#888;
+font-size:10px;
+font-weight:900;
+}
+
+.status.ok{
+background:#102518;
+color:#72e59a;
+}
+
+.layout{
+display:grid;
+grid-template-columns:320px minmax(0,1fr);
+gap:16px;
+}
+
+.sidebar,
+.workspace{
+min-width:0;
+}
+
+.panel h2{
+font-size:22px;
+}
+
+.panel h3{
+font-size:15px;
+}
+
+.kicker{
+color:var(--gold);
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+margin-bottom:6px;
+}
+
+.section-head{
+display:flex;
+justify-content:space-between;
+gap:12px;
+align-items:flex-start;
+margin-bottom:14px;
+flex-wrap:wrap;
+}
+
+.course-list,
+.phase-list,
+.day-list{
+display:grid;
+gap:8px;
+}
+
+.course-item,
+.phase-item,
+.day-item{
+background:#080808;
+border:1px solid #262626;
+border-radius:14px;
+padding:12px;
+transition:.15s;
+}
+
+.course-item:hover,
+.phase-item:hover,
+.day-item:hover{
+border-color:#555;
+}
+
+.active{
+border-color:var(--gold)!important;
+box-shadow:0 0 0 1px rgba(245,197,24,.25) inset;
+}
+
+.course-item strong,
+.phase-item strong,
+.day-item strong{
+display:block;
+font-size:12px;
+}
+
+.course-item small,
+.phase-item small,
+.day-item small{
+display:block;
+color:#777;
+font-size:9px;
+margin-top:4px;
+}
+
+.pill{
+display:inline-block;
+padding:5px 8px;
+border-radius:999px;
+background:#181818;
+color:#aaa;
+font-size:8px;
+font-weight:900;
+margin-top:7px;
+}
+
+.pill.live{
+background:#102518;
+color:#72e59a;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+}
+
+.grid3{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:12px;
+}
+
+.field label{
+display:block;
+font-size:9px;
+font-weight:900;
+letter-spacing:.05em;
+margin-bottom:6px;
+}
+
+.input,
+.select,
+.textarea{
+width:100%;
+border:1px solid #303030;
+border-radius:12px;
+background:#080808;
+color:#fff;
+outline:none;
+padding:12px 13px;
+}
+
+.input,
+.select{
+min-height:46px;
+}
+
+.textarea{
+min-height:110px;
+resize:vertical;
+line-height:1.45;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus{
+border-color:var(--gold);
+}
+
+.tabs{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-bottom:14px;
+}
+
+.tab{
+background:#111;
+color:#aaa;
+border:1px solid #292929;
+border-radius:999px;
+padding:9px 13px;
+font-size:9px;
+font-weight:900;
+}
+
+.tab.active{
+color:#000;
+background:var(--gold);
+border-color:var(--gold);
+}
+
+.view{
+display:none;
+}
+
+.view.active{
+display:block;
+}
+
+.split{
+display:grid;
+grid-template-columns:280px minmax(0,1fr);
+gap:14px;
+}
+
+.subpanel{
+background:#070707;
+border:1px solid #232323;
+border-radius:16px;
+padding:14px;
+}
+
+.subpanel+.subpanel{
+margin-top:12px;
+}
+
+.message{
+min-height:18px;
+margin-top:10px;
+color:var(--gold);
+font-size:10px;
+font-weight:900;
+}
+
+.empty{
+color:#777;
+font-size:10px;
+padding:12px 0;
+}
+
+.media-row{
+display:grid;
+grid-template-columns:minmax(0,1fr) auto;
+gap:8px;
+align-items:end;
+}
+
+.checkline{
+display:flex;
+gap:8px;
+align-items:center;
+font-size:10px;
+font-weight:900;
+}
+
+.checkline input{
+width:18px;
+height:18px;
+}
+
+.summary{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:10px;
+margin-bottom:14px;
+}
+
+.stat{
+background:#080808;
+border:1px solid #252525;
+border-radius:14px;
+padding:13px;
+}
+
+.stat strong{
+display:block;
+color:var(--gold);
+font-size:20px;
+}
+
+.stat span{
+display:block;
+color:#777;
+font-size:8px;
+font-weight:900;
+margin-top:4px;
+}
+
+.login{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.97);
+z-index:100;
+display:flex;
+align-items:center;
+justify-content:center;
+padding:20px;
+}
+
+.login.hide{
+display:none;
+}
+
+.loginbox{
+width:min(460px,100%);
+background:#0b0b0b;
+border:1px solid #292929;
+border-radius:22px;
+padding:24px;
+}
+
+.loginbox h2{
+font-size:26px;
+margin:7px 0;
+}
+
+.loginbox p{
+color:#888;
+font-size:11px;
+line-height:1.5;
+margin-bottom:18px;
+}
+
+@media(max-width:1050px){
+
+.layout{
+grid-template-columns:1fr;
+}
+
+.split{
+grid-template-columns:1fr;
+}
+
+.summary{
+grid-template-columns:repeat(2,1fr);
+}
+
+}
+
+@media(max-width:700px){
+
+.grid,
+.grid3{
+grid-template-columns:1fr;
+}
+
+.summary{
+grid-template-columns:1fr;
+}
+
+.wrap{
+width:min(100% - 14px,1380px);
+}
+
+.topbar{
+align-items:flex-start;
+}
+
+}
+</style>
+</head>
+
+<body>
+
+<div id="login" class="login">
+
+<div class="loginbox">
+
+<div class="gold">
+PRIVATE COURSE SYSTEM
+</div>
+
+<h2>
+DECISION MAKERS COURSE BUILDER
+</h2>
+
+<p>
+Enter the same ADMIN_KEY used by your B.O.S.S CODE GO Admin and Reports pages.
+</p>
+
+<div class="field">
+
+<label>
+ADMIN KEY
+</label>
+
+<input
+id="adminKey"
+class="input"
+type="password"
+autocomplete="off"
+>
+
+</div>
+
+<div class="actions">
+
+<button
+id="unlock"
+class="btn red"
+>
+UNLOCK COURSE BUILDER
+</button>
+
+</div>
+
+<div
+id="loginMsg"
+class="message"
+></div>
+
+</div>
+
+</div>
+
+
+<main class="wrap">
+
+<header class="header">
+
+<img
+class="logo"
+src="images/boss-code-go-logo.png"
+alt="B.O.S.S CODE GO"
+>
+
+<div class="gold">
+DECISION MAKERS
+</div>
+
+<h1>
+COURSE BUILDER
+</h1>
+
+<p
+class="muted"
+style="font-size:11px;margin-top:6px"
+>
+Build courses, phases, days, lessons, media and prompts without touching code.
+</p>
+
+</header>
+
+
+<section class="topbar">
+
+<div class="left">
+
+<div
+id="status"
+class="status"
+>
+READY
+</div>
+
+<span
+id="currentLabel"
+class="muted"
+style="font-size:10px"
+>
+No course selected
+</span>
+
+</div>
+
+<div class="actions">
+
+<button
+id="refreshAll"
+class="btn outline"
+>
+REFRESH
+</button>
+
+<button
+id="lock"
+class="btn gray"
+>
+LOCK
+</button>
+
+</div>
+
+</section>
+
+
+<div class="layout">
+
+
+<aside class="sidebar">
+
+<section class="panel">
+
+<div class="section-head">
+
+<div>
+
+<div class="kicker">
+COURSES
+</div>
+
+<h2>
+YOUR COURSES
+</h2>
+
+</div>
+
+<button
+id="newCourse"
+class="btn red"
+>
++ NEW
+</button>
+
+</div>
+
+<div
+id="courseList"
+class="course-list"
+></div>
+
+</section>
+
+</aside>
+
+
+<section class="workspace">
+
+<section
+id="noCourse"
+class="panel"
+>
+
+<div class="kicker">
+GET STARTED
+</div>
+
+<h2>
+SELECT A COURSE
+</h2>
+
+<p
+class="muted"
+style="font-size:11px;line-height:1.5;margin-top:8px"
+>
+Choose a course on the left or create a new one.
+</p>
+
+</section>
+
+
+<div
+id="courseWorkspace"
+style="display:none"
+>
+
+<section class="panel">
+
+
+<div class="section-head">
+
+<div>
+
+<div class="kicker">
+COURSE CONTROL
+</div>
+
+<h2 id="courseHeading">
+COURSE
+</h2>
+
+</div>
+
+<div class="actions">
+
+<button
+id="saveCourse"
+class="btn red"
+>
+SAVE COURSE
+</button>
+
+<button
+id="deleteCourse"
+class="btn danger"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+
+<div class="summary">
+
+<div class="stat">
+<strong id="statPhases">0</strong>
+<span>PHASES</span>
+</div>
+
+<div class="stat">
+<strong id="statDays">0</strong>
+<span>DAYS</span>
+</div>
+
+<div class="stat">
+<strong id="statPublished">0</strong>
+<span>PUBLISHED DAYS</span>
+</div>
+
+<div class="stat">
+<strong id="statPrice">$0.00</strong>
+<span>PRICE</span>
+</div>
+
+</div>
+
+
+<div class="tabs">
+
+<button
+class="tab active"
+data-view="course"
+>
+COURSE
+</button>
+
+<button
+class="tab"
+data-view="phases"
+>
+PHASES
+</button>
+
+<button
+class="tab"
+data-view="days"
+>
+DAYS
+</button>
+
+</div>
+
+
+<div
+id="view-course"
+class="view active"
+>
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+COURSE TITLE
+</label>
+
+<input
+id="cTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SLUG
+</label>
+
+<input
+id="cSlug"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SUBTITLE
+</label>
+
+<input
+id="cSubtitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+PRICE IN CENTS
+</label>
+
+<input
+id="cPrice"
+class="input"
+type="number"
+min="0"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+TOTAL DAYS
+</label>
+
+<input
+id="cTotalDays"
+class="input"
+type="number"
+min="1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="cSort"
+class="input"
+type="number"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:12px"
+>
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="cDescription"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="grid"
+style="margin-top:12px"
+>
+
+<div class="field">
+
+<label>
+COVER URL
+</label>
+
+<input
+id="cCover"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+COMPLETION TITLE
+</label>
+
+<input
+id="cCompletionTitle"
+class="input"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:12px"
+>
+
+<label>
+COMPLETION MESSAGE
+</label>
+
+<textarea
+id="cCompletionMessage"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div class="actions">
+
+<label class="checkline">
+
+<input
+id="cPublished"
+type="checkbox"
+>
+
+PUBLISHED
+
+</label>
+
+<label class="checkline">
+
+<input
+id="cFeatured"
+type="checkbox"
+>
+
+FEATURED
+
+</label>
+
+</div>
+
+</div>
+
+
+<div
+id="view-phases"
+class="view"
+>
+
+<div class="split">
+
+
+<div class="subpanel">
+
+<div class="section-head">
+
+<div>
+
+<div class="kicker">
+PHASES
+</div>
+
+<h3>
+COURSE PHASES
+</h3>
+
+</div>
+
+<button
+id="newPhase"
+class="btn red"
+>
++ NEW
+</button>
+
+</div>
+
+<div
+id="phaseList"
+class="phase-list"
+></div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="kicker">
+PHASE EDITOR
+</div>
+
+<h3 id="phaseHeading">
+SELECT A PHASE
+</h3>
+
+<div
+id="phaseEditor"
+style="display:none;margin-top:12px"
+>
+
+<div class="field">
+
+<label>
+PHASE TITLE
+</label>
+
+<input
+id="pTitle"
+class="input"
+>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:12px"
+>
+
+<label>
+DESCRIPTION
+</label>
+
+<textarea
+id="pDescription"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="grid"
+style="margin-top:12px"
+>
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="pSort"
+class="input"
+type="number"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+PUBLISHED
+</label>
+
+<select
+id="pPublished"
+class="select"
+>
+
+<option value="1">
+YES
+</option>
+
+<option value="0">
+NO
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="savePhase"
+class="btn red"
+>
+SAVE PHASE
+</button>
+
+<button
+id="deletePhase"
+class="btn danger"
+>
+DELETE PHASE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="view-days"
+class="view"
+>
+
+<div class="split">
+
+
+<div class="subpanel">
+
+<div class="section-head">
+
+<div>
+
+<div class="kicker">
+DAYS
+</div>
+
+<h3>
+COURSE DAYS
+</h3>
+
+</div>
+
+<button
+id="newDay"
+class="btn red"
+>
++ NEW
+</button>
+
+</div>
+
+<div
+id="dayList"
+class="day-list"
+></div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="section-head">
+
+<div>
+
+<div class="kicker">
+DAY EDITOR
+</div>
+
+<h3 id="dayHeading">
+SELECT A DAY
+</h3>
+
+</div>
+
+<button
+id="saveDay"
+class="btn red"
+style="display:none"
+>
+SAVE DAY
+</button>
+
+</div>
+
+
+<div
+id="dayEditor"
+style="display:none"
+>
+
+
+<div class="grid3">
+
+<div class="field">
+
+<label>
+DAY NUMBER
+</label>
+
+<input
+id="dNumber"
+class="input"
+type="number"
+min="1"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+PHASE
+</label>
+
+<select
+id="dPhase"
+class="select"
+></select>
+
+</div>
+
+
+<div class="field">
+
+<label>
+SORT ORDER
+</label>
+
+<input
+id="dSort"
+class="input"
+type="number"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:12px"
+>
+
+<label>
+DAY TITLE
+</label>
+
+<input
+id="dTitle"
+class="input"
+>
+
+</div>
+
+
+<div
+class="grid"
+style="margin-top:12px"
+>
+
+<div class="field">
+
+<label>
+TEXT TITLE
+</label>
+
+<input
+id="dTextTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+PUBLISHED
+</label>
+
+<select
+id="dPublished"
+class="select"
+>
+
+<option value="1">
+YES
+</option>
+
+<option value="0">
+NO
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:12px"
+>
+
+<label>
+LESSON TEXT
+</label>
+
+<textarea
+id="dTextContent"
+class="textarea"
+style="min-height:220px"
+></textarea>
+
+</div>
+
+
+<div
+class="subpanel"
+style="margin-top:14px"
+>
+
+<div class="kicker">
+AUDIO
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+AUDIO TITLE
+</label>
+
+<input
+id="dAudioTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+AUDIO DESCRIPTION
+</label>
+
+<input
+id="dAudioDescription"
+class="input"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="media-row"
+style="margin-top:10px"
+>
+
+<div class="field">
+
+<label>
+AUDIO URL
+</label>
+
+<input
+id="dAudioUrl"
+class="input"
+>
+
+</div>
+
+<button
+class="btn outline"
+onclick="document.getElementById('audioFile').click()"
+>
+UPLOAD
+</button>
+
+</div>
+
+<input
+id="audioFile"
+type="file"
+accept="audio/*"
+hidden
+>
+
+<div
+id="audioUploadMsg"
+class="message"
+></div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="kicker">
+VIDEO
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+VIDEO TITLE
+</label>
+
+<input
+id="dVideoTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+VIDEO DESCRIPTION
+</label>
+
+<input
+id="dVideoDescription"
+class="input"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="media-row"
+style="margin-top:10px"
+>
+
+<div class="field">
+
+<label>
+VIDEO URL
+</label>
+
+<input
+id="dVideoUrl"
+class="input"
+>
+
+</div>
+
+<button
+class="btn outline"
+onclick="document.getElementById('videoFile').click()"
+>
+UPLOAD
+</button>
+
+</div>
+
+<input
+id="videoFile"
+type="file"
+accept="video/*"
+hidden
+>
+
+
+<div
+class="media-row"
+style="margin-top:10px"
+>
+
+<div class="field">
+
+<label>
+VIDEO THUMBNAIL URL
+</label>
+
+<input
+id="dVideoThumb"
+class="input"
+>
+
+</div>
+
+<button
+class="btn outline"
+onclick="document.getElementById('thumbFile').click()"
+>
+UPLOAD
+</button>
+
+</div>
+
+<input
+id="thumbFile"
+type="file"
+accept="image/*"
+hidden
+>
+
+<div
+id="videoUploadMsg"
+class="message"
+></div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="kicker">
+RESOURCE
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+RESOURCE TITLE
+</label>
+
+<input
+id="dResourceTitle"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+BUTTON TEXT
+</label>
+
+<input
+id="dResourceButton"
+class="input"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:10px"
+>
+
+<label>
+RESOURCE DESCRIPTION
+</label>
+
+<textarea
+id="dResourceDescription"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="media-row"
+style="margin-top:10px"
+>
+
+<div class="field">
+
+<label>
+RESOURCE URL
+</label>
+
+<input
+id="dResourceUrl"
+class="input"
+>
+
+</div>
+
+<button
+class="btn outline"
+onclick="document.getElementById('resourceFile').click()"
+>
+UPLOAD
+</button>
+
+</div>
+
+<input
+id="resourceFile"
+type="file"
+hidden
+>
+
+<div
+id="resourceUploadMsg"
+class="message"
+></div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="kicker">
+EXTERNAL LINK
+</div>
+
+
+<div class="grid">
+
+<div class="field">
+
+<label>
+LINK LABEL
+</label>
+
+<input
+id="dExternalLabel"
+class="input"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+LINK URL
+</label>
+
+<input
+id="dExternalUrl"
+class="input"
+>
+
+</div>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:10px"
+>
+
+<label>
+LINK DESCRIPTION
+</label>
+
+<textarea
+id="dExternalDescription"
+class="textarea"
+></textarea>
+
+</div>
+
+</div>
+
+
+<div class="subpanel">
+
+<div class="kicker">
+INTERACTIVE PROMPTS
+</div>
+
+
+<div class="field">
+
+<label>
+TODAY'S DECISION
+</label>
+
+<textarea
+id="dDecision"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:10px"
+>
+
+<label>
+TODAY'S MOVE
+</label>
+
+<textarea
+id="dMove"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:10px"
+>
+
+<label>
+REFLECTION
+</label>
+
+<textarea
+id="dReflection"
+class="textarea"
+></textarea>
+
+</div>
+
+
+<div
+class="field"
+style="margin-top:10px"
+>
+
+<label>
+COMPLETION MESSAGE
+</label>
+
+<textarea
+id="dCompletion"
+class="textarea"
+></textarea>
+
+</div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+id="saveDayBottom"
+class="btn red"
+>
+SAVE DAY
+</button>
+
+<button
+id="deleteDay"
+class="btn danger"
+>
+DELETE DAY
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div
+id="msg"
+class="message"
+></div>
+
+</section>
+
+</div>
+
+</section>
+
+</div>
+
+</main>
+
+
+<script>
+
+const API =
+"https://boss-code-go-api.dezthareason4ever.workers.dev";
+
+
+let KEY =
+sessionStorage.getItem(
+"boss-code-admin-key"
+) || "";
+
+
+let courses = [];
+let phases = [];
+let days = [];
+
+let currentCourse = null;
+let currentPhase = null;
+let currentDay = null;
+
+
+const $ =
+id =>
+document.getElementById(id);
+
+
+const esc =
+value =>
+String(value ?? "")
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+
+const val =
+id =>
+$(id).value.trim();
+
+
+const num =
+id =>
+Number(
+$(id).value || 0
+);
+
+
+const bool =
+id =>
+$(id).checked
+? 1
+: 0;
+
+
+function setStatus(
+text,
+ok = false
+){
+
+$("status").textContent =
+text;
+
+$("status")
+.classList
+.toggle(
+"ok",
+ok
+);
+
+}
+
+
+function showMsg(text){
+
+$("msg").textContent =
+text;
+
+setTimeout(
+()=>{
+
+if(
+$("msg").textContent === text
+){
+
+$("msg").textContent =
+"";
+
+}
+
+},
+1800
+);
+
+}
+
+
+async function api(
+path,
+options = {}
+){
+
+const headers =
+new Headers(
+options.headers || {}
+);
+
+
+if(KEY){
+
+headers.set(
+"X-Admin-Key",
+KEY
+);
+
+}
+
+
+if(
+options.body &&
+!(
+options.body instanceof FormData
+)
+){
+
+headers.set(
+"Content-Type",
+"application/json"
+);
+
+}
+
+
+const response =
+await fetch(
+API + path,
+{
+...options,
+headers
+}
+);
+
+
+const data =
+await response
+.json()
+.catch(
+()=>({
+success:false,
+error:"Bad response"
+})
+);
+
+
+if(
+!response.ok ||
+data.success === false
+){
+
+throw Error(
+data.error ||
+"Request failed"
+);
+
+}
+
+
+return data;
+
+}
+
+
+function activateView(name){
+
+document
+.querySelectorAll(".tab")
+.forEach(
+button =>
+
+button
+.classList
+.toggle(
+"active",
+button.dataset.view === name
+)
+
+);
+
+
+document
+.querySelectorAll(".view")
+.forEach(
+view =>
+view.classList.remove(
+"active"
+)
+);
+
+
+$("view-" + name)
+.classList
+.add(
+"active"
+);
+
+}
+
+
+document
+.querySelectorAll(".tab")
+.forEach(
+button =>
+
+button.onclick =
+()=>activateView(
+button.dataset.view
+)
+
+);
+
+
+async function unlock(){
+
+KEY =
+val("adminKey");
+
+
+if(!KEY){
+
+$("loginMsg").textContent =
+"ENTER YOUR ADMIN KEY.";
+
+return;
+
+}
+
+
+sessionStorage.setItem(
+"boss-code-admin-key",
+KEY
+);
+
+
+try{
+
+await api(
+"/videos?all=1"
+);
+
+
+$("login")
+.classList
+.add(
+"hide"
+);
+
+
+await loadCourses();
+
+}
+catch(error){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("loginMsg").textContent =
+"COULD NOT CONNECT.";
+
+}
+
+}
+
+
+function lock(){
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+
+$("login")
+.classList
+.remove(
+"hide"
+);
+
+}
+
+
+async function loadCourses(){
+
+setStatus(
+"UPDATING"
+);
+
+
+const result =
+await api(
+"/dm-courses?include_unpublished=1"
+);
+
+
+courses =
+result.data || [];
+
+
+renderCourses();
+
+
+setStatus(
+"LIVE",
+true
+);
+
+
+if(currentCourse){
+
+const fresh =
+courses.find(
+item =>
+Number(item.id) ===
+Number(currentCourse.id)
+);
+
+
+if(fresh){
+
+await selectCourse(
+fresh
+);
+
+}
+
+}
+
+}
+
+
+function renderCourses(){
+
+$("courseList").innerHTML =
+
+courses.length
+
+? courses
+.map(
+course => `
+
+<div
+class="course-item ${
+currentCourse &&
+Number(currentCourse.id) ===
+Number(course.id)
+? "active"
+: ""
+}"
+onclick="selectCourseById(${Number(course.id)})"
+>
+
+<strong>
+${esc(course.title)}
+</strong>
+
+<small>
+${esc(
+course.subtitle ||
+course.slug ||
+""
+)}
+</small>
+
+<span
+class="pill ${
+Number(course.published)
+? "live"
+: ""
+}"
+>
+${Number(course.published)
+? "PUBLISHED"
+: "DRAFT"
+}
+</span>
+
+</div>
+
+`
+)
+.join("")
+
+: '<div class="empty">NO COURSES YET.</div>';
+
+}
+
+
+function selectCourseById(id){
+
+const course =
+courses.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(course){
+
+selectCourse(
+course
+);
+
+}
+
+}
+
+
+async function selectCourse(course){
+
+currentCourse =
+course;
+
+currentPhase =
+null;
+
+currentDay =
+null;
+
+
+renderCourses();
+
+
+$("noCourse").style.display =
+"none";
+
+
+$("courseWorkspace").style.display =
+"block";
+
+
+$("courseHeading").textContent =
+course.title;
+
+
+$("currentLabel").textContent =
+course.title;
+
+
+fillCourseForm(
+course
+);
+
+
+await Promise.all([
+loadPhases(),
+loadDays()
+]);
+
+
+updateStats();
+
+
+activateView(
+"course"
+);
+
+}
+
+
+function fillCourseForm(course){
+
+$("cTitle").value =
+course.title || "";
+
+
+$("cSlug").value =
+course.slug || "";
+
+
+$("cSubtitle").value =
+course.subtitle || "";
+
+
+$("cPrice").value =
+course.price_cents ?? 0;
+
+
+$("cTotalDays").value =
+course.total_days ?? 30;
+
+
+$("cSort").value =
+course.sort_order ?? 0;
+
+
+$("cDescription").value =
+course.description || "";
+
+
+$("cCover").value =
+course.cover_url || "";
+
+
+$("cCompletionTitle").value =
+course.completion_title ||
+"CERTIFICATE OF COMPLETION";
+
+
+$("cCompletionMessage").value =
+course.completion_message || "";
+
+
+$("cPublished").checked =
+Number(course.published) === 1;
+
+
+$("cFeatured").checked =
+Number(course.featured) === 1;
+
+}
+
+
+async function saveCourse(){
+
+if(!currentCourse){
+return;
+}
+
+
+const body = {
+
+title:
+val("cTitle"),
+
+slug:
+val("cSlug"),
+
+subtitle:
+val("cSubtitle"),
+
+description:
+val("cDescription"),
+
+cover_url:
+val("cCover"),
+
+price_cents:
+num("cPrice"),
+
+total_days:
+num("cTotalDays"),
+
+completion_title:
+val("cCompletionTitle"),
+
+completion_message:
+val("cCompletionMessage"),
+
+published:
+bool("cPublished"),
+
+featured:
+bool("cFeatured"),
+
+sort_order:
+num("cSort")
+
+};
+
+
+await api(
+`/dm-courses/${currentCourse.id}`,
+{
+method:"PUT",
+body:
+JSON.stringify(body)
+}
+);
+
+
+showMsg(
+"COURSE SAVED."
+);
+
+
+await loadCourses();
+
+}
+
+
+async function newCourse(){
+
+const title =
+prompt(
+"COURSE TITLE"
+);
+
+
+if(!title){
+return;
+}
+
+
+const slug =
+(
+prompt(
+"COURSE SLUG",
+title
+.toLowerCase()
+.replace(
+/[^a-z0-9]+/g,
+"-"
+)
+.replace(
+/^-+|-+$/g,
+""
+)
+) || ""
+)
+.trim();
+
+
+if(!slug){
+return;
+}
+
+
+const result =
+await api(
+"/dm-courses",
+{
+method:"POST",
+body:
+JSON.stringify({
+title,
+slug,
+total_days:30,
+published:0
+})
+}
+);
+
+
+await loadCourses();
+
+
+const course =
+courses.find(
+item =>
+Number(item.id) ===
+Number(result.id)
+);
+
+
+if(course){
+
+await selectCourse(
+course
+);
+
+}
+
+}
+
+
+async function deleteCourse(){
+
+if(
+!currentCourse ||
+!confirm(
+`Delete ${currentCourse.title}? This also deletes its phases and days.`
+)
+){
+
+return;
+
+}
+
+
+await api(
+`/dm-courses/${currentCourse.id}`,
+{
+method:"DELETE"
+}
+);
+
+
+currentCourse =
+null;
+
+currentPhase =
+null;
+
+currentDay =
+null;
+
+
+$("courseWorkspace").style.display =
+"none";
+
+
+$("noCourse").style.display =
+"block";
+
+
+$("currentLabel").textContent =
+"No course selected";
+
+
+await loadCourses();
+
+}
+
+
+async function loadPhases(){
+
+if(!currentCourse){
+return;
+}
+
+
+const result =
+await api(
+`/dm-courses/${currentCourse.id}/phases`
+);
+
+
+phases =
+result.data || [];
+
+
+renderPhases();
+
+
+fillPhaseSelect();
+
+}
+
+
+function renderPhases(){
+
+$("phaseList").innerHTML =
+
+phases.length
+
+? phases
+.map(
+phase => `
+
+<div
+class="phase-item ${
+currentPhase &&
+Number(currentPhase.id) ===
+Number(phase.id)
+? "active"
+: ""
+}"
+onclick="selectPhaseById(${Number(phase.id)})"
+>
+
+<strong>
+${esc(phase.title)}
+</strong>
+
+<small>
+ORDER ${Number(phase.sort_order || 0)}
+</small>
+
+<span
+class="pill ${
+Number(phase.published)
+? "live"
+: ""
+}"
+>
+${Number(phase.published)
+? "PUBLISHED"
+: "HIDDEN"
+}
+</span>
+
+</div>
+
+`
+)
+.join("")
+
+: '<div class="empty">NO PHASES YET.</div>';
+
+}
+
+
+function fillPhaseSelect(){
+
+const current =
+$("dPhase").value;
+
+
+$("dPhase").innerHTML =
+
+'<option value="">NO PHASE</option>' +
+
+phases
+.map(
+phase => `
+
+<option value="${Number(phase.id)}">
+${esc(phase.title)}
+</option>
+
+`
+)
+.join("");
+
+
+if(current){
+
+$("dPhase").value =
+current;
+
+}
+
+}
+
+
+function selectPhaseById(id){
+
+const phase =
+phases.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!phase){
+return;
+}
+
+
+currentPhase =
+phase;
+
+
+renderPhases();
+
+
+$("phaseEditor").style.display =
+"block";
+
+
+$("phaseHeading").textContent =
+phase.title;
+
+
+$("pTitle").value =
+phase.title || "";
+
+
+$("pDescription").value =
+phase.description || "";
+
+
+$("pSort").value =
+phase.sort_order ?? 0;
+
+
+$("pPublished").value =
+String(
+Number(phase.published)
+? 1
+: 0
+);
+
+}
+
+
+async function newPhase(){
+
+if(!currentCourse){
+return;
+}
+
+
+const title =
+prompt(
+"PHASE TITLE"
+);
+
+
+if(!title){
+return;
+}
+
+
+const result =
+await api(
+"/dm-phases",
+{
+method:"POST",
+body:
+JSON.stringify({
+course_id:
+currentCourse.id,
+title,
+sort_order:
+phases.length + 1,
+published:1
+})
+}
+);
+
+
+await loadPhases();
+
+
+selectPhaseById(
+result.id
+);
+
+
+updateStats();
+
+}
+
+
+async function savePhase(){
+
+if(!currentPhase){
+return;
+}
+
+
+await api(
+`/dm-phases/${currentPhase.id}`,
+{
+method:"PUT",
+body:
+JSON.stringify({
+course_id:
+currentCourse.id,
+
+title:
+val("pTitle"),
+
+description:
+val("pDescription"),
+
+sort_order:
+num("pSort"),
+
+published:
+Number(
+$("pPublished").value
+)
+})
+}
+);
+
+
+showMsg(
+"PHASE SAVED."
+);
+
+
+const id =
+currentPhase.id;
+
+
+await loadPhases();
+
+
+selectPhaseById(
+id
+);
+
+}
+
+
+async function deletePhase(){
+
+if(
+!currentPhase ||
+!confirm(
+`Delete phase ${currentPhase.title}? Days will remain but become unassigned.`
+)
+){
+
+return;
+
+}
+
+
+await api(
+`/dm-phases/${currentPhase.id}`,
+{
+method:"DELETE"
+}
+);
+
+
+currentPhase =
+null;
+
+
+$("phaseEditor").style.display =
+"none";
+
+
+$("phaseHeading").textContent =
+"SELECT A PHASE";
+
+
+await Promise.all([
+loadPhases(),
+loadDays()
+]);
+
+
+updateStats();
+
+}
+
+
+async function loadDays(){
+
+if(!currentCourse){
+return;
+}
+
+
+const result =
+await api(
+`/dm-courses/${currentCourse.id}/days`
+);
+
+
+days =
+result.data || [];
+
+
+renderDays();
+
+
+updateStats();
+
+}
+
+
+function renderDays(){
+
+$("dayList").innerHTML =
+
+days.length
+
+? days
+.map(
+day => {
+
+const phase =
+phases.find(
+item =>
+Number(item.id) ===
+Number(day.phase_id)
+);
+
+
+return `
+
+<div
+class="day-item ${
+currentDay &&
+Number(currentDay.id) ===
+Number(day.id)
+? "active"
+: ""
+}"
+onclick="selectDayById(${Number(day.id)})"
+>
+
+<strong>
+DAY ${Number(day.day_number)}
+·
+${esc(day.title)}
+</strong>
+
+<small>
+${esc(
+phase
+? phase.title
+: "NO PHASE"
+)}
+</small>
+
+<span
+class="pill ${
+Number(day.published)
+? "live"
+: ""
+}"
+>
+${Number(day.published)
+? "PUBLISHED"
+: "DRAFT"
+}
+</span>
+
+</div>
+
+`;
+
+}
+)
+.join("")
+
+: '<div class="empty">NO DAYS YET.</div>';
+
+}
+
+
+function selectDayById(id){
+
+const day =
+days.find(
+item =>
+Number(item.id) ===
+Number(id)
+);
+
+
+if(!day){
+return;
+}
+
+
+currentDay =
+day;
+
+
+renderDays();
+
+
+$("dayEditor").style.display =
+"block";
+
+
+$("saveDay").style.display =
+"inline-block";
+
+
+$("dayHeading").textContent =
+`DAY ${day.day_number} · ${day.title}`;
+
+
+fillDayForm(
+day
+);
+
+}
+
+
+function fillDayForm(day){
+
+$("dNumber").value =
+day.day_number ?? 1;
+
+
+$("dPhase").value =
+day.phase_id ?? "";
+
+
+$("dSort").value =
+day.sort_order ??
+day.day_number ??
+0;
+
+
+$("dTitle").value =
+day.title || "";
+
+
+$("dTextTitle").value =
+day.text_title || "";
+
+
+$("dPublished").value =
+String(
+Number(day.published)
+? 1
+: 0
+);
+
+
+$("dTextContent").value =
+day.text_content || "";
+
+
+$("dAudioUrl").value =
+day.audio_url || "";
+
+
+$("dAudioTitle").value =
+day.audio_title || "";
+
+
+$("dAudioDescription").value =
+day.audio_description || "";
+
+
+$("dVideoUrl").value =
+day.video_url || "";
+
+
+$("dVideoTitle").value =
+day.video_title || "";
+
+
+$("dVideoDescription").value =
+day.video_description || "";
+
+
+$("dVideoThumb").value =
+day.video_thumbnail_url || "";
+
+
+$("dResourceUrl").value =
+day.resource_url || "";
+
+
+$("dResourceTitle").value =
+day.resource_title || "";
+
+
+$("dResourceDescription").value =
+day.resource_description || "";
+
+
+$("dResourceButton").value =
+day.resource_button_text ||
+"DOWNLOAD RESOURCE";
+
+
+$("dExternalUrl").value =
+day.external_url || "";
+
+
+$("dExternalLabel").value =
+day.external_label || "";
+
+
+$("dExternalDescription").value =
+day.external_description || "";
+
+
+$("dDecision").value =
+day.decision_prompt || "";
+
+
+$("dMove").value =
+day.move_prompt || "";
+
+
+$("dReflection").value =
+day.reflection_prompt || "";
+
+
+$("dCompletion").value =
+day.completion_message || "";
+
+}
+
+
+async function newDay(){
+
+if(!currentCourse){
+return;
+}
+
+
+const next =
+days.length
+
+? Math.max(
+...days.map(
+day =>
+Number(
+day.day_number || 0
+)
+)
+) + 1
+
+: 1;
+
+
+const title =
+prompt(
+"DAY TITLE"
+);
+
+
+if(!title){
+return;
+}
+
+
+const result =
+await api(
+"/dm-days",
+{
+method:"POST",
+body:
+JSON.stringify({
+
+course_id:
+currentCourse.id,
+
+phase_id:
+phases[0]?.id ||
+null,
+
+day_number:
+next,
+
+title,
+
+sort_order:
+next,
+
+published:
+1,
+
+resource_button_text:
+"DOWNLOAD RESOURCE"
+
+})
+}
+);
+
+
+await loadDays();
+
+
+selectDayById(
+result.id
+);
+
+
+activateView(
+"days"
+);
+
+}
+
+
+function dayBody(){
+
+return {
+
+course_id:
+currentCourse.id,
+
+phase_id:
+val("dPhase")
+? Number(
+val("dPhase")
+)
+: null,
+
+day_number:
+num("dNumber"),
+
+title:
+val("dTitle"),
+
+text_title:
+val("dTextTitle"),
+
+text_content:
+val("dTextContent"),
+
+audio_url:
+val("dAudioUrl"),
+
+audio_title:
+val("dAudioTitle"),
+
+audio_description:
+val("dAudioDescription"),
+
+video_url:
+val("dVideoUrl"),
+
+video_title:
+val("dVideoTitle"),
+
+video_description:
+val("dVideoDescription"),
+
+video_thumbnail_url:
+val("dVideoThumb"),
+
+resource_url:
+val("dResourceUrl"),
+
+resource_title:
+val("dResourceTitle"),
+
+resource_description:
+val("dResourceDescription"),
+
+resource_button_text:
+val("dResourceButton") ||
+"DOWNLOAD RESOURCE",
+
+external_url:
+val("dExternalUrl"),
+
+external_label:
+val("dExternalLabel"),
+
+external_description:
+val("dExternalDescription"),
+
+decision_prompt:
+val("dDecision"),
+
+move_prompt:
+val("dMove"),
+
+reflection_prompt:
+val("dReflection"),
+
+completion_message:
+val("dCompletion"),
+
+published:
+Number(
+$("dPublished").value
+),
+
+sort_order:
+num("dSort")
+
+};
+
+}
+
+
+async function saveDay(){
+
+if(!currentDay){
+return;
+}
+
+
+await api(
+`/dm-days/${currentDay.id}`,
+{
+method:"PUT",
+body:
+JSON.stringify(
+dayBody()
+)
+}
+);
+
+
+showMsg(
+"DAY SAVED."
+);
+
+
+const id =
+currentDay.id;
+
+
+await loadDays();
+
+
+selectDayById(
+id
+);
+
+}
+
+
+async function deleteDay(){
+
+if(
+!currentDay ||
+!confirm(
+`Delete Day ${currentDay.day_number}: ${currentDay.title}?`
+)
+){
+
+return;
+
+}
+
+
+await api(
+`/dm-days/${currentDay.id}`,
+{
+method:"DELETE"
+}
+);
+
+
+currentDay =
+null;
+
+
+$("dayEditor").style.display =
+"none";
+
+
+$("saveDay").style.display =
+"none";
+
+
+$("dayHeading").textContent =
+"SELECT A DAY";
+
+
+await loadDays();
+
+}
+
+
+function updateStats(){
+
+if(!currentCourse){
+return;
+}
+
+
+$("statPhases").textContent =
+phases.length;
+
+
+$("statDays").textContent =
+days.length;
+
+
+$("statPublished").textContent =
+days.filter(
+day =>
+Number(day.published) === 1
+)
+.length;
+
+
+$("statPrice").textContent =
+`$${(
+Number(
+currentCourse.price_cents || 0
+) / 100
+).toFixed(2)}`;
+
+}
+
+
+async function uploadFile(
+file,
+folder,
+msgId,
+targetId
+){
+
+if(!file){
+return;
+}
+
+
+$(msgId).textContent =
+"UPLOADING...";
+
+
+const form =
+new FormData();
+
+
+form.append(
+"file",
+file
+);
+
+
+form.append(
+"folder",
+folder
+);
+
+
+try{
+
+const result =
+await api(
+"/media/upload",
+{
+method:"POST",
+body:form
+}
+);
+
+
+$(targetId).value =
+result.url || "";
+
+
+$(msgId).textContent =
+"UPLOAD COMPLETE.";
+
+
+setTimeout(
+()=>{
+
+$(msgId).textContent =
+"";
+
+},
+1500
+);
+
+}
+catch(error){
+
+$(msgId).textContent =
+error.message;
+
+}
+
+}
+
+
+$("audioFile").onchange =
+event =>
+
+uploadFile(
+event.target.files[0],
+`courses/${currentCourse?.slug || "course"}/audio`,
+"audioUploadMsg",
+"dAudioUrl"
+);
+
+
+$("videoFile").onchange =
+event =>
+
+uploadFile(
+event.target.files[0],
+`courses/${currentCourse?.slug || "course"}/video`,
+"videoUploadMsg",
+"dVideoUrl"
+);
+
+
+$("thumbFile").onchange =
+event =>
+
+uploadFile(
+event.target.files[0],
+`courses/${currentCourse?.slug || "course"}/thumbnails`,
+"videoUploadMsg",
+"dVideoThumb"
+);
+
+
+$("resourceFile").onchange =
+event =>
+
+uploadFile(
+event.target.files[0],
+`courses/${currentCourse?.slug || "course"}/resources`,
+"resourceUploadMsg",
+"dResourceUrl"
+);
+
+
+$("unlock").onclick =
+unlock;
+
+
+$("adminKey").onkeydown =
+event => {
+
+if(
+event.key === "Enter"
+){
+
+unlock();
+
+}
+
+};
+
+
+$("lock").onclick =
+lock;
+
+
+$("refreshAll").onclick =
+loadCourses;
+
+
+$("newCourse").onclick =
+newCourse;
+
+
+$("saveCourse").onclick =
+saveCourse;
+
+
+$("deleteCourse").onclick =
+deleteCourse;
+
+
+$("newPhase").onclick =
+newPhase;
+
+
+$("savePhase").onclick =
+savePhase;
+
+
+$("deletePhase").onclick =
+deletePhase;
+
+
+$("newDay").onclick =
+newDay;
+
+
+$("saveDay").onclick =
+saveDay;
+
+
+$("saveDayBottom").onclick =
+saveDay;
+
+
+$("deleteDay").onclick =
+deleteDay;
+
+
+if(KEY){
+
+$("adminKey").value =
+KEY;
+
+
+api(
+"/videos?all=1"
+)
+.then(
+()=>{
+
+$("login")
+.classList
+.add(
+"hide"
+);
+
+
+loadCourses();
+
+}
+)
+.catch(
+()=>{
+
+KEY = "";
+
+
+sessionStorage.removeItem(
+"boss-code-admin-key"
+);
+
+}
+);
+
+}
+
+</script>
+
+</body>
+</html>
