@@ -6,458 +6,80 @@
 <title>Decision Makers Course Builder</title>
 
 <style>
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-}
-
-body{
-background:#000;
-color:#fff;
-font-family:Arial,Helvetica,sans-serif;
-min-height:100vh;
-}
-
-button,
-input,
-select,
-textarea{
-font:inherit;
-}
-
-button{
-cursor:pointer;
-}
-
-:root{
---gold:#F5C518;
---red:#d40000;
---panel:#0b0b0b;
---line:#2a2a2a;
---muted:#888;
-}
-
-.wrap{
-width:min(1380px,calc(100% - 24px));
-margin:auto;
-padding:22px 0 60px;
-}
-
-.header{
-text-align:center;
-margin-bottom:18px;
-}
-
-.logo{
-width:min(360px,100%);
-}
-
-.gold{
-color:var(--gold);
-}
-
-.muted{
-color:var(--muted);
-}
-
-.topbar,
-.panel{
-background:linear-gradient(145deg,#111,#050505);
-border:1px solid var(--line);
-border-radius:20px;
-padding:18px;
-margin-bottom:16px;
-}
-
-.topbar{
-display:flex;
-gap:12px;
-align-items:center;
-justify-content:space-between;
-flex-wrap:wrap;
-}
-
-.topbar .left,
-.actions{
-display:flex;
-gap:10px;
-align-items:center;
-flex-wrap:wrap;
-}
-
-.btn{
-min-height:42px;
-padding:0 16px;
-border-radius:999px;
-font-size:10px;
-font-weight:900;
-letter-spacing:.04em;
-}
-
-.red{
-background:var(--red);
-color:#fff;
-border:0;
-}
-
-.outline{
-background:transparent;
-color:var(--gold);
-border:1px solid var(--gold);
-}
-
-.gray{
-background:#161616;
-color:#fff;
-border:1px solid #333;
-}
-
-.danger{
-background:#2a0909;
-color:#ff8b8b;
-border:1px solid #6d1b1b;
-}
-
-.status{
-padding:8px 12px;
-border-radius:999px;
-background:#181818;
-color:#888;
-font-size:10px;
-font-weight:900;
-}
-
-.status.ok{
-background:#102518;
-color:#72e59a;
-}
-
-.layout{
-display:grid;
-grid-template-columns:320px minmax(0,1fr);
-gap:16px;
-}
-
-.sidebar,
-.workspace{
-min-width:0;
-}
-
-.panel h2{
-font-size:22px;
-}
-
-.panel h3{
-font-size:15px;
-}
-
-.kicker{
-color:var(--gold);
-font-size:9px;
-font-weight:900;
-letter-spacing:2px;
-margin-bottom:6px;
-}
-
-.section-head{
-display:flex;
-justify-content:space-between;
-gap:12px;
-align-items:flex-start;
-margin-bottom:14px;
-flex-wrap:wrap;
-}
-
-.course-list,
-.phase-list,
-.day-list{
-display:grid;
-gap:8px;
-}
-
-.course-item,
-.phase-item,
-.day-item{
-background:#080808;
-border:1px solid #262626;
-border-radius:14px;
-padding:12px;
-transition:.15s;
-}
-
-.course-item:hover,
-.phase-item:hover,
-.day-item:hover{
-border-color:#555;
-}
-
-.active{
-border-color:var(--gold)!important;
-box-shadow:0 0 0 1px rgba(245,197,24,.25) inset;
-}
-
-.course-item strong,
-.phase-item strong,
-.day-item strong{
-display:block;
-font-size:12px;
-}
-
-.course-item small,
-.phase-item small,
-.day-item small{
-display:block;
-color:#777;
-font-size:9px;
-margin-top:4px;
-}
-
-.pill{
-display:inline-block;
-padding:5px 8px;
-border-radius:999px;
-background:#181818;
-color:#aaa;
-font-size:8px;
-font-weight:900;
-margin-top:7px;
-}
-
-.pill.live{
-background:#102518;
-color:#72e59a;
-}
-
-.grid{
-display:grid;
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:12px;
-}
-
-.grid3{
-display:grid;
-grid-template-columns:repeat(3,minmax(0,1fr));
-gap:12px;
-}
-
-.field label{
-display:block;
-font-size:9px;
-font-weight:900;
-letter-spacing:.05em;
-margin-bottom:6px;
-}
-
-.input,
-.select,
-.textarea{
-width:100%;
-border:1px solid #303030;
-border-radius:12px;
-background:#080808;
-color:#fff;
-outline:none;
-padding:12px 13px;
-}
-
-.input,
-.select{
-min-height:46px;
-}
-
-.textarea{
-min-height:110px;
-resize:vertical;
-line-height:1.45;
-}
-
-.input:focus,
-.select:focus,
-.textarea:focus{
-border-color:var(--gold);
-}
-
-.tabs{
-display:flex;
-gap:8px;
-flex-wrap:wrap;
-margin-bottom:14px;
-}
-
-.tab{
-background:#111;
-color:#aaa;
-border:1px solid #292929;
-border-radius:999px;
-padding:9px 13px;
-font-size:9px;
-font-weight:900;
-}
-
-.tab.active{
-color:#000;
-background:var(--gold);
-border-color:var(--gold);
-}
-
-.view{
-display:none;
-}
-
-.view.active{
-display:block;
-}
-
-.split{
-display:grid;
-grid-template-columns:280px minmax(0,1fr);
-gap:14px;
-}
-
-.subpanel{
-background:#070707;
-border:1px solid #232323;
-border-radius:16px;
-padding:14px;
-}
-
-.subpanel+.subpanel{
-margin-top:12px;
-}
-
-.message{
-min-height:18px;
-margin-top:10px;
-color:var(--gold);
-font-size:10px;
-font-weight:900;
-}
-
-.empty{
-color:#777;
-font-size:10px;
-padding:12px 0;
-}
-
-.media-row{
-display:grid;
-grid-template-columns:minmax(0,1fr) auto;
-gap:8px;
-align-items:end;
-}
-
-.checkline{
-display:flex;
-gap:8px;
-align-items:center;
-font-size:10px;
-font-weight:900;
-}
-
-.checkline input{
-width:18px;
-height:18px;
-}
-
-.summary{
-display:grid;
-grid-template-columns:repeat(4,minmax(0,1fr));
-gap:10px;
-margin-bottom:14px;
-}
-
-.stat{
-background:#080808;
-border:1px solid #252525;
-border-radius:14px;
-padding:13px;
-}
-
-.stat strong{
-display:block;
-color:var(--gold);
-font-size:20px;
-}
-
-.stat span{
-display:block;
-color:#777;
-font-size:8px;
-font-weight:900;
-margin-top:4px;
-}
-
-.login{
-position:fixed;
-inset:0;
-background:rgba(0,0,0,.97);
-z-index:100;
-display:flex;
-align-items:center;
-justify-content:center;
-padding:20px;
-}
-
-.login.hide{
-display:none;
-}
-
-.loginbox{
-width:min(460px,100%);
-background:#0b0b0b;
-border:1px solid #292929;
-border-radius:22px;
-padding:24px;
-}
-
-.loginbox h2{
-font-size:26px;
-margin:7px 0;
-}
-
-.loginbox p{
-color:#888;
-font-size:11px;
-line-height:1.5;
-margin-bottom:18px;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+:root{--gold:#F5C518;--red:#d40000;--panel:#0b0b0b;--line:#2a2a2a;--muted:#888}
+.wrap{width:min(1380px,calc(100% - 24px));margin:auto;padding:22px 0 60px}
+.header{text-align:center;margin-bottom:18px}
+.logo{width:min(360px,100%)}
+.gold{color:var(--gold)}
+.muted{color:var(--muted)}
+.topbar,.panel{background:linear-gradient(145deg,#111,#050505);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:16px}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.topbar .left,.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{min-height:42px;padding:0 16px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:.04em}
+.red{background:var(--red);color:#fff;border:0}
+.outline{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.gray{background:#161616;color:#fff;border:1px solid #333}
+.danger{background:#2a0909;color:#ff8b8b;border:1px solid #6d1b1b}
+.status{padding:8px 12px;border-radius:999px;background:#181818;color:#888;font-size:10px;font-weight:900}
+.status.ok{background:#102518;color:#72e59a}
+.layout{display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px}
+.sidebar,.workspace{min-width:0}
+.panel h2{font-size:22px}
+.panel h3{font-size:15px}
+.kicker{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:2px;margin-bottom:6px}
+.section-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap}
+.course-list,.phase-list,.day-list{display:grid;gap:8px}
+.course-item,.phase-item,.day-item{background:#080808;border:1px solid #262626;border-radius:14px;padding:12px;transition:.15s}
+.course-item:hover,.phase-item:hover,.day-item:hover{border-color:#555}
+.active{border-color:var(--gold)!important;box-shadow:0 0 0 1px rgba(245,197,24,.25) inset}
+.course-item strong,.phase-item strong,.day-item strong{display:block;font-size:12px}
+.course-item small,.phase-item small,.day-item small{display:block;color:#777;font-size:9px;margin-top:4px}
+.pill{display:inline-block;padding:5px 8px;border-radius:999px;background:#181818;color:#aaa;font-size:8px;font-weight:900;margin-top:7px}
+.pill.live{background:#102518;color:#72e59a}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.field label{display:block;font-size:9px;font-weight:900;letter-spacing:.05em;margin-bottom:6px}
+.input,.select,.textarea{width:100%;border:1px solid #303030;border-radius:12px;background:#080808;color:#fff;outline:none;padding:12px 13px}
+.input,.select{min-height:46px}
+.textarea{min-height:110px;resize:vertical;line-height:1.45}
+.input:focus,.select:focus,.textarea:focus{border-color:var(--gold)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{background:#111;color:#aaa;border:1px solid #292929;border-radius:999px;padding:9px 13px;font-size:9px;font-weight:900}
+.tab.active{color:#000;background:var(--gold);border-color:var(--gold)}
+.view{display:none}
+.view.active{display:block}
+.split{display:grid;grid-template-columns:280px minmax(0,1fr);gap:14px}
+.subpanel{background:#070707;border:1px solid #232323;border-radius:16px;padding:14px}
+.subpanel+.subpanel{margin-top:12px}
+.message{min-height:18px;margin-top:10px;color:var(--gold);font-size:10px;font-weight:900}
+.empty{color:#777;font-size:10px;padding:12px 0}
+.media-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:end}
+.checkline{display:flex;gap:8px;align-items:center;font-size:10px;font-weight:900}
+.checkline input{width:18px;height:18px}
+.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#080808;border:1px solid #252525;border-radius:14px;padding:13px}
+.stat strong{display:block;color:var(--gold);font-size:20px}
+.stat span{display:block;color:#777;font-size:8px;font-weight:900;margin-top:4px}
+.login{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.login.hide{display:none}
+.loginbox{width:min(460px,100%);background:#0b0b0b;border:1px solid #292929;border-radius:22px;padding:24px}
+.loginbox h2{font-size:26px;margin:7px 0}
+.loginbox p{color:#888;font-size:11px;line-height:1.5;margin-bottom:18px}
 
 @media(max-width:1050px){
-
-.layout{
-grid-template-columns:1fr;
+.layout{grid-template-columns:1fr}
+.split{grid-template-columns:1fr}
+.summary{grid-template-columns:repeat(2,1fr)}
 }
-
-.split{
-grid-template-columns:1fr;
-}
-
-.summary{
-grid-template-columns:repeat(2,1fr);
-}
-
-}
-
 @media(max-width:700px){
-
-.grid,
-.grid3{
-grid-template-columns:1fr;
-}
-
-.summary{
-grid-template-columns:1fr;
-}
-
-.wrap{
-width:min(100% - 14px,1380px);
-}
-
-.topbar{
-align-items:flex-start;
-}
-
+.grid,.grid3{grid-template-columns:1fr}
+.summary{grid-template-columns:1fr}
+.wrap{width:min(100% - 14px,1380px)}
+.topbar{align-items:flex-start}
 }
 </style>
 </head>
@@ -465,54 +87,26 @@ align-items:flex-start;
 <body>
 
 <div id="login" class="login">
-
 <div class="loginbox">
 
-<div class="gold">
-PRIVATE COURSE SYSTEM
-</div>
+<div class="gold">PRIVATE COURSE SYSTEM</div>
 
-<h2>
-DECISION MAKERS COURSE BUILDER
-</h2>
+<h2>DECISION MAKERS COURSE BUILDER</h2>
 
-<p>
-Enter the same ADMIN_KEY used by your B.O.S.S CODE GO Admin and Reports pages.
-</p>
+<p>Enter the same ADMIN_KEY used by your B.O.S.S CODE GO Admin and Reports pages.</p>
 
 <div class="field">
-
-<label>
-ADMIN KEY
-</label>
-
-<input
-id="adminKey"
-class="input"
-type="password"
-autocomplete="off"
->
-
+<label>ADMIN KEY</label>
+<input id="adminKey" class="input" type="password" autocomplete="off">
 </div>
 
 <div class="actions">
-
-<button
-id="unlock"
-class="btn red"
->
-UNLOCK COURSE BUILDER
-</button>
-
+<button id="unlock" class="btn red">UNLOCK COURSE BUILDER</button>
 </div>
 
-<div
-id="loginMsg"
-class="message"
-></div>
+<div id="loginMsg" class="message"></div>
 
 </div>
-
 </div>
 
 
@@ -526,18 +120,11 @@ src="images/boss-code-go-logo.png"
 alt="B.O.S.S CODE GO"
 >
 
-<div class="gold">
-DECISION MAKERS
-</div>
+<div class="gold">DECISION MAKERS</div>
 
-<h1>
-COURSE BUILDER
-</h1>
+<h1>COURSE BUILDER</h1>
 
-<p
-class="muted"
-style="font-size:11px;margin-top:6px"
->
+<p class="muted" style="font-size:11px;margin-top:6px">
 Build courses, phases, days, lessons, media and prompts without touching code.
 </p>
 
@@ -548,18 +135,9 @@ Build courses, phases, days, lessons, media and prompts without touching code.
 
 <div class="left">
 
-<div
-id="status"
-class="status"
->
-READY
-</div>
+<div id="status" class="status">READY</div>
 
-<span
-id="currentLabel"
-class="muted"
-style="font-size:10px"
->
+<span id="currentLabel" class="muted" style="font-size:10px">
 No course selected
 </span>
 
@@ -567,19 +145,9 @@ No course selected
 
 <div class="actions">
 
-<button
-id="refreshAll"
-class="btn outline"
->
-REFRESH
-</button>
+<button id="refreshAll" class="btn outline">REFRESH</button>
 
-<button
-id="lock"
-class="btn gray"
->
-LOCK
-</button>
+<button id="lock" class="btn gray">LOCK</button>
 
 </div>
 
@@ -588,7 +156,6 @@ LOCK
 
 <div class="layout">
 
-
 <aside class="sidebar">
 
 <section class="panel">
@@ -596,30 +163,15 @@ LOCK
 <div class="section-head">
 
 <div>
-
-<div class="kicker">
-COURSES
+<div class="kicker">COURSES</div>
+<h2>YOUR COURSES</h2>
 </div>
 
-<h2>
-YOUR COURSES
-</h2>
+<button id="newCourse" class="btn red">+ NEW</button>
 
 </div>
 
-<button
-id="newCourse"
-class="btn red"
->
-+ NEW
-</button>
-
-</div>
-
-<div
-id="courseList"
-class="course-list"
-></div>
+<div id="courseList" class="course-list"></div>
 
 </section>
 
@@ -628,66 +180,35 @@ class="course-list"
 
 <section class="workspace">
 
-<section
-id="noCourse"
-class="panel"
->
+<section id="noCourse" class="panel">
 
-<div class="kicker">
-GET STARTED
-</div>
+<div class="kicker">GET STARTED</div>
 
-<h2>
-SELECT A COURSE
-</h2>
+<h2>SELECT A COURSE</h2>
 
-<p
-class="muted"
-style="font-size:11px;line-height:1.5;margin-top:8px"
->
+<p class="muted" style="font-size:11px;line-height:1.5;margin-top:8px">
 Choose a course on the left or create a new one.
 </p>
 
 </section>
 
 
-<div
-id="courseWorkspace"
-style="display:none"
->
+<div id="courseWorkspace" style="display:none">
 
 <section class="panel">
-
 
 <div class="section-head">
 
 <div>
-
-<div class="kicker">
-COURSE CONTROL
-</div>
-
-<h2 id="courseHeading">
-COURSE
-</h2>
-
+<div class="kicker">COURSE CONTROL</div>
+<h2 id="courseHeading">COURSE</h2>
 </div>
 
 <div class="actions">
 
-<button
-id="saveCourse"
-class="btn red"
->
-SAVE COURSE
-</button>
+<button id="saveCourse" class="btn red">SAVE COURSE</button>
 
-<button
-id="deleteCourse"
-class="btn danger"
->
-DELETE
-</button>
+<button id="deleteCourse" class="btn danger">DELETE</button>
 
 </div>
 
@@ -721,155 +242,66 @@ DELETE
 
 <div class="tabs">
 
-<button
-class="tab active"
-data-view="course"
->
-COURSE
-</button>
+<button class="tab active" data-view="course">COURSE</button>
 
-<button
-class="tab"
-data-view="phases"
->
-PHASES
-</button>
+<button class="tab" data-view="phases">PHASES</button>
 
-<button
-class="tab"
-data-view="days"
->
-DAYS
-</button>
+<button class="tab" data-view="days">DAYS</button>
 
 </div>
 
 
-<div
-id="view-course"
-class="view active"
->
+<div id="view-course" class="view active">
 
 <div class="grid">
 
 <div class="field">
+<label>COURSE TITLE</label>
+<input id="cTitle" class="input">
+</div>
 
-<label>
-COURSE TITLE
-</label>
+<div class="field">
+<label>SLUG</label>
+<input id="cSlug" class="input">
+</div>
 
-<input
-id="cTitle"
-class="input"
->
+<div class="field">
+<label>SUBTITLE</label>
+<input id="cSubtitle" class="input">
+</div>
+
+<div class="field">
+<label>PRICE IN CENTS</label>
+<input id="cPrice" class="input" type="number" min="0">
+</div>
+
+<div class="field">
+<label>TOTAL DAYS</label>
+<input id="cTotalDays" class="input" type="number" min="1">
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input id="cSort" class="input" type="number">
+</div>
 
 </div>
 
+
+<div class="field" style="margin-top:12px">
+
+<label>DESCRIPTION</label>
+
+<textarea id="cDescription" class="textarea"></textarea>
+
+</div>
+
+
+<div class="grid" style="margin-top:12px">
 
 <div class="field">
 
-<label>
-SLUG
-</label>
-
-<input
-id="cSlug"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-SUBTITLE
-</label>
-
-<input
-id="cSubtitle"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-PRICE IN CENTS
-</label>
-
-<input
-id="cPrice"
-class="input"
-type="number"
-min="0"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-TOTAL DAYS
-</label>
-
-<input
-id="cTotalDays"
-class="input"
-type="number"
-min="1"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-SORT ORDER
-</label>
-
-<input
-id="cSort"
-class="input"
-type="number"
->
-
-</div>
-
-</div>
-
-
-<div
-class="field"
-style="margin-top:12px"
->
-
-<label>
-DESCRIPTION
-</label>
-
-<textarea
-id="cDescription"
-class="textarea"
-></textarea>
-
-</div>
-
-
-<div
-class="grid"
-style="margin-top:12px"
->
-
-<div class="field">
-
-<label>
-COURSE COVER
-</label>
+<label>COURSE COVER</label>
 
 <div class="media-row">
 
@@ -896,43 +328,27 @@ accept="image/*"
 hidden
 >
 
-<div
-id="coverUploadMsg"
-class="message"
-></div>
+<div id="coverUploadMsg" class="message"></div>
 
 </div>
 
 
 <div class="field">
 
-<label>
-COMPLETION TITLE
-</label>
+<label>COMPLETION TITLE</label>
 
-<input
-id="cCompletionTitle"
-class="input"
->
+<input id="cCompletionTitle" class="input">
 
 </div>
 
 </div>
 
 
-<div
-class="field"
-style="margin-top:12px"
->
+<div class="field" style="margin-top:12px">
 
-<label>
-COMPLETION MESSAGE
-</label>
+<label>COMPLETION MESSAGE</label>
 
-<textarea
-id="cCompletionMessage"
-class="textarea"
-></textarea>
+<textarea id="cCompletionMessage" class="textarea"></textarea>
 
 </div>
 
@@ -940,25 +356,13 @@ class="textarea"
 <div class="actions">
 
 <label class="checkline">
-
-<input
-id="cPublished"
-type="checkbox"
->
-
+<input id="cPublished" type="checkbox">
 PUBLISHED
-
 </label>
 
 <label class="checkline">
-
-<input
-id="cFeatured"
-type="checkbox"
->
-
+<input id="cFeatured" type="checkbox">
 FEATURED
-
 </label>
 
 </div>
@@ -966,10 +370,7 @@ FEATURED
 </div>
 
 
-<div
-id="view-phases"
-class="view"
->
+<div id="view-phases" class="view">
 
 <div class="split">
 
@@ -979,119 +380,60 @@ class="view"
 <div class="section-head">
 
 <div>
-
-<div class="kicker">
-PHASES
+<div class="kicker">PHASES</div>
+<h3>COURSE PHASES</h3>
 </div>
 
-<h3>
-COURSE PHASES
-</h3>
+<button id="newPhase" class="btn red">+ NEW</button>
 
 </div>
 
-<button
-id="newPhase"
-class="btn red"
->
-+ NEW
-</button>
-
-</div>
-
-<div
-id="phaseList"
-class="phase-list"
-></div>
+<div id="phaseList" class="phase-list"></div>
 
 </div>
 
 
 <div class="subpanel">
 
-<div class="kicker">
-PHASE EDITOR
+<div class="kicker">PHASE EDITOR</div>
+
+<h3 id="phaseHeading">SELECT A PHASE</h3>
+
+<div id="phaseEditor" style="display:none;margin-top:12px">
+
+<div class="field">
+<label>PHASE TITLE</label>
+<input id="pTitle" class="input">
 </div>
 
-<h3 id="phaseHeading">
-SELECT A PHASE
-</h3>
 
-<div
-id="phaseEditor"
-style="display:none;margin-top:12px"
->
+<div class="field" style="margin-top:12px">
+
+<label>DESCRIPTION</label>
+
+<textarea id="pDescription" class="textarea"></textarea>
+
+</div>
+
+
+<div class="grid" style="margin-top:12px">
 
 <div class="field">
 
-<label>
-PHASE TITLE
-</label>
+<label>SORT ORDER</label>
 
-<input
-id="pTitle"
-class="input"
->
-
-</div>
-
-
-<div
-class="field"
-style="margin-top:12px"
->
-
-<label>
-DESCRIPTION
-</label>
-
-<textarea
-id="pDescription"
-class="textarea"
-></textarea>
-
-</div>
-
-
-<div
-class="grid"
-style="margin-top:12px"
->
-
-<div class="field">
-
-<label>
-SORT ORDER
-</label>
-
-<input
-id="pSort"
-class="input"
-type="number"
->
+<input id="pSort" class="input" type="number">
 
 </div>
 
 
 <div class="field">
 
-<label>
-PUBLISHED
-</label>
+<label>PUBLISHED</label>
 
-<select
-id="pPublished"
-class="select"
->
-
-<option value="1">
-YES
-</option>
-
-<option value="0">
-NO
-</option>
-
+<select id="pPublished" class="select">
+<option value="1">YES</option>
+<option value="0">NO</option>
 </select>
 
 </div>
@@ -1101,19 +443,9 @@ NO
 
 <div class="actions">
 
-<button
-id="savePhase"
-class="btn red"
->
-SAVE PHASE
-</button>
+<button id="savePhase" class="btn red">SAVE PHASE</button>
 
-<button
-id="deletePhase"
-class="btn danger"
->
-DELETE PHASE
-</button>
+<button id="deletePhase" class="btn danger">DELETE PHASE</button>
 
 </div>
 
@@ -1126,10 +458,7 @@ DELETE PHASE
 </div>
 
 
-<div
-id="view-days"
-class="view"
->
+<div id="view-days" class="view">
 
 <div class="split">
 
@@ -1139,30 +468,15 @@ class="view"
 <div class="section-head">
 
 <div>
-
-<div class="kicker">
-DAYS
+<div class="kicker">DAYS</div>
+<h3>COURSE DAYS</h3>
 </div>
 
-<h3>
-COURSE DAYS
-</h3>
+<button id="newDay" class="btn red">+ NEW</button>
 
 </div>
 
-<button
-id="newDay"
-class="btn red"
->
-+ NEW
-</button>
-
-</div>
-
-<div
-id="dayList"
-class="day-list"
-></div>
+<div id="dayList" class="day-list"></div>
 
 </div>
 
@@ -1172,15 +486,8 @@ class="day-list"
 <div class="section-head">
 
 <div>
-
-<div class="kicker">
-DAY EDITOR
-</div>
-
-<h3 id="dayHeading">
-SELECT A DAY
-</h3>
-
+<div class="kicker">DAY EDITOR</div>
+<h3 id="dayHeading">SELECT A DAY</h3>
 </div>
 
 <button
@@ -1194,114 +501,63 @@ SAVE DAY
 </div>
 
 
-<div
-id="dayEditor"
-style="display:none"
->
+<div id="dayEditor" style="display:none">
+
 <div class="grid3">
 
 <div class="field">
+<label>DAY NUMBER</label>
+<input id="dNumber" class="input" type="number" min="1">
+</div>
 
-<label>
-DAY NUMBER
-</label>
 
-<input
-id="dNumber"
-class="input"
-type="number"
-min="1"
->
+<div class="field">
+
+<label>PHASE</label>
+
+<select id="dPhase" class="select"></select>
 
 </div>
 
 
 <div class="field">
 
-<label>
-PHASE
-</label>
+<label>SORT ORDER</label>
 
-<select
-id="dPhase"
-class="select"
-></select>
+<input id="dSort" class="input" type="number">
+
+</div>
+
+</div>
+
+
+<div class="field" style="margin-top:12px">
+
+<label>DAY TITLE</label>
+
+<input id="dTitle" class="input">
+
+</div>
+
+
+<div class="grid" style="margin-top:12px">
+
+<div class="field">
+
+<label>TEXT TITLE</label>
+
+<input id="dTextTitle" class="input">
 
 </div>
 
 
 <div class="field">
 
-<label>
-SORT ORDER
-</label>
+<label>PUBLISHED</label>
 
-<input
-id="dSort"
-class="input"
-type="number"
->
-
-</div>
-
-</div>
-
-
-<div
-class="field"
-style="margin-top:12px"
->
-
-<label>
-DAY TITLE
-</label>
-
-<input
-id="dTitle"
-class="input"
->
-
-</div>
-
-
-<div
-class="grid"
-style="margin-top:12px"
->
-
-<div class="field">
-
-<label>
-TEXT TITLE
-</label>
-
-<input
-id="dTextTitle"
-class="input"
->
-
-</div>
-
-
-<div class="field">
-
-<label>
-PUBLISHED
-</label>
-
-<select
-id="dPublished"
-class="select"
->
-
-<option value="1">
-YES
-</option>
-
-<option value="0">
-NO
-</option>
-
+<select id="dPublished" class="select">
+<option value="1">YES</option>
+<option value="0">NO</option>
 </select>
 
 </div>
@@ -1309,14 +565,9 @@ NO
 </div>
 
 
-<div
-class="field"
-style="margin-top:12px"
->
+<div class="field" style="margin-top:12px">
 
-<label>
-LESSON TEXT
-</label>
+<label>LESSON TEXT</label>
 
 <textarea
 id="dTextContent"
@@ -1327,63 +578,40 @@ style="min-height:220px"
 </div>
 
 
-<div
-class="subpanel"
-style="margin-top:14px"
->
+<div class="subpanel" style="margin-top:14px">
 
-<div class="kicker">
-AUDIO
-</div>
+<div class="kicker">AUDIO</div>
 
 
 <div class="grid">
 
 <div class="field">
 
-<label>
-AUDIO TITLE
-</label>
+<label>AUDIO TITLE</label>
 
-<input
-id="dAudioTitle"
-class="input"
->
+<input id="dAudioTitle" class="input">
 
 </div>
 
 
 <div class="field">
 
-<label>
-AUDIO DESCRIPTION
-</label>
+<label>AUDIO DESCRIPTION</label>
 
-<input
-id="dAudioDescription"
-class="input"
->
+<input id="dAudioDescription" class="input">
 
 </div>
 
 </div>
 
 
-<div
-class="media-row"
-style="margin-top:10px"
->
+<div class="media-row" style="margin-top:10px">
 
 <div class="field">
 
-<label>
-AUDIO FILE LOCATION
-</label>
+<label>AUDIO FILE LOCATION</label>
 
-<input
-id="dAudioUrl"
-class="input"
->
+<input id="dAudioUrl" class="input">
 
 </div>
 
@@ -1403,68 +631,45 @@ accept="audio/*"
 hidden
 >
 
-<div
-id="audioUploadMsg"
-class="message"
-></div>
+<div id="audioUploadMsg" class="message"></div>
 
 </div>
 
 
 <div class="subpanel">
 
-<div class="kicker">
-VIDEO
-</div>
+<div class="kicker">VIDEO</div>
 
 
 <div class="grid">
 
 <div class="field">
 
-<label>
-VIDEO TITLE
-</label>
+<label>VIDEO TITLE</label>
 
-<input
-id="dVideoTitle"
-class="input"
->
+<input id="dVideoTitle" class="input">
 
 </div>
 
 
 <div class="field">
 
-<label>
-VIDEO DESCRIPTION
-</label>
+<label>VIDEO DESCRIPTION</label>
 
-<input
-id="dVideoDescription"
-class="input"
->
+<input id="dVideoDescription" class="input">
 
 </div>
 
 </div>
 
 
-<div
-class="media-row"
-style="margin-top:10px"
->
+<div class="media-row" style="margin-top:10px">
 
 <div class="field">
 
-<label>
-VIDEO FILE LOCATION
-</label>
+<label>VIDEO FILE LOCATION</label>
 
-<input
-id="dVideoUrl"
-class="input"
->
+<input id="dVideoUrl" class="input">
 
 </div>
 
@@ -1485,21 +690,13 @@ hidden
 >
 
 
-<div
-class="media-row"
-style="margin-top:10px"
->
+<div class="media-row" style="margin-top:10px">
 
 <div class="field">
 
-<label>
-VIDEO THUMBNAIL
-</label>
+<label>VIDEO THUMBNAIL</label>
 
-<input
-id="dVideoThumb"
-class="input"
->
+<input id="dVideoThumb" class="input">
 
 </div>
 
@@ -1519,61 +716,41 @@ accept="image/*"
 hidden
 >
 
-<div
-id="videoUploadMsg"
-class="message"
-></div>
+<div id="videoUploadMsg" class="message"></div>
 
 </div>
 
 
 <div class="subpanel">
 
-<div class="kicker">
-RESOURCE
-</div>
+<div class="kicker">RESOURCE</div>
 
 
 <div class="grid">
 
 <div class="field">
 
-<label>
-RESOURCE TITLE
-</label>
+<label>RESOURCE TITLE</label>
 
-<input
-id="dResourceTitle"
-class="input"
->
+<input id="dResourceTitle" class="input">
 
 </div>
 
 
 <div class="field">
 
-<label>
-BUTTON TEXT
-</label>
+<label>BUTTON TEXT</label>
 
-<input
-id="dResourceButton"
-class="input"
->
+<input id="dResourceButton" class="input">
 
 </div>
 
 </div>
 
 
-<div
-class="field"
-style="margin-top:10px"
->
+<div class="field" style="margin-top:10px">
 
-<label>
-RESOURCE DESCRIPTION
-</label>
+<label>RESOURCE DESCRIPTION</label>
 
 <textarea
 id="dResourceDescription"
@@ -1583,21 +760,13 @@ class="textarea"
 </div>
 
 
-<div
-class="media-row"
-style="margin-top:10px"
->
+<div class="media-row" style="margin-top:10px">
 
 <div class="field">
 
-<label>
-RESOURCE URL
-</label>
+<label>RESOURCE URL</label>
 
-<input
-id="dResourceUrl"
-class="input"
->
+<input id="dResourceUrl" class="input">
 
 </div>
 
@@ -1610,67 +779,43 @@ UPLOAD
 
 </div>
 
-<input
-id="resourceFile"
-type="file"
-hidden
->
+<input id="resourceFile" type="file" hidden>
 
-<div
-id="resourceUploadMsg"
-class="message"
-></div>
+<div id="resourceUploadMsg" class="message"></div>
 
 </div>
 
 
 <div class="subpanel">
 
-<div class="kicker">
-EXTERNAL LINK
-</div>
+<div class="kicker">EXTERNAL LINK</div>
 
 
 <div class="grid">
 
 <div class="field">
 
-<label>
-LINK LABEL
-</label>
+<label>LINK LABEL</label>
 
-<input
-id="dExternalLabel"
-class="input"
->
+<input id="dExternalLabel" class="input">
 
 </div>
 
 
 <div class="field">
 
-<label>
-LINK URL
-</label>
+<label>LINK URL</label>
 
-<input
-id="dExternalUrl"
-class="input"
->
+<input id="dExternalUrl" class="input">
 
 </div>
 
 </div>
 
 
-<div
-class="field"
-style="margin-top:10px"
->
+<div class="field" style="margin-top:10px">
 
-<label>
-LINK DESCRIPTION
-</label>
+<label>LINK DESCRIPTION</label>
 
 <textarea
 id="dExternalDescription"
@@ -1684,16 +829,12 @@ class="textarea"
 
 <div class="subpanel">
 
-<div class="kicker">
-INTERACTIVE PROMPTS
-</div>
+<div class="kicker">INTERACTIVE PROMPTS</div>
 
 
 <div class="field">
 
-<label>
-TODAY'S DECISION
-</label>
+<label>TODAY'S DECISION</label>
 
 <textarea
 id="dDecision"
@@ -1703,14 +844,9 @@ class="textarea"
 </div>
 
 
-<div
-class="field"
-style="margin-top:10px"
->
+<div class="field" style="margin-top:10px">
 
-<label>
-TODAY'S MOVE
-</label>
+<label>TODAY'S MOVE</label>
 
 <textarea
 id="dMove"
@@ -1720,14 +856,42 @@ class="textarea"
 </div>
 
 
-<div
-class="field"
-style="margin-top:10px"
->
+<div class="field" style="margin-top:10px">
 
-<label>
-REFLECTION
-</label>
+<label>WHAT I'M FACING TODAY</label>
+
+<div
+class="muted"
+style="font-size:9px;margin-bottom:7px"
+>
+Fear • Anxiety • Frustration • Resistance • Self Doubt
+</div>
+
+<textarea
+id="dFacing"
+class="textarea"
+placeholder="What are you facing today that could get in the way of your goal?"
+></textarea>
+
+</div>
+
+
+<div class="field" style="margin-top:10px">
+
+<label>HOW I'LL FACE IT</label>
+
+<textarea
+id="dResponsePlan"
+class="textarea"
+placeholder="What decision or action will you take so this does not stop you today?"
+></textarea>
+
+</div>
+
+
+<div class="field" style="margin-top:10px">
+
+<label>REFLECTION</label>
 
 <textarea
 id="dReflection"
@@ -1737,14 +901,9 @@ class="textarea"
 </div>
 
 
-<div
-class="field"
-style="margin-top:10px"
->
+<div class="field" style="margin-top:10px">
 
-<label>
-COMPLETION MESSAGE
-</label>
+<label>COMPLETION MESSAGE</label>
 
 <textarea
 id="dCompletion"
@@ -1758,19 +917,9 @@ class="textarea"
 
 <div class="actions">
 
-<button
-id="saveDayBottom"
-class="btn red"
->
-SAVE DAY
-</button>
+<button id="saveDayBottom" class="btn red">SAVE DAY</button>
 
-<button
-id="deleteDay"
-class="btn danger"
->
-DELETE DAY
-</button>
+<button id="deleteDay" class="btn danger">DELETE DAY</button>
 
 </div>
 
@@ -1783,10 +932,7 @@ DELETE DAY
 </div>
 
 
-<div
-id="msg"
-class="message"
-></div>
+<div id="msg" class="message"></div>
 
 </section>
 
@@ -2400,7 +1546,7 @@ async function newCourse(){
 
 const title =
 prompt(
-    "COURSE TITLE"
+"COURSE TITLE"
 );
 
 
@@ -3068,6 +2214,16 @@ $("dMove").value =
 day.move_prompt || "";
 
 
+$("dFacing").value =
+day.facing_prompt ||
+"What fear, anxiety, frustration, resistance, or self doubt are you facing today that could get in the way of your goal?";
+
+
+$("dResponsePlan").value =
+day.response_plan_prompt ||
+"What decision or action will you take so this does not stop you today?";
+
+
 $("dReflection").value =
 day.reflection_prompt || "";
 
@@ -3138,7 +2294,13 @@ published:
 1,
 
 resource_button_text:
-"DOWNLOAD RESOURCE"
+"DOWNLOAD RESOURCE",
+
+facing_prompt:
+"What fear, anxiety, frustration, resistance, or self doubt are you facing today that could get in the way of your goal?",
+
+response_plan_prompt:
+"What decision or action will you take so this does not stop you today?"
 
 })
 }
@@ -3234,6 +2396,12 @@ val("dDecision"),
 
 move_prompt:
 val("dMove"),
+
+facing_prompt:
+val("dFacing"),
+
+response_plan_prompt:
+val("dResponsePlan"),
 
 reflection_prompt:
 val("dReflection"),
@@ -3589,7 +2757,6 @@ loadCourses();
 ()=>{
 
 KEY = "";
-
 
 sessionStorage.removeItem(
 "boss-code-admin-key"
