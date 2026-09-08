@@ -868,13 +868,38 @@ style="margin-top:12px"
 <div class="field">
 
 <label>
-COVER URL
+COURSE COVER
 </label>
+
+<div class="media-row">
 
 <input
 id="cCover"
 class="input"
+placeholder="Uploaded image location"
 >
+
+<button
+class="btn outline"
+type="button"
+onclick="document.getElementById('coverFile').click()"
+>
+UPLOAD COVER
+</button>
+
+</div>
+
+<input
+id="coverFile"
+type="file"
+accept="image/*"
+hidden
+>
+
+<div
+id="coverUploadMsg"
+class="message"
+></div>
 
 </div>
 
@@ -1173,8 +1198,6 @@ SAVE DAY
 id="dayEditor"
 style="display:none"
 >
-
-
 <div class="grid3">
 
 <div class="field">
@@ -1354,7 +1377,7 @@ style="margin-top:10px"
 <div class="field">
 
 <label>
-AUDIO URL
+AUDIO FILE LOCATION
 </label>
 
 <input
@@ -1368,7 +1391,7 @@ class="input"
 class="btn outline"
 onclick="document.getElementById('audioFile').click()"
 >
-UPLOAD
+UPLOAD AUDIO
 </button>
 
 </div>
@@ -1435,7 +1458,7 @@ style="margin-top:10px"
 <div class="field">
 
 <label>
-VIDEO URL
+VIDEO FILE LOCATION
 </label>
 
 <input
@@ -1449,7 +1472,7 @@ class="input"
 class="btn outline"
 onclick="document.getElementById('videoFile').click()"
 >
-UPLOAD
+UPLOAD VIDEO
 </button>
 
 </div>
@@ -1470,7 +1493,7 @@ style="margin-top:10px"
 <div class="field">
 
 <label>
-VIDEO THUMBNAIL URL
+VIDEO THUMBNAIL
 </label>
 
 <input
@@ -1484,7 +1507,7 @@ class="input"
 class="btn outline"
 onclick="document.getElementById('thumbFile').click()"
 >
-UPLOAD
+UPLOAD THUMBNAIL
 </button>
 
 </div>
@@ -2377,7 +2400,7 @@ async function newCourse(){
 
 const title =
 prompt(
-"COURSE TITLE"
+    "COURSE TITLE"
 );
 
 
@@ -3416,6 +3439,17 @@ error.message;
 }
 
 }
+
+
+$("coverFile").onchange =
+event =>
+
+uploadFile(
+event.target.files[0],
+`courses/${currentCourse?.slug || "course"}/covers`,
+"coverUploadMsg",
+"cCover"
+);
 
 
 $("audioFile").onchange =
