@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Decision Makers Payment Test Console</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #050505;
+      --panel: #101010;
+      --panel2: #171717;
+      --gold: #f4c430;
+      --red: #d71920;
+      --white: #ffffff;
+      --muted: #a9a9a9;
+      --green: #19c86b;
+      --border: #2d2d2d;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--black);
+      color: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      padding: 28px 18px 60px;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .shell {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand img {
+      width: 74px;
+      height: 74px;
+      object-fit: contain;
+      border-radius: 14px;
+      background: #000;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      color: var(--gold);
+      font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 0.5px;
+    }
+
+    .brand-copy p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lock-btn {
+      border: 1px solid var(--red);
+      color: var(--white);
+      background: transparent;
+      padding: 11px 18px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .lock-btn:hover {
+      background: var(--red);
+    }
+
+    .hero {
+      background:
+        linear-gradient(
+          135deg,
+          rgba(244, 196, 48, 0.08),
+          rgba(215, 25, 32, 0.08)
+        ),
+        var(--panel);
+
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 26px;
+      margin-bottom: 22px;
+    }
+
+    .hero .eyebrow {
+      color: var(--gold);
+      font-weight: 900;
+      letter-spacing: 1.6px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .hero h2 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 46px);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 14px 0 0;
+      color: #d0d0d0;
+      line-height: 1.55;
+      max-width: 720px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .card h3 {
+      margin: 0 0 18px;
+      font-size: 21px;
+      color: var(--gold);
+    }
+
+    .field {
+      margin-bottom: 17px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #d7d7d7;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .field input,
+    .field select {
+      width: 100%;
+      border: 1px solid #363636;
+      background: #090909;
+      color: var(--white);
+      border-radius: 13px;
+      padding: 14px 15px;
+      outline: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--gold);
+    }
+
+    .course-preview {
+      display: none;
+      background: var(--panel2);
+      border: 1px solid #333;
+      border-radius: 18px;
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    .course-preview.show {
+      display: block;
+    }
+
+    .course-image {
+      width: 100%;
+      aspect-ratio: 16 / 8;
+      background: #080808;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .course-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .course-image .no-cover {
+      color: #777;
+      font-weight: 800;
+    }
+
+    .course-info {
+      padding: 18px;
+    }
+
+    .course-title {
+      font-size: 21px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .course-subtitle {
+      color: var(--gold);
+      font-weight: 800;
+      margin-bottom: 9px;
+    }
+
+    .course-description {
+      color: #bbb;
+      line-height: 1.45;
+      margin-bottom: 13px;
+    }
+
+    .course-price {
+      font-size: 25px;
+      font-weight: 900;
+      color: var(--white);
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 15px 18px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #000;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-secondary {
+      background: #222;
+      color: var(--white);
+      border: 1px solid #3a3a3a;
+    }
+
+    .btn-danger {
+      background: var(--red);
+      color: var(--white);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 310px;
+      text-align: center;
+      border-radius: 18px;
+      background: #090909;
+      border: 1px solid #292929;
+      padding: 28px;
+    }
+
+    .status-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+    }
+
+    .status-pill {
+      border-radius: 999px;
+      padding: 13px 23px;
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 18px;
+    }
+
+    .status-pill.unknown {
+      color: #aaa;
+      background: #1b1b1b;
+      border: 1px solid #333;
+    }
+
+    .status-pill.locked {
+      color: var(--red);
+      background: rgba(215, 25, 32, 0.1);
+      border: 1px solid var(--red);
+    }
+
+    .status-pill.owned {
+      color: var(--green);
+      background: rgba(25, 200, 107, 0.1);
+      border: 1px solid var(--green);
+    }
+
+    .status-detail {
+      color: #bdbdbd;
+      line-height: 1.55;
+      max-width: 420px;
+      word-break: break-word;
+    }
+
+    .purchase-record {
+      margin-top: 20px;
+      width: 100%;
+      text-align: left;
+      background: #111;
+      border: 1px solid #292929;
+      border-radius: 14px;
+      padding: 16px;
+      display: none;
+    }
+
+    .purchase-record.show {
+      display: block;
+    }
+
+    .record-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 7px 0;
+      border-bottom: 1px solid #222;
+      font-size: 13px;
+    }
+
+    .record-row:last-child {
+      border-bottom: 0;
+    }
+
+    .record-label {
+      color: #888;
+    }
+
+    .record-value {
+      color: #eee;
+      font-weight: 700;
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .message {
+      margin-top: 18px;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: none;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .message.show {
+      display: block;
+    }
+
+    .message.success {
+      background: rgba(25, 200, 107, 0.12);
+      border: 1px solid rgba(25, 200, 107, 0.65);
+      color: #8ef0b6;
+    }
+
+    .message.error {
+      background: rgba(215, 25, 32, 0.12);
+      border: 1px solid rgba(215, 25, 32, 0.7);
+      color: #ff8d91;
+    }
+
+    .message.info {
+      background: rgba(244, 196, 48, 0.1);
+      border: 1px solid rgba(244, 196, 48, 0.55);
+      color: #ffe17a;
+    }
+
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.94);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-overlay.hidden {
+      display: none;
+    }
+
+    .login-card {
+      width: min(430px, 100%);
+      background: #101010;
+      border: 1px solid #333;
+      border-radius: 24px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .login-card img {
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      margin-bottom: 16px;
+    }
+
+    .login-card h2 {
+      margin: 0;
+      color: var(--gold);
+      font-size: 28px;
+    }
+
+    .login-card p {
+      color: #aaa;
+      margin: 10px 0 22px;
+      line-height: 1.45;
+    }
+
+    .login-card input {
+      width: 100%;
+      background: #080808;
+      color: #fff;
+      border: 1px solid #3b3b3b;
+      border-radius: 13px;
+      padding: 15px;
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .login-card input:focus {
+      border-color: var(--gold);
+    }
+
+    .login-error {
+      color: #ff7676;
+      min-height: 20px;
+      margin-top: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .footer {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-top: 35px;
+    }
+
+    @media (max-width: 800px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand img {
+        width: 58px;
+        height: 58px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 18px 12px 40px;
+      }
+
+      .hero,
+      .card {
+        padding: 19px;
+      }
+
+      .topbar {
+        gap: 12px;
+      }
+
+      .lock-btn {
+        padding: 9px 13px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div
+    id="loginOverlay"
+    class="login-overlay"
+  >
+    <div class="login-card">
+
+      <img
+        src="images/boss-code-go-logo.png"
+        alt="B.O.S.S CODE"
+      />
+
+      <h2>PAYMENT TEST</h2>
+
+      <p>
+        Enter your B.O.S.S CODE GO Admin Key
+        to open the Decision Makers payment testing system.
+      </p>
+
+      <input
+        id="adminKeyInput"
+        type="password"
+        placeholder="Admin Key"
+        autocomplete="off"
+      />
+
+      <button
+        id="unlockButton"
+        class="btn btn-primary"
+        style="width:100%;"
+      >
+        UNLOCK
+      </button>
+
+      <div
+        id="loginError"
+        class="login-error"
+      ></div>
+
+    </div>
+  </div>
+
+
+  <main class="shell">
+
+    <div class="topbar">
+
+      <div class="brand">
+
+        <img
+          src="images/boss-code-go-logo.png"
+          alt="B.O.S.S CODE"
+        />
+
+        <div class="brand-copy">
+          <h1>Payment Test Console</h1>
+          <p>
+            Decision Makers ownership and entitlement testing
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        id="lockButton"
+        class="lock-btn"
+      >
+        LOCK
+      </button>
+
+    </div>
+
+
+    <section class="hero">
+
+      <div class="eyebrow">
+        DECISION MAKERS
+      </div>
+
+      <h2>
+        TEST THE FULL PURCHASE SYSTEM
+      </h2>
+
+      <p>
+        Create a test customer, simulate a course purchase,
+        verify ownership, and revoke access before connecting
+        the real checkout.
+      </p>
+
+    </section>
+
+
+    <div class="grid">
+
+      <section class="card">
+
+        <h3>Test Customer</h3>
+
+        <div class="field">
+          <label for="customerName">
+            NAME
+          </label>
+
+          <input
+            id="customerName"
+            type="text"
+            placeholder="Example: Desmond Jackson"
+          />
+        </div>
+
+
+        <div class="field">
+          <label for="customerEmail">
+            EMAIL
+          </label>
+
+          <input
+            id="customerEmail"
+            type="email"
+            placeholder="example@email.com"
+          />
+        </div>
+
+
+        <div class="field">
+          <label for="courseSelect">
+            COURSE
+          </label>
+
+          <select id="courseSelect">
+            <option value="">
+              Loading courses...
+            </option>
+          </select>
+        </div>
+
+
+        <div
+          id="coursePreview"
+          class="course-preview"
+        >
+
+          <div
+            id="courseImage"
+            class="course-image"
+          >
+          </div>
+
+          <div class="course-info">
+
+            <div
+              id="courseTitle"
+              class="course-title"
+            ></div>
+
+            <div
+              id="courseSubtitle"
+              class="course-subtitle"
+            ></div>
+
+            <div
+              id="courseDescription"
+              class="course-description"
+            ></div>
+
+            <div
+              id="coursePrice"
+              class="course-price"
+            ></div>
+
+          </div>
+
+        </div>
+
+
+        <div class="button-row">
+
+          <button
+            id="checkButton"
+            class="btn btn-secondary"
+          >
+            CHECK ACCESS
+          </button>
+
+          <button
+            id="purchaseButton"
+            class="btn btn-primary"
+          >
+            SIMULATE PURCHASE
+          </button>
+
+          <button
+            id="revokeButton"
+            class="btn btn-danger"
+          >
+            REVOKE ACCESS
+          </button>
+
+        </div>
+
+
+        <div
+          id="message"
+          class="message"
+        ></div>
+
+      </section>
+
+
+      <section class="card">
+
+        <h3>Ownership Status</h3>
+
+        <div class="status-box">
+
+          <div class="status-label">
+            COURSE ACCESS
+          </div>
+
+          <div
+            id="statusPill"
+            class="status-pill unknown"
+          >
+            NOT CHECKED
+          </div>
+
+          <div
+            id="statusDetail"
+            class="status-detail"
+          >
+            Enter an email, choose a course,
+            and check access.
+          </div>
+
+
+          <div
+            id="purchaseRecord"
+            class="purchase-record"
+          >
+
+            <div class="record-row">
+              <span class="record-label">
+                Customer
+              </span>
+
+              <span
+                id="recordCustomer"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Course
+              </span>
+
+              <span
+                id="recordCourse"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Status
+              </span>
+
+              <span
+                id="recordStatus"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Payment Provider
+              </span>
+
+              <span
+                id="recordProvider"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Amount
+              </span>
+
+              <span
+                id="recordAmount"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Transaction
+              </span>
+
+              <span
+                id="recordTransaction"
+                class="record-value"
+              ></span>
+            </div>
+
+            <div class="record-row">
+              <span class="record-label">
+                Purchased
+              </span>
+
+              <span
+                id="recordPurchased"
+                class="record-value"
+              ></span>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+
+
+    <div class="footer">
+      B.O.S.S CODE MEDIA GROUP • GREATNESS IS A DECISION
+    </div>
+
+  </main>
+
+
+  <script>
+    const API_BASE =
+      "https://boss-code-go-api.dezthareason4ever.workers.dev";
+
+    const KEY_STORAGE =
+      "boss-code-admin-key";
+
+    let adminKey =
+      sessionStorage.getItem(KEY_STORAGE) || "";
+
+    let courses = [];
+
+
+    const loginOverlay =
+      document.getElementById("loginOverlay");
+
+    const adminKeyInput =
+      document.getElementById("adminKeyInput");
+
+    const unlockButton =
+      document.getElementById("unlockButton");
+
+    const lockButton =
+      document.getElementById("lockButton");
+
+    const loginError =
+      document.getElementById("loginError");
+
+    const customerName =
+      document.getElementById("customerName");
+
+    const customerEmail =
+      document.getElementById("customerEmail");
+
+    const courseSelect =
+      document.getElementById("courseSelect");
+
+    const checkButton =
+      document.getElementById("checkButton");
+
+    const purchaseButton =
+      document.getElementById("purchaseButton");
+
+    const revokeButton =
+      document.getElementById("revokeButton");
+
+    const message =
+      document.getElementById("message");
+
+    const statusPill =
+      document.getElementById("statusPill");
+
+    const statusDetail =
+      document.getElementById("statusDetail");
+
+    const purchaseRecord =
+      document.getElementById("purchaseRecord");
+
+    const coursePreview =
+      document.getElementById("coursePreview");
+
+    const courseImage =
+      document.getElementById("courseImage");
+
+    const courseTitle =
+      document.getElementById("courseTitle");
+
+    const courseSubtitle =
+      document.getElementById("courseSubtitle");
+
+    const courseDescription =
+      document.getElementById("courseDescription");
+
+    const coursePrice =
+      document.getElementById("coursePrice");
+
+    const recordCustomer =
+      document.getElementById("recordCustomer");
+
+    const recordCourse =
+      document.getElementById("recordCourse");
+
+    const recordStatus =
+      document.getElementById("recordStatus");
+
+    const recordProvider =
+      document.getElementById("recordProvider");
+
+    const recordAmount =
+      document.getElementById("recordAmount");
+
+    const recordTransaction =
+      document.getElementById("recordTransaction");
+
+    const recordPurchased =
+      document.getElementById("recordPurchased");
+
+
+    function adminHeaders(
+      includeJson = true
+    ) {
+
+      const headers = {
+        "X-Admin-Key": adminKey
+      };
+
+      if (includeJson) {
+        headers["Content-Type"] =
+          "application/json";
+      }
+
+      return headers;
+    }
+
+
+    async function api(
+      path,
+      options = {}
+    ) {
+
+      const response =
+        await fetch(
+          API_BASE + path,
+          {
+            ...options,
+            headers: {
+              ...adminHeaders(
+                options.body !== undefined
+              ),
+              ...(options.headers || {})
+            }
+          }
+        );
+
+      let data = null;
+
+      try {
+        data = await response.json();
+      }
+      catch (error) {
+        data = {
+          success: false,
+          error:
+            "The server returned an invalid response."
+        };
+      }
+
+
+      if (!response.ok) {
+
+        const err =
+          new Error(
+            data?.error ||
+            "Request failed"
+          );
+
+        err.status =
+          response.status;
+
+        err.data =
+          data;
+
+        throw err;
+      }
+
+
+      return data;
+    }
+
+
+    function showMessage(
+      text,
+      type = "info"
+    ) {
+
+      message.textContent =
+        text;
+
+      message.className =
+        "message show " + type;
+
+    }
+
+
+    function clearMessage() {
+
+      message.textContent = "";
+
+      message.className =
+        "message";
+
+    }
+
+
+    function setLoading(
+      loading
+    ) {
+
+      checkButton.disabled =
+        loading;
+
+      purchaseButton.disabled =
+        loading;
+
+      revokeButton.disabled =
+        loading;
+
+    }
+
+
+    function money(
+      cents
+    ) {
+
+      const amount =
+        Number(cents || 0) / 100;
+
+      return new Intl.NumberFormat(
+        "en-US",
+        {
+          style: "currency",
+          currency: "USD"
+        }
+      ).format(amount);
+
+    }
+
+
+    function getSelectedCourse() {
+
+      const id =
+        Number(
+          courseSelect.value
+        );
+
+      return courses.find(
+        course =>
+          Number(course.id) === id
+      ) || null;
+
+    }
+
+
+    function renderCoursePreview() {
+
+      const course =
+        getSelectedCourse();
+
+      if (!course) {
+
+        coursePreview.classList.remove(
+          "show"
+        );
+
+        return;
+      }
+
+
+      coursePreview.classList.add(
+        "show"
+      );
+
+
+      courseTitle.textContent =
+        course.title || "";
+
+
+      courseSubtitle.textContent =
+        course.subtitle || "";
+
+
+      courseDescription.textContent =
+        course.description || "";
+
+
+      coursePrice.textContent =
+        money(
+          course.price_cents
+        );
+
+
+      courseImage.innerHTML = "";
+
+
+      if (course.cover_url) {
+
+        const img =
+          document.createElement("img");
+
+        img.src =
+          course.cover_url;
+
+        img.alt =
+          course.title || "Course";
+
+        courseImage.appendChild(
+          img
+        );
+
+      }
+      else {
+
+        courseImage.innerHTML =
+          '<div class="no-cover">NO COURSE COVER</div>';
+
+      }
+
+    }
+
+
+    function resetStatus() {
+
+      statusPill.className =
+        "status-pill unknown";
+
+      statusPill.textContent =
+        "NOT CHECKED";
+
+      statusDetail.textContent =
+        "Enter an email, choose a course, and check access.";
+
+      purchaseRecord.classList.remove(
+        "show"
+      );
+
+    }
+
+
+    function renderStatus(
+      unlocked,
+      data = null
+    ) {
+
+      purchaseRecord.classList.remove(
+        "show"
+      );
+
+
+      if (unlocked) {
+
+        statusPill.className =
+          "status-pill owned";
+
+        statusPill.textContent =
+          "OWNED";
+
+        statusDetail.textContent =
+          "This customer currently owns this course.";
+
+      }
+      else {
+
+        statusPill.className =
+          "status-pill locked";
+
+        statusPill.textContent =
+          "LOCKED";
+
+        statusDetail.textContent =
+          "This customer does not currently have active access to this course.";
+
+      }
+
+
+      if (!data) {
+        return;
+      }
+
+
+      purchaseRecord.classList.add(
+        "show"
+      );
+
+
+      recordCustomer.textContent =
+        data.name ||
+        data.email ||
+        "";
+
+
+      recordCourse.textContent =
+        data.course_title ||
+        "";
+
+
+      recordStatus.textContent =
+        data.status ||
+        (
+          unlocked
+            ? "active"
+            : "none"
+        );
+
+
+      recordProvider.textContent =
+        data.payment_provider ||
+        "";
+
+
+      recordAmount.textContent =
+        money(
+          data.amount_paid_cents
+        );
+
+
+      recordTransaction.textContent =
+        data.transaction_id ||
+        "";
+
+
+      recordPurchased.textContent =
+        data.purchased_at ||
+        "";
+
+    }
+
+
+    function validateForm() {
+
+      const email =
+        customerEmail.value
+          .trim()
+          .toLowerCase();
+
+      const course =
+        getSelectedCourse();
+
+
+      if (
+        !email ||
+        !email.includes("@")
+      ) {
+
+        showMessage(
+          "Enter a valid customer email.",
+          "error"
+        );
+
+        return null;
+      }
+
+
+      if (!course) {
+
+        showMessage(
+          "Choose a course.",
+          "error"
+        );
+
+        return null;
+      }
+
+
+      return {
+        email,
+        name:
+          customerName.value.trim(),
+        course
+      };
+
+    }
+
+
+    async function verifyAdminKey() {
+
+      const testEmail =
+        "payment-console-test@bosscode.local";
+
+      const testCourseId =
+        courses.length
+          ? courses[0].id
+          : 1;
+
+
+      await api(
+        "/dm-test-entitlements" +
+        "?email=" +
+        encodeURIComponent(testEmail) +
+        "&course_id=" +
+        encodeURIComponent(testCourseId)
+      );
+
+    }
+
+
+    async function loadCourses() {
+
+      const result =
+        await api(
+          "/dm-courses?include_unpublished=1"
+        );
+
+
+      courses =
+        Array.isArray(result.data)
+          ? result.data
+          : [];
+
+
+      courseSelect.innerHTML = "";
+
+
+      if (!courses.length) {
+
+        const option =
+          document.createElement(
+            "option"
+          );
+
+        option.value = "";
+
+        option.textContent =
+          "No courses found";
+
+        courseSelect.appendChild(
+          option
+        );
+
+        return;
+      }
+
+
+      courses.forEach(
+        course => {
+
+          const option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            course.id;
+
+          option.textContent =
+            `${course.title} • ${money(course.price_cents)}`;
+
+          courseSelect.appendChild(
+            option
+          );
+
+        }
+      );
+
+
+      renderCoursePreview();
+
+    }
+
+
+    async function unlock() {
+
+      const value =
+        adminKeyInput.value.trim();
+
+
+      if (!value) {
+
+        loginError.textContent =
+          "Enter your Admin Key.";
+
+        return;
+      }
+
+
+      unlockButton.disabled =
+        true;
+
+      unlockButton.textContent =
+        "CHECKING...";
+
+      loginError.textContent =
+        "";
+
+
+      try {
+
+        adminKey =
+          value;
+
+        sessionStorage.setItem(
+          KEY_STORAGE,
+          adminKey
+        );
+
+
+        await loadCourses();
+
+        await verifyAdminKey();
+
+
+        loginOverlay.classList.add(
+          "hidden"
+        );
+
+        adminKeyInput.value = "";
+
+        resetStatus();
+
+      }
+      catch (error) {
+
+        sessionStorage.removeItem(
+          KEY_STORAGE
+        );
+
+        adminKey = "";
+
+        loginError.textContent =
+          error.status === 401
+            ? "That Admin Key is not correct."
+            : (
+                error.message ||
+                "Unable to connect."
+              );
+
+      }
+      finally {
+
+        unlockButton.disabled =
+          false;
+
+        unlockButton.textContent =
+          "UNLOCK";
+
+      }
+
+    }
+
+
+    function lockConsole() {
+
+      sessionStorage.removeItem(
+        KEY_STORAGE
+      );
+
+      adminKey = "";
+
+      loginOverlay.classList.remove(
+        "hidden"
+      );
+
+      resetStatus();
+
+      clearMessage();
+
+      setTimeout(
+        () =>
+          adminKeyInput.focus(),
+        100
+      );
+
+    }
+
+
+    async function checkAccess() {
+
+      clearMessage();
+
+      const form =
+        validateForm();
+
+      if (!form) {
+        return;
+      }
+
+
+      setLoading(true);
+
+
+      try {
+
+        const result =
+          await api(
+            "/dm-test-entitlements" +
+            "?email=" +
+            encodeURIComponent(
+              form.email
+            ) +
+            "&course_id=" +
+            encodeURIComponent(
+              form.course.id
+            )
+          );
+
+
+        renderStatus(
+          Boolean(
+            result.unlocked
+          ),
+          result.data || null
+        );
+
+
+        showMessage(
+          result.unlocked
+            ? "Access confirmed. This course is owned."
+            : "No active course access was found.",
+          result.unlocked
+            ? "success"
+            : "info"
+        );
+
+      }
+      catch (error) {
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+      }
+      finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+
+    async function simulatePurchase() {
+
+      clearMessage();
+
+      const form =
+        validateForm();
+
+      if (!form) {
+        return;
+      }
+
+
+      const price =
+        money(
+          form.course.price_cents
+        );
+
+
+      const confirmed =
+        window.confirm(
+          "Simulate a " +
+          price +
+          " purchase for " +
+          form.email +
+          "?"
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      setLoading(true);
+
+
+      try {
+
+        const result =
+          await api(
+            "/dm-test-entitlements/grant",
+            {
+              method: "POST",
+
+              body:
+                JSON.stringify({
+                  name:
+                    form.name,
+
+                  email:
+                    form.email,
+
+                  course_id:
+                    Number(
+                      form.course.id
+                    ),
+
+                  amount_paid_cents:
+                    Number(
+                      form.course.price_cents || 0
+                    )
+                })
+            }
+          );
+
+
+        renderStatus(
+          true,
+          result.data || null
+        );
+
+
+        showMessage(
+          "TEST PURCHASE COMPLETE. COURSE UNLOCKED.",
+          "success"
+        );
+
+      }
+      catch (error) {
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+      }
+      finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+
+    async function revokeAccess() {
+
+      clearMessage();
+
+      const form =
+        validateForm();
+
+      if (!form) {
+        return;
+      }
+
+
+      const confirmed =
+        window.confirm(
+          "Revoke course access for " +
+          form.email +
+          "?"
+        );
+
+
+      if (!confirmed) {
+        return;
+      }
+
+
+      setLoading(true);
+
+
+      try {
+
+        await api(
+          "/dm-test-entitlements/revoke",
+          {
+            method: "POST",
+
+            body:
+              JSON.stringify({
+                email:
+                  form.email,
+
+                course_id:
+                  Number(
+                    form.course.id
+                  )
+              })
+          }
+        );
+
+
+        renderStatus(
+          false,
+          null
+        );
+
+
+        showMessage(
+          "TEST ACCESS REVOKED.",
+          "success"
+        );
+
+      }
+      catch (error) {
+
+        showMessage(
+          error.message,
+          "error"
+        );
+
+      }
+      finally {
+
+        setLoading(false);
+
+      }
+
+    }
+
+
+    courseSelect.addEventListener(
+      "change",
+      () => {
+
+        renderCoursePreview();
+        resetStatus();
+        clearMessage();
+
+      }
+    );
+
+
+    customerEmail.addEventListener(
+      "input",
+      () => {
+
+        resetStatus();
+        clearMessage();
+
+      }
+    );
+
+
+    unlockButton.addEventListener(
+      "click",
+      unlock
+    );
+
+
+    adminKeyInput.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Enter"
+        ) {
+
+          unlock();
+
+        }
+
+      }
+    );
+
+
+    lockButton.addEventListener(
+      "click",
+      lockConsole
+    );
+
+
+    checkButton.addEventListener(
+      "click",
+      checkAccess
+    );
+
+
+    purchaseButton.addEventListener(
+      "click",
+      simulatePurchase
+    );
+
+
+    revokeButton.addEventListener(
+      "click",
+      revokeAccess
+    );
+
+
+    async function start() {
+
+      if (!adminKey) {
+
+        loginOverlay.classList.remove(
+          "hidden"
+        );
+
+        setTimeout(
+          () =>
+            adminKeyInput.focus(),
+          100
+        );
+
+        return;
+      }
+
+
+      try {
+
+        await loadCourses();
+
+        await verifyAdminKey();
+
+        loginOverlay.classList.add(
+          "hidden"
+        );
+
+      }
+      catch (error) {
+
+        sessionStorage.removeItem(
+          KEY_STORAGE
+        );
+
+        adminKey = "";
+
+        loginOverlay.classList.remove(
+          "hidden"
+        );
+
+      }
+
+    }
+
+
+    start();
+  </script>
+
+</body>
+</html>
