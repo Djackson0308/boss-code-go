@@ -1,1099 +1,2988 @@
 (() => {
-    "use strict";
+  "use strict";
 
-    /* ========================================================= */
-    /* B.O.S.S CODE GO
-       DECISION MAKERS RESOURCE BACKEND
+  const API = "https://boss-code-go-api.dezthareason4ever.workers.dev";
+  const CHALLENGE_KEY = "boss-code-decision-maker-challenges-v1";
+  const COURSE_EMAIL_KEY = "boss-code-dm-course-email-v1";
 
-       IMPORTANT:
-       app.js now owns Decision Makers videos,
-       focused sessions and Take Action challenges.
+  let sessions = [];
+  let challenges = [];
+  let resources = [];
+  let activeCourse = null;
+  let activeRun = null;
+  let activeSummary = null;
+  let activeDays = [];
+  let activeProgress = [];
+  let activeEmail = "";
 
-       This file owns ONLY Decision Maker resources.
-       That prevents duplicate cards and duplicate controls.
-    /* ========================================================= */
+  const $ = (id) => document.getElementById(id);
 
-    const API =
-        "https://boss-code-go-api.dezthareason4ever.workers.dev";
+  const esc = (value) =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 
-    let backendResources = [];
+  function isPublished(item) {
+    return (
+      item?.published == null ||
+      Number(item.published) === 1
+    );
+  }
 
-    /* ========================================================= */
-    /* HELPERS */
-    /* ========================================================= */
+  function sortItems(items) {
+    return [...items].sort((a, b) => {
+      const aSort = Number(a.sort_order ?? 0);
+      const bSort = Number(b.sort_order ?? 0);
 
-    function escapeHTML(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/\"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
+      if (aSort !== bSort) {
+        return aSort - bSort;
+      }
 
-    function published(item) {
-        if (
-            item.published === undefined ||
-            item.published === null
-        ) {
-            return true;
-        }
+      return (
+        Number(
+          a.session_number ??
+          a.challenge_number ??
+          a.id ??
+          0
+        ) -
+        Number(
+          b.session_number ??
+          b.challenge_number ??
+          b.id ??
+          0
+        )
+      );
+    });
+  }
 
-        return Number(item.published) === 1;
-    }
+  async function api(
+    path,
+    options = {}
+  ) {
+    const response =
+      await fetch(
+        `${API}${path}`,
+        {
+          ...options,
 
-    function sortResources(items) {
-        return [...items].sort((a, b) => {
-            const featuredDifference =
-                Number(b.featured ?? 0) -
-                Number(a.featured ?? 0);
+          headers: {
+            Accept: "application/json",
 
-            if (featuredDifference !== 0) {
-                return featuredDifference;
-            }
-
-            const sortDifference =
-                Number(a.sort_order ?? 0) -
-                Number(b.sort_order ?? 0);
-
-            if (sortDifference !== 0) {
-                return sortDifference;
-            }
-
-            return (
-                Number(b.id ?? 0) -
-                Number(a.id ?? 0)
-            );
-        });
-    }
-
-    async function getData(path) {
-        const response =
-            await fetch(
-                `${API}${path}`,
-                {
-                    method: "GET",
-                    cache: "no-store",
-                    headers: {
-                        "Accept": "application/json"
-                    }
+            ...(options.body
+              ? {
+                  "Content-Type":
+                    "application/json"
                 }
-            );
+              : {}),
 
-        if (!response.ok) {
-            throw new Error(
-                `Request failed: ${response.status}`
-            );
+            ...(options.headers || {})
+          }
         }
+      );
 
-        const json =
-            await response.json();
+    let data = null;
 
-        if (Array.isArray(json)) {
-            return json;
-        }
-
-        if (Array.isArray(json.data)) {
-            return json.data;
-        }
-
-        return [];
+    try {
+      data =
+        await response.json();
     }
-
-    function safeFilename(
-        text,
-        extension
-    ) {
-        const clean =
-            String(
-                text ||
-                "decision-maker-resource"
-            )
-                .trim()
-                .replace(/[^a-z0-9]+/gi, "-")
-                .replace(/^-+|-+$/g, "")
-                .toLowerCase();
-
-        return `${
-            clean ||
-            "decision-maker-resource"
-        }${extension}`;
-    }
-
-    function resourceExtension(
-        resource,
-        blob
-    ) {
-        const type =
-            String(
-                resource.resource_type ||
-                ""
-            ).toUpperCase();
-
-        const url =
-            String(
-                resource.file_url ||
-                ""
-            );
-
-        const urlMatch =
-            url.match(
-                /\.([a-z0-9]{2,6})(?:[?#].*)?$/i
-            );
-
-        if (urlMatch) {
-            return `.${urlMatch[1].toLowerCase()}`;
-        }
-
-        if (
-            blob?.type?.includes("pdf") ||
-            type.includes("PDF") ||
-            type.includes("BOOK") ||
-            type.includes("WORKBOOK") ||
-            type.includes("GUIDE")
-        ) {
-            return ".pdf";
-        }
-
-        return ".pdf";
-    }
-
-    /* ========================================================= */
-    /* RESOURCE SECTION */
-    /* ========================================================= */
-
-    function removeLegacyDuplicateResourceSections() {
-        const sections =
-            [
-                ...document.querySelectorAll(
-                    "#decision-makers-resources-section"
-                )
-            ];
-
-        if (sections.length <= 1) {
-            return;
-        }
-
-        sections
-            .slice(1)
-            .forEach(
-                section =>
-                    section.remove()
-            );
-    }
-
-    function resourceSection() {
-        removeLegacyDuplicateResourceSections();
-
-        let section =
-            document.getElementById(
-                "decision-makers-resources-section"
-            );
-
-        if (section) {
-            section.innerHTML = `
-                <div class="decision-heading">
-                    <div>
-                        <span class="decision-kicker">
-                            KEEP BUILDING
-                        </span>
-
-                        <h2>
-                            DECISION MAKER RESOURCES
-                        </h2>
-                    </div>
-
-                    <span class="red-line"></span>
-                </div>
-
-                <p class="decision-section-copy">
-                    Tools designed to help you turn the decision into action.
-                </p>
-
-                <div
-                    id="decision-makers-resource-grid"
-                    class="dm-resource-grid"
-                ></div>
-            `;
-
-            return section;
-        }
-
-        const screen =
-            document.getElementById(
-                "decision-makers-screen"
-            );
-
-        if (!screen) {
-            return null;
-        }
-
-        const footer =
-            screen.querySelector(
-                ".boss-footer"
-            );
-
-        section =
-            document.createElement(
-                "section"
-            );
-
-        section.id =
-            "decision-makers-resources-section";
-
-        section.className =
-            "decision-section dm-resource-section";
-
-        section.innerHTML = `
-            <div class="decision-heading">
-                <div>
-                    <span class="decision-kicker">
-                        KEEP BUILDING
-                    </span>
-
-                    <h2>
-                        DECISION MAKER RESOURCES
-                    </h2>
-                </div>
-
-                <span class="red-line"></span>
-            </div>
-
-            <p class="decision-section-copy">
-                Tools designed to help you turn the decision into action.
-            </p>
-
-            <div
-                id="decision-makers-resource-grid"
-                class="dm-resource-grid"
-            ></div>
-        `;
-
-        if (footer) {
-            screen.insertBefore(
-                section,
-                footer
-            );
-        }
-        else {
-            screen.appendChild(
-                section
-            );
-        }
-
-        return section;
-    }
-
-    /* ========================================================= */
-    /* RESOURCE DOWNLOAD */
-    /* ========================================================= */
-
-    async function downloadResource(
-        resource,
-        button
-    ) {
-        const url =
-            String(
-                resource.file_url ||
-                ""
-            ).trim();
-
-        if (!url) {
-            return;
-        }
-
-        const originalText =
-            button.textContent;
-
-        button.disabled =
-            true;
-
-        button.textContent =
-            "PREPARING DOWNLOAD...";
-
-        try {
-            const response =
-                await fetch(
-                    url,
-                    {
-                        cache: "no-store"
-                    }
-                );
-
-            if (!response.ok) {
-                throw new Error(
-                    "Download failed."
-                );
-            }
-
-            const blob =
-                await response.blob();
-
-            const objectURL =
-                URL.createObjectURL(
-                    blob
-                );
-
-            const anchor =
-                document.createElement(
-                    "a"
-                );
-
-            anchor.href =
-                objectURL;
-
-            anchor.download =
-                safeFilename(
-                    resource.title,
-                    resourceExtension(
-                        resource,
-                        blob
-                    )
-                );
-
-            document.body.appendChild(
-                anchor
-            );
-
-            anchor.click();
-            anchor.remove();
-
-            setTimeout(
-                function () {
-                    URL.revokeObjectURL(
-                        objectURL
-                    );
-                },
-                1000
-            );
-
-            button.textContent =
-                "DOWNLOAD STARTED ✓";
-
-            setTimeout(
-                function () {
-                    button.textContent =
-                        originalText;
-
-                    button.disabled =
-                        false;
-                },
-                2000
-            );
-        }
-        catch (error) {
-            /*
-            Some direct file hosts do not allow
-            browser fetch because of CORS.
-            In that case use the actual file URL.
-            */
-
-            window.open(
-                url,
-                "_blank",
-                "noopener,noreferrer"
-            );
-
-            button.textContent =
-                originalText;
-
-            button.disabled =
-                false;
-        }
-    }
-        /* ========================================================= */
-    /* RESOURCE RENDERER */
-    /* ========================================================= */
-
-    function renderResources() {
-        const resources =
-            sortResources(
-                backendResources.filter(
-                    function (item) {
-                        return (
-                            published(item) &&
-                            String(
-                                item.file_url ||
-                                ""
-                            ).trim()
-                        );
-                    }
-                )
-            );
-
-        /*
-        No published resources means no empty
-        resource section should be visible.
-        */
-
-        if (!resources.length) {
-            const existing =
-                document.getElementById(
-                    "decision-makers-resources-section"
-                );
-
-            if (existing) {
-                existing.remove();
-            }
-
-            return;
-        }
-
-        const section =
-            resourceSection();
-
-        if (!section) {
-            return;
-        }
-
-        const grid =
-            document.getElementById(
-                "decision-makers-resource-grid"
-            );
-
-        if (!grid) {
-            return;
-        }
-
-        grid.innerHTML = "";
-
-        resources.forEach(
-            function (resource) {
-                const card =
-                    document.createElement(
-                        "article"
-                    );
-
-                card.className =
-                    "dm-resource-card";
-
-                card.dataset.resourceId =
-                    String(
-                        resource.id ??
-                        ""
-                    );
-
-                const cover =
-                    String(
-                        resource.cover_image_url ||
-                        ""
-                    ).trim();
-
-                const resourceType =
-                    resource.resource_type ||
-                    "RESOURCE";
-
-                const title =
-                    resource.title ||
-                    "DECISION MAKER RESOURCE";
-
-                const description =
-                    resource.description ||
-                    "";
-
-                const buttonText =
-                    resource.button_text ||
-                    "DOWNLOAD FREE SAMPLE";
-
-                card.innerHTML = `
-                    ${
-                        cover
-                            ? `
-                                <div class="dm-resource-cover">
-
-                                    <img
-                                        src="${escapeHTML(cover)}"
-                                        alt="${escapeHTML(title)}"
-                                    >
-
-                                </div>
-                            `
-                            : `
-                                <div
-                                    class="
-                                        dm-resource-cover
-                                        dm-resource-cover-placeholder
-                                    "
-                                >
-
-                                    <span>
-                                        DECISION MAKERS
-                                    </span>
-
-                                    <strong>
-                                        RESOURCE
-                                    </strong>
-
-                                    <small>
-                                        GREATNESS IS A DECISION
-                                    </small>
-
-                                </div>
-                            `
-                    }
-
-                    <div class="dm-resource-content">
-
-                        <span class="dm-resource-type">
-                            ${escapeHTML(resourceType)}
-                        </span>
-
-                        <h3>
-                            ${escapeHTML(title)}
-                        </h3>
-
-                        ${
-                            description
-                                ? `
-                                    <p>
-                                        ${escapeHTML(description)}
-                                    </p>
-                                `
-                                : ""
-                        }
-
-                        <button
-                            class="dm-resource-download"
-                            type="button"
-                            data-resource-id="${escapeHTML(
-                                resource.id ??
-                                ""
-                            )}"
-                        >
-                            ${escapeHTML(buttonText)}
-                        </button>
-
-                    </div>
-                `;
-
-                const button =
-                    card.querySelector(
-                        ".dm-resource-download"
-                    );
-
-                if (button) {
-                    button.addEventListener(
-                        "click",
-                        function () {
-                            downloadResource(
-                                resource,
-                                button
-                            );
-                        }
-                    );
-                }
-
-                grid.appendChild(
-                    card
-                );
-            }
+    catch (_) {}
+
+    if (!response.ok) {
+      const error =
+        new Error(
+          data?.error ||
+          data?.message ||
+          `Request failed: ${response.status}`
         );
 
-        /*
-        app.js keeps RETURN TO HOME immediately
-        above the company footer.
+      error.status =
+        response.status;
 
-        Because this resource section is created
-        dynamically, move that existing button
-        back to its proper position afterward.
-        */
+      error.data =
+        data;
 
-        const screen =
-            document.getElementById(
-                "decision-makers-screen"
-            );
-
-        const footer =
-            screen?.querySelector(
-                ".boss-footer"
-            );
-
-        const returnHome =
-            screen?.querySelector(
-                ".boss-return-home-bottom"
-            );
-
-        if (
-            footer &&
-            returnHome
-        ) {
-            footer.insertAdjacentElement(
-                "beforebegin",
-                returnHome
-            );
-        }
+      throw error;
     }
 
-
-    /* ========================================================= */
-    /* B.O.S.S CODE RESOURCE STYLES */
-    /* ========================================================= */
-
-    function installStyles() {
-        const existing =
-            document.getElementById(
-                "decision-makers-backend-styles"
-            );
-
-        if (existing) {
-            existing.remove();
-        }
-
-        const style =
-            document.createElement(
-                "style"
-            );
-
-        style.id =
-            "decision-makers-backend-styles";
-
-        style.textContent = `
-
-            /* ==============================================
-               RESOURCE SECTION
-            ============================================== */
-
-            .dm-resource-section {
-                width: 100%;
-                max-width: 1100px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-
-            .dm-resource-grid {
-                display: grid;
-                grid-template-columns:
-                    repeat(
-                        auto-fit,
-                        minmax(240px, 1fr)
-                    );
-                gap: 22px;
-                margin-top: 24px;
-            }
-
-
-            /* ==============================================
-               RESOURCE CARD
-            ============================================== */
-
-            .dm-resource-card {
-                position: relative;
-                overflow: hidden;
-
-                background:
-                    linear-gradient(
-                        145deg,
-                        #101010,
-                        #050505
-                    );
-
-                border:
-                    2px solid #F5C518;
-
-                border-radius:
-                    20px;
-
-                box-shadow:
-                    0 18px 45px
-                    rgba(
-                        0,
-                        0,
-                        0,
-                        .35
-                    );
-
-                color:
-                    #fff;
-            }
-
-
-            .dm-resource-card::before {
-                content: "";
-
-                position:
-                    absolute;
-
-                left:
-                    0;
-
-                top:
-                    0;
-
-                width:
-                    100%;
-
-                height:
-                    4px;
-
-                background:
-                    #F5C518;
-
-                z-index:
-                    2;
-            }
-
-
-            /* ==============================================
-               COVER
-            ============================================== */
-
-            .dm-resource-cover {
-                width:
-                    100%;
-
-                aspect-ratio:
-                    4 / 5;
-
-                background:
-                    #050505;
-
-                overflow:
-                    hidden;
-
-                border-bottom:
-                    1px solid #282828;
-            }
-
-
-            .dm-resource-cover img {
-                display:
-                    block;
-
-                width:
-                    100%;
-
-                height:
-                    100%;
-
-                object-fit:
-                    cover;
-            }
-
-
-            .dm-resource-cover-placeholder {
-                display:
-                    flex;
-
-                flex-direction:
-                    column;
-
-                align-items:
-                    center;
-
-                justify-content:
-                    center;
-
-                text-align:
-                    center;
-
-                padding:
-                    30px;
-
-                background:
-                    radial-gradient(
-                        circle at center,
-                        rgba(
-                            245,
-                            197,
-                            24,
-                            .12
-                        ),
-                        transparent 65%
-                    ),
-                    #050505;
-            }
-
-
-            .dm-resource-cover-placeholder span {
-                color:
-                    #F5C518;
-
-                font-size:
-                    11px;
-
-                font-weight:
-                    900;
-
-                letter-spacing:
-                    2px;
-            }
-
-
-            .dm-resource-cover-placeholder strong {
-                margin-top:
-                    10px;
-
-                color:
-                    #fff;
-
-                font-size:
-                    30px;
-
-                font-weight:
-                    900;
-
-                letter-spacing:
-                    1px;
-            }
-
-
-            .dm-resource-cover-placeholder small {
-                margin-top:
-                    12px;
-
-                color:
-                    #777;
-
-                font-size:
-                    8px;
-
-                font-weight:
-                    900;
-
-                letter-spacing:
-                    1.5px;
-            }
-
-
-            /* ==============================================
-               RESOURCE CONTENT
-            ============================================== */
-
-            .dm-resource-content {
-                padding:
-                    20px;
-            }
-
-
-            .dm-resource-type {
-                display:
-                    block;
-
-                color:
-                    #F5C518;
-
-                font-size:
-                    9px;
-
-                font-weight:
-                    900;
-
-                letter-spacing:
-                    1.8px;
-
-                margin-bottom:
-                    7px;
-            }
-
-
-            .dm-resource-content h3 {
-                margin:
-                    0 0 9px;
-
-                color:
-                    #fff;
-
-                font-size:
-                    21px;
-
-                line-height:
-                    1.2;
-            }
-
-
-            .dm-resource-content p {
-                margin:
-                    0;
-
-                color:
-                    #aaa;
-
-                font-size:
-                    13px;
-
-                line-height:
-                    1.55;
-            }
-
-
-            /* ==============================================
-               YELLOW + BLACK DOWNLOAD BUTTON
-            ============================================== */
-
-            .dm-resource-download {
-                display:
-                    block;
-
-                width:
-                    100%;
-
-                min-height:
-                    48px;
-
-                margin-top:
-                    18px;
-
-                padding:
-                    12px 18px;
-
-                border:
-                    2px solid #F5C518;
-
-                border-radius:
-                    999px;
-
-                background:
-                    #F5C518;
-
-                color:
-                    #000;
-
-                font:
-                    inherit;
-
-                font-size:
-                    11px;
-
-                font-weight:
-                    900;
-
-                letter-spacing:
-                    1px;
-
-                cursor:
-                    pointer;
-
-                transition:
-                    transform .16s ease,
-                    background .16s ease,
-                    color .16s ease;
-            }
-
-
-            .dm-resource-download:hover {
-                transform:
-                    translateY(-1px);
-
-                background:
-                    #000;
-
-                color:
-                    #F5C518;
-            }
-
-
-            .dm-resource-download:active {
-                transform:
-                    scale(.985);
-            }
-
-
-            .dm-resource-download:disabled {
-                cursor:
-                    wait;
-
-                opacity:
-                    .75;
-            }
-
-
-            /* ==============================================
-               MOBILE
-            ============================================== */
-
-            @media (
-                max-width: 700px
-            ) {
-
-                .dm-resource-grid {
-                    grid-template-columns:
-                        1fr;
-
-                    gap:
-                        18px;
-                }
-
-
-                .dm-resource-card {
-                    width:
-                        100%;
-                }
-
-
-                .dm-resource-content {
-                    padding:
-                        18px;
-                }
-
-
-                .dm-resource-content h3 {
-                    font-size:
-                        19px;
-                }
-
-
-                .dm-resource-download {
-                    min-height:
-                        50px;
-
-                    font-size:
-                        10px;
-                }
-
-            }
-
-        `;
-
-        document.head.appendChild(
-            style
-        );
+    return data || {};
+  }
+
+  async function getArray(path) {
+    const json =
+      await api(path);
+
+    if (Array.isArray(json)) {
+      return json;
     }
 
+    return Array.isArray(json.data)
+      ? json.data
+      : [];
+  }
 
-    /* ========================================================= */
-    /* LOAD RESOURCE CONTENT */
-    /* ========================================================= */
-
-    async function loadDecisionMakerResources() {
-        installStyles();
-
-        try {
-            backendResources =
-                await getData(
-                    "/decision-maker-resources"
-                );
-
-            renderResources();
-
-            console.info(
-                "Decision Makers resources loaded."
-            );
-        }
-        catch (error) {
-            console.warn(
-                "Decision Makers resources could not be loaded.",
-                error
-            );
-        }
-    }
-
-
-    /* ========================================================= */
-    /* START */
-    /* ========================================================= */
+  function youtubeId(value) {
+    const text =
+      String(value || "")
+        .trim();
 
     if (
-        document.readyState ===
-        "loading"
+      /^[A-Za-z0-9_-]{11}$/.test(
+        text
+      )
     ) {
-        document.addEventListener(
-            "DOMContentLoaded",
-            loadDecisionMakerResources
-        );
-    }
-    else {
-        loadDecisionMakerResources();
+      return text;
     }
 
+    try {
+      const url =
+        new URL(text);
+
+      if (
+        url.hostname.includes(
+          "youtu.be"
+        )
+      ) {
+        return url.pathname
+          .replace("/", "")
+          .split("?")[0];
+      }
+
+      if (
+        url.searchParams.get("v")
+      ) {
+        return url.searchParams.get(
+          "v"
+        );
+      }
+
+      const parts =
+        url.pathname
+          .split("/")
+          .filter(Boolean);
+
+      for (
+        const key of [
+          "live",
+          "embed",
+          "shorts"
+        ]
+      ) {
+        const index =
+          parts.indexOf(key);
+
+        if (
+          index !== -1 &&
+          parts[index + 1]
+        ) {
+          return parts[index + 1];
+        }
+      }
+    }
+    catch (_) {}
+
+    return "";
+  }
+
+  function installStyles() {
+    if (
+      $("decision-makers-backend-styles")
+    ) {
+      return;
+    }
+
+    const style =
+      document.createElement(
+        "style"
+      );
+
+    style.id =
+      "decision-makers-backend-styles";
+
+    style.textContent = `
+      .dm-watch-session-button,
+      .dm-resource-download,
+      .dm-course-primary,
+      #dm-load-courses {
+        border:1px solid #e32636;
+        background:#e32636;
+        color:#fff;
+        font:inherit;
+        font-size:11px;
+        font-weight:900;
+        letter-spacing:1px;
+        padding:12px 16px;
+        border-radius:999px;
+        cursor:pointer;
+      }
+
+      .dm-course-secondary {
+        border:1px solid #555;
+        background:#111;
+        color:#fff;
+        font:inherit;
+        font-size:11px;
+        font-weight:900;
+        letter-spacing:1px;
+        padding:12px 16px;
+        border-radius:999px;
+        cursor:pointer;
+      }
+
+      .action-button.accepted {
+        background:#f5c518;
+        border-color:#f5c518;
+        color:#000;
+        opacity:1;
+      }
+
+      #dm-session-player-overlay,
+      #dm-course-player-overlay {
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        background:rgba(0,0,0,.96);
+        display:none;
+      }
+
+      #dm-session-player-overlay.show {
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        padding:18px;
+      }
+
+      #dm-course-player-overlay.show {
+        display:block;
+        overflow-y:auto;
+        padding:14px;
+      }
+
+      .dm-session-player-shell,
+      .dm-course-player-shell {
+        width:min(100%,900px);
+        margin:auto;
+        background:#080808;
+        border:1px solid #303030;
+        border-radius:18px;
+        overflow:hidden;
+        box-shadow:
+          0 25px 80px
+          rgba(0,0,0,.6);
+      }
+
+      .dm-course-player-shell {
+        margin:
+          0 auto 40px;
+      }
+
+      .dm-session-player-top,
+      .dm-course-player-top {
+        display:flex;
+        align-items:center;
+        justify-content:
+          space-between;
+        gap:16px;
+        padding:15px 18px;
+        border-bottom:
+          1px solid #222;
+        background:#090909;
+      }
+
+      .dm-course-player-top {
+        position:sticky;
+        top:0;
+        z-index:3;
+      }
+
+      .dm-session-player-top span,
+      .dm-course-player-top span {
+        display:block;
+        color:#f5c518;
+        font-size:9px;
+        font-weight:900;
+        letter-spacing:1.8px;
+      }
+
+      .dm-session-player-top h3,
+      .dm-course-player-top h3 {
+        color:#fff;
+        margin:4px 0 0;
+        font-size:16px;
+      }
+
+      #dm-session-player-close,
+      #dm-course-player-close {
+        width:42px;
+        height:42px;
+        min-width:42px;
+        border-radius:50%;
+        border:1px solid #444;
+        background:#111;
+        color:#fff;
+        font-size:17px;
+        cursor:pointer;
+      }
+
+      .dm-session-video-wrap,
+      .dm-course-video {
+        width:100%;
+        aspect-ratio:16/9;
+        background:#000;
+        overflow:hidden;
+      }
+
+      .dm-session-video-wrap iframe,
+      .dm-course-video iframe,
+      .dm-course-video video {
+        width:100%;
+        height:100%;
+        border:0;
+        display:block;
+      }
+
+      .dm-resource-grid {
+        display:grid;
+        grid-template-columns:
+          repeat(
+            auto-fit,
+            minmax(230px,1fr)
+          );
+        gap:18px;
+        margin-top:22px;
+      }
+
+      .dm-resource-card {
+        overflow:hidden;
+        border:1px solid #2a2a2a;
+        border-radius:18px;
+        background:#0b0b0b;
+      }
+
+      .dm-resource-cover {
+        width:100%;
+        aspect-ratio:4/5;
+        background:#111;
+        overflow:hidden;
+      }
+
+      .dm-resource-cover img {
+        width:100%;
+        height:100%;
+        display:block;
+        object-fit:cover;
+      }
+
+      .dm-resource-placeholder {
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding:25px;
+      }
+
+      .dm-resource-placeholder span,
+      .dm-resource-type {
+        color:#f5c518;
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:1.6px;
+      }
+
+      .dm-resource-placeholder strong {
+        color:#fff;
+        font-size:26px;
+        margin-top:8px;
+      }
+
+      .dm-resource-content {
+        padding:18px;
+      }
+
+      .dm-resource-content h3 {
+        margin:8px 0;
+        color:#fff;
+        font-size:20px;
+      }
+
+      .dm-resource-content p {
+        color:#ccc;
+        font-size:13px;
+        line-height:1.5;
+      }
+
+      .dm-resource-download {
+        width:100%;
+        margin-top:10px;
+      }
+
+      .dm-my-courses {
+        position:relative;
+      }
+
+      .dm-course-access {
+        margin-top:18px;
+        padding:18px;
+        border:1px solid #2a2a2a;
+        border-radius:18px;
+        background:#090909;
+      }
+
+      .dm-course-access label {
+        display:block;
+        color:#f5c518;
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:1.7px;
+        margin-bottom:8px;
+      }
+
+      .dm-course-access-row {
+        display:grid;
+        grid-template-columns:
+          1fr auto;
+        gap:10px;
+      }
+
+      .dm-course-access input {
+        width:100%;
+        min-width:0;
+        border:1px solid #333;
+        border-radius:999px;
+        background:#050505;
+        color:#fff;
+        padding:13px 16px;
+        font:inherit;
+        outline:none;
+      }
+
+      .dm-course-access input:focus {
+        border-color:#f5c518;
+      }
+
+      .dm-course-status,
+      .dm-save-status {
+        min-height:18px;
+        margin-top:8px;
+        color:#999;
+        font-size:10px;
+        font-weight:800;
+      }
+
+      .dm-course-status.success,
+      .dm-save-status.success {
+        color:#f5c518;
+      }
+
+      .dm-course-status.error,
+      .dm-save-status.error {
+        color:#ff6b75;
+      }
+
+      .dm-course-list {
+        display:grid;
+        grid-template-columns:
+          repeat(
+            auto-fit,
+            minmax(260px,1fr)
+          );
+        gap:18px;
+        margin-top:20px;
+      }
+
+      .dm-course-empty,
+      .dm-course-loading,
+      .dm-course-error {
+        padding:20px;
+        border:1px solid #2a2a2a;
+        border-radius:16px;
+        background:#090909;
+        color:#aaa;
+        text-align:center;
+        font-size:11px;
+        font-weight:900;
+      }
+
+      .dm-course-card {
+        overflow:hidden;
+        border:1px solid #2b2b2b;
+        border-radius:20px;
+        background:#0a0a0a;
+      }
+
+      .dm-course-cover {
+        aspect-ratio:16/9;
+        overflow:hidden;
+        background:#111;
+      }
+
+      .dm-course-cover img {
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      }
+
+      .dm-course-cover-fallback {
+        width:100%;
+        height:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding:20px;
+      }
+
+      .dm-course-cover-fallback span,
+      .dm-course-kicker {
+        color:#f5c518;
+        font-size:9px;
+        font-weight:900;
+        letter-spacing:1.8px;
+      }
+
+      .dm-course-cover-fallback strong {
+        color:#fff;
+        margin-top:6px;
+      }
+
+      .dm-course-card-body {
+        padding:18px;
+      }
+
+      .dm-course-card-body h3 {
+        color:#fff;
+        font-size:22px;
+        margin:7px 0;
+      }
+
+      .dm-course-card-body p {
+        color:#bbb;
+        font-size:13px;
+        line-height:1.45;
+        margin:0 0 14px;
+      }
+
+      .dm-progress-copy {
+        display:flex;
+        justify-content:
+          space-between;
+        gap:10px;
+        font-size:10px;
+        font-weight:900;
+      }
+
+      .dm-progress-copy strong {
+        color:#fff;
+      }
+
+      .dm-progress-copy span {
+        color:#f5c518;
+      }
+
+      .dm-progress-track {
+        width:100%;
+        height:7px;
+        overflow:hidden;
+        border-radius:999px;
+        background:#242424;
+        margin:8px 0 15px;
+      }
+
+      .dm-progress-track div {
+        height:100%;
+        background:#f5c518;
+        border-radius:inherit;
+      }
+
+      .dm-course-primary {
+        width:100%;
+      }
+
+      .dm-course-player-content {
+        padding:20px;
+      }
+
+      .dm-day-head {
+        display:flex;
+        justify-content:
+          space-between;
+        gap:15px;
+        align-items:flex-start;
+      }
+
+      .dm-day-head span {
+        color:#f5c518;
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:1.7px;
+      }
+
+      .dm-day-head h2 {
+        color:#fff;
+        font-size:
+          clamp(
+            24px,
+            5vw,
+            38px
+          );
+        line-height:1;
+        margin:5px 0;
+      }
+
+      .dm-day-head strong {
+        color:#f5c518;
+        font-size:20px;
+      }
+
+      .dm-player-progress {
+        margin:12px 0 20px;
+      }
+
+      .dm-course-audio,
+      .dm-course-message,
+      .dm-course-prompt,
+      .dm-made-decision {
+        margin:16px 0;
+        padding:18px;
+        border:1px solid #292929;
+        border-radius:17px;
+        background:#0c0c0c;
+      }
+
+      .dm-course-audio span,
+      .dm-course-message > span,
+      .dm-course-prompt label,
+      .dm-made-decision span {
+        display:block;
+        color:#f5c518;
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:1.5px;
+        margin-bottom:9px;
+      }
+
+      .dm-course-audio audio {
+        width:100%;
+      }
+
+      .dm-course-message div {
+        color:#eee;
+        font-size:15px;
+        line-height:1.65;
+      }
+
+      .dm-course-prompt p {
+        color:#fff;
+        font-size:15px;
+        line-height:1.5;
+        margin:0 0 12px;
+      }
+
+      .dm-course-prompt textarea {
+        width:100%;
+        resize:vertical;
+        border:1px solid #333;
+        border-radius:13px;
+        background:#050505;
+        color:#fff;
+        padding:13px;
+        font:inherit;
+        line-height:1.5;
+        outline:none;
+      }
+
+      .dm-course-prompt textarea:focus {
+        border-color:#f5c518;
+      }
+
+      .dm-facing {
+        border-color:#574912;
+      }
+
+      .dm-response {
+        border-color:#473019;
+      }
+
+      .dm-made-decision strong {
+        color:#fff;
+        font-size:18px;
+        line-height:1.4;
+      }
+
+      .dm-day-actions {
+        display:grid;
+        grid-template-columns:
+          1fr 1fr;
+        gap:10px;
+        margin-top:18px;
+      }
+
+      .dm-complete-box {
+        text-align:center;
+        padding:34px 18px;
+      }
+
+      .dm-complete-box span {
+        color:#f5c518;
+        font-size:10px;
+        font-weight:900;
+        letter-spacing:2px;
+      }
+
+      .dm-complete-box h2 {
+        color:#fff;
+        font-size:30px;
+        margin:8px 0;
+      }
+
+      .dm-complete-box p {
+        color:#bbb;
+      }
+
+      @media(max-width:600px) {
+        .dm-resource-grid,
+        .dm-course-list,
+        .dm-course-access-row,
+        .dm-day-actions {
+          grid-template-columns:1fr;
+        }
+
+        .dm-course-player-content {
+          padding:14px;
+        }
+
+        .dm-session-player-shell,
+        .dm-course-player-shell {
+          border-radius:12px;
+        }
+      }
+    `;
+
+    document.head.appendChild(
+      style
+    );
+  }
+
+  function ensureSessionPlayer() {
+    if (
+      $("dm-session-player-overlay")
+    ) {
+      return;
+    }
+
+    const overlay =
+      document.createElement(
+        "div"
+      );
+
+    overlay.id =
+      "dm-session-player-overlay";
+
+    overlay.innerHTML = `
+      <div class="dm-session-player-shell">
+
+        <div class="dm-session-player-top">
+
+          <div>
+            <span>
+              DECISION MAKER SESSION
+            </span>
+
+            <h3 id="dm-session-player-title">
+              SESSION
+            </h3>
+          </div>
+
+          <button
+            id="dm-session-player-close"
+            type="button"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <div class="dm-session-video-wrap">
+
+          <iframe
+            id="dm-session-player-frame"
+            src=""
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      overlay
+    );
+
+    $(
+      "dm-session-player-close"
+    ).addEventListener(
+      "click",
+      closeSessionPlayer
+    );
+
+    overlay.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target === overlay
+        ) {
+          closeSessionPlayer();
+        }
+      }
+    );
+  }
+
+  function openSessionPlayer(
+    title,
+    id
+  ) {
+    if (!id) {
+      return;
+    }
+
+    ensureSessionPlayer();
+
+    $(
+      "dm-session-player-title"
+    ).textContent =
+      title || "SESSION";
+
+    $(
+      "dm-session-player-frame"
+    ).src =
+      `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+
+    $(
+      "dm-session-player-overlay"
+    ).classList.add(
+      "show"
+    );
+
+    document.body.style.overflow =
+      "hidden";
+  }
+
+  function closeSessionPlayer() {
+    const frame =
+      $("dm-session-player-frame");
+
+    if (frame) {
+      frame.src = "";
+    }
+
+    $(
+      "dm-session-player-overlay"
+    )?.classList.remove(
+      "show"
+    );
+
+    document.body.style.overflow =
+      "";
+  }
+
+  function renderSessions() {
+    const grid =
+      document.querySelector(
+        "#decision-makers-screen .session-grid"
+      );
+
+    if (!grid) {
+      return;
+    }
+
+    const list =
+      sortItems(
+        sessions.filter(
+          isPublished
+        )
+      );
+
+    if (!list.length) {
+      return;
+    }
+
+    grid.innerHTML = "";
+
+    list.forEach(
+      (item) => {
+        const id =
+          item.youtube_id ||
+          youtubeId(
+            item.youtube_url
+          );
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+        card.className =
+          "session-card";
+
+        card.innerHTML = `
+          <div class="session-number">
+            ${
+              String(
+                Number(
+                  item.session_number ||
+                  item.id ||
+                  1
+                )
+              ).padStart(
+                2,
+                "0"
+              )
+            }
+          </div>
+
+          <div class="session-content">
+
+            <span>
+              FOCUSED SESSION
+            </span>
+
+            <h3>
+              ${esc(item.title)}
+            </h3>
+
+            <p>
+              ${esc(item.description)}
+            </p>
+
+            ${
+              id
+                ? `
+                  <button
+                    class="dm-watch-session-button"
+                    type="button"
+                  >
+                    ▶ WATCH SESSION
+                  </button>
+                `
+                : `
+                  <div class="session-status">
+                    SESSION COMING SOON
+                  </div>
+                `
+            }
+
+          </div>
+        `;
+
+        if (id) {
+          card
+            .querySelector(
+              "button"
+            )
+            .addEventListener(
+              "click",
+              () =>
+                openSessionPlayer(
+                  item.title,
+                  id
+                )
+            );
+        }
+
+        grid.appendChild(
+          card
+        );
+      }
+    );
+  }
+
+  function loadChallengeState() {
+    try {
+      return (
+        JSON.parse(
+          localStorage.getItem(
+            CHALLENGE_KEY
+          )
+        ) || {}
+      );
+    }
+    catch (_) {
+      return {};
+    }
+  }
+
+  function saveChallengeState(
+    state
+  ) {
+    try {
+      localStorage.setItem(
+        CHALLENGE_KEY,
+        JSON.stringify(
+          state
+        )
+      );
+    }
+    catch (_) {}
+  }
+
+  function renderChallenges() {
+    const grid =
+      document.querySelector(
+        "#decision-makers-screen .action-grid"
+      );
+
+    if (!grid) {
+      return;
+    }
+
+    const list =
+      sortItems(
+        challenges.filter(
+          isPublished
+        )
+      );
+
+    if (!list.length) {
+      return;
+    }
+
+    const state =
+      loadChallengeState();
+
+    grid.innerHTML = "";
+
+    list.forEach(
+      (item) => {
+        const key =
+          String(
+            item.id ??
+            item.challenge_number ??
+            item.title
+          );
+
+        const accepted =
+          Boolean(
+            state[key]?.accepted
+          );
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+        card.className =
+          "action-card";
+
+        card.innerHTML = `
+          <div class="action-number">
+            ${
+              String(
+                Number(
+                  item.challenge_number ||
+                  item.id ||
+                  1
+                )
+              ).padStart(
+                2,
+                "0"
+              )
+            }
+          </div>
+
+          <h3>
+            ${esc(item.title)}
+          </h3>
+
+          <p>
+            ${esc(item.description)}
+          </p>
+
+          <button
+            class="action-button ${
+              accepted
+                ? "accepted"
+                : ""
+            }"
+            type="button"
+            ${
+              accepted
+                ? "disabled"
+                : ""
+            }
+          >
+            ${
+              accepted
+                ? "CHALLENGE ACCEPTED ✓"
+                : esc(
+                    item.button_text ||
+                    "ACCEPT CHALLENGE"
+                  )
+            }
+          </button>
+        `;
+
+        const button =
+          card.querySelector(
+            "button"
+          );
+
+        button.addEventListener(
+          "click",
+          () => {
+            state[key] = {
+              accepted: true,
+              accepted_at:
+                new Date()
+                  .toISOString()
+            };
+
+            saveChallengeState(
+              state
+            );
+
+            button.textContent =
+              "CHALLENGE ACCEPTED ✓";
+
+            button.classList.add(
+              "accepted"
+            );
+
+            button.disabled =
+              true;
+
+            const title =
+              $("challenge-title");
+
+            const copy =
+              $("challenge-copy");
+
+            const box =
+              $(
+                "decision-challenge-message"
+              );
+
+            if (title) {
+              title.textContent =
+                item.title ||
+                "YOU MADE THE DECISION.";
+            }
+
+            if (copy) {
+              copy.textContent =
+                item.completion_message ||
+                "NOW TAKE ACTION.";
+            }
+
+            box?.classList.add(
+              "show"
+            );
+          }
+        );
+
+        grid.appendChild(
+          card
+        );
+      }
+    );
+  }
+
+  function ensureResourceSection() {
+    let section =
+      $(
+        "decision-makers-resources-section"
+      );
+
+    if (section) {
+      return section;
+    }
+
+    const screen =
+      $(
+        "decision-makers-screen"
+      );
+
+    if (!screen) {
+      return null;
+    }
+
+    section =
+      document.createElement(
+        "section"
+      );
+
+    section.id =
+      "decision-makers-resources-section";
+
+    section.className =
+      "decision-section dm-resource-section";
+
+    section.innerHTML = `
+      <div class="decision-heading">
+
+        <div>
+
+          <span class="decision-kicker">
+            KEEP BUILDING
+          </span>
+
+          <h2>
+            DECISION MAKER RESOURCES
+          </h2>
+
+        </div>
+
+        <span class="red-line"></span>
+
+      </div>
+
+      <p class="decision-section-copy">
+        Tools designed to help you turn the decision into action.
+      </p>
+
+      <div
+        id="decision-makers-resource-grid"
+        class="dm-resource-grid"
+      ></div>
+    `;
+
+    const footer =
+      screen.querySelector(
+        ".boss-footer"
+      );
+
+    if (footer) {
+      screen.insertBefore(
+        section,
+        footer
+      );
+    }
+    else {
+      screen.appendChild(
+        section
+      );
+    }
+
+    return section;
+  }
+
+  function renderResources() {
+    const list =
+      sortItems(
+        resources.filter(
+          (item) =>
+            isPublished(item) &&
+            String(
+              item.file_url ||
+              ""
+            ).trim()
+        )
+      );
+
+    if (!list.length) {
+      $(
+        "decision-makers-resources-section"
+      )?.remove();
+
+      return;
+    }
+
+    const section =
+      ensureResourceSection();
+
+    const grid =
+      $(
+        "decision-makers-resource-grid"
+      );
+
+    if (
+      !section ||
+      !grid
+    ) {
+      return;
+    }
+
+    grid.innerHTML = "";
+
+    list.forEach(
+      (item) => {
+        const cover =
+          String(
+            item.cover_image_url ||
+            ""
+          ).trim();
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+        card.className =
+          "dm-resource-card";
+
+        card.innerHTML = `
+          <div class="dm-resource-cover">
+
+            ${
+              cover
+                ? `
+                  <img
+                    src="${esc(cover)}"
+                    alt="${esc(
+                      item.title ||
+                      "Decision Maker Resource"
+                    )}"
+                  >
+                `
+                : `
+                  <div class="dm-resource-placeholder">
+                    <span>
+                      DECISION MAKERS
+                    </span>
+
+                    <strong>
+                      RESOURCE
+                    </strong>
+                  </div>
+                `
+            }
+
+          </div>
+
+          <div class="dm-resource-content">
+
+            <span class="dm-resource-type">
+              ${
+                esc(
+                  item.resource_type ||
+                  "RESOURCE"
+                )
+              }
+            </span>
+
+            <h3>
+              ${esc(item.title)}
+            </h3>
+
+            <p>
+              ${esc(item.description)}
+            </p>
+
+            <button
+              class="dm-resource-download"
+              type="button"
+            >
+              ${
+                esc(
+                  item.button_text ||
+                  "OPEN RESOURCE"
+                )
+              }
+            </button>
+
+          </div>
+        `;
+
+        card
+          .querySelector(
+            "button"
+          )
+          .addEventListener(
+            "click",
+            () =>
+              window.open(
+                item.file_url,
+                "_blank",
+                "noopener,noreferrer"
+              )
+          );
+
+        grid.appendChild(
+          card
+        );
+      }
+    );
+  }
+
+  function savedEmail() {
+    try {
+      return String(
+        localStorage.getItem(
+          COURSE_EMAIL_KEY
+        ) || ""
+      )
+        .trim()
+        .toLowerCase();
+    }
+    catch (_) {
+      return "";
+    }
+  }
+
+  function saveEmail(email) {
+    try {
+      localStorage.setItem(
+        COURSE_EMAIL_KEY,
+        email
+      );
+    }
+    catch (_) {}
+  }
+
+  function validEmail(email) {
+    return (
+      /^\S+@\S+\.\S+$/.test(
+        String(
+          email || ""
+        ).trim()
+      )
+    );
+  }
+
+  function setCourseStatus(
+    message,
+    type = ""
+  ) {
+    const box =
+      $("dm-course-status");
+
+    if (!box) {
+      return;
+    }
+
+    box.className =
+      `dm-course-status ${type}`
+        .trim();
+
+    box.textContent =
+      message || "";
+  }
+
+  function ensureMyCourses() {
+    let section =
+      $(
+        "decision-makers-my-courses"
+      );
+
+    if (section) {
+      return section;
+    }
+
+    const screen =
+      $(
+        "decision-makers-screen"
+      );
+
+    if (!screen) {
+      return null;
+    }
+
+    section =
+      document.createElement(
+        "section"
+      );
+
+    section.id =
+      "decision-makers-my-courses";
+
+    section.className =
+      "decision-section dm-my-courses";
+
+    section.innerHTML = `
+      <div class="decision-heading">
+
+        <div>
+
+          <span class="decision-kicker">
+            YOUR DECISION. YOUR PROGRESS.
+          </span>
+
+          <h2>
+            MY COURSES
+          </h2>
+
+        </div>
+
+        <span class="red-line"></span>
+
+      </div>
+
+      <p class="decision-section-copy">
+        Enter the email used for your course access to start or continue your Decision Maker journey.
+      </p>
+
+      <div class="dm-course-access">
+
+        <label for="dm-course-email">
+          COURSE EMAIL
+        </label>
+
+        <div class="dm-course-access-row">
+
+          <input
+            id="dm-course-email"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+
+          <button
+            id="dm-load-courses"
+            type="button"
+          >
+            LOAD MY COURSES
+          </button>
+
+        </div>
+
+        <div
+          id="dm-course-status"
+          class="dm-course-status"
+          aria-live="polite"
+        ></div>
+
+      </div>
+
+      <div
+        id="dm-course-list"
+        class="dm-course-list"
+      ></div>
+    `;
+
+    const first =
+      screen.querySelector(
+        ".decision-section"
+      );
+
+    if (first) {
+      screen.insertBefore(
+        section,
+        first
+      );
+    }
+    else {
+      screen.appendChild(
+        section
+      );
+    }
+
+    const email =
+      savedEmail();
+
+    if (email) {
+      $(
+        "dm-course-email"
+      ).value =
+        email;
+    }
+
+    $(
+      "dm-load-courses"
+    ).addEventListener(
+      "click",
+      () =>
+        loadMyCourses()
+    );
+
+    $(
+      "dm-course-email"
+    ).addEventListener(
+      "keydown",
+      (event) => {
+        if (
+          event.key ===
+          "Enter"
+        ) {
+          loadMyCourses();
+        }
+      }
+    );
+
+    if (email) {
+      setTimeout(
+        () =>
+          loadMyCourses(
+            email
+          ),
+        150
+      );
+    }
+
+    return section;
+  }
+
+  async function courseState(
+    email,
+    course
+  ) {
+    try {
+      const result =
+        await api(
+          `/dm-course-runs/current?email=${encodeURIComponent(
+            email
+          )}&course_id=${encodeURIComponent(
+            course.id
+          )}`
+        );
+
+      return {
+        course,
+
+        unlocked:
+          Boolean(
+            result.unlocked
+          ),
+
+        hasRun:
+          Boolean(
+            result.has_run
+          ),
+
+        data:
+          result.data ||
+          null
+      };
+    }
+    catch (error) {
+      if (
+        error.status === 403
+      ) {
+        return {
+          course,
+          unlocked:false,
+          hasRun:false,
+          data:null
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  async function loadMyCourses(
+    forcedEmail = ""
+  ) {
+    ensureMyCourses();
+
+    const email =
+      String(
+        forcedEmail ||
+        $(
+          "dm-course-email"
+        )?.value ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+    const list =
+      $("dm-course-list");
+
+    if (
+      !validEmail(email)
+    ) {
+      setCourseStatus(
+        "Enter a valid email address.",
+        "error"
+      );
+
+      return;
+    }
+
+    $(
+      "dm-course-email"
+    ).value =
+      email;
+
+    saveEmail(email);
+
+    setCourseStatus(
+      "LOADING YOUR COURSES..."
+    );
+
+    if (list) {
+      list.innerHTML = `
+        <div class="dm-course-loading">
+          CHECKING COURSE ACCESS...
+        </div>
+      `;
+    }
+
+    try {
+      const courseResult =
+        await api(
+          "/dm-courses"
+        );
+
+      const courses =
+        Array.isArray(
+          courseResult.data
+        )
+          ? courseResult.data
+          : [];
+
+      const states =
+        await Promise.all(
+          courses.map(
+            (course) =>
+              courseState(
+                email,
+                course
+              )
+          )
+        );
+
+      const owned =
+        states.filter(
+          (state) =>
+            state.unlocked
+        );
+
+      renderCourseCards(
+        email,
+        owned
+      );
+
+      setCourseStatus(
+        owned.length
+          ? `${owned.length} COURSE${
+              owned.length === 1
+                ? ""
+                : "S"
+            } READY`
+          : "No unlocked courses were found for this email.",
+
+        owned.length
+          ? "success"
+          : ""
+      );
+    }
+    catch (error) {
+      if (list) {
+        list.innerHTML = "";
+      }
+
+      setCourseStatus(
+        error.message ||
+        "Could not load your courses.",
+        "error"
+      );
+    }
+  }
+
+  function renderCourseCards(
+    email,
+    states
+  ) {
+    const list =
+      $("dm-course-list");
+
+    if (!list) {
+      return;
+    }
+
+    list.innerHTML = "";
+
+    if (!states.length) {
+      list.innerHTML = `
+        <div class="dm-course-empty">
+          NO COURSES FOUND
+          <br>
+          <small>
+            Use the same email connected to your course access.
+          </small>
+        </div>
+      `;
+
+      return;
+    }
+
+    states.forEach(
+      (state) => {
+        const course =
+          state.course;
+
+        const data =
+          state.data || {};
+
+        const run =
+          data.run ||
+          null;
+
+        const summary =
+          data.summary ||
+          null;
+
+        const percent =
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Number(
+                summary
+                  ?.completion_percent ||
+                0
+              )
+            )
+          );
+
+        const total =
+          Number(
+            course.total_days ||
+            summary?.total_days ||
+            30
+          );
+
+        const current =
+          Number(
+            summary?.next_day ||
+            run?.current_day ||
+            1
+          );
+
+        const complete =
+          Boolean(
+            summary?.complete ||
+            run?.status ===
+              "completed"
+          );
+
+        const cover =
+          String(
+            course.cover_url ||
+            ""
+          ).trim();
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+        card.className =
+          "dm-course-card";
+
+        card.innerHTML = `
+          <div class="dm-course-cover">
+
+            ${
+              cover
+                ? `
+                  <img
+                    src="${esc(
+                      cover
+                    )}"
+                    alt="${esc(
+                      course.title
+                    )}"
+                  >
+                `
+                : `
+                  <div class="dm-course-cover-fallback">
+
+                    <span>
+                      DECISION MAKERS
+                    </span>
+
+                    <strong>
+                      GREATNESS IS A DECISION
+                    </strong>
+
+                  </div>
+                `
+            }
+
+          </div>
+
+          <div class="dm-course-card-body">
+
+            <span class="dm-course-kicker">
+              ${
+                complete
+                  ? "COURSE COMPLETE"
+                  : "YOUR COURSE"
+              }
+            </span>
+
+            <h3>
+              ${esc(
+                course.title
+              )}
+            </h3>
+
+            <p>
+              ${esc(
+                course.subtitle ||
+                course.description ||
+                ""
+              )}
+            </p>
+
+            ${
+              run
+                ? `
+                  <div class="dm-progress-copy">
+
+                    <strong>
+                      ${
+                        complete
+                          ? "COMPLETE"
+                          : `DAY ${current} OF ${total}`
+                      }
+                    </strong>
+
+                    <span>
+                      ${percent}% COMPLETE
+                    </span>
+
+                  </div>
+
+                  <div class="dm-progress-track">
+                    <div
+                      style="width:${percent}%"
+                    ></div>
+                  </div>
+                `
+                : `
+                  <div class="dm-progress-copy">
+
+                    <strong>
+                      READY TO BEGIN
+                    </strong>
+
+                    <span>
+                      ${
+                        Number(
+                          course.price_cents ||
+                          0
+                        )
+                          ? `$${(
+                              Number(
+                                course.price_cents
+                              ) / 100
+                            ).toFixed(2)}`
+                          : "FREE"
+                      }
+                    </span>
+
+                  </div>
+                `
+            }
+
+            <button
+              class="dm-course-primary"
+              type="button"
+            >
+              ${
+                complete
+                  ? "COURSE COMPLETE"
+                  : run
+                    ? "CONTINUE COURSE"
+                    : "START COURSE"
+              }
+            </button>
+
+          </div>
+        `;
+
+        const button =
+          card.querySelector(
+            "button"
+          );
+
+        if (complete) {
+          button.disabled =
+            true;
+        }
+        else if (run) {
+          button.addEventListener(
+            "click",
+            () =>
+              openCoursePlayer(
+                email,
+                course,
+                data
+              )
+          );
+        }
+        else {
+          button.addEventListener(
+            "click",
+            () =>
+              startCourse(
+                email,
+                course,
+                button
+              )
+          );
+        }
+
+        list.appendChild(
+          card
+        );
+      }
+    );
+  }
+
+  async function startCourse(
+    email,
+    course,
+    button
+  ) {
+    const old =
+      button.textContent;
+
+    button.disabled =
+      true;
+
+    button.textContent =
+      "STARTING COURSE...";
+
+    try {
+      const result =
+        await api(
+          "/dm-course-runs/start",
+          {
+            method:"POST",
+
+            body:
+              JSON.stringify({
+                email,
+                course_id:
+                  Number(
+                    course.id
+                  )
+              })
+          }
+        );
+
+      if (result.data) {
+        await openCoursePlayer(
+          email,
+          course,
+          result.data
+        );
+
+        loadMyCourses(
+          email
+        );
+      }
+    }
+    catch (error) {
+      alert(
+        error.message ||
+        "Could not start this course."
+      );
+    }
+    finally {
+      button.disabled =
+        false;
+
+      button.textContent =
+        old;
+    }
+  }
+
+  function ensureCoursePlayer() {
+    let overlay =
+      $(
+        "dm-course-player-overlay"
+      );
+
+    if (overlay) {
+      return overlay;
+    }
+
+    overlay =
+      document.createElement(
+        "div"
+      );
+
+    overlay.id =
+      "dm-course-player-overlay";
+
+    overlay.innerHTML = `
+      <div class="dm-course-player-shell">
+
+        <div class="dm-course-player-top">
+
+          <div>
+
+            <span>
+              DECISION MAKERS
+            </span>
+
+            <h3 id="dm-course-player-title">
+              COURSE
+            </h3>
+
+          </div>
+
+          <button
+            id="dm-course-player-close"
+            type="button"
+          >
+            ✕
+          </button>
+
+        </div>
+
+        <div
+          id="dm-course-player-content"
+          class="dm-course-player-content"
+        ></div>
+
+      </div>
+    `;
+
+    document.body.appendChild(
+      overlay
+    );
+
+    $(
+      "dm-course-player-close"
+    ).addEventListener(
+      "click",
+      closeCoursePlayer
+    );
+
+    overlay.addEventListener(
+      "click",
+      (event) => {
+        if (
+          event.target ===
+          overlay
+        ) {
+          closeCoursePlayer();
+        }
+      }
+    );
+
+    return overlay;
+  }
+
+  function closeCoursePlayer() {
+    const overlay =
+      $(
+        "dm-course-player-overlay"
+      );
+
+    overlay
+      ?.querySelectorAll(
+        "video,audio"
+      )
+      .forEach(
+        (media) => {
+          try {
+            media.pause();
+          }
+          catch (_) {}
+        }
+      );
+
+    overlay
+      ?.classList.remove(
+        "show"
+      );
+
+    document.body.style.overflow =
+      "";
+  }
+
+  function videoHTML(day) {
+    const url =
+      String(
+        day.video_url ||
+        ""
+      ).trim();
+
+    if (!url) {
+      return "";
+    }
+
+    const id =
+      youtubeId(url);
+
+    if (id) {
+      return `
+        <div class="dm-course-video">
+
+          <iframe
+            src="https://www.youtube.com/embed/${esc(
+              id
+            )}?rel=0"
+            title="${esc(
+              day.video_title ||
+              day.title ||
+              "Course Video"
+            )}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+
+        </div>
+      `;
+    }
+
+    return `
+      <div class="dm-course-video">
+
+        <video
+          controls
+          playsinline
+          preload="metadata"
+          src="${esc(url)}"
+        ></video>
+
+      </div>
+    `;
+  }
+
+  function audioHTML(day) {
+    const url =
+      String(
+        day.audio_url ||
+        ""
+      ).trim();
+
+    if (!url) {
+      return "";
+    }
+
+    return `
+      <div class="dm-course-audio">
+
+        <span>
+          ${esc(
+            day.audio_title ||
+            "TODAY'S AUDIO"
+          )}
+        </span>
+
+        <audio
+          controls
+          preload="metadata"
+          src="${esc(url)}"
+        ></audio>
+
+      </div>
+    `;
+  }
+
+  async function openCoursePlayer(
+    email,
+    course,
+    data = null
+  ) {
+    const overlay =
+      ensureCoursePlayer();
+
+    $(
+      "dm-course-player-title"
+    ).textContent =
+      course.title ||
+      "DECISION MAKER COURSE";
+
+    $(
+      "dm-course-player-content"
+    ).innerHTML = `
+      <div class="dm-course-loading">
+        LOADING TODAY'S COURSE...
+      </div>
+    `;
+
+    overlay.classList.add(
+      "show"
+    );
+
+    document.body.style.overflow =
+      "hidden";
+
+    try {
+      let currentData =
+        data;
+
+      if (!currentData?.run) {
+        const current =
+          await api(
+            `/dm-course-runs/current?email=${encodeURIComponent(
+              email
+            )}&course_id=${encodeURIComponent(
+              course.id
+            )}`
+          );
+
+        currentData =
+          current.data;
+      }
+
+      if (!currentData?.run) {
+        throw new Error(
+          "Course run was not found."
+        );
+      }
+
+      const [
+        daysResult,
+        progressResult
+      ] =
+        await Promise.all([
+          api(
+            `/dm-courses/${encodeURIComponent(
+              course.id
+            )}/days`
+          ),
+
+          api(
+            `/dm-course-runs/${encodeURIComponent(
+              currentData.run.id
+            )}/progress?email=${encodeURIComponent(
+              email
+            )}`
+          )
+        ]);
+
+      activeEmail =
+        email;
+
+      activeCourse =
+        course;
+
+      activeRun =
+        currentData.run;
+
+      activeSummary =
+        currentData.summary ||
+        progressResult
+          ?.data
+          ?.summary ||
+        {};
+
+      activeDays =
+        Array.isArray(
+          daysResult.data
+        )
+          ? daysResult.data
+          : [];
+
+      activeProgress =
+        Array.isArray(
+          progressResult
+            ?.data
+            ?.progress
+        )
+          ? progressResult.data.progress
+          : [];
+
+      renderDay();
+    }
+    catch (error) {
+      $(
+        "dm-course-player-content"
+      ).innerHTML = `
+        <div class="dm-course-error">
+          ${
+            esc(
+              error.message ||
+              "Could not load this course."
+            )
+          }
+        </div>
+      `;
+    }
+  }
+
+  function savedForDay(number) {
+    return (
+      activeProgress.find(
+        (item) =>
+          Number(
+            item.day_number
+          ) ===
+          Number(number)
+      ) || {}
+    );
+  }
+
+  function renderDay() {
+    const content =
+      $(
+        "dm-course-player-content"
+      );
+
+    if (
+      !content ||
+      !activeRun ||
+      !activeCourse
+    ) {
+      return;
+    }
+
+    const number =
+      Number(
+        activeSummary
+          ?.next_day ||
+        activeRun.current_day ||
+        1
+      );
+
+    const day =
+      activeDays.find(
+        (item) =>
+          Number(
+            item.day_number
+          ) ===
+          number
+      );
+
+    if (!day) {
+      content.innerHTML = `
+        <div class="dm-complete-box">
+
+          <span>
+            COURSE COMPLETE
+          </span>
+
+          <h2>
+            YOU ARE A DECISION MAKER
+          </h2>
+
+          <p>
+            Your 30 day run is complete. Next we will add your full completion report and certificate.
+          </p>
+
+        </div>
+      `;
+
+      return;
+    }
+
+    const saved =
+      savedForDay(
+        day.day_number
+      );
+
+    const total =
+      Number(
+        activeCourse.total_days ||
+        activeSummary
+          ?.total_days ||
+        30
+      );
+
+    const percent =
+      Math.max(
+        0,
+        Math.min(
+          100,
+          Number(
+            activeSummary
+              ?.completion_percent ||
+            0
+          )
+        )
+      );
+
+    const text =
+      esc(
+        day.text_content ||
+        ""
+      ).replace(
+        /\n/g,
+        "<br>"
+      );
+
+    content.innerHTML = `
+      <div class="dm-day-head">
+
+        <div>
+
+          <span>
+            DAY ${
+              esc(
+                day.day_number
+              )
+            } OF ${
+              esc(total)
+            }
+          </span>
+
+          <h2>
+            ${esc(day.title)}
+          </h2>
+
+        </div>
+
+        <strong>
+          ${percent}%
+        </strong>
+
+      </div>
+
+      <div class="dm-progress-track dm-player-progress">
+        <div
+          style="width:${percent}%"
+        ></div>
+      </div>
+
+      ${videoHTML(day)}
+
+      ${audioHTML(day)}
+
+      ${
+        text
+          ? `
+            <section class="dm-course-message">
+
+              <span>
+                ${
+                  esc(
+                    day.text_title ||
+                    "THE MESSAGE"
+                  )
+                }
+              </span>
+
+              <div>
+                ${text}
+              </div>
+
+            </section>
+          `
+          : ""
+      }
+
+      ${
+        promptBox(
+          "dm-answer-decision",
+          "TODAY'S DECISION",
+          day.decision_prompt ||
+          "What decision will you make today?",
+          saved.decision_answer
+        )
+      }
+
+      ${
+        promptBox(
+          "dm-answer-move",
+          "TODAY'S MOVE",
+          day.move_prompt ||
+          "What action will you take today?",
+          saved.move_answer
+        )
+      }
+
+      ${
+        promptBox(
+          "dm-answer-facing",
+          "WHAT I'M FACING TODAY",
+          day.facing_prompt ||
+          "What are you facing today that could get in the way of your goal?",
+          saved.facing_answer,
+          "dm-facing"
+        )
+      }
+
+      ${
+        promptBox(
+          "dm-answer-response",
+          "HOW I'LL FACE IT",
+          day.response_plan_prompt ||
+          "What decision or action will you take so this does not stop you today?",
+          saved.response_plan_answer,
+          "dm-response"
+        )
+      }
+
+      ${
+        promptBox(
+          "dm-answer-reflection",
+          "REFLECTION",
+          day.reflection_prompt ||
+          "What did you learn today?",
+          saved.reflection_answer
+        )
+      }
+
+      ${
+        day.completion_message
+          ? `
+            <div class="dm-made-decision">
+
+              <span>
+                I MADE THE DECISION
+              </span>
+
+              <strong>
+                ${
+                  esc(
+                    day.completion_message
+                  )
+                }
+              </strong>
+
+            </div>
+          `
+          : ""
+      }
+
+      <div class="dm-day-actions">
+
+        <button
+          id="dm-save-day"
+          class="dm-course-secondary"
+          type="button"
+        >
+          SAVE PROGRESS
+        </button>
+
+        <button
+          id="dm-complete-day"
+          class="dm-course-primary"
+          type="button"
+        >
+          COMPLETE DAY ${
+            esc(
+              day.day_number
+            )
+          }
+        </button>
+
+      </div>
+
+      <div
+        id="dm-save-status"
+        class="dm-save-status"
+        aria-live="polite"
+      ></div>
+    `;
+
+    $(
+      "dm-save-day"
+    ).addEventListener(
+      "click",
+      () =>
+        saveDay(
+          day,
+          false
+        )
+    );
+
+    $(
+      "dm-complete-day"
+    ).addEventListener(
+      "click",
+      () =>
+        saveDay(
+          day,
+          true
+        )
+    );
+  }
+
+  function promptBox(
+    id,
+    label,
+    prompt,
+    value,
+    extra = ""
+  ) {
+    return `
+      <section class="dm-course-prompt ${extra}">
+
+        <label for="${id}">
+          ${esc(label)}
+        </label>
+
+        <p>
+          ${esc(prompt)}
+        </p>
+
+        <textarea
+          id="${id}"
+          rows="4"
+        >${esc(value || "")}</textarea>
+
+      </section>
+    `;
+  }
+
+  function answer(id) {
+    return String(
+      $(id)?.value ||
+      ""
+    ).trim();
+  }
+
+  function saveStatus(
+    message,
+    type = ""
+  ) {
+    const box =
+      $("dm-save-status");
+
+    if (!box) {
+      return;
+    }
+
+    box.className =
+      `dm-save-status ${type}`
+        .trim();
+
+    box.textContent =
+      message || "";
+  }
+
+  async function saveDay(
+    day,
+    completed
+  ) {
+    const button =
+      $(
+        completed
+          ? "dm-complete-day"
+          : "dm-save-day"
+      );
+
+    const old =
+      button?.textContent ||
+      "SAVE";
+
+    if (button) {
+      button.disabled =
+        true;
+
+      button.textContent =
+        completed
+          ? "COMPLETING..."
+          : "SAVING...";
+    }
+
+    saveStatus(
+      completed
+        ? "SAVING AND COMPLETING TODAY..."
+        : "SAVING YOUR PROGRESS..."
+    );
+
+    try {
+      const result =
+        await api(
+          "/dm-course-progress/save",
+          {
+            method:"POST",
+
+            body:
+              JSON.stringify({
+                email:
+                  activeEmail,
+
+                run_id:
+                  Number(
+                    activeRun.id
+                  ),
+
+                course_id:
+                  Number(
+                    activeCourse.id
+                  ),
+
+                day_id:
+                  Number(
+                    day.id
+                  ),
+
+                day_number:
+                  Number(
+                    day.day_number
+                  ),
+
+                decision_answer:
+                  answer(
+                    "dm-answer-decision"
+                  ),
+
+                move_answer:
+                  answer(
+                    "dm-answer-move"
+                  ),
+
+                facing_answer:
+                  answer(
+                    "dm-answer-facing"
+                  ),
+
+                response_plan_answer:
+                  answer(
+                    "dm-answer-response"
+                  ),
+
+                reflection_answer:
+                  answer(
+                    "dm-answer-reflection"
+                  ),
+
+                completed
+              })
+          }
+        );
+
+      activeRun =
+        result
+          ?.data
+          ?.run ||
+        activeRun;
+
+      activeSummary =
+        result
+          ?.data
+          ?.summary ||
+        activeSummary;
+
+      const progress =
+        result
+          ?.data
+          ?.progress;
+
+      if (progress) {
+        const index =
+          activeProgress.findIndex(
+            (item) =>
+              Number(
+                item.day_number
+              ) ===
+              Number(
+                progress.day_number
+              )
+          );
+
+        if (index >= 0) {
+          activeProgress[
+            index
+          ] =
+            progress;
+        }
+        else {
+          activeProgress.push(
+            progress
+          );
+        }
+      }
+
+      saveStatus(
+        completed
+          ? "DAY COMPLETE ✓"
+          : "PROGRESS SAVED ✓",
+        "success"
+      );
+
+      if (completed) {
+        loadMyCourses(
+          activeEmail
+        );
+
+        setTimeout(
+          renderDay,
+          550
+        );
+      }
+    }
+    catch (error) {
+      saveStatus(
+        error.message ||
+        "Could not save your progress.",
+        "error"
+      );
+    }
+    finally {
+      if (button) {
+        button.disabled =
+          false;
+
+        button.textContent =
+          old;
+      }
+    }
+  }
+
+  async function loadBackend() {
+    installStyles();
+
+    ensureMyCourses();
+
+    const results =
+      await Promise.allSettled([
+        getArray(
+          "/decision-maker-sessions"
+        ),
+
+        getArray(
+          "/decision-maker-challenges"
+        ),
+
+        getArray(
+          "/decision-maker-resources"
+        )
+      ]);
+
+    if (
+      results[0].status ===
+      "fulfilled"
+    ) {
+      sessions =
+        results[0].value;
+
+      renderSessions();
+    }
+
+    if (
+      results[1].status ===
+      "fulfilled"
+    ) {
+      challenges =
+        results[1].value;
+
+      renderChallenges();
+    }
+
+    if (
+      results[2].status ===
+      "fulfilled"
+    ) {
+      resources =
+        results[2].value;
+
+      renderResources();
+    }
+
+    if (
+      results.some(
+        (result) =>
+          result.status ===
+          "rejected"
+      )
+    ) {
+      console.warn(
+        "Some Decision Makers backend content could not be loaded."
+      );
+    }
+  }
+
+  if (
+    document.readyState ===
+    "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      loadBackend
+    );
+  }
+  else {
+    loadBackend();
+  }
 })();
