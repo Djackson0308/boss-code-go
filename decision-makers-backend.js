@@ -6,7 +6,7 @@
   /* =========================================================
      B.O.S.S CODE GO
      DECISION MAKERS BACKEND
-     COURSES + SAVED PROGRESS + PAST DAY REVIEW
+     SECURE LOGIN + COURSES + SAVED PROGRESS + PAST DAY REVIEW
   ========================================================= */
 
 
@@ -20,6 +20,14 @@
 
   const COURSE_EMAIL_KEY =
     "boss-code-dm-course-email-v1";
+
+
+  const COURSE_AUTH_TOKEN_KEY =
+    "boss-code-dm-auth-token-v1";
+
+
+  const COURSE_AUTH_CUSTOMER_KEY =
+    "boss-code-dm-auth-customer-v1";
 
 
   let sessions = [];
@@ -40,6 +48,12 @@
   let activeProgress = [];
 
   let activeEmail = "";
+
+  let activeAuthToken = "";
+
+  let activeCustomer = null;
+
+  let authCodeEmail = "";
 
 
   /* =========================================================
@@ -134,6 +148,11 @@
     options = {}
   ) {
 
+    const token =
+      activeAuthToken ||
+      savedAuthToken();
+
+
     const response =
       await fetch(
         `${API}${path}`,
@@ -151,6 +170,15 @@
                 ? {
                     "Content-Type":
                       "application/json"
+                  }
+                : {}
+            ),
+
+            ...(
+              token
+                ? {
+                    Authorization:
+                      `Bearer ${token}`
                   }
                 : {}
             ),
@@ -368,6 +396,141 @@
   }
 
 
+  function savedAuthToken() {
+
+    try {
+
+      return String(
+        localStorage.getItem(
+          COURSE_AUTH_TOKEN_KEY
+        ) || ""
+      ).trim();
+
+    }
+    catch (_) {
+
+      return "";
+
+    }
+
+  }
+
+
+  function savedAuthCustomer() {
+
+    try {
+
+      const value =
+        localStorage.getItem(
+          COURSE_AUTH_CUSTOMER_KEY
+        );
+
+
+      return value
+        ? JSON.parse(value)
+        : null;
+
+    }
+    catch (_) {
+
+      return null;
+
+    }
+
+  }
+
+
+  function saveAuthSession(
+    token,
+    customer
+  ) {
+
+    activeAuthToken =
+      String(
+        token || ""
+      ).trim();
+
+
+    activeCustomer =
+      customer || null;
+
+
+    activeEmail =
+      String(
+        customer?.email || ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    try {
+
+      localStorage.setItem(
+        COURSE_AUTH_TOKEN_KEY,
+        activeAuthToken
+      );
+
+
+      localStorage.setItem(
+        COURSE_AUTH_CUSTOMER_KEY,
+        JSON.stringify(
+          activeCustomer || {}
+        )
+      );
+
+
+      if (
+        activeEmail
+      ) {
+
+        localStorage.setItem(
+          COURSE_EMAIL_KEY,
+          activeEmail
+        );
+
+      }
+
+    }
+    catch (_) {}
+
+  }
+
+
+  function clearAuthSession() {
+
+    activeAuthToken =
+      "";
+
+
+    activeCustomer =
+      null;
+
+
+    activeEmail =
+      "";
+
+
+    authCodeEmail =
+      "";
+
+
+    try {
+
+      localStorage.removeItem(
+        COURSE_AUTH_TOKEN_KEY
+      );
+
+
+      localStorage.removeItem(
+        COURSE_AUTH_CUSTOMER_KEY
+      );
+
+    }
+    catch (_) {}
+
+  }
+
+
   function validEmail(email) {
 
     return (
@@ -522,7 +685,8 @@
       .dm-watch-session-button,
       .dm-resource-download,
       .dm-course-primary,
-      #dm-load-courses {
+      #dm-send-login-code,
+      #dm-verify-login-code {
 
         border:
           1px solid #e32636;
@@ -1206,6 +1370,215 @@
 
         color:
           #ff6b75;
+
+      }
+
+
+      .dm-auth-hidden {
+
+        display:
+          none !important;
+
+      }
+
+
+      .dm-auth-code-panel {
+
+        margin-top:
+          14px;
+
+        padding-top:
+          14px;
+
+        border-top:
+          1px solid #242424;
+
+      }
+
+
+      .dm-auth-code-note {
+
+        color:
+          #aaa;
+
+        font-size:
+          11px;
+
+        line-height:
+          1.5;
+
+        margin:
+          0 0 12px;
+
+      }
+
+
+      .dm-auth-code-row {
+
+        display:
+          grid;
+
+        grid-template-columns:
+          1fr auto;
+
+        gap:
+          10px;
+
+      }
+
+
+      #dm-login-code {
+
+        text-align:
+          center;
+
+        font-size:
+          21px;
+
+        font-weight:
+          900;
+
+        letter-spacing:
+          7px;
+
+      }
+
+
+      .dm-auth-code-actions {
+
+        display:
+          flex;
+
+        gap:
+          10px;
+
+        flex-wrap:
+          wrap;
+
+        margin-top:
+          10px;
+
+      }
+
+
+      .dm-auth-code-actions button {
+
+        flex:
+          1 1 160px;
+
+      }
+
+
+      .dm-auth-signed-panel {
+
+        display:
+          flex;
+
+        align-items:
+          center;
+
+        justify-content:
+          space-between;
+
+        gap:
+          15px;
+
+      }
+
+
+      .dm-auth-signed-copy span {
+
+        display:
+          block;
+
+        color:
+          #f5c518;
+
+        font-size:
+          9px;
+
+        font-weight:
+          900;
+
+        letter-spacing:
+          1.6px;
+
+        margin-bottom:
+          5px;
+
+      }
+
+
+      .dm-auth-signed-copy strong {
+
+        display:
+          block;
+
+        color:
+          #fff;
+
+        font-size:
+          16px;
+
+      }
+
+
+      .dm-auth-signed-copy small {
+
+        display:
+          block;
+
+        color:
+          #999;
+
+        font-size:
+          11px;
+
+        margin-top:
+          3px;
+
+      }
+
+
+      .dm-auth-link-button {
+
+        border:
+          1px solid #444;
+
+        background:
+          #111;
+
+        color:
+          #fff;
+
+        font:
+          inherit;
+
+        font-size:
+          10px;
+
+        font-weight:
+          900;
+
+        letter-spacing:
+          1px;
+
+        padding:
+          11px 14px;
+
+        border-radius:
+          999px;
+
+        cursor:
+          pointer;
+
+      }
+
+
+      #dm-auth-logout {
+
+        flex:
+          0 0 auto;
 
       }
 
@@ -2078,10 +2451,30 @@
         .dm-resource-grid,
         .dm-course-list,
         .dm-course-access-row,
+        .dm-auth-code-row,
         .dm-day-actions {
 
           grid-template-columns:
             1fr;
+
+        }
+
+
+        .dm-auth-signed-panel {
+
+          align-items:
+            flex-start;
+
+          flex-direction:
+            column;
+
+        }
+
+
+        #dm-auth-logout {
+
+          width:
+            100%;
 
         }
 
@@ -3163,34 +3556,141 @@
 
 
       <p class="decision-section-copy">
-        Enter the email used for your course access to start or continue your Decision Maker journey.
+        Securely sign in with the email connected to your Decision Makers account. We will send you a 6 digit login code.
       </p>
 
 
       <div class="dm-course-access">
 
-        <label
-          for="dm-course-email"
+        <div
+          id="dm-auth-login-panel"
         >
-          COURSE EMAIL
-        </label>
 
-
-        <div class="dm-course-access-row">
-
-          <input
-            id="dm-course-email"
-            type="email"
-            autocomplete="email"
-            placeholder="you@example.com"
+          <label
+            for="dm-course-email"
           >
+            ACCOUNT EMAIL
+          </label>
+
+
+          <div class="dm-course-access-row">
+
+            <input
+              id="dm-course-email"
+              type="email"
+              autocomplete="email"
+              placeholder="you@example.com"
+            >
+
+
+            <button
+              id="dm-send-login-code"
+              type="button"
+            >
+              SEND LOGIN CODE
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="dm-auth-code-panel"
+          class="dm-auth-code-panel dm-auth-hidden"
+        >
+
+          <label
+            for="dm-login-code"
+          >
+            6 DIGIT LOGIN CODE
+          </label>
+
+
+          <p
+            id="dm-auth-code-note"
+            class="dm-auth-code-note"
+          >
+            Check your email and enter the code we sent you.
+          </p>
+
+
+          <div class="dm-auth-code-row">
+
+            <input
+              id="dm-login-code"
+              type="text"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              placeholder="000000"
+            >
+
+
+            <button
+              id="dm-verify-login-code"
+              type="button"
+            >
+              SIGN IN
+            </button>
+
+          </div>
+
+
+          <div class="dm-auth-code-actions">
+
+            <button
+              id="dm-resend-login-code"
+              class="dm-auth-link-button"
+              type="button"
+            >
+              SEND NEW CODE
+            </button>
+
+
+            <button
+              id="dm-change-login-email"
+              class="dm-auth-link-button"
+              type="button"
+            >
+              USE DIFFERENT EMAIL
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <div
+          id="dm-auth-signed-panel"
+          class="dm-auth-signed-panel dm-auth-hidden"
+        >
+
+          <div class="dm-auth-signed-copy">
+
+            <span>
+              SECURELY SIGNED IN
+            </span>
+
+            <strong
+              id="dm-auth-customer-name"
+            >
+              DECISION MAKER
+            </strong>
+
+            <small
+              id="dm-auth-customer-email"
+            ></small>
+
+          </div>
 
 
           <button
-            id="dm-load-courses"
+            id="dm-auth-logout"
+            class="dm-auth-link-button"
             type="button"
           >
-            LOAD MY COURSES
+            LOG OUT
           </button>
 
         </div>
@@ -3255,12 +3755,10 @@
 
 
     $(
-      "dm-load-courses"
+      "dm-send-login-code"
     ).addEventListener(
       "click",
-      () =>
-
-        loadMyCourses()
+      sendLoginCode
     );
 
 
@@ -3275,7 +3773,7 @@
           "Enter"
         ) {
 
-          loadMyCourses();
+          sendLoginCode();
 
         }
 
@@ -3283,24 +3781,883 @@
     );
 
 
+    $(
+      "dm-login-code"
+    ).addEventListener(
+      "input",
+      (event) => {
+
+        event.target.value =
+          String(
+            event.target.value ||
+            ""
+          )
+            .replace(
+              /\D/g,
+              ""
+            )
+            .slice(
+              0,
+              6
+            );
+
+      }
+    );
+
+
+    $(
+      "dm-login-code"
+    ).addEventListener(
+      "keydown",
+      (event) => {
+
+        if (
+          event.key ===
+          "Enter"
+        ) {
+
+          verifyLoginCode();
+
+        }
+
+      }
+    );
+
+
+    $(
+      "dm-verify-login-code"
+    ).addEventListener(
+      "click",
+      verifyLoginCode
+    );
+
+
+    $(
+      "dm-resend-login-code"
+    ).addEventListener(
+      "click",
+      () =>
+
+        sendLoginCode(
+          authCodeEmail
+        )
+    );
+
+
+    $(
+      "dm-change-login-email"
+    ).addEventListener(
+      "click",
+      () => {
+
+        authCodeEmail =
+          "";
+
+
+        $(
+          "dm-login-code"
+        ).value =
+          "";
+
+
+        showAuthView(
+          "login"
+        );
+
+
+        setCourseStatus(
+          ""
+        );
+
+
+        setTimeout(
+          () =>
+
+            $(
+              "dm-course-email"
+            )?.focus(),
+
+          50
+        );
+
+      }
+    );
+
+
+    $(
+      "dm-auth-logout"
+    ).addEventListener(
+      "click",
+      logoutSecureCustomer
+    );
+
+
+    showAuthView(
+      "login"
+    );
+
+
+    return section;
+
+  }
+
+
+  function showAuthView(
+    mode
+  ) {
+
+    const login =
+      $(
+        "dm-auth-login-panel"
+      );
+
+
+    const code =
+      $(
+        "dm-auth-code-panel"
+      );
+
+
+    const signed =
+      $(
+        "dm-auth-signed-panel"
+      );
+
+
+    login
+      ?.classList.toggle(
+        "dm-auth-hidden",
+        mode !== "login"
+      );
+
+
+    code
+      ?.classList.toggle(
+        "dm-auth-hidden",
+        mode !== "code"
+      );
+
+
+    signed
+      ?.classList.toggle(
+        "dm-auth-hidden",
+        mode !== "signed"
+      );
+
+  }
+
+
+  function renderSignedInCustomer() {
+
     if (
-      email
+      !activeCustomer
     ) {
 
-      setTimeout(
-        () =>
-
-          loadMyCourses(
-            email
-          ),
-
-        150
+      showAuthView(
+        "login"
       );
+
+
+      return;
 
     }
 
 
-    return section;
+    const name =
+      String(
+        activeCustomer.name ||
+        ""
+      ).trim();
+
+
+    const email =
+      String(
+        activeCustomer.email ||
+        activeEmail ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const nameBox =
+      $(
+        "dm-auth-customer-name"
+      );
+
+
+    const emailBox =
+      $(
+        "dm-auth-customer-email"
+      );
+
+
+    if (
+      nameBox
+    ) {
+
+      nameBox.textContent =
+        name ||
+        "DECISION MAKER";
+
+    }
+
+
+    if (
+      emailBox
+    ) {
+
+      emailBox.textContent =
+        email;
+
+    }
+
+
+    showAuthView(
+      "signed"
+    );
+
+  }
+
+
+  function clearCourseCards() {
+
+    const list =
+      $(
+        "dm-course-list"
+      );
+
+
+    if (
+      list
+    ) {
+
+      list.innerHTML =
+        "";
+
+    }
+
+  }
+
+
+  function handleSessionExpired(
+    message =
+      "Your secure login expired. Sign in again."
+  ) {
+
+    clearAuthSession();
+
+
+    clearCourseCards();
+
+
+    closeCoursePlayer();
+
+
+    showAuthView(
+      "login"
+    );
+
+
+    const email =
+      savedEmail();
+
+
+    if (
+      email &&
+      $(
+        "dm-course-email"
+      )
+    ) {
+
+      $(
+        "dm-course-email"
+      ).value =
+        email;
+
+    }
+
+
+    setCourseStatus(
+      message,
+      "error"
+    );
+
+  }
+
+
+  async function restoreSecureSession() {
+
+    ensureMyCourses();
+
+
+    const token =
+      savedAuthToken();
+
+
+    if (
+      !token
+    ) {
+
+      const savedCustomer =
+        savedAuthCustomer();
+
+
+      if (
+        savedCustomer?.email
+      ) {
+
+        $(
+          "dm-course-email"
+        ).value =
+          savedCustomer.email;
+
+      }
+
+
+      showAuthView(
+        "login"
+      );
+
+
+      return;
+
+    }
+
+
+    activeAuthToken =
+      token;
+
+
+    setCourseStatus(
+      "RESTORING SECURE LOGIN..."
+    );
+
+
+    try {
+
+      const result =
+        await api(
+          "/auth/session"
+        );
+
+
+      if (
+        !result.authenticated ||
+        !result.customer
+      ) {
+
+        throw new Error(
+          "Secure login was not restored."
+        );
+
+      }
+
+
+      saveAuthSession(
+        token,
+        result.customer
+      );
+
+
+      renderSignedInCustomer();
+
+
+      setCourseStatus(
+        "SECURE LOGIN ACTIVE",
+        "success"
+      );
+
+
+      await loadMyCourses();
+
+    }
+    catch (error) {
+
+      clearAuthSession();
+
+
+      clearCourseCards();
+
+
+      showAuthView(
+        "login"
+      );
+
+
+      setCourseStatus(
+        error.status === 401
+          ? "Your previous login expired. Enter your email to sign in again."
+          : error.message ||
+            "Secure login could not be restored.",
+        error.status === 401
+          ? ""
+          : "error"
+      );
+
+    }
+
+  }
+
+
+  async function sendLoginCode(
+    forcedEmail = ""
+  ) {
+
+    ensureMyCourses();
+
+
+    const email =
+      String(
+
+        forcedEmail
+
+        ||
+
+        $(
+          "dm-course-email"
+        )?.value
+
+        ||
+
+        ""
+
+      )
+        .trim()
+        .toLowerCase();
+
+
+    if (
+      !validEmail(
+        email
+      )
+    ) {
+
+      setCourseStatus(
+        "Enter a valid email address.",
+        "error"
+      );
+
+
+      return;
+
+    }
+
+
+    saveEmail(
+      email
+    );
+
+
+    $(
+      "dm-course-email"
+    ).value =
+      email;
+
+
+    const button =
+      $(
+        "dm-send-login-code"
+      );
+
+
+    const resend =
+      $(
+        "dm-resend-login-code"
+      );
+
+
+    const old =
+      button?.textContent ||
+      "SEND LOGIN CODE";
+
+
+    if (
+      button
+    ) {
+
+      button.disabled =
+        true;
+
+
+      button.textContent =
+        "SENDING...";
+
+    }
+
+
+    if (
+      resend
+    ) {
+
+      resend.disabled =
+        true;
+
+    }
+
+
+    setCourseStatus(
+      "SENDING YOUR SECURE LOGIN CODE..."
+    );
+
+
+    try {
+
+      const result =
+        await api(
+          "/auth/send-code",
+          {
+
+            method:
+              "POST",
+
+            body:
+              JSON.stringify({
+                email
+              })
+
+          }
+        );
+
+
+      authCodeEmail =
+        email;
+
+
+      $(
+        "dm-auth-code-note"
+      ).textContent =
+        result.email
+          ? `Code sent to ${result.email}. It expires in 10 minutes.`
+          : "If an account exists for that email, a login code has been sent.";
+
+
+      $(
+        "dm-login-code"
+      ).value =
+        "";
+
+
+      showAuthView(
+        "code"
+      );
+
+
+      setCourseStatus(
+        "LOGIN CODE SENT ✓",
+        "success"
+      );
+
+
+      setTimeout(
+        () =>
+
+          $(
+            "dm-login-code"
+          )?.focus(),
+
+        50
+      );
+
+    }
+    catch (error) {
+
+      const waiting =
+        error.status === 503;
+
+
+      setCourseStatus(
+        waiting
+          ? "Secure email login is still being activated. Try again after the email service is verified."
+          : error.message ||
+            "Could not send the login code.",
+        "error"
+      );
+
+    }
+    finally {
+
+      if (
+        button
+      ) {
+
+        button.disabled =
+          false;
+
+
+        button.textContent =
+          old;
+
+      }
+
+
+      if (
+        resend
+      ) {
+
+        resend.disabled =
+          false;
+
+      }
+
+    }
+
+  }
+
+
+  async function verifyLoginCode() {
+
+    const email =
+      String(
+        authCodeEmail ||
+        $(
+          "dm-course-email"
+        )?.value ||
+        ""
+      )
+        .trim()
+        .toLowerCase();
+
+
+    const code =
+      String(
+        $(
+          "dm-login-code"
+        )?.value ||
+        ""
+      )
+        .replace(
+          /\D/g,
+          ""
+        )
+        .slice(
+          0,
+          6
+        );
+
+
+    if (
+      !validEmail(
+        email
+      ) ||
+      !/^\d{6}$/.test(
+        code
+      )
+    ) {
+
+      setCourseStatus(
+        "Enter the 6 digit code from your email.",
+        "error"
+      );
+
+
+      return;
+
+    }
+
+
+    const button =
+      $(
+        "dm-verify-login-code"
+      );
+
+
+    const old =
+      button?.textContent ||
+      "SIGN IN";
+
+
+    if (
+      button
+    ) {
+
+      button.disabled =
+        true;
+
+
+      button.textContent =
+        "VERIFYING...";
+
+    }
+
+
+    setCourseStatus(
+      "VERIFYING SECURE LOGIN..."
+    );
+
+
+    try {
+
+      const result =
+        await api(
+          "/auth/verify-code",
+          {
+
+            method:
+              "POST",
+
+            body:
+              JSON.stringify({
+                email,
+                code
+              })
+
+          }
+        );
+
+
+      if (
+        !result.authenticated ||
+        !result.token ||
+        !result.customer
+      ) {
+
+        throw new Error(
+          "Secure login could not be completed."
+        );
+
+      }
+
+
+      saveAuthSession(
+        result.token,
+        result.customer
+      );
+
+
+      authCodeEmail =
+        "";
+
+
+      $(
+        "dm-login-code"
+      ).value =
+        "";
+
+
+      renderSignedInCustomer();
+
+
+      setCourseStatus(
+        "SECURE LOGIN ACTIVE ✓",
+        "success"
+      );
+
+
+      await loadMyCourses();
+
+    }
+    catch (error) {
+
+      setCourseStatus(
+        error.message ||
+        "That login code could not be verified.",
+        "error"
+      );
+
+    }
+    finally {
+
+      if (
+        button
+      ) {
+
+        button.disabled =
+          false;
+
+
+        button.textContent =
+          old;
+
+      }
+
+    }
+
+  }
+
+
+  async function logoutSecureCustomer() {
+
+    const button =
+      $(
+        "dm-auth-logout"
+      );
+
+
+    if (
+      button
+    ) {
+
+      button.disabled =
+        true;
+
+
+      button.textContent =
+        "LOGGING OUT...";
+
+    }
+
+
+    try {
+
+      if (
+        activeAuthToken ||
+        savedAuthToken()
+      ) {
+
+        await api(
+          "/auth/logout",
+          {
+            method:
+              "POST"
+          }
+        );
+
+      }
+
+    }
+    catch (_) {
+
+      /*
+        Local logout still happens if the network is unavailable.
+      */
+
+    }
+    finally {
+
+      clearAuthSession();
+
+
+      clearCourseCards();
+
+
+      closeCoursePlayer();
+
+
+      showAuthView(
+        "login"
+      );
+
+
+      if (
+        button
+      ) {
+
+        button.disabled =
+          false;
+
+
+        button.textContent =
+          "LOG OUT";
+
+      }
+
+
+      setCourseStatus(
+        "SIGNED OUT"
+      );
+
+    }
 
   }
 
@@ -3377,28 +4734,16 @@
   }
 
 
-  async function loadMyCourses(
-    forcedEmail = ""
-  ) {
+  async function loadMyCourses() {
 
     ensureMyCourses();
 
 
     const email =
       String(
-
-        forcedEmail
-
-        ||
-
-        $(
-          "dm-course-email"
-        )?.value
-
-        ||
-
+        activeCustomer?.email ||
+        activeEmail ||
         ""
-
       )
         .trim()
         .toLowerCase();
@@ -3411,14 +4756,22 @@
 
 
     if (
+      !activeAuthToken ||
       !validEmail(
         email
       )
     ) {
 
+      clearCourseCards();
+
+
+      showAuthView(
+        "login"
+      );
+
+
       setCourseStatus(
-        "Enter a valid email address.",
-        "error"
+        "Secure login is required to view your courses."
       );
 
 
@@ -3427,15 +4780,11 @@
     }
 
 
-    $(
-      "dm-course-email"
-    ).value =
+    activeEmail =
       email;
 
 
-    saveEmail(
-      email
-    );
+    renderSignedInCustomer();
 
 
     setCourseStatus(
@@ -3512,7 +4861,7 @@
                 : "S"
             } READY`
 
-          : "No unlocked courses were found for this email.",
+          : "No unlocked courses were found for this account.",
 
 
         owned.length
@@ -3523,6 +4872,21 @@
 
     }
     catch (error) {
+
+      if (
+        error.status === 401
+      ) {
+
+        handleSessionExpired(
+          error.message ||
+          "Your secure login expired. Sign in again."
+        );
+
+
+        return;
+
+      }
+
 
       if (
         list
@@ -3938,14 +5302,27 @@
         );
 
 
-        loadMyCourses(
-          email
-        );
+        loadMyCourses();
 
       }
 
     }
     catch (error) {
+
+      if (
+        error.status === 401
+      ) {
+
+        handleSessionExpired(
+          error.message ||
+          "Your secure login expired. Sign in again."
+        );
+
+
+        return;
+
+      }
+
 
       alert(
         error.message ||
@@ -4280,6 +5657,21 @@
 
     }
     catch (error) {
+
+      if (
+        error.status === 401
+      ) {
+
+        handleSessionExpired(
+          error.message ||
+          "Your secure login expired. Sign in again."
+        );
+
+
+        return;
+
+      }
+
 
       $(
         "dm-course-player-content"
@@ -5464,9 +6856,7 @@
         completed
       ) {
 
-        loadMyCourses(
-          activeEmail
-        );
+        loadMyCourses();
 
 
         setTimeout(
@@ -5478,6 +6868,21 @@
 
     }
     catch (error) {
+
+      if (
+        error.status === 401
+      ) {
+
+        handleSessionExpired(
+          error.message ||
+          "Your secure login expired. Sign in again."
+        );
+
+
+        return;
+
+      }
+
 
       saveStatus(
         error.message ||
@@ -5517,6 +6922,10 @@
 
 
     ensureMyCourses();
+
+
+    const authRestore =
+      restoreSecureSession();
 
 
     const results =
