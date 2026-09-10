@@ -3758,7 +3758,7 @@
       "dm-send-login-code"
     ).addEventListener(
       "click",
-      sendLoginCode
+      () => sendLoginCode()
     );
 
 
