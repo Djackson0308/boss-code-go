@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Code Clothing Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1180px,calc(100% - 28px));margin:auto;padding:28px 0 70px}
+.header{text-align:center;margin-bottom:26px}
+.header img{width:min(390px,100%);max-height:120px;object-fit:contain}
+.gold{color:#F5C518}
+.muted{color:#858585}
+.small{font-size:10px;line-height:1.5}
+.card{background:linear-gradient(145deg,#111,#050505);border:1px solid #282828;border-radius:22px;padding:22px;margin-bottom:20px}
+.head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px}
+.head small{color:#F5C518;font-size:9px;font-weight:900;letter-spacing:2px}
+.head h2{font-size:25px;margin-top:5px}
+.status{padding:8px 12px;border-radius:999px;background:#181818;color:#888;font-size:10px;font-weight:900}
+.status.ok{background:#102518;color:#72e59a}
+.layout{display:grid;grid-template-columns:330px minmax(0,1fr);gap:18px;align-items:start}
+.panel{background:#080808;border:1px solid #252525;border-radius:18px;padding:16px}
+.list{display:grid;gap:10px;margin-top:14px}
+.product-item{padding:13px;border:1px solid #262626;border-radius:14px;background:#050505}
+.product-item.active{border-color:#F5C518}
+.product-item strong{display:block;font-size:13px}
+.product-item small{display:block;color:#777;font-size:9px;margin-top:5px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{padding:5px 8px;border-radius:999px;background:#181818;color:#aaa;font-size:8px;font-weight:900}
+.pub{background:#11331c;color:#7af09d}
+.draft{background:#321414;color:#ff8c8c}
+.featured{background:#332b0e;color:#F5C518}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.full{grid-column:1/-1}
+.field label{display:block;font-size:10px;font-weight:900;margin-bottom:7px}
+.input,.select,.textarea{width:100%;border:1px solid #303030;border-radius:13px;background:#080808;color:#fff;outline:none}
+.input,.select{min-height:50px;padding:0 14px}
+.textarea{min-height:105px;padding:13px 14px;resize:vertical}
+.input:focus,.select:focus,.textarea:focus{border-color:#F5C518}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:15px}
+.btn{min-height:44px;padding:0 17px;border-radius:999px;font-size:10px;font-weight:900}
+.red{background:#d40000;color:#fff;border:0}
+.outline{background:transparent;color:#F5C518;border:1px solid #F5C518}
+.gray{background:#161616;color:#fff;border:1px solid #333}
+.danger{background:transparent;color:#ff7676;border:1px solid #5c2525}
+.message{min-height:20px;margin-top:12px;color:#F5C518;font-size:10px;font-weight:900}
+.toggle-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.toggle{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;background:#090909;border:1px solid #252525;border-radius:14px}
+.toggle strong{font-size:10px}
+.toggle em{display:block;color:#777;font-size:9px;font-style:normal;margin-top:4px}
+.switch{position:relative;width:50px;height:28px;flex:0 0 auto}
+.switch input{display:none}
+.slider{position:absolute;inset:0;background:#333;border-radius:999px}
+.slider:before{content:"";position:absolute;width:20px;height:20px;left:4px;top:4px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.slider{background:#d40000}
+.switch input:checked+.slider:before{transform:translateX(22px)}
+.file-row{display:grid;grid-template-columns:1fr auto;gap:8px}
+.preview{width:100%;max-height:280px;object-fit:contain;background:#050505;border:1px solid #232323;border-radius:14px;margin-top:12px}
+.subcard{border:1px solid #242424;border-radius:16px;background:#070707;padding:16px;margin-top:16px}
+.subhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.subhead h3{font-size:16px}
+.photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.photo-card{border:1px solid #242424;border-radius:14px;padding:8px;background:#050505}
+.photo-card img{width:100%;aspect-ratio:1/1;object-fit:contain;background:#000;border-radius:10px}
+.variant-tools{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.size-checks{display:flex;gap:7px;flex-wrap:wrap}
+.size-check{padding:8px 10px;border:1px solid #303030;border-radius:999px;background:#090909;font-size:9px;font-weight:900}
+.size-check input{margin-right:5px}
+.variant-row,.request-row{display:grid;gap:8px;align-items:center;padding:10px;border:1px solid #252525;border-radius:12px;background:#050505;margin-top:8px}
+.variant-row{grid-template-columns:1fr .7fr .8fr .55fr auto}
+.request-row{grid-template-columns:1fr 1fr .7fr .8fr auto}
+.empty{text-align:center;color:#777;border:1px dashed #303030;border-radius:14px;padding:22px}
+.login{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.login.hide{display:none}
+.loginbox{width:min(460px,100%);background:#0b0b0b;border:1px solid #292929;border-radius:22px;padding:24px}
+.loginbox h2{font-size:26px;margin:7px 0}
+.loginbox p{color:#888;font-size:11px;line-height:1.5;margin-bottom:18px}
+.note{padding:13px 14px;border-radius:13px;background:#120f02;border:1px solid #3b3207;color:#e7d16d;font-size:10px;line-height:1.5;margin-top:14px}
+@media(max-width:900px){
+.layout{grid-template-columns:1fr}
+.toggle-row{grid-template-columns:1fr}
+}
+@media(max-width:700px){
+.grid,.variant-tools{grid-template-columns:1fr}
+.full{grid-column:auto}
+.photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.variant-row,.request-row{grid-template-columns:1fr}
+.head{display:block}
+.status{display:inline-block;margin-top:10px}
+}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="loginbox">
+    <div class="gold">PRIVATE CONTROL PANEL</div>
+    <h2>THE CODE CLOTHING</h2>
+    <p>Enter your B.O.S.S CODE GO admin key. It stays in this browser session only.</p>
+    <div class="field">
+      <label>ADMIN KEY</label>
+      <input id="adminKey" class="input" type="password" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button id="unlock" class="btn red">UNLOCK CLOTHING ADMIN</button>
+    </div>
+    <div id="loginMsg" class="message"></div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <header class="header">
+    <img src="images/boss-code-go-logo.png" alt="B.O.S.S CODE GO">
+    <div class="gold">THE CODE CLOTHING</div>
+    <h1>STORE ADMIN</h1>
+    <p class="muted small">Manage products, photos, sizes, colors, inventory and special size requests.</p>
+  </header>
+
+  <section class="card">
+    <div class="head">
+      <div>
+        <small>BACKEND</small>
+        <h2>CONNECTION</h2>
+      </div>
+      <div id="apiStatus" class="status">CHECKING</div>
+    </div>
+    <div class="muted small">API: <span id="apiLabel"></span></div>
+    <div class="actions">
+      <button id="refresh" class="btn outline">REFRESH</button>
+      <button id="newProduct" class="btn red">NEW PRODUCT</button>
+      <button id="lock" class="btn gray">LOCK ADMIN</button>
+    </div>
+  </section>
+
+  <div class="layout">
+
+    <aside class="panel">
+      <div class="subhead">
+        <div>
+          <div class="gold small">PRODUCTS</div>
+          <h3>YOUR STORE</h3>
+        </div>
+      </div>
+      <div id="productList" class="list"></div>
+    </aside>
+
+    <section>
+
+      <section class="card">
+        <div class="head">
+          <div>
+            <small>PRODUCT EDITOR</small>
+            <h2 id="editorTitle">NEW PRODUCT</h2>
+          </div>
+          <div id="productStatus" class="status">DRAFT</div>
+        </div>
+
+        <div class="grid">
+
+          <div class="field">
+            <label>PRODUCT NAME</label>
+            <input id="pName" class="input">
+          </div>
+
+          <div class="field">
+            <label>SLUG</label>
+            <input id="pSlug" class="input" placeholder="created automatically">
+          </div>
+
+          <div class="field">
+            <label>PRICE</label>
+            <input id="pPrice" class="input" type="number" min="0" step="0.01" placeholder="0.00">
+          </div>
+
+          <div class="field">
+            <label>SALE PRICE OPTIONAL</label>
+            <input id="pSalePrice" class="input" type="number" min="0" step="0.01" placeholder="leave blank for no sale">
+          </div>
+
+          <div class="field">
+            <label>SORT ORDER</label>
+            <input id="pSort" class="input" type="number" value="0">
+          </div>
+
+          <div class="field">
+            <label>COVER PHOTO</label>
+            <div class="file-row">
+              <input id="pCoverUrl" class="input" placeholder="Uploaded image location">
+              <button id="coverUploadButton" class="btn outline" type="button">UPLOAD</button>
+            </div>
+            <input id="coverFile" type="file" accept="image/*" hidden>
+          </div>
+
+          <div class="field full">
+            <label>DESCRIPTION</label>
+            <textarea id="pDescription" class="textarea"></textarea>
+          </div>
+
+        </div>
+
+        <div class="toggle-row">
+
+          <div class="toggle">
+            <div>
+              <strong>PUBLISHED</strong>
+              <em>Show this product in the app.</em>
+            </div>
+            <label class="switch">
+              <input id="pPublished" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle">
+            <div>
+              <strong>FEATURED</strong>
+              <em>Give this product priority.</em>
+            </div>
+            <label class="switch">
+              <input id="pFeatured" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle">
+            <div>
+              <strong>TRACK INVENTORY</strong>
+              <em>Use stock counts for each size and color.</em>
+            </div>
+            <label class="switch">
+              <input id="pTrackInventory" type="checkbox">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div>
+
+        <div class="toggle-row" style="grid-template-columns:1fr">
+
+          <div class="toggle">
+            <div>
+              <strong>SPECIAL SIZE REQUESTS</strong>
+              <em>Allow customers to request a size outside the standard range.</em>
+            </div>
+            <label class="switch">
+              <input id="pSpecialSize" type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div>
+
+        <div class="note">
+          STANDARD SIZES AVAILABLE THROUGH 2XL<br>
+          Need another size? Send us a special size request and we will check availability.
+        </div>
+
+        <img id="coverPreview" class="preview" alt="" hidden>
+
+        <div class="actions">
+          <button id="saveProduct" class="btn red">SAVE PRODUCT</button>
+          <button id="deleteProduct" class="btn danger" hidden>DELETE PRODUCT</button>
+        </div>
+
+        <div id="productMsg" class="message"></div>
+      </section>
+
+      <section id="mediaCard" class="card" hidden>
+        <div class="head">
+          <div>
+            <small>PRODUCT MEDIA</small>
+            <h2>EXTRA PHOTOS</h2>
+          </div>
+        </div>
+
+        <div class="file-row">
+          <input id="extraPhotoUrl" class="input" placeholder="Uploaded image location">
+          <button id="extraPhotoUploadButton" class="btn outline" type="button">UPLOAD PHOTO</button>
+        </div>
+        <input id="extraPhotoFile" type="file" accept="image/*" hidden>
+
+        <div class="grid" style="margin-top:12px">
+          <div class="field">
+            <label>ALT TEXT OPTIONAL</label>
+            <input id="extraPhotoAlt" class="input">
+          </div>
+          <div class="field">
+            <label>SORT ORDER</label>
+            <input id="extraPhotoSort" class="input" type="number" value="0">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="addExtraPhoto" class="btn red">ADD PHOTO</button>
+        </div>
+
+        <div id="photoMsg" class="message"></div>
+        <div id="photoGrid" class="photo-grid" style="margin-top:14px"></div>
+      </section>
+
+      <section id="variantCard" class="card" hidden>
+        <div class="head">
+          <div>
+            <small>SIZES AND COLORS</small>
+            <h2>VARIANTS</h2>
+          </div>
+        </div>
+
+        <div class="variant-tools">
+
+          <div class="field">
+            <label>COLORS</label>
+            <input id="bulkColors" class="input" placeholder="Black, Red, White">
+          </div>
+
+          <div class="field">
+            <label>STARTING STOCK OPTIONAL</label>
+            <input id="bulkStock" class="input" type="number" min="0" placeholder="blank means unlimited">
+          </div>
+
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small gold" style="font-weight:900;margin-bottom:8px">STANDARD SIZES</div>
+          <div class="size-checks">
+            <label class="size-check"><input class="sizeBox" type="checkbox" value="S" checked>S</label>
+            <label class="size-check"><input class="sizeBox" type="checkbox" value="M" checked>M</label>
+            <label class="size-check"><input class="sizeBox" type="checkbox" value="L" checked>L</label>
+            <label class="size-check"><input class="sizeBox" type="checkbox" value="XL" checked>XL</label>
+            <label class="size-check"><input class="sizeBox" type="checkbox" value="2XL" checked>2XL</label>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="buildVariants" class="btn red">BUILD SIZE AND COLOR OPTIONS</button>
+        </div>
+
+        <div id="variantMsg" class="message"></div>
+        <div id="variantList"></div>
+      </section>
+
+    </section>
+
+  </div>
+
+  <section class="card">
+    <div class="head">
+      <div>
+        <small>CUSTOM REQUESTS</small>
+        <h2>SPECIAL SIZE REQUESTS</h2>
+      </div>
+    </div>
+
+    <div id="requestList"></div>
+    <div id="requestMsg" class="message"></div>
+  </section>
+
+</main>
+
+<script>
+const API = "https://boss-code-go-api.dezthareason4ever.workers.dev";
+let KEY = "";
+let products = [];
+let currentProduct = null;
+let currentFull = null;
+
+const $ = id => document.getElementById(id);
+
+function esc(value){
+  return String(value ?? "")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function centsFromDollars(value){
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.round(n * 100) : 0;
+}
+
+function dollarsFromCents(value){
+  if(value === null || value === undefined || value === "") return "";
+  return (Number(value || 0) / 100).toFixed(2);
+}
+
+function slugify(value){
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"");
+}
+
+async function api(path, options = {}){
+  const headers = new Headers(options.headers || {});
+  headers.set("X-Admin-Key", KEY);
+
+  const body = options.body;
+  if(body && !(body instanceof FormData) && !headers.has("Content-Type")){
+    headers.set("Content-Type","application/json");
+  }
+
+  const response = await fetch(API + path, {
+    ...options,
+    headers
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if(!response.ok){
+    throw new Error(data.error || `Request failed with status ${response.status}`);
+  }
+
+  return data;
+}
+
+async function upload(file, folder, messageId){
+  if(!file){
+    $(messageId).textContent = "CHOOSE A PHOTO FIRST.";
+    return null;
+  }
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("folder", folder);
+
+  $(messageId).textContent = "UPLOADING...";
+
+  try{
+    const result = await api("/media/upload", {
+      method:"POST",
+      body:form
+    });
+
+    $(messageId).textContent = "UPLOAD COMPLETE.";
+    return result.url || "";
+  }
+  catch(error){
+    $(messageId).textContent = error.message;
+    return null;
+  }
+}
+
+async function health(){
+  $("apiLabel").textContent = API;
+
+  try{
+    const response = await fetch(API + "/clothing/products");
+    if(!response.ok) throw new Error();
+    $("apiStatus").textContent = "LIVE";
+    $("apiStatus").classList.add("ok");
+  }
+  catch{
+    $("apiStatus").textContent = "OFFLINE";
+    $("apiStatus").classList.remove("ok");
+  }
+}
+
+async function unlock(){
+  const key = $("adminKey").value.trim();
+  if(!key){
+    $("loginMsg").textContent = "ENTER YOUR ADMIN KEY.";
+    return;
+  }
+
+  KEY = key;
+
+  try{
+    await api("/clothing/products?include_unpublished=1");
+    sessionStorage.setItem("boss-code-admin-key", KEY);
+    $("login").classList.add("hide");
+    $("loginMsg").textContent = "";
+    await loadAll();
+  }
+  catch(error){
+    KEY = "";
+    $("loginMsg").textContent = error.message || "ADMIN KEY NOT ACCEPTED.";
+  }
+}
+
+function lock(){
+  KEY = "";
+  sessionStorage.removeItem("boss-code-admin-key");
+  $("login").classList.remove("hide");
+}
+
+function resetProductForm(){
+  currentProduct = null;
+  currentFull = null;
+
+  $("editorTitle").textContent = "NEW PRODUCT";
+  $("productStatus").textContent = "DRAFT";
+  $("productStatus").classList.remove("ok");
+
+  $("pName").value = "";
+  $("pSlug").value = "";
+  $("pPrice").value = "";
+  $("pSalePrice").value = "";
+  $("pSort").value = "0";
+  $("pCoverUrl").value = "";
+  $("pDescription").value = "";
+  $("pPublished").checked = false;
+  $("pFeatured").checked = false;
+  $("pTrackInventory").checked = false;
+  $("pSpecialSize").checked = true;
+
+  $("coverPreview").hidden = true;
+  $("coverPreview").src = "";
+
+  $("deleteProduct").hidden = true;
+  $("mediaCard").hidden = true;
+  $("variantCard").hidden = true;
+  $("productMsg").textContent = "";
+
+  renderProductList();
+}
+
+function renderProductList(){
+  const target = $("productList");
+
+  if(!products.length){
+    target.innerHTML = '<div class="empty">NO PRODUCTS YET.</div>';
+    return;
+  }
+
+  target.innerHTML = products.map(product => `
+    <button
+      type="button"
+      class="product-item ${currentProduct && Number(currentProduct.id) === Number(product.id) ? "active" : ""}"
+      onclick="selectProduct(${Number(product.id)})"
+      style="width:100%;text-align:left;color:#fff"
+    >
+      <strong>${esc(product.name)}</strong>
+      <small>$${dollarsFromCents(product.effective_price_cents || product.price_cents)}</small>
+      <div class="badges">
+        <span class="badge ${product.published ? "pub" : "draft"}">
+          ${product.published ? "PUBLISHED" : "DRAFT"}
+        </span>
+        ${product.featured ? '<span class="badge featured">FEATURED</span>' : ""}
+      </div>
+    </button>
+  `).join("");
+}
+
+async function loadProducts(){
+  const result = await api("/clothing/products?include_unpublished=1");
+  products = Array.isArray(result.data) ? result.data : [];
+  renderProductList();
+
+  if(currentProduct){
+    const fresh = products.find(item => Number(item.id) === Number(currentProduct.id));
+    if(fresh){
+      currentProduct = fresh;
+    }
+  }
+}
+
+async function loadRequests(){
+  const result = await api("/clothing/special-size-requests");
+  renderRequests(Array.isArray(result.data) ? result.data : []);
+}
+
+async function loadAll(){
+  await Promise.all([
+    loadProducts(),
+    loadRequests()
+  ]);
+
+  if(currentProduct){
+    await selectProduct(currentProduct.id);
+  }
+}
+
+window.selectProduct = async function(id){
+  try{
+    const result = await api(`/clothing/products/${id}/full?include_unpublished=1`);
+    currentFull = result.data || null;
+    currentProduct = currentFull?.product || null;
+
+    if(!currentProduct) return;
+
+    $("editorTitle").textContent = currentProduct.name || "PRODUCT";
+    $("productStatus").textContent = currentProduct.published ? "PUBLISHED" : "DRAFT";
+    $("productStatus").classList.toggle("ok", !!currentProduct.published);
+
+    $("pName").value = currentProduct.name || "";
+    $("pSlug").value = currentProduct.slug || "";
+    $("pPrice").value = dollarsFromCents(currentProduct.price_cents);
+    $("pSalePrice").value = dollarsFromCents(currentProduct.sale_price_cents);
+    $("pSort").value = currentProduct.sort_order ?? 0;
+    $("pCoverUrl").value = currentProduct.cover_image_url || "";
+    $("pDescription").value = currentProduct.description || "";
+    $("pPublished").checked = !!currentProduct.published;
+    $("pFeatured").checked = !!currentProduct.featured;
+    $("pTrackInventory").checked = !!currentProduct.track_inventory;
+    $("pSpecialSize").checked = !!currentProduct.allow_special_size_request;
+
+    if(currentProduct.cover_image_url){
+      $("coverPreview").src = currentProduct.cover_image_url;
+      $("coverPreview").hidden = false;
+    }
+    else{
+      $("coverPreview").hidden = true;
+      $("coverPreview").src = "";
+    }
+
+    $("deleteProduct").hidden = false;
+    $("mediaCard").hidden = false;
+    $("variantCard").hidden = false;
+
+    renderPhotos(currentFull.images || []);
+    renderVariants(currentFull.variants || []);
+    renderProductList();
+  }
+  catch(error){
+    $("productMsg").textContent = error.message;
+  }
+};
+
+async function saveProduct(){
+  const name = $("pName").value.trim();
+
+  if(!name){
+    $("productMsg").textContent = "ADD A PRODUCT NAME.";
+    return;
+  }
+
+  const payload = {
+    name,
+    slug: $("pSlug").value.trim() || slugify(name),
+    description: $("pDescription").value.trim(),
+    price_cents: centsFromDollars($("pPrice").value),
+    sale_price_cents: $("pSalePrice").value.trim() === "" ? null : centsFromDollars($("pSalePrice").value),
+    cover_image_url: $("pCoverUrl").value.trim(),
+    featured: $("pFeatured").checked ? 1 : 0,
+    published: $("pPublished").checked ? 1 : 0,
+    sort_order: Number($("pSort").value || 0),
+    track_inventory: $("pTrackInventory").checked ? 1 : 0,
+    allow_special_size_request: $("pSpecialSize").checked ? 1 : 0
+  };
+
+  $("productMsg").textContent = "SAVING...";
+
+  try{
+    let result;
+
+    if(currentProduct){
+      result = await api(`/clothing/products/${currentProduct.id}`, {
+        method:"PUT",
+        body:JSON.stringify(payload)
+      });
+    }
+    else{
+      result = await api("/clothing/products", {
+        method:"POST",
+        body:JSON.stringify(payload)
+      });
+    }
+
+    const id = result?.data?.product?.id || currentProduct?.id;
+
+    $("productMsg").textContent = "PRODUCT SAVED.";
+    await loadProducts();
+
+    if(id){
+      await selectProduct(id);
+    }
+  }
+  catch(error){
+    $("productMsg").textContent = error.message;
+  }
+}
+
+async function deleteProduct(){
+  if(!currentProduct) return;
+
+  if(!confirm(`Delete ${currentProduct.name}?`)){
+    return;
+  }
+
+  try{
+    await api(`/clothing/products/${currentProduct.id}`, {
+      method:"DELETE"
+    });
+
+    resetProductForm();
+    await loadProducts();
+    $("productMsg").textContent = "PRODUCT DELETED.";
+  }
+  catch(error){
+    $("productMsg").textContent = error.message;
+  }
+}
+
+function renderPhotos(images){
+  const target = $("photoGrid");
+
+  if(!images.length){
+    target.innerHTML = '<div class="empty" style="grid-column:1/-1">NO EXTRA PHOTOS YET.</div>';
+    return;
+  }
+
+  target.innerHTML = images.map(image => `
+    <div class="photo-card">
+      <img src="${esc(image.image_url)}" alt="${esc(image.alt_text || "")}">
+      <div class="small muted" style="margin-top:7px">${esc(image.alt_text || "PRODUCT PHOTO")}</div>
+      <div class="actions">
+        <button class="btn danger" onclick="deletePhoto(${Number(image.id)})">DELETE</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function addExtraPhoto(){
+  if(!currentProduct){
+    $("photoMsg").textContent = "SAVE THE PRODUCT FIRST.";
+    return;
+  }
+
+  const imageUrl = $("extraPhotoUrl").value.trim();
+
+  if(!imageUrl){
+    $("photoMsg").textContent = "UPLOAD OR ENTER A PHOTO FIRST.";
+    return;
+  }
+
+  try{
+    await api(`/clothing/products/${currentProduct.id}/images`, {
+      method:"POST",
+      body:JSON.stringify({
+        image_url:imageUrl,
+        alt_text:$("extraPhotoAlt").value.trim(),
+        sort_order:Number($("extraPhotoSort").value || 0)
+      })
+    });
+
+    $("extraPhotoUrl").value = "";
+    $("extraPhotoAlt").value = "";
+    $("extraPhotoSort").value = "0";
+    $("extraPhotoFile").value = "";
+    $("photoMsg").textContent = "PHOTO ADDED.";
+    await selectProduct(currentProduct.id);
+  }
+  catch(error){
+    $("photoMsg").textContent = error.message;
+  }
+}
+
+window.deletePhoto = async function(id){
+  if(!confirm("Delete this photo?")) return;
+
+  try{
+    await api(`/clothing/images/${id}`, {
+      method:"DELETE"
+    });
+
+    await selectProduct(currentProduct.id);
+  }
+  catch(error){
+    $("photoMsg").textContent = error.message;
+  }
+};
+
+function renderVariants(variants){
+  const target = $("variantList");
+
+  if(!variants.length){
+    target.innerHTML = '<div class="empty" style="margin-top:14px">NO SIZE AND COLOR OPTIONS YET.</div>';
+    return;
+  }
+
+  target.innerHTML = variants.map(variant => `
+    <div class="variant-row">
+      <input id="vColor${variant.id}" class="input" value="${esc(variant.color)}" aria-label="Color">
+      <input id="vSize${variant.id}" class="input" value="${esc(variant.size)}" aria-label="Size">
+      <input id="vStock${variant.id}" class="input" type="number" min="0" value="${variant.stock_quantity ?? ""}" placeholder="stock">
+      <label class="size-check">
+        <input id="vActive${variant.id}" type="checkbox" ${variant.active ? "checked" : ""}>
+        ACTIVE
+      </label>
+      <div class="actions" style="margin-top:0">
+        <button class="btn gray" onclick="saveVariant(${variant.id})">SAVE</button>
+        <button class="btn danger" onclick="deleteVariant(${variant.id})">DELETE</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function buildVariants(){
+  if(!currentProduct){
+    $("variantMsg").textContent = "SAVE THE PRODUCT FIRST.";
+    return;
+  }
+
+  const colors = $("bulkColors").value
+    .split(",")
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  const sizes = [...document.querySelectorAll(".sizeBox:checked")]
+    .map(box => box.value);
+
+  if(!colors.length){
+    $("variantMsg").textContent = "ADD AT LEAST ONE COLOR.";
+    return;
+  }
+
+  if(!sizes.length){
+    $("variantMsg").textContent = "SELECT AT LEAST ONE SIZE.";
+    return;
+  }
+
+  const stockValue = $("bulkStock").value.trim();
+
+  try{
+    const result = await api(`/clothing/products/${currentProduct.id}/variants/bulk`, {
+      method:"POST",
+      body:JSON.stringify({
+        colors,
+        sizes,
+        stock_quantity: stockValue === "" ? null : Number(stockValue)
+      })
+    });
+
+    $("variantMsg").textContent = `OPTIONS READY. ${result.created || 0} CREATED. ${result.updated || 0} UPDATED.`;
+    currentFull = result.data || currentFull;
+    renderVariants(currentFull?.variants || []);
+  }
+  catch(error){
+    $("variantMsg").textContent = error.message;
+  }
+}
+
+window.saveVariant = async function(id){
+  try{
+    await api(`/clothing/variants/${id}`, {
+      method:"PUT",
+      body:JSON.stringify({
+        color:$(`vColor${id}`).value.trim(),
+        size:$(`vSize${id}`).value.trim(),
+        stock_quantity:$(`vStock${id}`).value.trim() === "" ? null : Number($(`vStock${id}`).value),
+        active:$(`vActive${id}`).checked ? 1 : 0
+      })
+    });
+
+    $("variantMsg").textContent = "OPTION SAVED.";
+    await selectProduct(currentProduct.id);
+  }
+  catch(error){
+    $("variantMsg").textContent = error.message;
+  }
+};
+
+window.deleteVariant = async function(id){
+  if(!confirm("Delete this size and color option?")) return;
+
+  try{
+    await api(`/clothing/variants/${id}`, {
+      method:"DELETE"
+    });
+
+    await selectProduct(currentProduct.id);
+  }
+  catch(error){
+    $("variantMsg").textContent = error.message;
+  }
+};
+
+function renderRequests(requests){
+  const target = $("requestList");
+
+  if(!requests.length){
+    target.innerHTML = '<div class="empty">NO SPECIAL SIZE REQUESTS YET.</div>';
+    return;
+  }
+
+  target.innerHTML = requests.map(request => `
+    <div class="request-row">
+      <div>
+        <strong style="font-size:12px">${esc(request.name)}</strong>
+        <div class="small muted">${esc(request.email)}</div>
+      </div>
+
+      <div>
+        <strong style="font-size:11px">${esc(request.product_name || "PRODUCT")}</strong>
+        <div class="small muted">${esc(request.color || "NO COLOR SELECTED")}</div>
+      </div>
+
+      <div>
+        <div class="gold" style="font-weight:900">${esc(request.requested_size)}</div>
+      </div>
+
+      <select id="requestStatus${request.id}" class="select">
+        ${["new","checking","available","unavailable","contacted","closed"].map(status => `
+          <option value="${status}" ${request.status === status ? "selected" : ""}>${status.toUpperCase()}</option>
+        `).join("")}
+      </select>
+
+      <button class="btn gray" onclick="saveRequest(${request.id})">SAVE</button>
+    </div>
+  `).join("");
+}
+
+window.saveRequest = async function(id){
+  try{
+    await api(`/clothing/special-size-requests/${id}`, {
+      method:"PUT",
+      body:JSON.stringify({
+        status:$(`requestStatus${id}`).value
+      })
+    });
+
+    $("requestMsg").textContent = "REQUEST UPDATED.";
+    await loadRequests();
+  }
+  catch(error){
+    $("requestMsg").textContent = error.message;
+  }
+};
+
+$("unlock").onclick = unlock;
+$("adminKey").onkeydown = event => {
+  if(event.key === "Enter") unlock();
+};
+$("lock").onclick = lock;
+$("refresh").onclick = loadAll;
+$("newProduct").onclick = resetProductForm;
+$("saveProduct").onclick = saveProduct;
+$("deleteProduct").onclick = deleteProduct;
+$("buildVariants").onclick = buildVariants;
+$("addExtraPhoto").onclick = addExtraPhoto;
+
+$("pName").addEventListener("input", () => {
+  if(!currentProduct && !$("pSlug").dataset.touched){
+    $("pSlug").value = slugify($("pName").value);
+  }
+});
+
+$("pSlug").addEventListener("input", () => {
+  $("pSlug").dataset.touched = "1";
+});
+
+$("pCoverUrl").addEventListener("input", () => {
+  const url = $("pCoverUrl").value.trim();
+  if(url){
+    $("coverPreview").src = url;
+    $("coverPreview").hidden = false;
+  }
+  else{
+    $("coverPreview").hidden = true;
+  }
+});
+
+$("coverUploadButton").onclick = () => $("coverFile").click();
+$("coverFile").onchange = async () => {
+  const url = await upload(
+    $("coverFile").files[0],
+    "clothing/products",
+    "productMsg"
+  );
+
+  if(url){
+    $("pCoverUrl").value = url;
+    $("coverPreview").src = url;
+    $("coverPreview").hidden = false;
+  }
+};
+
+$("extraPhotoUploadButton").onclick = () => $("extraPhotoFile").click();
+$("extraPhotoFile").onchange = async () => {
+  const url = await upload(
+    $("extraPhotoFile").files[0],
+    "clothing/products",
+    "photoMsg"
+  );
+
+  if(url){
+    $("extraPhotoUrl").value = url;
+  }
+};
+
+$("apiLabel").textContent = API;
+health();
+resetProductForm();
+
+const saved = sessionStorage.getItem("boss-code-admin-key");
+if(saved){
+  KEY = saved;
+  $("adminKey").value = saved;
+  unlock();
+}
+</script>
+
+</body>
+</html>
