@@ -7183,17 +7183,26 @@
         width:
           130px !important;
 
-        height:
-          100% !important;
-
         min-height:
-          170px !important;
+          0 !important;
 
         aspect-ratio:
           auto !important;
 
         overflow:
           hidden !important;
+
+        display:
+          flex !important;
+
+        align-items:
+          center !important;
+
+        justify-content:
+          center !important;
+
+        background:
+          #000 !important;
 
       }
 
@@ -7207,16 +7216,19 @@
           100% !important;
 
         height:
-          100% !important;
+          auto !important;
 
         min-height:
-          170px !important;
+          0 !important;
 
         max-height:
-          230px !important;
+          none !important;
 
         object-fit:
-          cover !important;
+          contain !important;
+
+        object-position:
+          center center !important;
 
       }
 
@@ -7294,7 +7306,7 @@
             105px !important;
 
           min-height:
-            145px !important;
+            0 !important;
 
         }
 
@@ -7302,10 +7314,10 @@
         #decision-makers-screen .boss-available-course-image {
 
           min-height:
-            145px !important;
+            0 !important;
 
           max-height:
-            190px !important;
+            none !important;
 
         }
 
