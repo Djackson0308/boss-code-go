@@ -51,7 +51,8 @@ return({
 'decision-makers-screen':'decision-makers',
 'boss-checkin-screen':'boss-checkin',
 'music-screen':'music',
-'contact-screen':'contact'
+'contact-screen':'contact',
+'support-screen':'support'
 })[id]||'';
 }
 
@@ -1975,6 +1976,11 @@ const defs=[
 [
 'contact-screen',
 'contact-back'
+],
+
+[
+'support-screen',
+'support-back'
 ]
 
 ];
@@ -2479,6 +2485,1084 @@ const contact=
 ensureContactScreen();
 
 
+/* =========================================================
+   SUPPORT IS A DECISION
+========================================================= */
+
+let selectedSupportAmountCents=
+0;
+
+
+function ensureSupportScreen(){
+
+let screen=
+$('support-screen');
+
+
+if(screen)
+return screen;
+
+
+if(
+!$('boss-code-support-styles')
+){
+
+const style=
+document.createElement(
+'style'
+);
+
+
+style.id=
+'boss-code-support-styles';
+
+
+style.textContent=`
+
+#support-screen{
+background:#000;
+color:#fff;
+min-height:100vh;
+}
+
+#support-screen .support-wrap{
+width:min(940px,calc(100% - 32px));
+margin:0 auto;
+padding:24px 0 56px;
+}
+
+#support-screen .support-back{
+appearance:none;
+border:1px solid #333;
+background:#090909;
+color:#fff;
+font:inherit;
+font-weight:800;
+letter-spacing:.06em;
+padding:12px 18px;
+border-radius:999px;
+cursor:pointer;
+margin-bottom:28px;
+}
+
+#support-screen .support-back:hover{
+border-color:#f5c518;
+color:#f5c518;
+}
+
+#support-screen .support-hero{
+text-align:center;
+margin:0 auto 28px;
+}
+
+#support-screen .support-logo{
+width:min(230px,60vw);
+height:auto;
+margin:0 auto 18px;
+display:block;
+}
+
+#support-screen .support-kicker{
+display:block;
+color:#f5c518;
+font-size:11px;
+font-weight:900;
+letter-spacing:.18em;
+margin-bottom:8px;
+}
+
+#support-screen .support-hero h1{
+margin:0 0 12px;
+font-size:clamp(34px,7vw,62px);
+line-height:.95;
+letter-spacing:.01em;
+}
+
+#support-screen .support-hero p{
+margin:0 auto;
+max-width:720px;
+color:#bbb;
+font-size:15px;
+line-height:1.65;
+}
+
+#support-screen .support-principle{
+margin:18px auto 0;
+max-width:650px;
+border:1px solid rgba(245,197,24,.35);
+background:rgba(245,197,24,.06);
+border-radius:18px;
+padding:16px 18px;
+color:#fff;
+font-weight:900;
+line-height:1.5;
+}
+
+#support-screen .support-card{
+background:linear-gradient(180deg,#0d0d0d,#050505);
+border:2px solid #d72f22;
+border-radius:28px;
+padding:clamp(20px,4vw,34px);
+box-shadow:0 0 0 1px rgba(245,197,24,.15) inset;
+}
+
+#support-screen .support-card-title{
+text-align:center;
+margin-bottom:20px;
+}
+
+#support-screen .support-card-title span{
+display:block;
+color:#f5c518;
+font-size:10px;
+font-weight:900;
+letter-spacing:.18em;
+margin-bottom:6px;
+}
+
+#support-screen .support-card-title h2{
+margin:0;
+font-size:clamp(24px,5vw,36px);
+}
+
+#support-screen .support-amount-grid{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:12px;
+margin:20px 0;
+}
+
+#support-screen .support-amount{
+appearance:none;
+border:1px solid #363636;
+background:#080808;
+color:#fff;
+border-radius:18px;
+min-height:112px;
+padding:18px 10px;
+font:inherit;
+cursor:pointer;
+transition:.18s ease;
+}
+
+#support-screen .support-amount:hover,
+#support-screen .support-amount.selected{
+border-color:#f5c518;
+background:#151100;
+transform:translateY(-2px);
+}
+
+#support-screen .support-amount strong{
+display:block;
+font-size:30px;
+line-height:1;
+color:#fff;
+}
+
+#support-screen .support-amount span{
+display:block;
+margin-top:9px;
+color:#f5c518;
+font-size:9px;
+font-weight:900;
+letter-spacing:.1em;
+line-height:1.35;
+}
+
+#support-screen .support-shirt-tag{
+display:inline-block!important;
+margin-top:7px!important;
+border-radius:999px;
+background:#d72f22;
+color:#fff!important;
+padding:5px 8px;
+font-size:8px!important;
+}
+
+#support-screen .support-custom{
+border-top:1px solid #252525;
+border-bottom:1px solid #252525;
+padding:18px 0;
+margin:6px 0 20px;
+}
+
+#support-screen .support-custom label,
+#support-screen .support-field label{
+display:block;
+margin-bottom:8px;
+font-size:11px;
+font-weight:900;
+letter-spacing:.08em;
+color:#f5c518;
+}
+
+#support-screen .support-custom-row{
+display:grid;
+grid-template-columns:auto 1fr;
+align-items:center;
+gap:8px;
+}
+
+#support-screen .support-dollar{
+height:52px;
+min-width:52px;
+display:grid;
+place-items:center;
+border:1px solid #343434;
+border-radius:14px;
+background:#050505;
+color:#f5c518;
+font-size:22px;
+font-weight:900;
+}
+
+#support-screen .support-custom input,
+#support-screen .support-field input,
+#support-screen .support-field textarea{
+width:100%;
+box-sizing:border-box;
+border:1px solid #343434;
+background:#000;
+color:#fff;
+font:inherit;
+border-radius:14px;
+padding:14px 15px;
+outline:none;
+}
+
+#support-screen .support-custom input:focus,
+#support-screen .support-field input:focus,
+#support-screen .support-field textarea:focus{
+border-color:#f5c518;
+box-shadow:0 0 0 2px rgba(245,197,24,.12);
+}
+
+#support-screen .support-field{
+margin-bottom:16px;
+}
+
+#support-screen .support-field textarea{
+resize:vertical;
+min-height:110px;
+}
+
+#support-screen .support-selected{
+display:none;
+margin:18px 0;
+border-radius:18px;
+background:#111;
+border:1px solid #353535;
+padding:18px;
+text-align:center;
+}
+
+#support-screen .support-selected.show{
+display:block;
+}
+
+#support-screen .support-selected span{
+display:block;
+color:#999;
+font-size:9px;
+font-weight:900;
+letter-spacing:.14em;
+}
+
+#support-screen .support-selected strong{
+display:block;
+margin-top:5px;
+font-size:30px;
+color:#f5c518;
+}
+
+#support-screen .support-shirt-message{
+display:none;
+margin:12px 0 0;
+border:1px solid rgba(215,47,34,.65);
+background:rgba(215,47,34,.08);
+border-radius:14px;
+padding:12px 14px;
+color:#fff;
+font-size:12px;
+font-weight:800;
+line-height:1.5;
+}
+
+#support-screen .support-shirt-message.show{
+display:block;
+}
+
+#support-screen .support-submit{
+width:100%;
+border:0;
+border-radius:999px;
+background:#d72f22;
+color:#fff;
+font:inherit;
+font-weight:900;
+letter-spacing:.08em;
+padding:16px 20px;
+cursor:pointer;
+margin-top:4px;
+}
+
+#support-screen .support-submit:hover{
+filter:brightness(1.08);
+}
+
+#support-screen .support-submit:disabled{
+opacity:.55;
+cursor:wait;
+}
+
+#support-screen .support-status{
+min-height:24px;
+margin-top:14px;
+text-align:center;
+font-weight:800;
+line-height:1.5;
+}
+
+#support-screen .support-status.success{
+color:#f5c518;
+}
+
+#support-screen .support-status.error{
+color:#ff6666;
+}
+
+#support-screen .support-payment-note{
+margin:16px auto 0;
+max-width:700px;
+color:#777;
+font-size:11px;
+line-height:1.6;
+text-align:center;
+}
+
+#support-screen .support-footer{
+margin-top:34px;
+}
+
+@media(max-width:760px){
+
+#support-screen .support-amount-grid{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+}
+
+@media(max-width:480px){
+
+#support-screen .support-wrap{
+width:min(100% - 22px,940px);
+padding-top:16px;
+}
+
+#support-screen .support-card{
+border-radius:22px;
+}
+
+#support-screen .support-amount{
+min-height:100px;
+}
+
+}
+
+`;
+
+
+document.head.appendChild(
+style
+);
+
+}
+
+
+screen=
+document.createElement(
+'div'
+);
+
+
+screen.id=
+'support-screen';
+
+screen.className=
+'screen';
+
+
+screen.innerHTML=`
+
+<div class="support-wrap">
+
+<button
+id="support-back"
+class="support-back"
+type="button"
+>
+← HOME
+</button>
+
+
+<header class="support-hero">
+
+<img
+class="support-logo"
+src="images/boss-code-media-logo.png"
+alt="B.O.S.S CODE MEDIA"
+>
+
+<span class="support-kicker">
+WHAT YOU SUPPORT HELPS SHAPE WHAT CONTINUES
+</span>
+
+<h1>
+SUPPORT IS A DECISION
+</h1>
+
+<p>
+Your support helps B.O.S.S CODE MEDIA continue creating independent media, music, education, stories and opportunities.
+</p>
+
+<div class="support-principle">
+Support is never required. It is a decision.
+</div>
+
+</header>
+
+
+<section class="support-card">
+
+<div class="support-card-title">
+
+<span>
+CHOOSE YOUR SUPPORT
+</span>
+
+<h2>
+MAKE YOUR DECISION
+</h2>
+
+</div>
+
+
+<div
+id="support-amount-grid"
+class="support-amount-grid"
+>
+
+<button
+class="support-amount"
+type="button"
+data-amount-cents="500"
+>
+<strong>$5</strong>
+<span>KEEP IT MOVING</span>
+</button>
+
+<button
+class="support-amount"
+type="button"
+data-amount-cents="1000"
+>
+<strong>$10</strong>
+<span>BUILD WITH US</span>
+</button>
+
+<button
+class="support-amount"
+type="button"
+data-amount-cents="2000"
+>
+<strong>$20</strong>
+<span>FUEL THE MISSION</span>
+</button>
+
+<button
+class="support-amount"
+type="button"
+data-amount-cents="5000"
+>
+<strong>$50</strong>
+<span>B.O.S.S CODE SUPPORTER</span>
+<span class="support-shirt-tag">SHIRT ELIGIBLE</span>
+</button>
+
+</div>
+
+
+<div class="support-custom">
+
+<label for="support-custom-amount">
+CUSTOM AMOUNT
+</label>
+
+<div class="support-custom-row">
+
+<div class="support-dollar">
+$
+</div>
+
+<input
+id="support-custom-amount"
+type="number"
+min="1"
+step="1"
+inputmode="decimal"
+placeholder="Enter amount"
+>
+
+</div>
+
+</div>
+
+
+<div
+id="support-selected"
+class="support-selected"
+>
+
+<span>
+YOUR SUPPORT DECISION
+</span>
+
+<strong id="support-selected-amount">
+$0
+</strong>
+
+<div
+id="support-shirt-message"
+class="support-shirt-message"
+>
+Support of $50 or more is eligible for a B.O.S.S CODE supporter shirt. Fulfillment details will be handled after successful payment.
+</div>
+
+</div>
+
+
+<div class="support-field">
+
+<label for="support-name">
+NAME
+</label>
+
+<input
+id="support-name"
+type="text"
+autocomplete="name"
+placeholder="Your name"
+>
+
+</div>
+
+
+<div class="support-field">
+
+<label for="support-email">
+EMAIL
+</label>
+
+<input
+id="support-email"
+type="email"
+autocomplete="email"
+placeholder="Your email address"
+>
+
+</div>
+
+
+<div class="support-field">
+
+<label for="support-message">
+MESSAGE
+</label>
+
+<textarea
+id="support-message"
+rows="5"
+placeholder="Optional message to B.O.S.S CODE MEDIA"
+></textarea>
+
+</div>
+
+
+<button
+id="support-submit"
+class="support-submit"
+type="button"
+>
+CONTINUE TO SUPPORT
+</button>
+
+
+<div
+id="support-status"
+class="support-status"
+aria-live="polite"
+></div>
+
+
+<p class="support-payment-note">
+Secure payment checkout is the next connection. No card is charged from this screen yet. Support is separate from course purchases and does not unlock paid courses.
+</p>
+
+</section>
+
+
+<footer class="boss-footer support-footer">
+
+<img
+src="images/boss-code-media-logo.png"
+alt="B.O.S.S CODE MEDIA"
+>
+
+<p>
+GREATNESS IS A DECISION
+</p>
+
+</footer>
+
+</div>
+
+`;
+
+
+document.body.appendChild(
+screen
+);
+
+
+screen
+.querySelectorAll(
+'.support-amount'
+)
+.forEach(
+button=>
+button.addEventListener(
+'click',
+()=>selectSupportAmount(
+Number(
+button.dataset.amountCents||
+0
+)
+)
+)
+);
+
+
+on(
+'support-custom-amount',
+'input',
+()=>{
+const value=
+Number(
+$('support-custom-amount')
+?.value||
+0
+);
+
+selectSupportAmount(
+Math.max(
+0,
+Math.round(
+value*100
+)
+),
+true
+);
+}
+);
+
+
+on(
+'support-submit',
+'click',
+submitSupportIntent
+);
+
+
+return screen;
+
+}
+
+
+function selectSupportAmount(
+amountCents,
+fromCustom=false
+){
+
+selectedSupportAmountCents=
+Math.max(
+0,
+Math.round(
+Number(
+amountCents||
+0
+)
+)
+);
+
+
+qa(
+'#support-screen .support-amount'
+)
+.forEach(
+button=>{
+
+const amount=
+Number(
+button.dataset.amountCents||
+0
+);
+
+
+button.classList.toggle(
+'selected',
+!fromCustom&&
+amount===
+selectedSupportAmountCents
+);
+
+}
+);
+
+
+if(
+!fromCustom&&
+$('support-custom-amount')
+)
+$('support-custom-amount')
+.value=
+'';
+
+
+updateSupportSelection();
+
+}
+
+
+function updateSupportSelection(){
+
+const box=
+$('support-selected');
+
+const amount=
+$('support-selected-amount');
+
+const shirt=
+$('support-shirt-message');
+
+
+if(
+!box||
+!amount
+)
+return;
+
+
+if(
+selectedSupportAmountCents<=0
+){
+
+box.classList.remove(
+'show'
+);
+
+return;
+
+}
+
+
+box.classList.add(
+'show'
+);
+
+
+amount.textContent=
+`$${(
+selectedSupportAmountCents/
+100
+).toFixed(
+selectedSupportAmountCents%100
+?
+2
+:
+0
+)}`;
+
+
+if(shirt)
+shirt.classList.toggle(
+'show',
+selectedSupportAmountCents>=5000
+);
+
+}
+
+
+async function submitSupportIntent(){
+
+const status=
+$('support-status');
+
+const button=
+$('support-submit');
+
+
+if(status){
+
+status.className=
+'support-status';
+
+status.textContent=
+'';
+
+}
+
+
+if(
+selectedSupportAmountCents<=0
+){
+
+if(status){
+
+status.className=
+'support-status error';
+
+status.textContent=
+'CHOOSE A SUPPORT AMOUNT.';
+
+}
+
+return;
+
+}
+
+
+const name=
+$('support-name')
+?.value
+.trim()||
+'';
+
+
+const email=
+$('support-email')
+?.value
+.trim()
+.toLowerCase()||
+'';
+
+
+const message=
+$('support-message')
+?.value
+.trim()||
+'';
+
+
+if(
+!email||
+!/^\S+@\S+\.\S+$/.test(
+email
+)
+){
+
+if(status){
+
+status.className=
+'support-status error';
+
+status.textContent=
+'ENTER A VALID EMAIL ADDRESS.';
+
+}
+
+return;
+
+}
+
+
+if(button){
+
+button.disabled=
+true;
+
+button.textContent=
+'SAVING YOUR DECISION...';
+
+}
+
+
+try{
+
+const response=
+await fetch(
+`${API}/support/contributions`,
+{
+
+method:
+'POST',
+
+headers:{
+
+'Content-Type':
+'application/json',
+
+Accept:
+'application/json'
+
+},
+
+body:
+JSON.stringify({
+
+name,
+
+email,
+
+amount_cents:
+selectedSupportAmountCents,
+
+currency:
+'usd',
+
+provider:
+'stripe',
+
+payment_method:
+'',
+
+transaction_id:
+'',
+
+message
+
+})
+
+}
+);
+
+
+let data={};
+
+
+try{
+
+data=
+await response.json();
+
+}catch{}
+
+
+if(
+!response.ok||
+data.success===
+false
+){
+
+throw Error(
+data.error||
+data.message||
+'Unable to save your support decision.'
+);
+
+}
+
+
+trackAnalytics(
+'support_intent',
+{
+
+section:
+'support',
+
+itemId:
+data.data?.id||
+'',
+
+itemTitle:
+'SUPPORT IS A DECISION',
+
+valueNumeric:
+selectedSupportAmountCents/
+100,
+
+detail:{
+
+shirt_eligible:
+Boolean(
+data.data?.shirt_reward_eligible
+)
+
+}
+
+}
+);
+
+
+if(status){
+
+status.className=
+'support-status success';
+
+status.textContent=
+data.data?.shirt_reward_eligible
+?
+'SUPPORT DECISION SAVED. YOU ARE IN THE SHIRT ELIGIBLE LEVEL. NO CHARGE HAS BEEN MADE YET.'
+:
+'SUPPORT DECISION SAVED. NO CHARGE HAS BEEN MADE YET.';
+
+}
+
+
+if(button)
+button.textContent=
+'READY FOR SECURE CHECKOUT';
+
+
+}catch(error){
+
+console.warn(
+'Support submission error',
+error
+);
+
+
+if(status){
+
+status.className=
+'support-status error';
+
+status.textContent=
+error.message||
+'YOUR SUPPORT DECISION COULD NOT BE SAVED. PLEASE TRY AGAIN.';
+
+}
+
+
+if(button)
+button.textContent=
+'CONTINUE TO SUPPORT';
+
+}
+finally{
+
+if(button)
+button.disabled=
+false;
+
+}
+
+}
+
+
+const support=
+ensureSupportScreen();
+
+
 ensureReturnHomeButtons();
 
 
@@ -2643,6 +3727,24 @@ contact
 
 on(
 'contact-back',
+'click',
+()=>showScreen(
+home
+)
+);
+
+
+on(
+'support-button',
+'click',
+()=>showScreen(
+support
+)
+);
+
+
+on(
+'support-back',
 'click',
 ()=>showScreen(
 home
@@ -12647,7 +13749,9 @@ const screenId of[
 
 'music-screen',
 
-'contact-screen'
+'contact-screen',
+
+'support-screen'
 
 ]
 ){
