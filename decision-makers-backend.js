@@ -3611,7 +3611,7 @@
             id="dm-auth-code-note"
             class="dm-auth-code-note"
           >
-            Check your email and enter the code we sent you.
+            Check your email and enter the code we sent you. If you do not see it, check your spam or junk folder.
           </p>
 
 
@@ -4328,8 +4328,8 @@
         "dm-auth-code-note"
       ).textContent =
         result.email
-          ? `Code sent to ${result.email}. It expires in 10 minutes.`
-          : "If an account exists for that email, a login code has been sent.";
+          ? `Code sent to ${result.email}. It expires in 10 minutes. If you do not see it, check your spam or junk folder.`
+          : "If an account exists for that email, a login code has been sent. If you do not see it, check your spam or junk folder.";
 
 
       $(
