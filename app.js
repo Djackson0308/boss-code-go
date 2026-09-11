@@ -1043,10 +1043,6 @@ MALE
 FEMALE
 </option>
 
-<option value="nonbinary">
-NONBINARY
-</option>
-
 <option value="prefer-not-to-say">
 PREFER NOT TO SAY
 </option>
@@ -1602,7 +1598,8 @@ padding:20px
 display:flex
 }
 
-.boss-promo-ad-card{
+.boss-
+promo-ad-card{
 position:relative;
 width:min(560px,100%);
 max-height:92vh;
@@ -2860,7 +2857,8 @@ padding-top:16px;
 }
 
 #support-screen .support-card{
-border-radius:22px;
+b
+order-radius:22px;
 }
 
 #support-screen .support-amount{
@@ -6424,7 +6422,8 @@ release.artwork||
 activeArtist.image||
 'images/boss-code-media-logo.png'
 )}"
-alt="${esc(release.title)}"
+alt="${esc(rele
+   ase.title)}"
 >
 
 </div>
@@ -8285,6 +8284,7 @@ text
 )
 
 );
+
 
 
 if(
@@ -10391,7 +10391,8 @@ itemId:
 r.id,
 
 itemTitle:
-r.name,
+r.nam
+e,
 
 detail:{
 
