@@ -1598,8 +1598,7 @@ padding:20px
 display:flex
 }
 
-.boss-
-promo-ad-card{
+.boss-promo-ad-card{
 position:relative;
 width:min(560px,100%);
 max-height:92vh;
@@ -2857,8 +2856,7 @@ padding-top:16px;
 }
 
 #support-screen .support-card{
-b
-order-radius:22px;
+border-radius:22px;
 }
 
 #support-screen .support-amount{
@@ -6422,8 +6420,7 @@ release.artwork||
 activeArtist.image||
 'images/boss-code-media-logo.png'
 )}"
-alt="${esc(rele
-   ase.title)}"
+alt="${esc(release.title)}"
 >
 
 </div>
@@ -8284,7 +8281,6 @@ text
 )
 
 );
-
 
 
 if(
@@ -10391,8 +10387,7 @@ itemId:
 r.id,
 
 itemTitle:
-r.nam
-e,
+r.name,
 
 detail:{
 
