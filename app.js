@@ -13,6 +13,322 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
 }[c]));
 
 
+
+/* =========================================================
+   HOME SCREEN VISUAL PROTOTYPE
+   BLACK + WHITE FOUNDATION / RED ACTION / GOLD ACCENT
+========================================================= */
+(function installHomeVisualPrototype(){
+
+if(document.getElementById('boss-home-visual-prototype-styles'))return;
+
+const style=document.createElement('style');
+style.id='boss-home-visual-prototype-styles';
+style.textContent=`
+
+#home-screen{
+position:relative;
+min-height:100vh;
+background:#050505;
+color:#fff;
+overflow:hidden;
+isolation:isolate;
+}
+
+#home-screen::before{
+content:'';
+position:absolute;
+inset:0;
+z-index:-2;
+pointer-events:none;
+background:
+radial-gradient(circle at 82% 8%,rgba(210,0,0,.18),transparent 27%),
+radial-gradient(circle at 14% 34%,rgba(255,255,255,.045),transparent 24%),
+linear-gradient(180deg,rgba(255,255,255,.025),transparent 28%),
+repeating-conic-gradient(from 45deg at 50% 50%,rgba(255,255,255,.032) 0 25%,rgba(0,0,0,.0) 0 50%) 0 0/76px 76px,
+#050505;
+}
+
+#home-screen::after{
+content:'';
+position:absolute;
+inset:0;
+z-index:-1;
+pointer-events:none;
+background:
+linear-gradient(180deg,rgba(0,0,0,.10),rgba(0,0,0,.54) 44%,rgba(0,0,0,.9) 100%),
+radial-gradient(ellipse at center,transparent 20%,rgba(0,0,0,.52) 78%);
+}
+
+#home-screen .app-header{
+width:min(980px,calc(100% - 34px));
+margin:0 auto;
+padding:34px 0 22px;
+text-align:center;
+}
+
+#home-screen .boss-code-go-header-logo{
+display:block;
+width:min(390px,78vw);
+height:auto;
+margin:0 auto 22px;
+filter:drop-shadow(0 12px 28px rgba(0,0,0,.72));
+}
+
+#home-screen .home-hero-copy{
+width:min(760px,100%);
+margin:0 auto;
+}
+
+#home-screen .home-hero-kicker{
+display:inline-block;
+color:#f2c94c;
+font-size:clamp(10px,1.8vw,13px);
+font-weight:900;
+letter-spacing:.22em;
+text-transform:uppercase;
+margin-bottom:10px;
+}
+
+#home-screen .home-hero-title{
+margin:0;
+color:#fff;
+font-size:clamp(29px,5.2vw,54px);
+line-height:.98;
+font-weight:1000;
+letter-spacing:-.035em;
+text-transform:uppercase;
+text-wrap:balance;
+}
+
+#home-screen .home-hero-title::after{
+content:'';
+display:block;
+width:88px;
+height:4px;
+margin:16px auto 14px;
+border-radius:999px;
+background:#d40000;
+box-shadow:0 0 20px rgba(212,0,0,.3);
+}
+
+#home-screen .home-hero-subtitle{
+margin:0 auto;
+max-width:620px;
+color:#bcbcbc;
+font-size:clamp(14px,2.3vw,19px);
+line-height:1.5;
+font-weight:600;
+letter-spacing:.01em;
+}
+
+#home-screen main{
+width:min(980px,calc(100% - 34px));
+margin:0 auto;
+padding:8px 0 54px;
+}
+
+#home-screen .daily-decision-home{
+margin:14px auto 18px;
+}
+
+#home-screen .daily-decision-reopen{
+width:100%;
+min-height:82px;
+border:1px solid rgba(255,255,255,.20);
+border-left:4px solid #d40000;
+border-radius:20px;
+background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+box-shadow:0 14px 38px rgba(0,0,0,.28);
+backdrop-filter:blur(8px);
+color:#fff;
+padding:17px 22px;
+}
+
+#home-screen .daily-decision-reopen:hover{
+border-color:rgba(255,255,255,.38);
+background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
+}
+
+#home-screen .daily-decision-reopen small{
+color:#f2c94c;
+letter-spacing:.18em;
+font-weight:900;
+}
+
+#home-screen .daily-decision-reopen strong{
+color:#fff;
+font-size:clamp(15px,2.6vw,20px);
+}
+
+#home-screen .daily-decision-reopen-arrow{
+color:#d40000;
+font-size:34px;
+font-weight:900;
+}
+
+#home-screen .app-menu{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+margin-top:14px;
+}
+
+#home-screen .app-button{
+position:relative;
+min-height:76px;
+display:flex;
+align-items:center;
+justify-content:center;
+width:100%;
+border:1px solid rgba(255,255,255,.20);
+border-radius:20px;
+background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.018));
+color:#fff;
+text-decoration:none;
+overflow:hidden;
+padding:16px 18px;
+box-shadow:0 10px 28px rgba(0,0,0,.22);
+backdrop-filter:blur(8px);
+transition:transform .18s ease,border-color .18s ease,background .18s ease;
+}
+
+#home-screen .app-button::before{
+content:'';
+position:absolute;
+left:0;
+top:18%;
+bottom:18%;
+width:3px;
+border-radius:999px;
+background:#d40000;
+opacity:.95;
+}
+
+#home-screen .app-button::after{
+content:'›';
+position:absolute;
+right:17px;
+top:50%;
+transform:translateY(-52%);
+color:#777;
+font-size:24px;
+font-weight:900;
+transition:color .18s ease,transform .18s ease;
+}
+
+#home-screen .app-button:hover{
+transform:translateY(-2px);
+border-color:rgba(255,255,255,.42);
+background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.03));
+}
+
+#home-screen .app-button:hover::after{
+color:#d40000;
+transform:translate(2px,-52%);
+}
+
+#home-screen .app-button-logo-zone{
+display:none!important;
+}
+
+#home-screen .app-button-title{
+position:relative;
+z-index:1;
+display:block;
+width:100%;
+padding:0 22px 0 8px;
+text-align:left;
+color:#fff;
+font-size:clamp(12px,2vw,15px);
+line-height:1.15;
+font-weight:950;
+letter-spacing:.07em;
+text-transform:uppercase;
+}
+
+#home-screen .boss-checkin-feature{
+grid-column:1/-1;
+position:relative;
+min-height:86px;
+border:1px solid rgba(242,201,76,.55);
+border-radius:20px;
+background:linear-gradient(135deg,rgba(242,201,76,.075),rgba(255,255,255,.025));
+box-shadow:0 12px 30px rgba(0,0,0,.25);
+color:#fff;
+padding:17px 56px 17px 20px;
+text-align:left;
+}
+
+#home-screen .boss-checkin-feature-kicker{
+color:#f2c94c;
+font-size:9px;
+font-weight:900;
+letter-spacing:.18em;
+}
+
+#home-screen .boss-checkin-feature strong{
+display:block;
+margin-top:5px;
+color:#fff;
+font-size:19px;
+letter-spacing:.07em;
+}
+
+#home-screen .boss-checkin-feature-arrow{
+position:absolute;
+right:20px;
+top:50%;
+transform:translateY(-54%);
+color:#f2c94c;
+font-size:31px;
+font-weight:900;
+}
+
+@media(max-width:680px){
+
+#home-screen .app-header{
+width:min(100% - 26px,980px);
+padding-top:24px;
+}
+
+#home-screen .boss-code-go-header-logo{
+width:min(330px,82vw);
+margin-bottom:18px;
+}
+
+#home-screen .home-hero-title{
+font-size:clamp(27px,8.3vw,40px);
+}
+
+#home-screen main{
+width:min(100% - 24px,980px);
+padding-top:4px;
+}
+
+#home-screen .app-menu{
+grid-template-columns:1fr;
+gap:10px;
+}
+
+#home-screen .app-button{
+min-height:67px;
+border-radius:18px;
+}
+
+#home-screen .boss-checkin-feature{
+grid-column:auto;
+min-height:78px;
+}
+
+}
+
+`;
+
+document.head.appendChild(style);
+
+})();
+
 /* =========================================================
    APP ANALYTICS + PROMOTIONAL ADS
 ========================================================= */
