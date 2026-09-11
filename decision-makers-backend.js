@@ -7117,6 +7117,453 @@
   }
 
 
+
+  /* =========================================================
+     COMPACT AVAILABLE COURSE CARDS
+     Keeps public course cards small like resource cards
+  ========================================================= */
+
+
+  function installCompactAvailableCourseStyles() {
+
+    if (
+      $(
+        "boss-compact-available-course-styles"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    const style =
+      document.createElement(
+        "style"
+      );
+
+
+    style.id =
+      "boss-compact-available-course-styles";
+
+
+    style.textContent = `
+
+      #decision-makers-screen .boss-available-course-compact {
+
+        display:
+          grid !important;
+
+        grid-template-columns:
+          130px minmax(0, 1fr) !important;
+
+        align-items:
+          stretch !important;
+
+        width:
+          100% !important;
+
+        max-width:
+          900px !important;
+
+        min-height:
+          0 !important;
+
+        margin:
+          18px 0 0 !important;
+
+        overflow:
+          hidden !important;
+
+      }
+
+
+      #decision-makers-screen .boss-available-course-cover {
+
+        width:
+          130px !important;
+
+        height:
+          100% !important;
+
+        min-height:
+          170px !important;
+
+        aspect-ratio:
+          auto !important;
+
+        overflow:
+          hidden !important;
+
+      }
+
+
+      #decision-makers-screen .boss-available-course-image {
+
+        display:
+          block !important;
+
+        width:
+          100% !important;
+
+        height:
+          100% !important;
+
+        min-height:
+          170px !important;
+
+        max-height:
+          230px !important;
+
+        object-fit:
+          cover !important;
+
+      }
+
+
+      #decision-makers-screen .boss-available-course-compact h2,
+      #decision-makers-screen .boss-available-course-compact h3 {
+
+        font-size:
+          20px !important;
+
+        line-height:
+          1.15 !important;
+
+        margin:
+          5px 0 7px !important;
+
+      }
+
+
+      #decision-makers-screen .boss-available-course-compact p {
+
+        font-size:
+          12px !important;
+
+        line-height:
+          1.45 !important;
+
+        margin:
+          0 0 10px !important;
+
+      }
+
+
+      #decision-makers-screen .boss-available-course-button {
+
+        width:
+          auto !important;
+
+        min-width:
+          160px !important;
+
+        max-width:
+          240px !important;
+
+        min-height:
+          0 !important;
+
+        padding:
+          11px 18px !important;
+
+        margin-top:
+          10px !important;
+
+        align-self:
+          flex-start !important;
+
+      }
+
+
+      @media(
+        max-width:600px
+      ) {
+
+        #decision-makers-screen .boss-available-course-compact {
+
+          grid-template-columns:
+            105px minmax(0, 1fr) !important;
+
+        }
+
+
+        #decision-makers-screen .boss-available-course-cover {
+
+          width:
+            105px !important;
+
+          min-height:
+            145px !important;
+
+        }
+
+
+        #decision-makers-screen .boss-available-course-image {
+
+          min-height:
+            145px !important;
+
+          max-height:
+            190px !important;
+
+        }
+
+
+        #decision-makers-screen .boss-available-course-compact h2,
+        #decision-makers-screen .boss-available-course-compact h3 {
+
+          font-size:
+            17px !important;
+
+        }
+
+
+        #decision-makers-screen .boss-available-course-button {
+
+          width:
+            100% !important;
+
+          min-width:
+            0 !important;
+
+          max-width:
+            none !important;
+
+        }
+
+      }
+
+    `;
+
+
+    document.head.appendChild(
+      style
+    );
+
+  }
+
+
+  function compactAvailableCourseCards() {
+
+    installCompactAvailableCourseStyles();
+
+
+    const screen =
+      $(
+        "decision-makers-screen"
+      );
+
+
+    if (
+      !screen
+    ) {
+
+      return;
+
+    }
+
+
+    const controls =
+      [
+        ...screen.querySelectorAll(
+          "button,a"
+        )
+      ];
+
+
+    controls.forEach(
+      (control) => {
+
+        const label =
+          String(
+            control.textContent ||
+            ""
+          )
+            .replace(
+              /\s+/g,
+              " "
+            )
+            .trim()
+            .toUpperCase();
+
+
+        if (
+          label !==
+          "VIEW COURSE"
+        ) {
+
+          return;
+
+        }
+
+
+        let card =
+          control.closest(
+            "article"
+          );
+
+
+        if (
+          !card
+        ) {
+
+          card =
+            control.closest(
+              '[class*="course-card"],[class*="course_card"],[class*="courseCard"]'
+            );
+
+        }
+
+
+        if (
+          !card
+        ) {
+
+          let node =
+            control.parentElement;
+
+
+          while (
+            node &&
+            node !== screen
+          ) {
+
+            if (
+              node.querySelector(
+                "img"
+              ) &&
+              (
+                node.textContent ||
+                ""
+              ).includes(
+                "$"
+              )
+            ) {
+
+              card =
+                node;
+
+              break;
+
+            }
+
+
+            node =
+              node.parentElement;
+
+          }
+
+        }
+
+
+        if (
+          !card
+        ) {
+
+          return;
+
+        }
+
+
+        card.classList.add(
+          "boss-available-course-compact"
+        );
+
+
+        control.classList.add(
+          "boss-available-course-button"
+        );
+
+
+        const image =
+          card.querySelector(
+            "img"
+          );
+
+
+        if (
+          image
+        ) {
+
+          image.classList.add(
+            "boss-available-course-image"
+          );
+
+
+          const cover =
+            image.parentElement;
+
+
+          if (
+            cover &&
+            cover !== card
+          ) {
+
+            cover.classList.add(
+              "boss-available-course-cover"
+            );
+
+          }
+
+        }
+
+      }
+    );
+
+  }
+
+
+  function watchAvailableCourseCards() {
+
+    compactAvailableCourseCards();
+
+
+    const screen =
+      $(
+        "decision-makers-screen"
+      );
+
+
+    if (
+      !screen ||
+      screen.dataset.compactCourseWatch ===
+        "1"
+    ) {
+
+      return;
+
+    }
+
+
+    screen.dataset.compactCourseWatch =
+      "1";
+
+
+    const observer =
+      new MutationObserver(
+        () => {
+
+          compactAvailableCourseCards();
+
+        }
+      );
+
+
+    observer.observe(
+      screen,
+      {
+        childList:
+          true,
+
+        subtree:
+          true
+      }
+    );
+
+  }
+
+
   /* =========================================================
      LOAD BACKEND CONTENT
   ========================================================= */
@@ -7214,6 +7661,21 @@
     }
 
     arrangeDecisionMakersSections();
+
+
+    watchAvailableCourseCards();
+
+
+    setTimeout(
+      compactAvailableCourseCards,
+      250
+    );
+
+
+    setTimeout(
+      compactAvailableCourseCards,
+      900
+    );
 
   }
 
