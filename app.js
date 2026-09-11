@@ -1977,6 +1977,11 @@ const defs=[
 [
 'support-screen',
 'support-back'
+],
+
+[
+'the-code-clothing-screen',
+'the-code-clothing-back'
 ]
 
 ];
@@ -13639,6 +13644,2765 @@ screen
 }
 
 
+
+/* =========================================================
+   THE CODE CLOTHING
+   IN APP STOREFRONT
+========================================================= */
+
+const CLOTHING_CART_KEY =
+'the-code-clothing-cart-v1';
+
+
+let clothingProducts = [];
+
+let clothingCurrentProduct = null;
+
+let clothingCart = [];
+
+
+function moneyFromCents(
+value
+){
+
+const cents =
+Number(
+value ||
+0
+);
+
+
+return `$${(
+cents /
+100
+).toFixed(
+2
+)}`;
+
+}
+
+
+function clothingLoadCart(){
+
+try{
+
+const saved =
+JSON.parse(
+localStorage.getItem(
+CLOTHING_CART_KEY
+) ||
+'[]'
+);
+
+
+clothingCart =
+Array.isArray(
+saved
+)
+?
+saved
+:
+[];
+
+}catch{
+
+clothingCart = [];
+
+}
+
+}
+
+
+function clothingSaveCart(){
+
+try{
+
+localStorage.setItem(
+
+CLOTHING_CART_KEY,
+
+JSON.stringify(
+clothingCart
+)
+
+);
+
+}catch{}
+
+}
+
+
+function clothingCartCount(){
+
+return clothingCart
+.reduce(
+(
+total,
+item
+)=>
+total +
+Number(
+item.quantity ||
+1
+),
+0
+);
+
+}
+
+
+async function clothingFetchJSON(
+path,
+options={}
+){
+
+const response =
+await fetch(
+API + path,
+{
+cache:
+'no-store',
+
+...options,
+
+headers:{
+Accept:
+'application/json',
+
+...(
+options.body
+&&
+!(options.body instanceof FormData)
+?
+{
+'Content-Type':
+'application/json'
+}
+:
+{}
+),
+
+...(
+options.headers ||
+{}
+)
+}
+}
+);
+
+
+let data = {};
+
+
+try{
+
+data =
+await response.json();
+
+}catch{}
+
+
+if(
+!response.ok
+){
+
+throw new Error(
+data.error ||
+`API ${response.status}`
+);
+
+}
+
+
+return data;
+
+}
+
+
+function installClothingStoreStyles(){
+
+if(
+$('the-code-clothing-styles')
+)
+return;
+
+
+const style =
+document.createElement(
+'style'
+);
+
+
+style.id =
+'the-code-clothing-styles';
+
+
+style.textContent = `
+
+#the-code-clothing-screen{
+background:#050505;
+color:#fff;
+min-height:100vh
+}
+
+.clothing-shell{
+width:min(1120px,calc(100% - 28px));
+margin:0 auto;
+padding:20px 0 80px
+}
+
+.clothing-topbar{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:18px
+}
+
+.clothing-back{
+border:1px solid #333;
+background:#0b0b0b;
+color:#fff;
+padding:10px 14px;
+border-radius:999px;
+font-size:10px;
+font-weight:900
+}
+
+.clothing-cart-button{
+border:1px solid #f5c518;
+background:#111;
+color:#f5c518;
+padding:10px 14px;
+border-radius:999px;
+font-size:10px;
+font-weight:900
+}
+
+.clothing-brand{
+text-align:center;
+padding:18px 0 24px
+}
+
+.clothing-brand img{
+width:min(310px,85%);
+max-height:120px;
+object-fit:contain
+}
+
+.clothing-brand h2{
+font-size:30px;
+margin-top:8px
+}
+
+.clothing-brand p{
+color:#999;
+font-size:12px;
+line-height:1.5;
+margin-top:8px
+}
+
+.clothing-section-head{
+display:flex;
+align-items:end;
+justify-content:space-between;
+gap:14px;
+margin:18px 0 14px
+}
+
+.clothing-section-head span{
+color:#f5c518;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px
+}
+
+.clothing-section-head h3{
+font-size:24px;
+margin-top:4px
+}
+
+.clothing-product-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:16px
+}
+
+.clothing-product-card{
+border:1px solid #262626;
+background:linear-gradient(145deg,#101010,#050505);
+border-radius:20px;
+overflow:hidden;
+color:#fff;
+text-align:left;
+padding:0;
+width:100%
+}
+
+.clothing-product-image{
+aspect-ratio:1/1;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#000;
+overflow:hidden
+}
+
+.clothing-product-image img{
+width:100%;
+height:100%;
+object-fit:contain;
+display:block
+}
+
+.clothing-product-placeholder{
+color:#777;
+font-size:11px;
+font-weight:900;
+letter-spacing:1px
+}
+
+.clothing-product-body{
+padding:15px
+}
+
+.clothing-product-kicker{
+color:#f5c518;
+font-size:8px;
+font-weight:900;
+letter-spacing:1.6px
+}
+
+.clothing-product-body h4{
+font-size:19px;
+margin:7px 0
+}
+
+.clothing-product-price{
+display:flex;
+gap:8px;
+align-items:center;
+font-weight:900
+}
+
+.clothing-product-price .sale{
+color:#f5c518;
+font-size:18px
+}
+
+.clothing-product-price .regular{
+font-size:13px;
+color:#777;
+text-decoration:line-through
+}
+
+.clothing-product-price .single{
+font-size:18px;
+color:#fff
+}
+
+.clothing-product-body p{
+color:#9a9a9a;
+font-size:11px;
+line-height:1.45;
+margin-top:8px
+}
+
+.clothing-loading,
+.clothing-empty,
+.clothing-error{
+border:1px dashed #2b2b2b;
+border-radius:16px;
+padding:24px;
+text-align:center;
+color:#888;
+font-size:11px;
+font-weight:900
+}
+
+.clothing-detail{
+display:none
+}
+
+.clothing-detail.show{
+display:block
+}
+
+.clothing-store-home.hide{
+display:none
+}
+
+.clothing-detail-grid{
+display:grid;
+grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+gap:22px;
+align-items:start
+}
+
+.clothing-gallery-main{
+border:1px solid #262626;
+border-radius:20px;
+background:#000;
+overflow:hidden;
+aspect-ratio:1/1;
+display:flex;
+align-items:center;
+justify-content:center
+}
+
+.clothing-gallery-main img{
+width:100%;
+height:100%;
+object-fit:contain
+}
+
+.clothing-thumbs{
+display:flex;
+gap:8px;
+overflow-x:auto;
+margin-top:10px;
+padding-bottom:4px
+}
+
+.clothing-thumb{
+width:72px;
+height:72px;
+flex:0 0 auto;
+border:1px solid #303030;
+border-radius:10px;
+background:#000;
+padding:3px
+}
+
+.clothing-thumb.active{
+border-color:#f5c518
+}
+
+.clothing-thumb img{
+width:100%;
+height:100%;
+object-fit:contain;
+border-radius:7px
+}
+
+.clothing-detail-info{
+border:1px solid #252525;
+border-radius:20px;
+background:#090909;
+padding:20px
+}
+
+.clothing-detail-kicker{
+color:#f5c518;
+font-size:9px;
+font-weight:900;
+letter-spacing:1.8px
+}
+
+.clothing-detail-info h2{
+font-size:30px;
+line-height:1.08;
+margin:8px 0
+}
+
+.clothing-detail-copy{
+color:#aaa;
+font-size:12px;
+line-height:1.55;
+margin:14px 0
+}
+
+.clothing-price-large{
+font-size:25px;
+font-weight:900;
+margin:12px 0
+}
+
+.clothing-sale-row{
+display:flex;
+gap:10px;
+align-items:center
+}
+
+.clothing-sale-row .old{
+color:#777;
+text-decoration:line-through;
+font-size:15px
+}
+
+.clothing-option-block{
+margin-top:16px
+}
+
+.clothing-option-block label{
+display:block;
+font-size:10px;
+font-weight:900;
+margin-bottom:8px
+}
+
+.clothing-option-grid{
+display:flex;
+gap:8px;
+flex-wrap:wrap
+}
+
+.clothing-choice{
+border:1px solid #343434;
+background:#080808;
+color:#fff;
+padding:9px 12px;
+border-radius:999px;
+font-size:10px;
+font-weight:900
+}
+
+.clothing-choice.active{
+border-color:#f5c518;
+color:#f5c518
+}
+
+.clothing-choice.disabled{
+opacity:.35;
+pointer-events:none
+}
+
+.clothing-add-button{
+width:100%;
+border:0;
+border-radius:999px;
+background:#f5c518;
+color:#000;
+font-weight:900;
+padding:15px 16px;
+margin-top:18px
+}
+
+.clothing-add-button:disabled{
+opacity:.45
+}
+
+.clothing-special-button{
+width:100%;
+border:1px solid #555;
+border-radius:999px;
+background:transparent;
+color:#fff;
+font-weight:900;
+padding:13px 16px;
+margin-top:10px
+}
+
+.clothing-standard-note{
+border:1px solid #3c3208;
+background:#120f02;
+color:#f5c518;
+border-radius:14px;
+padding:12px;
+font-size:10px;
+line-height:1.5;
+margin-top:15px
+}
+
+.clothing-special-form{
+display:none;
+margin-top:14px;
+border-top:1px solid #252525;
+padding-top:14px
+}
+
+.clothing-special-form.show{
+display:block
+}
+
+.clothing-field{
+margin-top:10px
+}
+
+.clothing-field label{
+display:block;
+font-size:9px;
+font-weight:900;
+margin-bottom:6px
+}
+
+.clothing-field input,
+.clothing-field textarea,
+.clothing-field select{
+width:100%;
+background:#050505;
+color:#fff;
+border:1px solid #303030;
+border-radius:12px;
+padding:12px;
+outline:none
+}
+
+.clothing-field textarea{
+min-height:86px;
+resize:vertical
+}
+
+.clothing-submit-request{
+border:0;
+background:#d40000;
+color:#fff;
+border-radius:999px;
+font-weight:900;
+padding:12px 16px;
+margin-top:12px
+}
+
+.clothing-request-status{
+min-height:18px;
+color:#f5c518;
+font-size:10px;
+font-weight:900;
+margin-top:8px
+}
+
+.clothing-cart-panel{
+display:none;
+position:fixed;
+inset:0;
+z-index:9999;
+background:rgba(0,0,0,.88);
+padding:18px;
+overflow-y:auto
+}
+
+.clothing-cart-panel.show{
+display:block
+}
+
+.clothing-cart-shell{
+width:min(560px,100%);
+margin:28px auto;
+background:#080808;
+border:1px solid #2b2b2b;
+border-radius:22px;
+padding:20px
+}
+
+.clothing-cart-top{
+display:flex;
+justify-content:space-between;
+gap:10px;
+align-items:center
+}
+
+.clothing-cart-top button{
+border:1px solid #333;
+background:#111;
+color:#fff;
+width:38px;
+height:38px;
+border-radius:50%
+}
+
+.clothing-cart-items{
+display:grid;
+gap:10px;
+margin-top:16px
+}
+
+.clothing-cart-item{
+display:grid;
+grid-template-columns:62px minmax(0,1fr) auto;
+gap:10px;
+align-items:center;
+border:1px solid #252525;
+border-radius:14px;
+padding:9px
+}
+
+.clothing-cart-item img{
+width:62px;
+height:62px;
+object-fit:contain;
+background:#000;
+border-radius:10px
+}
+
+.clothing-cart-item strong{
+font-size:11px
+}
+
+.clothing-cart-item small{
+display:block;
+color:#888;
+font-size:9px;
+margin-top:4px
+}
+
+.clothing-cart-remove{
+border:1px solid #542323;
+background:transparent;
+color:#ff7b7b;
+border-radius:999px;
+padding:7px 9px;
+font-size:8px;
+font-weight:900
+}
+
+.clothing-cart-total{
+display:flex;
+justify-content:space-between;
+gap:10px;
+border-top:1px solid #272727;
+margin-top:16px;
+padding-top:14px;
+font-weight:900
+}
+
+.clothing-checkout-pending{
+border:1px solid #3a330e;
+background:#120f02;
+color:#f5c518;
+border-radius:14px;
+padding:12px;
+font-size:10px;
+line-height:1.5;
+margin-top:14px
+}
+
+@media(max-width:720px){
+
+.clothing-detail-grid{
+grid-template-columns:1fr
+}
+
+.clothing-product-grid{
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:10px
+}
+
+.clothing-product-body{
+padding:12px
+}
+
+.clothing-product-body h4{
+font-size:15px
+}
+
+.clothing-brand h2{
+font-size:25px
+}
+
+}
+
+@media(max-width:430px){
+
+.clothing-product-grid{
+grid-template-columns:1fr
+}
+
+}
+
+`;
+
+
+document.head.appendChild(
+style
+);
+
+}
+
+
+function ensureClothingStore(){
+
+installClothingStoreStyles();
+
+clothingLoadCart();
+
+
+let screen =
+$('the-code-clothing-screen');
+
+
+if(screen)
+return screen;
+
+
+screen =
+document.createElement(
+'div'
+);
+
+
+screen.id =
+'the-code-clothing-screen';
+
+screen.className =
+'screen';
+
+
+screen.innerHTML = `
+
+<div class="clothing-shell">
+
+<div class="clothing-topbar">
+
+<button
+id="the-code-clothing-back"
+class="clothing-back"
+type="button"
+>
+RETURN TO HOME
+</button>
+
+<button
+id="the-code-clothing-cart"
+class="clothing-cart-button"
+type="button"
+>
+CART <span id="the-code-clothing-cart-count">0</span>
+</button>
+
+</div>
+
+<section
+id="clothing-store-home"
+class="clothing-store-home"
+>
+
+<header class="clothing-brand">
+
+<img
+src="images/code-clothing-logo.png"
+alt="The Code Clothing"
+>
+
+<h2>
+THE CODE CLOTHING
+</h2>
+
+<p>
+Wear the decision. Carry the code.
+</p>
+
+</header>
+
+
+<div class="clothing-section-head">
+
+<div>
+
+<span>
+THE CODE CLOTHING
+</span>
+
+<h3>
+SHOP
+</h3>
+
+</div>
+
+</div>
+
+
+<div
+id="clothing-product-grid"
+class="clothing-product-grid"
+>
+
+<div class="clothing-loading">
+LOADING PRODUCTS...
+</div>
+
+</div>
+
+</section>
+
+
+<section
+id="clothing-detail"
+class="clothing-detail"
+></section>
+
+</div>
+
+
+<div
+id="clothing-cart-panel"
+class="clothing-cart-panel"
+>
+
+<div class="clothing-cart-shell">
+
+<div class="clothing-cart-top">
+
+<div>
+
+<div class="clothing-detail-kicker">
+THE CODE CLOTHING
+</div>
+
+<h2>
+YOUR CART
+</h2>
+
+</div>
+
+<button
+id="clothing-cart-close"
+type="button"
+>
+✕
+</button>
+
+</div>
+
+<div
+id="clothing-cart-items"
+class="clothing-cart-items"
+></div>
+
+<div
+id="clothing-cart-total"
+class="clothing-cart-total"
+></div>
+
+<div class="clothing-checkout-pending">
+SECURE CHECKOUT WILL BE CONNECTED IN THE PAYMENT PHASE. YOUR CART IS SAVED ON THIS DEVICE.
+</div>
+
+</div>
+
+</div>
+
+`;
+
+
+document.body.appendChild(
+screen
+);
+
+
+$('the-code-clothing-back')
+?.addEventListener(
+'click',
+()=>{
+
+showScreen(
+home
+);
+
+}
+);
+
+
+$('the-code-clothing-cart')
+?.addEventListener(
+'click',
+openClothingCart
+);
+
+
+$('clothing-cart-close')
+?.addEventListener(
+'click',
+closeClothingCart
+);
+
+
+$('clothing-cart-panel')
+?.addEventListener(
+'click',
+event=>{
+
+if(
+event.target ===
+$('clothing-cart-panel')
+)
+closeClothingCart();
+
+}
+);
+
+
+updateClothingCartCount();
+
+
+return screen;
+
+}
+
+
+function updateClothingCartCount(){
+
+const count =
+$('the-code-clothing-cart-count');
+
+
+if(count)
+count.textContent =
+String(
+clothingCartCount()
+);
+
+}
+
+
+function clothingProductPriceHTML(
+product
+){
+
+const price =
+Number(
+product?.price_cents ||
+0
+);
+
+const sale =
+product?.sale_price_cents ===
+null ||
+product?.sale_price_cents ===
+undefined
+?
+null
+:
+Number(
+product.sale_price_cents
+);
+
+
+if(
+sale !== null &&
+sale >= 0 &&
+sale < price
+){
+
+return `
+<div class="clothing-product-price">
+<span class="sale">
+${moneyFromCents(sale)}
+</span>
+<span class="regular">
+${moneyFromCents(price)}
+</span>
+</div>
+`;
+
+}
+
+
+return `
+<div class="clothing-product-price">
+<span class="single">
+${moneyFromCents(price)}
+</span>
+</div>
+`;
+
+}
+
+
+function renderClothingProducts(){
+
+const grid =
+$('clothing-product-grid');
+
+
+if(!grid)
+return;
+
+
+if(
+!clothingProducts.length
+){
+
+grid.innerHTML = `
+<div class="clothing-empty">
+NO PRODUCTS ARE PUBLISHED YET.
+</div>
+`;
+
+return;
+
+}
+
+
+grid.innerHTML =
+'';
+
+
+clothingProducts
+.forEach(
+product=>{
+
+const card =
+document.createElement(
+'button'
+);
+
+
+card.type =
+'button';
+
+card.className =
+'clothing-product-card';
+
+
+const cover =
+String(
+product.cover_image_url ||
+''
+).trim();
+
+
+card.innerHTML = `
+
+<div class="clothing-product-image">
+
+${
+cover
+?
+`
+<img
+src="${esc(cover)}"
+alt="${esc(product.name || 'The Code Clothing')}"
+>
+`
+:
+`
+<div class="clothing-product-placeholder">
+THE CODE CLOTHING
+</div>
+`
+}
+
+</div>
+
+<div class="clothing-product-body">
+
+<div class="clothing-product-kicker">
+${
+product.featured
+?
+'FEATURED'
+:
+'THE CODE CLOTHING'
+}
+</div>
+
+<h4>
+${esc(product.name || 'PRODUCT')}
+</h4>
+
+${clothingProductPriceHTML(product)}
+
+${
+product.description
+?
+`
+<p>
+${esc(product.description)}
+</p>
+`
+:
+''
+}
+
+</div>
+
+`;
+
+
+card.addEventListener(
+'click',
+()=>{
+
+openClothingProduct(
+product.id
+);
+
+}
+);
+
+
+grid.appendChild(
+card
+);
+
+}
+);
+
+}
+
+
+async function loadClothingProducts(){
+
+const grid =
+$('clothing-product-grid');
+
+
+if(grid)
+grid.innerHTML = `
+<div class="clothing-loading">
+LOADING PRODUCTS...
+</div>
+`;
+
+
+try{
+
+const result =
+await clothingFetchJSON(
+'/clothing/products'
+);
+
+
+clothingProducts =
+Array.isArray(
+result.data
+)
+?
+result.data
+:
+[];
+
+
+renderClothingProducts();
+
+}catch(error){
+
+if(grid)
+grid.innerHTML = `
+<div class="clothing-error">
+${esc(error.message || 'Could not load products.')}
+</div>
+`;
+
+}
+
+}
+
+
+async function openClothingStore(){
+
+const screen =
+ensureClothingStore();
+
+
+$('clothing-detail')
+?.classList.remove(
+'show'
+);
+
+
+$('clothing-store-home')
+?.classList.remove(
+'hide'
+);
+
+
+showScreen(
+screen
+);
+
+
+trackPageOpen(
+'the-code-clothing',
+'THE CODE CLOTHING'
+);
+
+
+await loadClothingProducts();
+
+}
+
+
+function clothingAvailableColors(
+variants
+){
+
+return [
+...new Set(
+variants
+.filter(
+variant=>
+variant.active !==
+false
+)
+.map(
+variant=>
+String(
+variant.color ||
+''
+).trim()
+)
+.filter(Boolean)
+)
+];
+
+}
+
+
+function clothingSizesForColor(
+variants,
+color
+){
+
+return [
+...new Set(
+variants
+.filter(
+variant=>
+variant.active !==
+false
+&&
+String(
+variant.color ||
+''
+).toLowerCase() ===
+String(
+color ||
+''
+).toLowerCase()
+&&
+variant.in_stock !==
+false
+)
+.map(
+variant=>
+String(
+variant.size ||
+''
+).trim()
+)
+.filter(Boolean)
+)
+];
+
+}
+
+
+function clothingSelectedVariant(
+variants,
+color,
+size
+){
+
+return variants.find(
+variant=>
+variant.active !==
+false
+&&
+variant.in_stock !==
+false
+&&
+String(
+variant.color ||
+''
+).toLowerCase() ===
+String(
+color ||
+''
+).toLowerCase()
+&&
+String(
+variant.size ||
+''
+).toUpperCase() ===
+String(
+size ||
+''
+).toUpperCase()
+) ||
+null;
+
+}
+
+
+async function openClothingProduct(
+productId
+){
+
+const screen =
+ensureClothingStore();
+
+const detail =
+$('clothing-detail');
+
+const storeHome =
+$('clothing-store-home');
+
+
+if(
+!detail ||
+!storeHome
+)
+return;
+
+
+storeHome.classList.add(
+'hide'
+);
+
+detail.classList.add(
+'show'
+);
+
+
+detail.innerHTML = `
+<div class="clothing-loading">
+LOADING PRODUCT...
+</div>
+`;
+
+
+showScreen(
+screen
+);
+
+
+try{
+
+const result =
+await clothingFetchJSON(
+
+`/clothing/products/${encodeURIComponent(
+productId
+)}/full`
+
+);
+
+
+const data =
+result.data ||
+{};
+
+
+clothingCurrentProduct =
+data;
+
+
+renderClothingDetail(
+data
+);
+
+
+trackAnalytics(
+'clothing_product_view',
+{
+section:
+'the-code-clothing',
+
+itemId:
+data.product?.id ||
+productId,
+
+itemTitle:
+data.product?.name ||
+'Clothing Product'
+}
+);
+
+}catch(error){
+
+detail.innerHTML = `
+<div class="clothing-error">
+${esc(error.message || 'Could not load product.')}
+</div>
+`;
+
+}
+
+}
+
+
+function renderClothingDetail(
+data
+){
+
+const detail =
+$('clothing-detail');
+
+
+if(
+!detail
+)
+return;
+
+
+const product =
+data.product ||
+{};
+
+const variants =
+Array.isArray(
+data.variants
+)
+?
+data.variants
+:
+[];
+
+const extraImages =
+Array.isArray(
+data.images
+)
+?
+data.images
+:
+[];
+
+
+const imageUrls =
+[
+String(
+product.cover_image_url ||
+''
+).trim(),
+
+...extraImages.map(
+item=>
+String(
+item.image_url ||
+''
+).trim()
+)
+]
+.filter(Boolean);
+
+
+const colors =
+clothingAvailableColors(
+variants
+);
+
+
+const selectedColor =
+colors[0] ||
+'';
+
+
+const sizes =
+selectedColor
+?
+clothingSizesForColor(
+variants,
+selectedColor
+)
+:
+[];
+
+
+const selectedSize =
+sizes[0] ||
+'';
+
+
+const mainImage =
+imageUrls[0] ||
+'';
+
+
+detail.innerHTML = `
+
+<button
+id="clothing-back-to-shop"
+class="clothing-back"
+type="button"
+style="margin-bottom:14px"
+>
+← BACK TO SHOP
+</button>
+
+
+<div class="clothing-detail-grid">
+
+<div>
+
+<div class="clothing-gallery-main">
+
+${
+mainImage
+?
+`
+<img
+id="clothing-main-image"
+src="${esc(mainImage)}"
+alt="${esc(product.name || 'The Code Clothing')}"
+>
+`
+:
+`
+<div class="clothing-product-placeholder">
+THE CODE CLOTHING
+</div>
+`
+}
+
+</div>
+
+
+${
+imageUrls.length > 1
+?
+`
+<div
+id="clothing-thumbs"
+class="clothing-thumbs"
+>
+
+${imageUrls.map(
+(
+url,
+index
+)=>`
+<button
+type="button"
+class="clothing-thumb ${
+index === 0
+?
+'active'
+:
+''
+}"
+data-image="${esc(url)}"
+>
+<img
+src="${esc(url)}"
+alt=""
+>
+</button>
+`
+).join('')}
+
+</div>
+`
+:
+''
+}
+
+</div>
+
+
+<div class="clothing-detail-info">
+
+<div class="clothing-detail-kicker">
+${
+product.featured
+?
+'FEATURED'
+:
+'THE CODE CLOTHING'
+}
+</div>
+
+<h2>
+${esc(product.name || 'PRODUCT')}
+</h2>
+
+<div class="clothing-price-large">
+
+${
+product.on_sale
+?
+`
+<div class="clothing-sale-row">
+
+<span>
+${moneyFromCents(
+product.effective_price_cents
+)}
+</span>
+
+<span class="old">
+${moneyFromCents(
+product.price_cents
+)}
+</span>
+
+</div>
+`
+:
+moneyFromCents(
+product.effective_price_cents ??
+product.price_cents
+)
+}
+
+</div>
+
+${
+product.description
+?
+`
+<div class="clothing-detail-copy">
+${esc(product.description)}
+</div>
+`
+:
+''
+}
+
+
+${
+colors.length
+?
+`
+<div class="clothing-option-block">
+
+<label>
+COLOR
+</label>
+
+<div
+id="clothing-color-options"
+class="clothing-option-grid"
+>
+
+${colors.map(
+color=>`
+<button
+type="button"
+class="clothing-choice ${
+color === selectedColor
+?
+'active'
+:
+''
+}"
+data-color="${esc(color)}"
+>
+${esc(color)}
+</button>
+`
+).join('')}
+
+</div>
+
+</div>
+`
+:
+''
+}
+
+
+<div class="clothing-option-block">
+
+<label>
+SIZE
+</label>
+
+<div
+id="clothing-size-options"
+class="clothing-option-grid"
+>
+
+${
+sizes.length
+?
+sizes.map(
+size=>`
+<button
+type="button"
+class="clothing-choice ${
+size === selectedSize
+?
+'active'
+:
+''
+}"
+data-size="${esc(size)}"
+>
+${esc(size)}
+</button>
+`
+).join('')
+:
+`
+<span class="muted">
+SIZE OPTIONS WILL APPEAR HERE.
+</span>
+`
+}
+
+</div>
+
+</div>
+
+
+<div class="clothing-standard-note">
+STANDARD SIZES AVAILABLE THROUGH 2XL<br>
+Need another size? Send us a special size request and we will check availability.
+</div>
+
+
+<button
+id="clothing-add-to-cart"
+class="clothing-add-button"
+type="button"
+${
+!colors.length ||
+!selectedSize
+?
+'disabled'
+:
+''
+}
+>
+ADD TO CART
+</button>
+
+
+${
+product.allow_special_size_request
+?
+`
+<button
+id="clothing-special-size-toggle"
+class="clothing-special-button"
+type="button"
+>
+REQUEST A SPECIAL SIZE
+</button>
+
+
+<div
+id="clothing-special-form"
+class="clothing-special-form"
+>
+
+<div class="clothing-field">
+
+<label>
+NAME
+</label>
+
+<input
+id="clothing-special-name"
+type="text"
+>
+
+</div>
+
+
+<div class="clothing-field">
+
+<label>
+EMAIL
+</label>
+
+<input
+id="clothing-special-email"
+type="email"
+>
+
+</div>
+
+
+<div class="clothing-field">
+
+<label>
+REQUESTED SIZE
+</label>
+
+<input
+id="clothing-special-size"
+type="text"
+placeholder="Example: 3XL"
+>
+
+</div>
+
+
+<div class="clothing-field">
+
+<label>
+COLOR
+</label>
+
+<input
+id="clothing-special-color"
+type="text"
+value="${esc(selectedColor)}"
+>
+
+</div>
+
+
+<div class="clothing-field">
+
+<label>
+NOTES OPTIONAL
+</label>
+
+<textarea
+id="clothing-special-notes"
+></textarea>
+
+</div>
+
+
+<button
+id="clothing-submit-special-size"
+class="clothing-submit-request"
+type="button"
+>
+SEND SIZE REQUEST
+</button>
+
+
+<div
+id="clothing-request-status"
+class="clothing-request-status"
+></div>
+
+</div>
+`
+:
+''
+}
+
+</div>
+
+</div>
+
+`;
+
+
+$('clothing-back-to-shop')
+?.addEventListener(
+'click',
+()=>{
+
+detail.classList.remove(
+'show'
+);
+
+$('clothing-store-home')
+?.classList.remove(
+'hide'
+);
+
+window.scrollTo({
+top:0,
+behavior:
+'smooth'
+});
+
+}
+);
+
+
+qa(
+'#clothing-thumbs .clothing-thumb'
+)
+.forEach(
+thumb=>{
+
+thumb.addEventListener(
+'click',
+()=>{
+
+const main =
+$('clothing-main-image');
+
+
+if(main)
+main.src =
+thumb.dataset.image ||
+main.src;
+
+
+qa(
+'#clothing-thumbs .clothing-thumb'
+)
+.forEach(
+item=>
+item.classList.remove(
+'active'
+)
+);
+
+
+thumb.classList.add(
+'active'
+);
+
+}
+);
+
+}
+);
+
+
+wireClothingChoices(
+data,
+selectedColor,
+selectedSize
+);
+
+
+$('clothing-special-size-toggle')
+?.addEventListener(
+'click',
+()=>{
+
+$('clothing-special-form')
+?.classList.toggle(
+'show'
+);
+
+}
+);
+
+
+$('clothing-submit-special-size')
+?.addEventListener(
+'click',
+()=>submitClothingSpecialSize(
+product
+)
+);
+
+}
+
+
+function wireClothingChoices(
+data,
+startingColor,
+startingSize
+){
+
+const variants =
+Array.isArray(
+data.variants
+)
+?
+data.variants
+:
+[];
+
+
+let selectedColor =
+startingColor ||
+'';
+
+let selectedSize =
+startingSize ||
+'';
+
+
+function renderSizes(){
+
+const container =
+$('clothing-size-options');
+
+
+if(!container)
+return;
+
+
+const sizes =
+clothingSizesForColor(
+variants,
+selectedColor
+);
+
+
+if(
+!sizes.includes(
+selectedSize
+)
+){
+
+selectedSize =
+sizes[0] ||
+'';
+
+}
+
+
+container.innerHTML =
+sizes.length
+?
+sizes.map(
+size=>`
+<button
+type="button"
+class="clothing-choice ${
+size === selectedSize
+?
+'active'
+:
+''
+}"
+data-size="${esc(size)}"
+>
+${esc(size)}
+</button>
+`
+).join('')
+:
+`
+<span class="muted">
+NO AVAILABLE SIZES FOR THIS COLOR.
+</span>
+`;
+
+
+qa(
+'#clothing-size-options .clothing-choice'
+)
+.forEach(
+button=>{
+
+button.addEventListener(
+'click',
+()=>{
+
+selectedSize =
+button.dataset.size ||
+'';
+
+
+qa(
+'#clothing-size-options .clothing-choice'
+)
+.forEach(
+item=>
+item.classList.remove(
+'active'
+)
+);
+
+
+button.classList.add(
+'active'
+);
+
+
+updateAddState();
+
+}
+);
+
+}
+);
+
+
+updateAddState();
+
+}
+
+
+function updateAddState(){
+
+const add =
+$('clothing-add-to-cart');
+
+
+if(!add)
+return;
+
+
+const variant =
+clothingSelectedVariant(
+variants,
+selectedColor,
+selectedSize
+);
+
+
+add.disabled =
+!variant;
+
+
+add.onclick =
+variant
+?
+()=>addClothingToCart(
+data,
+variant
+)
+:
+null;
+
+
+const specialColor =
+$('clothing-special-color');
+
+
+if(
+specialColor &&
+!specialColor.value
+)
+specialColor.value =
+selectedColor;
+
+}
+
+
+qa(
+'#clothing-color-options .clothing-choice'
+)
+.forEach(
+button=>{
+
+button.addEventListener(
+'click',
+()=>{
+
+selectedColor =
+button.dataset.color ||
+'';
+
+selectedSize =
+'';
+
+
+qa(
+'#clothing-color-options .clothing-choice'
+)
+.forEach(
+item=>
+item.classList.remove(
+'active'
+)
+);
+
+
+button.classList.add(
+'active'
+);
+
+
+const specialColor =
+$('clothing-special-color');
+
+
+if(specialColor)
+specialColor.value =
+selectedColor;
+
+
+renderSizes();
+
+}
+);
+
+}
+);
+
+
+renderSizes();
+
+}
+
+
+function addClothingToCart(
+data,
+variant
+){
+
+const product =
+data.product ||
+{};
+
+
+const existing =
+clothingCart.find(
+item=>
+Number(
+item.product_id
+) ===
+Number(
+product.id
+)
+&&
+Number(
+item.variant_id
+) ===
+Number(
+variant.id
+)
+);
+
+
+if(existing){
+
+existing.quantity =
+Number(
+existing.quantity ||
+1
+) + 1;
+
+}
+else{
+
+clothingCart.push({
+product_id:
+product.id,
+
+variant_id:
+variant.id,
+
+name:
+product.name ||
+'The Code Clothing',
+
+color:
+variant.color ||
+'',
+
+size:
+variant.size ||
+'',
+
+price_cents:
+Number(
+product.effective_price_cents ??
+product.price_cents ??
+0
+),
+
+image_url:
+product.cover_image_url ||
+'',
+
+quantity:
+1
+});
+
+}
+
+
+clothingSaveCart();
+
+updateClothingCartCount();
+
+
+const button =
+$('clothing-add-to-cart');
+
+
+if(button){
+
+const old =
+button.textContent;
+
+
+button.textContent =
+'ADDED TO CART';
+
+
+setTimeout(
+()=>{
+
+button.textContent =
+old;
+
+},
+1200
+);
+
+}
+
+
+trackAnalytics(
+'clothing_add_to_cart',
+{
+section:
+'the-code-clothing',
+
+itemId:
+product.id,
+
+itemTitle:
+product.name ||
+'Clothing Product',
+
+detail:{
+color:
+variant.color ||
+'',
+
+size:
+variant.size ||
+''
+}
+}
+);
+
+}
+
+
+function openClothingCart(){
+
+clothingLoadCart();
+
+renderClothingCart();
+
+
+$('clothing-cart-panel')
+?.classList.add(
+'show'
+);
+
+
+document.body.style.overflow =
+'hidden';
+
+}
+
+
+function closeClothingCart(){
+
+$('clothing-cart-panel')
+?.classList.remove(
+'show'
+);
+
+
+document.body.style.overflow =
+'';
+
+}
+
+
+function renderClothingCart(){
+
+const items =
+$('clothing-cart-items');
+
+const total =
+$('clothing-cart-total');
+
+
+if(
+!items ||
+!total
+)
+return;
+
+
+if(
+!clothingCart.length
+){
+
+items.innerHTML = `
+<div class="clothing-empty">
+YOUR CART IS EMPTY.
+</div>
+`;
+
+
+total.innerHTML = `
+<span>TOTAL</span>
+<strong>$0.00</strong>
+`;
+
+
+updateClothingCartCount();
+
+return;
+
+}
+
+
+items.innerHTML =
+clothingCart.map(
+(
+item,
+index
+)=>`
+
+<div class="clothing-cart-item">
+
+${
+item.image_url
+?
+`
+<img
+src="${esc(item.image_url)}"
+alt=""
+>
+`
+:
+`
+<div></div>
+`
+}
+
+<div>
+
+<strong>
+${esc(item.name)}
+</strong>
+
+<small>
+${esc(item.color)} • ${esc(item.size)} • QTY ${esc(item.quantity)}
+</small>
+
+<small>
+${moneyFromCents(
+Number(
+item.price_cents ||
+0
+) *
+Number(
+item.quantity ||
+1
+)
+)}
+</small>
+
+</div>
+
+
+<button
+type="button"
+class="clothing-cart-remove"
+data-cart-index="${index}"
+>
+REMOVE
+</button>
+
+</div>
+
+`
+).join('');
+
+
+qa(
+'#clothing-cart-items .clothing-cart-remove'
+)
+.forEach(
+button=>{
+
+button.addEventListener(
+'click',
+()=>{
+
+const index =
+Number(
+button.dataset.cartIndex
+);
+
+
+if(
+Number.isInteger(
+index
+)
+)
+clothingCart.splice(
+index,
+1
+);
+
+
+clothingSaveCart();
+
+renderClothingCart();
+
+updateClothingCartCount();
+
+}
+);
+
+}
+);
+
+
+const totalCents =
+clothingCart.reduce(
+(
+sum,
+item
+)=>
+sum +
+(
+Number(
+item.price_cents ||
+0
+) *
+Number(
+item.quantity ||
+1
+)
+),
+0
+);
+
+
+total.innerHTML = `
+<span>
+TOTAL
+</span>
+
+<strong>
+${moneyFromCents(
+totalCents
+)}
+</strong>
+`;
+
+
+updateClothingCartCount();
+
+}
+
+
+async function submitClothingSpecialSize(
+product
+){
+
+const status =
+$('clothing-request-status');
+
+
+if(status)
+status.textContent =
+'SENDING...';
+
+
+const name =
+String(
+$('clothing-special-name')
+?.value ||
+''
+).trim();
+
+const email =
+String(
+$('clothing-special-email')
+?.value ||
+''
+).trim();
+
+const requestedSize =
+String(
+$('clothing-special-size')
+?.value ||
+''
+).trim();
+
+const color =
+String(
+$('clothing-special-color')
+?.value ||
+''
+).trim();
+
+const notes =
+String(
+$('clothing-special-notes')
+?.value ||
+''
+).trim();
+
+
+if(
+!name ||
+!email ||
+!requestedSize
+){
+
+if(status)
+status.textContent =
+'ADD YOUR NAME, EMAIL AND REQUESTED SIZE.';
+
+return;
+
+}
+
+
+try{
+
+const result =
+await clothingFetchJSON(
+'/clothing/special-size-requests',
+{
+method:
+'POST',
+
+body:
+JSON.stringify({
+product_id:
+product.id,
+
+product_name:
+product.name ||
+'',
+
+name,
+
+email,
+
+requested_size:
+requestedSize,
+
+color,
+
+notes
+})
+}
+);
+
+
+if(status)
+status.textContent =
+result.message ||
+'YOUR SIZE REQUEST WAS SENT.';
+
+
+const sizeInput =
+$('clothing-special-size');
+
+
+if(sizeInput)
+sizeInput.value =
+'';
+
+
+const notesInput =
+$('clothing-special-notes');
+
+
+if(notesInput)
+notesInput.value =
+'';
+
+
+trackAnalytics(
+'clothing_special_size_request',
+{
+section:
+'the-code-clothing',
+
+itemId:
+product.id,
+
+itemTitle:
+product.name ||
+'Clothing Product',
+
+detail:{
+requested_size:
+requestedSize,
+
+color
+}
+}
+);
+
+}catch(error){
+
+if(status)
+status.textContent =
+error.message ||
+'COULD NOT SEND YOUR REQUEST.';
+
+}
+
+}
+
+
 /* =========================================================
    MAGAZINE + CLOTHING HOME LINKS
 ========================================================= */
@@ -13696,23 +16460,7 @@ openWithPromo(
 
 'the-code-clothing',
 
-()=>{
-
-trackPageOpen(
-'the-code-clothing',
-'THE CODE CLOTHING'
-);
-
-
-openInternalWeb(
-
-'THE CODE CLOTHING',
-
-'https://www.bosscodemedia.com/shop'
-
-);
-
-}
+openClothingStore
 
 );
 
