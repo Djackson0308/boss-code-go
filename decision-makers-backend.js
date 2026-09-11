@@ -2444,6 +2444,99 @@
       }
 
 
+      /* =========================================================
+         DECISION MAKERS PAGE HIERARCHY
+         VIDEOS FIRST, COURSES SECOND, RESOURCES THIRD
+      ========================================================= */
+
+
+      #decision-makers-screen .dm-course-list {
+
+        grid-template-columns:
+          repeat(
+            auto-fit,
+            minmax(
+              240px,
+              320px
+            )
+          );
+
+        justify-content:
+          start;
+
+      }
+
+
+      #decision-makers-screen .dm-resource-grid {
+
+        grid-template-columns:
+          1fr;
+
+        max-width:
+          900px;
+
+      }
+
+
+      #decision-makers-screen .dm-resource-card {
+
+        display:
+          grid;
+
+        grid-template-columns:
+          130px minmax(0, 1fr);
+
+        align-items:
+          stretch;
+
+      }
+
+
+      #decision-makers-screen .dm-resource-cover {
+
+        width:
+          130px;
+
+        height:
+          100%;
+
+        min-height:
+          170px;
+
+        aspect-ratio:
+          auto;
+
+      }
+
+
+      #decision-makers-screen .dm-resource-content {
+
+        display:
+          flex;
+
+        flex-direction:
+          column;
+
+        justify-content:
+          center;
+
+      }
+
+
+      #decision-makers-screen .dm-resource-download {
+
+        width:
+          auto;
+
+        min-width:
+          170px;
+
+        align-self:
+          flex-start;
+
+      }
+
+
       @media(
         max-width:600px
       ) {
@@ -2456,6 +2549,44 @@
 
           grid-template-columns:
             1fr;
+
+        }
+
+
+        #decision-makers-screen .dm-resource-card {
+
+          grid-template-columns:
+            105px minmax(0, 1fr);
+
+        }
+
+
+        #decision-makers-screen .dm-resource-cover {
+
+          width:
+            105px;
+
+          min-height:
+            145px;
+
+        }
+
+
+        #decision-makers-screen .dm-resource-content {
+
+          padding:
+            14px;
+
+        }
+
+
+        #decision-makers-screen .dm-resource-download {
+
+          width:
+            100%;
+
+          min-width:
+            0;
 
         }
 
@@ -3250,6 +3381,9 @@
     }
 
 
+    arrangeDecisionMakersSections();
+
+
     return section;
 
   }
@@ -3447,6 +3581,95 @@
 
       }
     );
+
+  }
+
+
+  /* =========================================================
+     DECISION MAKERS PAGE ORDER
+     VIDEOS + ACTION FIRST, COURSES SECOND, RESOURCES THIRD
+  ========================================================= */
+
+
+  function arrangeDecisionMakersSections() {
+
+    const screen =
+      $(
+        "decision-makers-screen"
+      );
+
+
+    if (
+      !screen
+    ) {
+
+      return;
+
+    }
+
+
+    const courses =
+      $(
+        "decision-makers-my-courses"
+      );
+
+
+    const resourcesSection =
+      $(
+        "decision-makers-resources-section"
+      );
+
+
+    const actionSection =
+      screen
+        .querySelector(
+          ".action-grid"
+        )
+        ?.closest(
+          ".decision-section"
+        );
+
+
+    const sessionSection =
+      screen.querySelector(
+        ".session-section"
+      );
+
+
+    const videoAnchor =
+      actionSection ||
+      sessionSection ||
+      screen.querySelector(
+        ".decision-section"
+      );
+
+
+    if (
+      courses &&
+      videoAnchor
+    ) {
+
+      videoAnchor
+        .insertAdjacentElement(
+          "afterend",
+          courses
+        );
+
+    }
+
+
+    if (
+      resourcesSection &&
+      courses
+    ) {
+
+      courses
+        .insertAdjacentElement(
+          "afterend",
+          resourcesSection
+        );
+
+    }
 
   }
 
@@ -3713,29 +3936,12 @@
     `;
 
 
-    const first =
-      screen.querySelector(
-        ".decision-section"
-      );
+    screen.appendChild(
+      section
+    );
 
 
-    if (
-      first
-    ) {
-
-      screen.insertBefore(
-        section,
-        first
-      );
-
-    }
-    else {
-
-      screen.appendChild(
-        section
-      );
-
-    }
+    arrangeDecisionMakersSections();
 
 
     const email =
@@ -7006,6 +7212,8 @@
       );
 
     }
+
+    arrangeDecisionMakersSections();
 
   }
 
