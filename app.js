@@ -13840,15 +13840,20 @@ style.id =
 style.textContent = `
 
 #the-code-clothing-screen{
-background:#050505;
-color:#fff;
+background:#fff;
+color:#111;
 min-height:100vh
+}
+
+#the-code-clothing-screen .muted{
+color:#666 !important
 }
 
 .clothing-shell{
 width:min(1120px,calc(100% - 28px));
 margin:0 auto;
-padding:20px 0 80px
+padding:20px 0 80px;
+background:#fff
 }
 
 .clothing-topbar{
@@ -13860,9 +13865,9 @@ margin-bottom:18px
 }
 
 .clothing-back{
-border:1px solid #333;
-background:#0b0b0b;
-color:#fff;
+border:1px solid #d8d8d8;
+background:#fff;
+color:#111;
 padding:10px 14px;
 border-radius:999px;
 font-size:10px;
@@ -13871,8 +13876,8 @@ font-weight:900
 
 .clothing-cart-button{
 border:1px solid #f5c518;
-background:#111;
-color:#f5c518;
+background:#fff;
+color:#111;
 padding:10px 14px;
 border-radius:999px;
 font-size:10px;
@@ -13896,7 +13901,7 @@ margin-top:8px
 }
 
 .clothing-brand p{
-color:#999;
+color:#666;
 font-size:12px;
 line-height:1.5;
 margin-top:8px
@@ -13929,11 +13934,11 @@ gap:16px
 }
 
 .clothing-product-card{
-border:1px solid #262626;
-background:linear-gradient(145deg,#101010,#050505);
+border:1px solid #dedede;
+background:#fff;
 border-radius:20px;
 overflow:hidden;
-color:#fff;
+color:#111;
 text-align:left;
 padding:0;
 width:100%
@@ -13944,7 +13949,7 @@ aspect-ratio:1/1;
 display:flex;
 align-items:center;
 justify-content:center;
-background:#000;
+background:#f4f4f4;
 overflow:hidden
 }
 
@@ -13956,7 +13961,7 @@ display:block
 }
 
 .clothing-product-placeholder{
-color:#777;
+color:#666;
 font-size:11px;
 font-weight:900;
 letter-spacing:1px
@@ -13998,11 +14003,11 @@ text-decoration:line-through
 
 .clothing-product-price .single{
 font-size:18px;
-color:#fff
+color:#111
 }
 
 .clothing-product-body p{
-color:#9a9a9a;
+color:#666;
 font-size:11px;
 line-height:1.45;
 margin-top:8px
@@ -14011,11 +14016,12 @@ margin-top:8px
 .clothing-loading,
 .clothing-empty,
 .clothing-error{
-border:1px dashed #2b2b2b;
+border:1px dashed #cfcfcf;
 border-radius:16px;
 padding:24px;
 text-align:center;
-color:#888;
+color:#666;
+background:#fafafa;
 font-size:11px;
 font-weight:900
 }
@@ -14040,9 +14046,9 @@ align-items:start
 }
 
 .clothing-gallery-main{
-border:1px solid #262626;
+border:1px solid #dedede;
 border-radius:20px;
-background:#000;
+background:#f6f6f6;
 overflow:hidden;
 aspect-ratio:1/1;
 display:flex;
@@ -14068,9 +14074,9 @@ padding-bottom:4px
 width:72px;
 height:72px;
 flex:0 0 auto;
-border:1px solid #303030;
+border:1px solid #d8d8d8;
 border-radius:10px;
-background:#000;
+background:#fff;
 padding:3px
 }
 
@@ -14086,9 +14092,9 @@ border-radius:7px
 }
 
 .clothing-detail-info{
-border:1px solid #252525;
+border:1px solid #dedede;
 border-radius:20px;
-background:#090909;
+background:#fff;
 padding:20px
 }
 
@@ -14106,7 +14112,7 @@ margin:8px 0
 }
 
 .clothing-detail-copy{
-color:#aaa;
+color:#5f5f5f;
 font-size:12px;
 line-height:1.55;
 margin:14px 0
@@ -14138,7 +14144,8 @@ margin-top:16px
 display:block;
 font-size:10px;
 font-weight:900;
-margin-bottom:8px
+margin-bottom:8px;
+color:#111
 }
 
 .clothing-option-grid{
@@ -14148,9 +14155,9 @@ flex-wrap:wrap
 }
 
 .clothing-choice{
-border:1px solid #343434;
-background:#080808;
-color:#fff;
+border:1px solid #cfcfcf;
+background:#fff;
+color:#111;
 padding:9px 12px;
 border-radius:999px;
 font-size:10px;
@@ -14184,10 +14191,10 @@ opacity:.45
 
 .clothing-special-button{
 width:100%;
-border:1px solid #555;
+border:1px solid #222;
 border-radius:999px;
-background:transparent;
-color:#fff;
+background:#fff;
+color:#111;
 font-weight:900;
 padding:13px 16px;
 margin-top:10px
@@ -14207,7 +14214,7 @@ margin-top:15px
 .clothing-special-form{
 display:none;
 margin-top:14px;
-border-top:1px solid #252525;
+border-top:1px solid #dedede;
 padding-top:14px
 }
 
@@ -14230,9 +14237,9 @@ margin-bottom:6px
 .clothing-field textarea,
 .clothing-field select{
 width:100%;
-background:#050505;
-color:#fff;
-border:1px solid #303030;
+background:#fff;
+color:#111;
+border:1px solid #cfcfcf;
 border-radius:12px;
 padding:12px;
 outline:none
@@ -14278,8 +14285,9 @@ display:block
 .clothing-cart-shell{
 width:min(560px,100%);
 margin:28px auto;
-background:#080808;
-border:1px solid #2b2b2b;
+background:#fff;
+color:#111;
+border:1px solid #d8d8d8;
 border-radius:22px;
 padding:20px
 }
@@ -14292,9 +14300,9 @@ align-items:center
 }
 
 .clothing-cart-top button{
-border:1px solid #333;
-background:#111;
-color:#fff;
+border:1px solid #d0d0d0;
+background:#fff;
+color:#111;
 width:38px;
 height:38px;
 border-radius:50%
@@ -14311,16 +14319,17 @@ display:grid;
 grid-template-columns:62px minmax(0,1fr) auto;
 gap:10px;
 align-items:center;
-border:1px solid #252525;
+border:1px solid #dedede;
 border-radius:14px;
-padding:9px
+padding:9px;
+background:#fff
 }
 
 .clothing-cart-item img{
 width:62px;
 height:62px;
 object-fit:contain;
-background:#000;
+background:#f4f4f4;
 border-radius:10px
 }
 
@@ -14330,7 +14339,7 @@ font-size:11px
 
 .clothing-cart-item small{
 display:block;
-color:#888;
+color:#666;
 font-size:9px;
 margin-top:4px
 }
@@ -14349,7 +14358,7 @@ font-weight:900
 display:flex;
 justify-content:space-between;
 gap:10px;
-border-top:1px solid #272727;
+border-top:1px solid #dedede;
 margin-top:16px;
 padding-top:14px;
 font-weight:900
