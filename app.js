@@ -13654,6 +13654,14 @@ const CLOTHING_CART_KEY =
 'the-code-clothing-cart-v1';
 
 
+const CLOTHING_CHECKOUT_CUSTOMER_KEY =
+'the-code-clothing-checkout-customer-v1';
+
+
+const CLOTHING_PENDING_CHECKOUT_KEY =
+'the-code-clothing-pending-checkout-v1';
+
+
 let clothingProducts = [];
 
 let clothingCurrentProduct = null;
@@ -14364,15 +14372,103 @@ padding-top:14px;
 font-weight:900
 }
 
-.clothing-checkout-pending{
-border:1px solid #3a330e;
-background:#120f02;
-color:#f5c518;
-border-radius:14px;
-padding:12px;
+.clothing-checkout-box{
+border-top:1px solid #dedede;
+margin-top:16px;
+padding-top:16px
+}
+
+.clothing-checkout-title{
+font-size:15px;
+font-weight:900;
+color:#111
+}
+
+.clothing-checkout-copy{
+color:#666;
 font-size:10px;
 line-height:1.5;
-margin-top:14px
+margin-top:5px
+}
+
+.clothing-checkout-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:12px
+}
+
+.clothing-checkout-field label{
+display:block;
+font-size:9px;
+font-weight:900;
+color:#111;
+margin-bottom:6px
+}
+
+.clothing-checkout-field input{
+width:100%;
+background:#fff;
+color:#111;
+border:1px solid #cfcfcf;
+border-radius:12px;
+padding:12px;
+outline:none
+}
+
+.clothing-checkout-field input:focus{
+border-color:#f5c518
+}
+
+.clothing-secure-checkout{
+width:100%;
+border:0;
+border-radius:999px;
+background:#d40000;
+color:#fff;
+font-weight:900;
+padding:15px 16px;
+margin-top:12px
+}
+
+.clothing-secure-checkout:disabled{
+opacity:.45;
+cursor:not-allowed
+}
+
+.clothing-checkout-note{
+border:1px solid #e3d8a0;
+background:#fffbea;
+color:#6a5810;
+border-radius:13px;
+padding:11px 12px;
+font-size:9px;
+line-height:1.5;
+margin-top:10px
+}
+
+.clothing-checkout-status{
+min-height:18px;
+font-size:10px;
+font-weight:900;
+margin-top:10px;
+color:#b00000
+}
+
+.clothing-checkout-status.success{
+color:#17743a
+}
+
+.clothing-checkout-status.waiting{
+color:#8a6b00
+}
+
+@media(max-width:560px){
+
+.clothing-checkout-grid{
+grid-template-columns:1fr
+}
+
 }
 
 @media(max-width:720px){
@@ -14572,8 +14668,65 @@ id="clothing-cart-total"
 class="clothing-cart-total"
 ></div>
 
-<div class="clothing-checkout-pending">
-SECURE CHECKOUT WILL BE CONNECTED IN THE PAYMENT PHASE. YOUR CART IS SAVED ON THIS DEVICE.
+<div class="clothing-checkout-box">
+
+<div class="clothing-checkout-title">
+SECURE CHECKOUT
+</div>
+
+<div class="clothing-checkout-copy">
+Enter your name and email, then continue to Stripe to complete payment.
+</div>
+
+<div class="clothing-checkout-grid">
+
+<div class="clothing-checkout-field">
+
+<label>
+NAME
+</label>
+
+<input
+id="clothing-checkout-name"
+type="text"
+autocomplete="name"
+>
+
+</div>
+
+<div class="clothing-checkout-field">
+
+<label>
+EMAIL
+</label>
+
+<input
+id="clothing-checkout-email"
+type="email"
+autocomplete="email"
+>
+
+</div>
+
+</div>
+
+<button
+id="clothing-secure-checkout"
+class="clothing-secure-checkout"
+type="button"
+>
+SECURE CHECKOUT
+</button>
+
+<div class="clothing-checkout-note">
+Stripe securely collects your payment, shipping address and phone number. B.O.S.S CODE GO never stores your card number.
+</div>
+
+<div
+id="clothing-checkout-status"
+class="clothing-checkout-status"
+></div>
+
 </div>
 
 </div>
@@ -14613,6 +14766,16 @@ $('clothing-cart-close')
 'click',
 closeClothingCart
 );
+
+
+$('clothing-secure-checkout')
+?.addEventListener(
+'click',
+startClothingStripeCheckout
+);
+
+
+restoreClothingCheckoutCustomer();
 
 
 $('clothing-cart-panel')
@@ -16041,11 +16204,733 @@ variant.size ||
 }
 
 
+
+function restoreClothingCheckoutCustomer(){
+
+let saved = {};
+
+
+try{
+
+saved =
+JSON.parse(
+localStorage.getItem(
+CLOTHING_CHECKOUT_CUSTOMER_KEY
+) ||
+'{}'
+) ||
+{};
+
+}catch{
+
+saved = {};
+
+}
+
+
+const name =
+$('clothing-checkout-name');
+
+const email =
+$('clothing-checkout-email');
+
+
+if(
+name &&
+!name.value
+)
+name.value =
+String(
+saved.name ||
+''
+);
+
+
+if(
+email &&
+!email.value
+)
+email.value =
+String(
+saved.email ||
+''
+);
+
+}
+
+
+function saveClothingCheckoutCustomer(
+name,
+email
+){
+
+try{
+
+localStorage.setItem(
+CLOTHING_CHECKOUT_CUSTOMER_KEY,
+JSON.stringify({
+name,
+email
+})
+);
+
+}catch{}
+
+}
+
+
+function setClothingCheckoutStatus(
+message,
+type=''
+){
+
+const status =
+$('clothing-checkout-status');
+
+
+if(!status)
+return;
+
+
+status.textContent =
+String(
+message ||
+''
+);
+
+
+status.classList.remove(
+'success',
+'waiting'
+);
+
+
+if(type)
+status.classList.add(
+type
+);
+
+}
+
+
+function setClothingCheckoutButtonState(
+busy=false
+){
+
+const button =
+$('clothing-secure-checkout');
+
+
+if(!button)
+return;
+
+
+button.disabled =
+busy ||
+!clothingCart.length;
+
+
+button.textContent =
+busy
+?
+'OPENING SECURE CHECKOUT...'
+:
+'SECURE CHECKOUT';
+
+}
+
+
+function isClothingCheckoutEmail(
+value
+){
+
+return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+.test(
+String(
+value ||
+''
+).trim()
+);
+
+}
+
+
+async function startClothingStripeCheckout(){
+
+clothingLoadCart();
+
+
+if(
+!clothingCart.length
+){
+
+setClothingCheckoutStatus(
+'YOUR CART IS EMPTY.'
+);
+
+setClothingCheckoutButtonState();
+
+return;
+
+}
+
+
+const name =
+String(
+$('clothing-checkout-name')
+?.value ||
+''
+).trim();
+
+const email =
+String(
+$('clothing-checkout-email')
+?.value ||
+''
+).trim();
+
+
+if(!name){
+
+setClothingCheckoutStatus(
+'ADD YOUR NAME TO CONTINUE.'
+);
+
+return;
+
+}
+
+
+if(
+!isClothingCheckoutEmail(
+email
+)
+){
+
+setClothingCheckoutStatus(
+'ADD A VALID EMAIL TO CONTINUE.'
+);
+
+return;
+
+}
+
+
+saveClothingCheckoutCustomer(
+name,
+email
+);
+
+
+setClothingCheckoutStatus(
+'CREATING YOUR SECURE STRIPE CHECKOUT...',
+'waiting'
+);
+
+
+setClothingCheckoutButtonState(
+true
+);
+
+
+const items =
+clothingCart.map(
+item=>({
+product_id:
+Number(
+item.product_id
+),
+
+variant_id:
+Number(
+item.variant_id
+),
+
+quantity:
+Math.max(
+1,
+Number(
+item.quantity ||
+1
+)
+)
+})
+);
+
+
+try{
+
+const result =
+await clothingFetchJSON(
+'/payments/checkout/clothing',
+{
+method:
+'POST',
+
+body:
+JSON.stringify({
+name,
+email,
+items
+})
+}
+);
+
+
+const checkoutUrl =
+String(
+result.checkout_url ||
+''
+).trim();
+
+
+if(!checkoutUrl){
+
+throw new Error(
+'Stripe checkout did not return a checkout link.'
+);
+
+}
+
+
+try{
+
+sessionStorage.setItem(
+CLOTHING_PENDING_CHECKOUT_KEY,
+JSON.stringify({
+type:
+'clothing',
+
+created_at:
+Date.now()
+})
+);
+
+}catch{}
+
+
+trackAnalytics(
+'clothing_checkout_started',
+{
+section:
+'the-code-clothing',
+
+itemTitle:
+'Clothing Checkout',
+
+detail:{
+item_count:
+items.length
+}
+}
+);
+
+
+window.location.href =
+checkoutUrl;
+
+}catch(error){
+
+setClothingCheckoutButtonState(
+false
+);
+
+
+setClothingCheckoutStatus(
+error.message ||
+'COULD NOT START SECURE CHECKOUT.'
+);
+
+}
+
+}
+
+
+async function clothingPaymentSessionStatus(
+sessionId
+){
+
+return await clothingFetchJSON(
+`/payments/session/${encodeURIComponent(
+sessionId
+)}`
+);
+
+}
+
+
+async function waitForClothingPaymentConfirmation(
+sessionId
+){
+
+let latest = null;
+
+
+for(
+let attempt = 0;
+attempt < 8;
+attempt += 1
+){
+
+try{
+
+const result =
+await clothingPaymentSessionStatus(
+sessionId
+);
+
+
+latest =
+result.data ||
+null;
+
+
+if(
+latest?.status ===
+'paid'
+)
+return latest;
+
+}catch(error){
+
+if(
+attempt === 7
+)
+throw error;
+
+}
+
+
+await new Promise(
+resolve=>
+setTimeout(
+resolve,
+1200
+)
+);
+
+}
+
+
+return latest;
+
+}
+
+
+function clearClothingCheckoutReturnFromUrl(){
+
+try{
+
+const current =
+new URL(
+window.location.href
+);
+
+
+current.searchParams.delete(
+'checkout'
+);
+
+current.searchParams.delete(
+'session_id'
+);
+
+
+const next =
+current.pathname +
+(
+current.search
+?
+current.search
+:
+''
+) +
+current.hash;
+
+
+window.history.replaceState(
+{},
+document.title,
+next
+);
+
+}catch{}
+
+}
+
+
+async function handleStripeCheckoutReturn(){
+
+let current;
+
+
+try{
+
+current =
+new URL(
+window.location.href
+);
+
+}catch{
+
+return;
+
+}
+
+
+const checkout =
+String(
+current.searchParams.get(
+'checkout'
+) ||
+''
+).toLowerCase();
+
+
+if(
+!checkout
+)
+return;
+
+
+let pendingType = '';
+
+
+try{
+
+const pending =
+JSON.parse(
+sessionStorage.getItem(
+CLOTHING_PENDING_CHECKOUT_KEY
+) ||
+'{}'
+);
+
+
+pendingType =
+String(
+pending.type ||
+''
+);
+
+}catch{}
+
+
+if(
+checkout ===
+'cancel'
+){
+
+if(
+pendingType ===
+'clothing'
+){
+
+const screen =
+ensureClothingStore();
+
+
+showScreen(
+screen
+);
+
+
+openClothingCart();
+
+
+setClothingCheckoutStatus(
+'CHECKOUT CANCELED. YOUR CART IS STILL HERE.'
+);
+
+}
+
+
+try{
+
+sessionStorage.removeItem(
+CLOTHING_PENDING_CHECKOUT_KEY
+);
+
+}catch{}
+
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+if(
+checkout !==
+'success'
+)
+return;
+
+
+const sessionId =
+String(
+current.searchParams.get(
+'session_id'
+) ||
+''
+).trim();
+
+
+if(!sessionId){
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+let firstStatus = null;
+
+
+try{
+
+firstStatus =
+await clothingPaymentSessionStatus(
+sessionId
+);
+
+}catch{
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+const payment =
+firstStatus?.data ||
+null;
+
+
+if(
+payment?.order_type !==
+'clothing'
+){
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+const screen =
+ensureClothingStore();
+
+
+showScreen(
+screen
+);
+
+
+openClothingCart();
+
+
+setClothingCheckoutStatus(
+'PAYMENT RECEIVED. CONFIRMING YOUR ORDER...',
+'waiting'
+);
+
+
+try{
+
+const confirmed =
+await waitForClothingPaymentConfirmation(
+sessionId
+);
+
+
+if(
+confirmed?.status ===
+'paid'
+){
+
+clothingCart = [];
+
+clothingSaveCart();
+
+renderClothingCart();
+
+updateClothingCartCount();
+
+
+setClothingCheckoutStatus(
+'PAYMENT CONFIRMED. THANK YOU FOR YOUR ORDER.',
+'success'
+);
+
+
+trackAnalytics(
+'clothing_checkout_completed',
+{
+section:
+'the-code-clothing',
+
+itemId:
+confirmed.id,
+
+itemTitle:
+'Clothing Order',
+
+detail:{
+amount_cents:
+confirmed.amount_cents ||
+0
+}
+}
+);
+
+}
+else{
+
+setClothingCheckoutStatus(
+'YOUR PAYMENT WAS RECEIVED. STRIPE IS STILL CONFIRMING THE ORDER. YOU CAN CLOSE THIS MESSAGE AND CHECK BACK SHORTLY.',
+'waiting'
+);
+
+}
+
+}catch(error){
+
+setClothingCheckoutStatus(
+'PAYMENT RETURNED SUCCESSFULLY. ORDER CONFIRMATION IS STILL PROCESSING.',
+'waiting'
+);
+
+}
+
+
+try{
+
+sessionStorage.removeItem(
+CLOTHING_PENDING_CHECKOUT_KEY
+);
+
+}catch{}
+
+
+clearClothingCheckoutReturnFromUrl();
+
+}
+
+
 function openClothingCart(){
 
 clothingLoadCart();
 
 renderClothingCart();
+
+restoreClothingCheckoutCustomer();
+
+setClothingCheckoutButtonState();
 
 
 $('clothing-cart-panel')
@@ -16108,6 +16993,8 @@ total.innerHTML = `
 
 
 updateClothingCartCount();
+
+setClothingCheckoutButtonState();
 
 return;
 
@@ -16253,6 +17140,8 @@ totalCents
 
 
 updateClothingCartCount();
+
+setClothingCheckoutButtonState();
 
 }
 
@@ -17161,11 +18050,380 @@ attempt===
 }
 
 
+
+/* =========================================================
+   APP WIDE WHITE THEME
+   White page backgrounds, dark readable text.
+   Existing buttons keep their current styling.
+   Home keeps a black logo/header area with white content below.
+========================================================= */
+
+function installBossCodeWhiteTheme(){
+
+if(
+$('boss-code-white-theme')
+)
+return;
+
+
+const style =
+document.createElement(
+'style'
+);
+
+
+style.id =
+'boss-code-white-theme';
+
+
+style.textContent = `
+
+/* ---------------------------------------------------------
+   PAGE BACKGROUNDS
+--------------------------------------------------------- */
+
+#home-screen,
+#music-screen,
+#boss-checkin-screen,
+#decision-makers-screen,
+#boss-bite-screen,
+#boss-code-tv-screen,
+#support-screen,
+#the-code-clothing-screen{
+background:#fff !important;
+color:#111 !important;
+}
+
+
+/* ---------------------------------------------------------
+   HOME
+   Black only behind the B.O.S.S CODE GO logo/header.
+   Everything below stays white.
+--------------------------------------------------------- */
+
+#home-screen .app-header{
+background:#000 !important;
+color:#fff !important;
+margin:0 !important;
+padding-top:22px !important;
+padding-bottom:22px !important;
+}
+
+#home-screen .app-header p{
+color:#fff !important;
+}
+
+#home-screen > main,
+#home-screen .daily-decision-home,
+#home-screen .app-menu{
+background:#fff !important;
+}
+
+
+/* ---------------------------------------------------------
+   GENERAL PAGE TEXT
+--------------------------------------------------------- */
+
+#music-screen h1,
+#music-screen h2,
+#music-screen h3,
+#music-screen h4,
+#music-screen p,
+
+#boss-checkin-screen h1,
+#boss-checkin-screen h2,
+#boss-checkin-screen h3,
+#boss-checkin-screen h4,
+#boss-checkin-screen p,
+
+#decision-makers-screen h1,
+#decision-makers-screen h2,
+#decision-makers-screen h3,
+#decision-makers-screen h4,
+#decision-makers-screen p,
+
+#boss-bite-screen h1,
+#boss-bite-screen h2,
+#boss-bite-screen h3,
+#boss-bite-screen h4,
+#boss-bite-screen p,
+
+#boss-code-tv-screen h1,
+#boss-code-tv-screen h2,
+#boss-code-tv-screen h3,
+#boss-code-tv-screen h4,
+#boss-code-tv-screen p,
+
+#support-screen h1,
+#support-screen h2,
+#support-screen h3,
+#support-screen h4,
+#support-screen p,
+
+#the-code-clothing-screen h1,
+#the-code-clothing-screen h2,
+#the-code-clothing-screen h3,
+#the-code-clothing-screen h4,
+#the-code-clothing-screen p{
+color:#111 !important;
+}
+
+
+/* ---------------------------------------------------------
+   MUSIC
+--------------------------------------------------------- */
+
+#music-screen .music-wrap,
+#music-screen .music-header,
+#music-screen .music-section,
+#music-screen .featured-release,
+#music-screen .music-player-shell,
+#music-screen .featured-artist,
+#music-screen .boss-footer{
+background:#fff !important;
+color:#111 !important;
+}
+
+#music-screen .music-header p,
+#music-screen .featured-description,
+#music-screen .music-player-message,
+#music-screen .now-playing-info{
+color:#555 !important;
+}
+
+
+/* ---------------------------------------------------------
+   B.O.S.S CHECK IN
+--------------------------------------------------------- */
+
+#boss-checkin-screen .checkin-wrap,
+#boss-checkin-screen .checkin-intro,
+#boss-checkin-screen .checkin-question-screen,
+#boss-checkin-screen .checkin-results,
+#boss-checkin-screen .score-category,
+#boss-checkin-screen .next-decision-box,
+#boss-checkin-screen .checkin-disclaimer{
+background:#fff !important;
+color:#111 !important;
+}
+
+#boss-checkin-screen .checkin-description,
+#boss-checkin-screen .checkin-question-text,
+#boss-checkin-screen .boss-score-description{
+color:#333 !important;
+}
+
+
+/* ---------------------------------------------------------
+   DECISION MAKERS
+--------------------------------------------------------- */
+
+#decision-makers-screen .decision-header,
+#decision-makers-screen .decision-section,
+#decision-makers-screen .action-card,
+#decision-makers-screen .session-card,
+#decision-makers-screen .dm-course-access,
+#decision-makers-screen .dm-course-card,
+#decision-makers-screen .dm-course-card-body,
+#decision-makers-screen .dm-resource-card,
+#decision-makers-screen .dm-resource-content,
+#decision-makers-screen .dm-course-player-shell,
+#decision-makers-screen .dm-course-player-content,
+#decision-makers-screen .dm-course-message,
+#decision-makers-screen .dm-course-prompt,
+#decision-makers-screen .dm-past-day-card,
+#decision-makers-screen .dm-complete-box,
+#decision-makers-screen .dm-auth-code-panel,
+#decision-makers-screen .dm-auth-signed-panel,
+#decision-makers-screen .boss-footer{
+background:#fff !important;
+color:#111 !important;
+}
+
+#decision-makers-screen .decision-intro,
+#decision-makers-screen .decision-section-copy,
+#decision-makers-screen .dm-auth-code-note,
+#decision-makers-screen .dm-auth-signed-copy,
+#decision-makers-screen .dm-course-card-body p,
+#decision-makers-screen .dm-resource-content p{
+color:#555 !important;
+}
+
+#decision-makers-screen .dm-course-card,
+#decision-makers-screen .dm-resource-card,
+#decision-makers-screen .dm-course-access,
+#decision-makers-screen .dm-past-day-card{
+border-color:#ddd !important;
+}
+
+
+/* ---------------------------------------------------------
+   THE BOSS BITE
+--------------------------------------------------------- */
+
+#boss-bite-screen .section-header,
+#boss-bite-screen .featured-player-section,
+#boss-bite-screen .boss-section,
+#boss-bite-screen .restaurant-browser,
+#boss-bite-screen .restaurant-browser-header,
+#boss-bite-screen .road-trip-layout,
+#boss-bite-screen .boss-footer{
+background:#fff !important;
+color:#111 !important;
+}
+
+
+/* ---------------------------------------------------------
+   B.O.S.S CODE TV
+--------------------------------------------------------- */
+
+#boss-code-tv-screen .boss-tv-page,
+#boss-code-tv-screen .boss-tv-live-section,
+#boss-code-tv-screen .boss-tv-live-bottom,
+#boss-code-tv-screen .boss-tv-recorded-section,
+#boss-code-tv-screen .boss-footer{
+background:#fff !important;
+color:#111 !important;
+}
+
+#boss-code-tv-screen .boss-tv-live-description,
+#boss-code-tv-screen .boss-tv-recorded-copy{
+color:#555 !important;
+}
+
+
+/* ---------------------------------------------------------
+   SUPPORT IS A DECISION
+--------------------------------------------------------- */
+
+#support-screen .support-wrap,
+#support-screen .support-hero,
+#support-screen .support-card,
+#support-screen .support-principle,
+#support-screen .support-custom,
+#support-screen .support-selected,
+#support-screen .support-shirt-message,
+#support-screen .support-dollar,
+#support-screen .support-footer{
+background:#fff !important;
+color:#111 !important;
+}
+
+#support-screen .support-card{
+border-color:#d72f22 !important;
+}
+
+#support-screen .support-hero p,
+#support-screen .support-payment-note,
+#support-screen .support-selected span{
+color:#555 !important;
+}
+
+#support-screen .support-custom input,
+#support-screen .support-field input,
+#support-screen .support-field textarea{
+background:#fff !important;
+color:#111 !important;
+border-color:#ccc !important;
+}
+
+#support-screen .support-custom{
+border-color:#ddd !important;
+}
+
+
+/* ---------------------------------------------------------
+   THE CODE CLOTHING
+   Already white, this simply keeps it aligned with the app.
+--------------------------------------------------------- */
+
+#the-code-clothing-screen,
+#the-code-clothing-screen .clothing-shell,
+#the-code-clothing-screen .clothing-product-card,
+#the-code-clothing-screen .clothing-detail-info,
+#the-code-clothing-screen .clothing-cart-shell{
+background:#fff !important;
+color:#111 !important;
+}
+
+
+/* ---------------------------------------------------------
+   COMMON FOOTERS / INPUTS
+--------------------------------------------------------- */
+
+#music-screen .boss-footer,
+#decision-makers-screen .boss-footer,
+#boss-bite-screen .boss-footer,
+#boss-code-tv-screen .boss-footer,
+#support-screen .boss-footer{
+color:#111 !important;
+}
+
+
+/* ---------------------------------------------------------
+   KEEP BUTTONS THE SAME
+   Text inside a button inherits that button's existing color.
+--------------------------------------------------------- */
+
+#home-screen button,
+#home-screen button *,
+#home-screen .app-button,
+#home-screen .app-button *,
+
+#music-screen button,
+#music-screen button *,
+
+#boss-checkin-screen button,
+#boss-checkin-screen button *,
+
+#decision-makers-screen button,
+#decision-makers-screen button *,
+
+#boss-bite-screen button,
+#boss-bite-screen button *,
+
+#boss-code-tv-screen button,
+#boss-code-tv-screen button *,
+
+#support-screen button,
+#support-screen button *,
+
+#the-code-clothing-screen button,
+#the-code-clothing-screen button *{
+color:inherit !important;
+}
+
+
+/* ---------------------------------------------------------
+   VIDEO AND IMAGE PLAYERS STAY DARK WHERE NEEDED
+--------------------------------------------------------- */
+
+#boss-bite-screen .featured-player,
+#boss-code-tv-screen .boss-tv-live-player,
+#decision-makers-screen .dm-course-video,
+#decision-makers-screen .dm-session-video-wrap{
+background:#000 !important;
+}
+
+`;
+
+document.head.appendChild(
+style
+);
+
+}
+
 /* =========================================================
    START APP
 ========================================================= */
 
+installBossCodeWhiteTheme();
+
+
 setupInternalLinks();
+
+
+handleStripeCheckoutReturn();
 
 
 renderDaily();
