@@ -6,23 +6,32 @@
        DECISION MAKERS COURSES
 
        PURPOSE:
-       This file owns the public Decision Makers course catalog
-       and the in-app course viewer.
+       This file owns the public Decision Makers course catalog,
+       public course sales screen and Stripe checkout handoff.
 
        It does NOT own:
        - Decision Makers videos
        - Focused sessions
        - Take Action challenges
        - Free Decision Maker resources
-       - Payments
-       - Course entitlements
+       - Payment confirmation
+       - Course entitlement creation
        - Saved progress
 
-       Those remain separate systems.
+       Stripe confirmation, course access and progress remain
+       protected backend systems.
     ========================================================= */
 
     const API =
         "https://boss-code-go-api.dezthareason4ever.workers.dev";
+
+    const COURSE_EMAIL_KEY =
+        "boss-code-dm-course-email-v1";
+
+    const COURSE_PENDING_CHECKOUT_KEY =
+        "boss-code-dm-course-pending-checkout-v1";
+
+    let checkoutReturnHandled = false;
 
     let courses = [];
 
@@ -217,6 +226,628 @@
 
 
         return json;
+    }
+
+
+    function validEmail(value) {
+
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            String(value || "")
+                .trim()
+                .toLowerCase()
+        );
+    }
+
+
+    function savedCourseEmail() {
+
+        try {
+            return String(
+                localStorage.getItem(
+                    COURSE_EMAIL_KEY
+                ) || ""
+            )
+                .trim()
+                .toLowerCase();
+        }
+        catch (error) {
+            return "";
+        }
+    }
+
+
+    function saveCourseEmail(email) {
+
+        const value =
+            String(email || "")
+                .trim()
+                .toLowerCase();
+
+        if (!validEmail(value)) {
+            return;
+        }
+
+        try {
+            localStorage.setItem(
+                COURSE_EMAIL_KEY,
+                value
+            );
+        }
+        catch (error) {
+            /* local storage is optional */
+        }
+    }
+
+
+    function savePendingCourseCheckout(data) {
+
+        try {
+            localStorage.setItem(
+                COURSE_PENDING_CHECKOUT_KEY,
+                JSON.stringify({
+                    ...data,
+                    created_at: Date.now()
+                })
+            );
+        }
+        catch (error) {
+            /* local storage is optional */
+        }
+    }
+
+
+    function pendingCourseCheckout() {
+
+        try {
+            const raw =
+                localStorage.getItem(
+                    COURSE_PENDING_CHECKOUT_KEY
+                );
+
+            if (!raw) {
+                return null;
+            }
+
+            const data = JSON.parse(raw);
+
+            if (
+                !data ||
+                !Number(data.created_at) ||
+                Date.now() - Number(data.created_at) >
+                    1000 * 60 * 60 * 6
+            ) {
+                localStorage.removeItem(
+                    COURSE_PENDING_CHECKOUT_KEY
+                );
+                return null;
+            }
+
+            return data;
+        }
+        catch (error) {
+            return null;
+        }
+    }
+
+
+    function clearPendingCourseCheckout() {
+
+        try {
+            localStorage.removeItem(
+                COURSE_PENDING_CHECKOUT_KEY
+            );
+        }
+        catch (error) {
+            /* ignore */
+        }
+    }
+
+
+    async function apiPost(path, body) {
+
+        const response =
+            await fetch(
+                `${API}${path}`,
+                {
+                    method: "POST",
+                    cache: "no-store",
+                    headers: {
+                        "Accept": "application/json",
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(body || {})
+                }
+            );
+
+        let json = null;
+
+        try {
+            json = await response.json();
+        }
+        catch (error) {
+            throw new Error(
+                "Server response could not be read."
+            );
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                json?.error ||
+                `Request failed: ${response.status}`
+            );
+        }
+
+        return json;
+    }
+
+
+    function sleep(milliseconds) {
+
+        return new Promise(
+            resolve =>
+                setTimeout(
+                    resolve,
+                    milliseconds
+                )
+        );
+    }
+
+
+    async function waitForCoursePayment(sessionId) {
+
+        let last = null;
+
+        for (
+            let attempt = 0;
+            attempt < 12;
+            attempt += 1
+        ) {
+            last = await apiGet(
+                `/payments/session/${encodeURIComponent(sessionId)}`
+            );
+
+            if (last?.order_type !== "course") {
+                return last;
+            }
+
+            const status =
+                String(last?.status || "")
+                    .toLowerCase();
+
+            if (
+                status === "paid" ||
+                status === "failed" ||
+                status === "canceled"
+            ) {
+                return last;
+            }
+
+            await sleep(1100);
+        }
+
+        return last;
+    }
+
+
+    function courseById(courseId) {
+
+        return courses.find(
+            item =>
+                Number(item.id) ===
+                Number(courseId)
+        ) || null;
+    }
+
+
+    function setPurchaseStatus(message, type = "") {
+
+        const box =
+            document.getElementById(
+                "dm-course-purchase-status"
+            );
+
+        if (!box) {
+            return;
+        }
+
+        box.className =
+            `dm-course-purchase-status ${type}`
+                .trim();
+
+        box.textContent = message || "";
+    }
+
+
+    async function beginCourseCheckout(courseId) {
+
+        const course =
+            courseById(courseId) ||
+            activeCourse;
+
+        if (!course) {
+            setPurchaseStatus(
+                "COURSE COULD NOT BE FOUND.",
+                "error"
+            );
+            return;
+        }
+
+        const amountCents =
+            Number(course.price_cents || 0);
+
+        if (amountCents <= 0) {
+            setPurchaseStatus(
+                "THIS COURSE DOES NOT REQUIRE A PAID CHECKOUT.",
+                "error"
+            );
+            return;
+        }
+
+        const name =
+            String(
+                document.getElementById(
+                    "dm-course-purchase-name"
+                )?.value || ""
+            ).trim();
+
+        const email =
+            String(
+                document.getElementById(
+                    "dm-course-purchase-email"
+                )?.value || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        if (!name) {
+            setPurchaseStatus(
+                "ENTER YOUR NAME.",
+                "error"
+            );
+            return;
+        }
+
+        if (!validEmail(email)) {
+            setPurchaseStatus(
+                "ENTER A VALID EMAIL ADDRESS.",
+                "error"
+            );
+            return;
+        }
+
+        saveCourseEmail(email);
+
+        const button =
+            document.getElementById(
+                "dm-course-purchase-button"
+            );
+
+        const originalText =
+            button?.textContent ||
+            "SECURE CHECKOUT";
+
+        if (button) {
+            button.disabled = true;
+            button.textContent =
+                "OPENING SECURE CHECKOUT...";
+        }
+
+        setPurchaseStatus(
+            "CONNECTING TO STRIPE..."
+        );
+
+        try {
+            const result =
+                await apiPost(
+                    "/payments/checkout/course",
+                    {
+                        course_id: Number(course.id),
+                        name,
+                        email
+                    }
+                );
+
+            if (
+                !result?.checkout_url ||
+                !result?.stripe_session_id
+            ) {
+                throw new Error(
+                    "Secure checkout did not return a Stripe session."
+                );
+            }
+
+            savePendingCourseCheckout({
+                course_id: Number(course.id),
+                course_title: course.title || "",
+                email,
+                name,
+                stripe_session_id:
+                    result.stripe_session_id
+            });
+
+            window.location.href =
+                result.checkout_url;
+        }
+        catch (error) {
+            console.warn(
+                "Decision Makers course checkout could not start.",
+                error
+            );
+
+            setPurchaseStatus(
+                error.message ||
+                "SECURE CHECKOUT COULD NOT START.",
+                "error"
+            );
+
+            if (button) {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+    }
+
+
+    function showCoursePaymentBanner(
+        title,
+        message,
+        type = "success"
+    ) {
+
+        const screen =
+            document.getElementById(
+                "decision-makers-screen"
+            );
+
+        if (!screen) {
+            return null;
+        }
+
+        let banner =
+            document.getElementById(
+                "dm-course-payment-banner"
+            );
+
+        if (!banner) {
+            banner =
+                document.createElement(
+                    "section"
+                );
+
+            banner.id =
+                "dm-course-payment-banner";
+
+            banner.className =
+                "decision-section dm-course-payment-banner";
+
+            const header =
+                screen.querySelector(
+                    ".decision-header"
+                );
+
+            if (header) {
+                header.insertAdjacentElement(
+                    "afterend",
+                    banner
+                );
+            }
+            else {
+                screen.prepend(banner);
+            }
+        }
+
+        banner.className =
+            `decision-section dm-course-payment-banner ${type}`;
+
+        banner.innerHTML = `
+            <span>
+                ${escapeHTML(title)}
+            </span>
+
+            <h2>
+                ${escapeHTML(message)}
+            </h2>
+
+            <button
+                id="dm-course-payment-go"
+                type="button"
+            >
+                GO TO MY COURSES
+            </button>
+        `;
+
+        const button =
+            banner.querySelector(
+                "#dm-course-payment-go"
+            );
+
+        if (button) {
+            button.addEventListener(
+                "click",
+                function () {
+                    const target =
+                        document.getElementById(
+                            "decision-makers-my-courses"
+                        ) ||
+                        document.getElementById(
+                            "decision-makers-courses-section"
+                        );
+
+                    target?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            );
+        }
+
+        return banner;
+    }
+
+
+    function prefillMyCoursesEmail(email) {
+
+        if (!validEmail(email)) {
+            return;
+        }
+
+        saveCourseEmail(email);
+
+        const input =
+            document.getElementById(
+                "dm-course-email"
+            );
+
+        if (input) {
+            input.value = email;
+        }
+    }
+
+
+    async function handleCheckoutReturn() {
+
+        if (checkoutReturnHandled) {
+            return;
+        }
+
+        checkoutReturnHandled = true;
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const checkout =
+            String(
+                params.get("checkout") || ""
+            ).toLowerCase();
+
+        const pending =
+            pendingCourseCheckout();
+
+        if (
+            checkout === "cancel" &&
+            pending?.course_id
+        ) {
+            const course =
+                courseById(
+                    pending.course_id
+                );
+
+            if (course) {
+                openCourse(course.id);
+
+                setTimeout(
+                    function () {
+                        setPurchaseStatus(
+                            "CHECKOUT CANCELED. NO COURSE PAYMENT WAS COMPLETED.",
+                            "error"
+                        );
+                    },
+                    50
+                );
+            }
+
+            return;
+        }
+
+        if (checkout !== "success") {
+            return;
+        }
+
+        const sessionId =
+            String(
+                params.get("session_id") || ""
+            ).trim();
+
+        if (!sessionId) {
+            return;
+        }
+
+        let payment = null;
+
+        try {
+            payment =
+                await waitForCoursePayment(
+                    sessionId
+                );
+        }
+        catch (error) {
+            console.warn(
+                "Course payment return could not be checked.",
+                error
+            );
+            return;
+        }
+
+        if (payment?.order_type !== "course") {
+            return;
+        }
+
+        activateScreen(
+            "decision-makers-screen"
+        );
+
+        const email =
+            String(
+                pending?.email ||
+                savedCourseEmail() ||
+                ""
+            )
+                .trim()
+                .toLowerCase();
+
+        if (email) {
+            prefillMyCoursesEmail(email);
+        }
+
+        const status =
+            String(payment?.status || "")
+                .toLowerCase();
+
+        if (status === "paid") {
+            showCoursePaymentBanner(
+                "PAYMENT COMPLETE",
+                email
+                    ? `YOUR COURSE IS READY. SIGN IN WITH ${email} TO BEGIN.`
+                    : "YOUR COURSE IS READY. SIGN IN UNDER MY COURSES TO BEGIN.",
+                "success"
+            );
+
+            clearPendingCourseCheckout();
+
+            setTimeout(
+                function () {
+                    document.getElementById(
+                        "dm-course-payment-banner"
+                    )?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                },
+                100
+            );
+
+            return;
+        }
+
+        if (
+            status === "failed" ||
+            status === "canceled"
+        ) {
+            showCoursePaymentBanner(
+                "PAYMENT NOT COMPLETED",
+                "YOUR COURSE ACCESS WAS NOT CHARGED.",
+                "error"
+            );
+            return;
+        }
+
+        showCoursePaymentBanner(
+            "PAYMENT RECEIVED",
+            "STRIPE IS STILL FINALIZING YOUR COURSE ACCESS. CHECK MY COURSES AGAIN IN A MOMENT.",
+            "processing"
+        );
     }
 
 
@@ -904,102 +1535,332 @@
 
     async function openCourse(courseId) {
 
-        const course =
-            courses.find(
-                item =>
-                    Number(item.id) ===
-                    Number(courseId)
-            );
-
+        const course = courseById(courseId);
 
         if (!course) {
             return;
         }
 
-
-        activeCourse =
-            course;
-
+        activeCourse = course;
+        activeCourseData = null;
+        activeDayId = null;
 
         createCoursePlayerScreen();
-
 
         const loading =
             document.getElementById(
                 "dm-course-player-loading"
             );
 
-
         const content =
             document.getElementById(
                 "dm-course-player-content"
             );
 
-
         if (loading) {
-
-            loading.style.display =
-                "block";
-
-
-            loading.textContent =
-                "LOADING COURSE...";
+            loading.style.display = "none";
         }
 
-
-        if (content) {
-
-            content.innerHTML =
-                "";
+        if (!content) {
+            return;
         }
 
+        const cover =
+            String(course.cover_url || "")
+                .trim();
+
+        const title =
+            course.title ||
+            "DECISION MAKER COURSE";
+
+        const subtitle =
+            course.subtitle || "";
+
+        const description =
+            course.description || "";
+
+        const price =
+            formatPrice(
+                course.price_cents
+            );
+
+        const totalDays =
+            Number(
+                course.total_days || 0
+            );
+
+        const savedEmail =
+            savedCourseEmail();
+
+        content.innerHTML = `
+
+            <section class="dm-course-hero">
+
+                <div class="dm-course-hero-cover">
+
+                    ${
+                        cover
+                            ? `
+                                <img
+                                    src="${escapeHTML(cover)}"
+                                    alt="${escapeHTML(title)}"
+                                >
+                            `
+                            : `
+                                <div class="dm-course-hero-placeholder">
+
+                                    <span>
+                                        DECISION MAKERS
+                                    </span>
+
+                                    <strong>
+                                        ${escapeHTML(title)}
+                                    </strong>
+
+                                    <small>
+                                        ${
+                                            subtitle
+                                                ? escapeHTML(subtitle)
+                                                : "GREATNESS IS A DECISION"
+                                        }
+                                    </small>
+
+                                </div>
+                            `
+                    }
+
+                </div>
+
+
+                <div class="dm-course-hero-content">
+
+                    <span class="dm-course-eyebrow">
+                        DECISION MAKERS COURSE
+                    </span>
+
+
+                    <h1>
+                        ${escapeHTML(title)}
+                    </h1>
+
+
+                    ${
+                        subtitle
+                            ? `
+                                <h2>
+                                    ${escapeHTML(subtitle)}
+                                </h2>
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        description
+                            ? `
+                                <p>
+                                    ${escapeHTML(description)}
+                                </p>
+                            `
+                            : ""
+                    }
+
+
+                    <div class="dm-course-hero-stats">
+
+                        <div>
+
+                            <span>
+                                COURSE LENGTH
+                            </span>
+
+                            <strong>
+                                ${
+                                    totalDays
+                                        ? `${totalDays} DAYS`
+                                        : "DECISION MAKERS"
+                                }
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span>
+                                COURSE PRICE
+                            </span>
+
+                            <strong>
+                                ${escapeHTML(price)}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    ${
+                        Number(course.price_cents || 0) > 0
+                            ? `
+                                <div class="dm-course-purchase-panel">
+
+                                    <span class="dm-course-purchase-kicker">
+                                        SECURE COURSE ACCESS
+                                    </span>
+
+                                    <h3>
+                                        GET THE COURSE
+                                    </h3>
+
+                                    <p>
+                                        Enter your name and the email you want connected to your Decision Makers access.
+                                    </p>
+
+                                    <div class="dm-course-purchase-fields">
+
+                                        <label>
+
+                                            <span>
+                                                YOUR NAME
+                                            </span>
+
+                                            <input
+                                                id="dm-course-purchase-name"
+                                                type="text"
+                                                autocomplete="name"
+                                                placeholder="Your name"
+                                            >
+
+                                        </label>
+
+
+                                        <label>
+
+                                            <span>
+                                                ACCOUNT EMAIL
+                                            </span>
+
+                                            <input
+                                                id="dm-course-purchase-email"
+                                                type="email"
+                                                autocomplete="email"
+                                                placeholder="you@example.com"
+                                                value="${escapeHTML(savedEmail)}"
+                                            >
+
+                                        </label>
+
+                                    </div>
+
+
+                                    <button
+                                        id="dm-course-purchase-button"
+                                        type="button"
+                                        data-course-id="${Number(course.id)}"
+                                    >
+                                        SECURE CHECKOUT
+                                    </button>
+
+
+                                    <div
+                                        id="dm-course-purchase-status"
+                                        class="dm-course-purchase-status"
+                                        aria-live="polite"
+                                    ></div>
+
+
+                                    <small class="dm-course-purchase-note">
+                                        Payment is completed securely through Stripe. Course access is connected to the email used at checkout.
+                                    </small>
+
+                                </div>
+                            `
+                            : `
+                                <div class="dm-course-free-panel">
+
+                                    <strong>
+                                        FREE COURSE
+                                    </strong>
+
+                                    <p>
+                                        Sign in under My Courses with your Decision Makers email to begin.
+                                    </p>
+
+                                </div>
+                            `
+                    }
+
+                </div>
+
+            </section>
+
+
+            <section class="dm-course-sales-detail">
+
+                <div class="dm-course-section-heading">
+
+                    <span>
+                        MAKE THE DECISION
+                    </span>
+
+                    <h2>
+                        START YOUR COURSE
+                    </h2>
+
+                </div>
+
+
+                <p>
+                    ${
+                        description
+                            ? escapeHTML(description)
+                            : "This Decision Makers course is built to help you move from decision to execution."
+                    }
+                </p>
+
+            </section>
+        `;
+
+        const purchaseButton =
+            document.getElementById(
+                "dm-course-purchase-button"
+            );
+
+        if (purchaseButton) {
+            purchaseButton.addEventListener(
+                "click",
+                function () {
+                    beginCourseCheckout(
+                        Number(
+                            purchaseButton.dataset.courseId
+                        )
+                    );
+                }
+            );
+        }
+
+        const emailInput =
+            document.getElementById(
+                "dm-course-purchase-email"
+            );
+
+        if (emailInput) {
+            emailInput.addEventListener(
+                "keydown",
+                function (event) {
+                    if (event.key === "Enter") {
+                        beginCourseCheckout(
+                            Number(course.id)
+                        );
+                    }
+                }
+            );
+        }
 
         activateScreen(
             "decision-maker-course-screen"
         );
-
-
-        try {
-
-            const data =
-                await apiGet(
-                    `/dm-courses/${Number(courseId)}/full`
-                );
-
-
-            activeCourseData =
-                data;
-
-
-            renderCoursePlayer(
-                data
-            );
-        }
-        catch (error) {
-
-            console.warn(
-                "Decision Maker course could not be loaded.",
-                error
-            );
-
-
-            if (loading) {
-
-                loading.style.display =
-                    "block";
-
-
-                loading.innerHTML = `
-                    <strong>
-                        COURSE COULD NOT BE LOADED
-                    </strong>
-
-                    <span>
-                        ${escapeHTML(error.message)}
-                    </span>
-                `;
-            }
-        }
     }
 
 
@@ -2462,6 +3323,231 @@
 
 
             /* =================================================
+               COURSE SALES AND PAYMENT
+            ================================================= */
+
+            .dm-course-purchase-panel {
+                margin-top: 24px;
+                padding: 20px;
+                border: 2px solid #F5C518;
+                border-radius: 18px;
+                background:
+                    linear-gradient(
+                        145deg,
+                        #0b0b0b,
+                        #030303
+                    );
+            }
+
+            .dm-course-purchase-kicker {
+                display: block;
+                color: #F5C518;
+                font-size: 9px;
+                font-weight: 950;
+                letter-spacing: 1.8px;
+            }
+
+            .dm-course-purchase-panel h3 {
+                margin: 7px 0 0;
+                color: #fff;
+                font-size: 27px;
+                line-height: 1;
+                font-weight: 950;
+            }
+
+            .dm-course-purchase-panel > p {
+                margin: 10px 0 0;
+                color: #aaa;
+                font-size: 13px;
+                line-height: 1.55;
+            }
+
+            .dm-course-purchase-fields {
+                display: grid;
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+                gap: 12px;
+                margin-top: 18px;
+            }
+
+            .dm-course-purchase-fields label {
+                display: block;
+            }
+
+            .dm-course-purchase-fields label > span {
+                display: block;
+                margin-bottom: 7px;
+                color: #888;
+                font-size: 8px;
+                font-weight: 950;
+                letter-spacing: 1.4px;
+            }
+
+            .dm-course-purchase-fields input {
+                display: block;
+                width: 100%;
+                min-height: 48px;
+                padding: 12px 14px;
+                border: 1px solid #343434;
+                border-radius: 12px;
+                outline: none;
+                background: #050505;
+                color: #fff;
+                font: inherit;
+                font-size: 13px;
+            }
+
+            .dm-course-purchase-fields input:focus {
+                border-color: #F5C518;
+            }
+
+            #dm-course-purchase-button {
+                display: block;
+                width: 100%;
+                min-height: 52px;
+                margin-top: 15px;
+                padding: 13px 20px;
+                border: 2px solid #F5C518;
+                border-radius: 999px;
+                background: #F5C518;
+                color: #000;
+                font: inherit;
+                font-size: 11px;
+                font-weight: 950;
+                letter-spacing: 1.1px;
+                cursor: pointer;
+            }
+
+            #dm-course-purchase-button:hover {
+                background: #000;
+                color: #F5C518;
+            }
+
+            #dm-course-purchase-button:disabled {
+                cursor: wait;
+                opacity: .72;
+            }
+
+            .dm-course-purchase-status {
+                min-height: 18px;
+                margin-top: 12px;
+                color: #aaa;
+                font-size: 10px;
+                font-weight: 900;
+                line-height: 1.45;
+                letter-spacing: .7px;
+            }
+
+            .dm-course-purchase-status.error {
+                color: #ff6b6b;
+            }
+
+            .dm-course-purchase-status.success {
+                color: #F5C518;
+            }
+
+            .dm-course-purchase-note {
+                display: block;
+                margin-top: 10px;
+                color: #777;
+                font-size: 10px;
+                line-height: 1.5;
+            }
+
+            .dm-course-free-panel {
+                margin-top: 24px;
+                padding: 18px;
+                border-left: 4px solid #F5C518;
+                background: rgba(245, 197, 24, .06);
+            }
+
+            .dm-course-free-panel strong {
+                color: #F5C518;
+                font-size: 11px;
+                font-weight: 950;
+                letter-spacing: 1.5px;
+            }
+
+            .dm-course-free-panel p {
+                margin: 7px 0 0;
+                color: #aaa;
+                font-size: 12px;
+                line-height: 1.5;
+            }
+
+            .dm-course-sales-detail {
+                margin-top: 42px;
+                padding: 26px;
+                border: 1px solid #252525;
+                border-radius: 20px;
+                background: #090909;
+            }
+
+            .dm-course-sales-detail > p {
+                max-width: 850px;
+                margin: 14px 0 0;
+                color: #aaa;
+                font-size: 14px;
+                line-height: 1.7;
+            }
+
+            .dm-course-payment-banner {
+                width: min(1100px, 100%);
+                margin-left: auto;
+                margin-right: auto;
+                padding: 24px;
+                border: 2px solid #F5C518;
+                border-radius: 20px;
+                background:
+                    radial-gradient(
+                        circle at top right,
+                        rgba(245, 197, 24, .09),
+                        transparent 38%
+                    ),
+                    #080808;
+                text-align: center;
+            }
+
+            .dm-course-payment-banner > span {
+                display: block;
+                color: #F5C518;
+                font-size: 10px;
+                font-weight: 950;
+                letter-spacing: 1.8px;
+            }
+
+            .dm-course-payment-banner > h2 {
+                margin: 8px 0 0;
+                color: #fff;
+                font-size: clamp(21px, 4vw, 34px);
+                line-height: 1.15;
+                font-weight: 950;
+            }
+
+            .dm-course-payment-banner.error {
+                border-color: #c50000;
+            }
+
+            .dm-course-payment-banner.processing {
+                border-color: #777;
+            }
+
+            #dm-course-payment-go {
+                min-height: 48px;
+                margin-top: 18px;
+                padding: 11px 22px;
+                border: 2px solid #F5C518;
+                border-radius: 999px;
+                background: #F5C518;
+                color: #000;
+                font: inherit;
+                font-size: 10px;
+                font-weight: 950;
+                letter-spacing: 1px;
+                cursor: pointer;
+            }
+
+            /* =================================================
                COURSE PLAYER SCREEN
             ================================================= */
 
@@ -3388,6 +4474,11 @@
                 }
 
 
+                .dm-course-purchase-fields {
+                    grid-template-columns: 1fr;
+                }
+
+
                 .dm-phase-heading {
                     padding: 17px;
                 }
@@ -3517,6 +4608,9 @@
             renderCourses();
 
 
+            await handleCheckoutReturn();
+
+
             console.info(
                 "Decision Makers courses loaded.",
                 courses.length
@@ -3560,6 +4654,13 @@
         close:
             function () {
                 closeCourse();
+            },
+
+        open:
+            function (courseId) {
+                openCourse(
+                    courseId
+                );
             }
 
     };
