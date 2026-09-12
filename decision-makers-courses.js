@@ -168,6 +168,179 @@
     }
 
 
+    function youtubeVideoId(value) {
+
+        const raw =
+            String(value || "")
+                .trim();
+
+        if (!raw) {
+            return "";
+        }
+
+        try {
+
+            const url =
+                new URL(raw);
+
+            const host =
+                url.hostname
+                    .toLowerCase()
+                    .replace(/^www\./, "")
+                    .replace(/^m\./, "");
+
+            let id = "";
+
+            if (host === "youtu.be") {
+
+                id =
+                    url.pathname
+                        .split("/")
+                        .filter(Boolean)[0] || "";
+
+            }
+            else if (
+                host === "youtube.com" ||
+                host.endsWith(".youtube.com")
+            ) {
+
+                if (url.pathname === "/watch") {
+
+                    id =
+                        url.searchParams.get("v") || "";
+
+                }
+                else {
+
+                    const match =
+                        url.pathname.match(
+                            /^\/(?:embed|shorts|live)\/([^/?#]+)/
+                        );
+
+                    id =
+                        match?.[1] || "";
+
+                }
+
+            }
+
+            return /^[A-Za-z0-9_-]{6,20}$/.test(id)
+                ? id
+                : "";
+
+        }
+        catch (error) {
+
+            return "";
+
+        }
+    }
+
+
+    function vimeoVideoId(value) {
+
+        const raw =
+            String(value || "")
+                .trim();
+
+        if (!raw) {
+            return "";
+        }
+
+        try {
+
+            const url =
+                new URL(raw);
+
+            const host =
+                url.hostname
+                    .toLowerCase()
+                    .replace(/^www\./, "");
+
+            if (
+                host !== "vimeo.com" &&
+                !host.endsWith(".vimeo.com")
+            ) {
+                return "";
+            }
+
+            const match =
+                url.pathname.match(
+                    /\/(?:video\/)?(\d+)(?:$|\/)/
+                );
+
+            return match?.[1] || "";
+
+        }
+        catch (error) {
+
+            return "";
+
+        }
+    }
+
+
+    function renderCoursePreviewVideo(
+        value,
+        title
+    ) {
+
+        const url =
+            String(value || "")
+                .trim();
+
+        if (!url) {
+            return "";
+        }
+
+        const youtubeId =
+            youtubeVideoId(url);
+
+        if (youtubeId) {
+
+            return `
+                <iframe
+                    class="dm-course-preview-embed"
+                    src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}"
+                    title="${escapeHTML(title)} course preview"
+                    loading="lazy"
+                    allow="encrypted-media; picture-in-picture; fullscreen"
+                    allowfullscreen
+                ></iframe>
+            `;
+
+        }
+
+        const vimeoId =
+            vimeoVideoId(url);
+
+        if (vimeoId) {
+
+            return `
+                <iframe
+                    class="dm-course-preview-embed"
+                    src="https://player.vimeo.com/video/${encodeURIComponent(vimeoId)}"
+                    title="${escapeHTML(title)} course preview"
+                    loading="lazy"
+                    allow="fullscreen; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
+            `;
+
+        }
+
+        return `
+            <video
+                class="dm-course-preview-direct"
+                src="${escapeHTML(url)}"
+                controls
+                playsinline
+                preload="metadata"
+            ></video>
+        `;
+    }
+
+
     function hasValue(value) {
         return String(
             value ?? ""
@@ -862,6 +1035,22 @@
                 media => {
                     try {
                         media.pause();
+                    }
+                    catch (error) {
+                        /* ignore */
+                    }
+                }
+            );
+
+
+        document
+            .querySelectorAll(
+                "#decision-maker-course-screen .dm-course-preview-embed"
+            )
+            .forEach(
+                frame => {
+                    try {
+                        frame.src = frame.src;
                     }
                     catch (error) {
                         /* ignore */
@@ -1579,6 +1768,11 @@
         const description =
             course.description || "";
 
+        const previewVideo =
+            String(
+                course.preview_video_url || ""
+            ).trim();
+
         const price =
             formatPrice(
                 course.price_cents
@@ -1794,6 +1988,37 @@
                 </div>
 
             </section>
+
+
+            ${
+                previewVideo
+                    ? `
+                        <section class="dm-course-preview-section">
+
+                            <div class="dm-course-section-heading">
+
+                                <span>
+                                    WATCH BEFORE YOU START
+                                </span>
+
+                                <h2>
+                                    COURSE PREVIEW
+                                </h2>
+
+                            </div>
+
+
+                            <div class="dm-course-preview-player">
+                                ${renderCoursePreviewVideo(
+                                    previewVideo,
+                                    title
+                                )}
+                            </div>
+
+                        </section>
+                    `
+                    : ""
+            }
 
 
             <section class="dm-course-sales-detail">
@@ -3473,6 +3698,40 @@
                 color: #aaa;
                 font-size: 12px;
                 line-height: 1.5;
+            }
+
+            .dm-course-preview-section {
+                margin-top: 42px;
+                padding: 26px;
+                border: 1px solid #252525;
+                border-radius: 20px;
+                background: #090909;
+            }
+
+            .dm-course-preview-player {
+                position: relative;
+                width: 100%;
+                max-width: 960px;
+                margin: 20px auto 0;
+                overflow: hidden;
+                aspect-ratio: 16 / 9;
+                border: 2px solid #F5C518;
+                border-radius: 18px;
+                background: #000;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
+            }
+
+            .dm-course-preview-player iframe,
+            .dm-course-preview-player video {
+                display: block;
+                width: 100%;
+                height: 100%;
+                border: 0;
+                background: #000;
+            }
+
+            .dm-course-preview-player video {
+                object-fit: contain;
             }
 
             .dm-course-sales-detail {
