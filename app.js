@@ -42,6 +42,103 @@ return id;
 const BOSS_VISITOR_ID=visitorId();
 const BOSS_SESSION_ID=makeBossId('visit');
 
+const CRM_IDENTITY_KEY='boss-code-go-crm-identity-v1';
+let CRM_LAST_IDENTIFY_SIGNATURE='';
+
+function crmSavedIdentity(){
+let value={};
+try{
+value=JSON.parse(localStorage.getItem(CRM_IDENTITY_KEY)||'{}')||{};
+}catch{}
+return{
+email:String(value.email||'').trim().toLowerCase(),
+name:String(value.name||'').trim()
+};
+}
+
+function crmValidEmail(value){
+return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());
+}
+
+function crmRememberIdentity(email,name='',source='app'){
+const normalized=String(email||'').trim().toLowerCase();
+if(!crmValidEmail(normalized))return;
+const cleanName=String(name||'').trim();
+try{
+localStorage.setItem(
+CRM_IDENTITY_KEY,
+JSON.stringify({email:normalized,name:cleanName})
+);
+}catch{}
+
+const signature=[normalized,cleanName,source].join('|');
+if(signature===CRM_LAST_IDENTIFY_SIGNATURE)return;
+CRM_LAST_IDENTIFY_SIGNATURE=signature;
+
+fetch(`${API}/crm/identify`,{
+method:'POST',
+headers:{'Content-Type':'application/json','Accept':'application/json'},
+body:JSON.stringify({
+email:normalized,
+name:cleanName,
+source,
+visitor_id:BOSS_VISITOR_ID,
+session_id:BOSS_SESSION_ID
+}),
+keepalive:true
+}).catch(()=>{CRM_LAST_IDENTIFY_SIGNATURE='';});
+}
+
+function crmIdentifyFromVisibleFields(source='app'){
+const candidates=[
+['dm-course-purchase-email','dm-course-purchase-name','course_interest'],
+['dm-course-email','','decision_makers_login'],
+['clothing-checkout-email','clothing-checkout-name','clothing_checkout'],
+['support-email','support-name','support'],
+['contact-email','contact-name','contact_form'],
+['clothing-special-email','clothing-special-name','clothing_special_size']
+];
+for(const [emailId,nameId,itemSource] of candidates){
+const email=$(emailId)?.value||'';
+if(!crmValidEmail(email))continue;
+const name=nameId?($(nameId)?.value||''):'';
+crmRememberIdentity(email,name,itemSource||source);
+return;
+}
+}
+
+document.addEventListener('change',event=>{
+const input=event.target;
+if(!input?.id)return;
+if([
+'dm-course-purchase-email',
+'dm-course-email',
+'clothing-checkout-email',
+'support-email',
+'contact-email',
+'clothing-special-email'
+].includes(input.id)){
+crmIdentifyFromVisibleFields('field');
+}
+});
+
+document.addEventListener('click',()=>{
+crmIdentifyFromVisibleFields('click');
+},true);
+
+try{
+const rememberedDmEmail=localStorage.getItem('boss-code-dm-course-email-v1')||'';
+if(crmValidEmail(rememberedDmEmail)){
+const existing=crmSavedIdentity();
+if(!existing.email){
+localStorage.setItem(
+CRM_IDENTITY_KEY,
+JSON.stringify({email:rememberedDmEmail.toLowerCase(),name:''})
+);
+}
+}
+}catch{}
+
 function analyticsSectionFromScreen(screen){
 const id=screen?.id||'';
 return({
@@ -57,13 +154,16 @@ return({
 }
 
 function trackAnalytics(eventType,options={}){
+const identity=crmSavedIdentity();
 const payload={
 event_type:eventType,
 section:options.section||'',
 item_id:String(options.itemId??''),
 item_title:String(options.itemTitle??''),
 visitor_id:BOSS_VISITOR_ID,
-session_id:BOSS_SESSION_ID
+session_id:BOSS_SESSION_ID,
+contact_email:identity.email||'',
+contact_name:identity.name||''
 };
 
 if(options.valueNumeric!==undefined&&options.valueNumeric!==null){
@@ -4100,6 +4200,13 @@ return;
 }
 
 
+crmRememberIdentity(
+email,
+name,
+'support'
+);
+
+
 if(button){
 
 button.disabled=
@@ -4152,7 +4259,10 @@ email,
 amount_cents:
 selectedSupportAmountCents,
 
-message
+message,
+
+visitor_id:
+BOSS_VISITOR_ID
 
 })
 
@@ -4609,6 +4719,20 @@ return;
 }
 
 
+crmRememberIdentity(
+email,
+name,
+'contact_form'
+);
+
+trackAnalytics(
+'contact_submit',
+{
+section:'contact',
+itemTitle:inquiryType
+}
+);
+
 if(button){
 
 button.disabled=
@@ -4653,7 +4777,10 @@ email,
 inquiry_type:
 inquiryType,
 
-message
+message,
+
+visitor_id:
+BOSS_VISITOR_ID
 
 })
 
@@ -17169,6 +17296,12 @@ name,
 email
 );
 
+crmRememberIdentity(
+email,
+name,
+'clothing_checkout'
+);
+
 
 setClothingCheckoutStatus(
 'CREATING YOUR SECURE STRIPE CHECKOUT...',
@@ -17219,7 +17352,9 @@ body:
 JSON.stringify({
 name,
 email,
-items
+items,
+visitor_id:
+BOSS_VISITOR_ID
 })
 }
 );
