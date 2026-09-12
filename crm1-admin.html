@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>B.O.S.S CODE CRM</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050505;color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.wrap{width:min(1280px,calc(100% - 24px));margin:auto;padding:26px 0 70px}
+.header{text-align:center;margin-bottom:24px}
+.header img{width:min(360px,92%);max-height:110px;object-fit:contain}
+.gold{color:#f5c518}.redtxt{color:#ef4035}.muted{color:#8c8c8c}.small{font-size:10px;line-height:1.55}
+.card{background:linear-gradient(145deg,#101010,#060606);border:1px solid #292929;border-radius:22px;padding:20px;margin-bottom:18px}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:16px}
+.head small{color:#f5c518;font-size:9px;font-weight:900;letter-spacing:2px}.head h2{font-size:25px;margin-top:5px}
+.status{display:inline-flex;align-items:center;min-height:30px;padding:0 11px;border-radius:999px;background:#181818;color:#9a9a9a;font-size:9px;font-weight:900;letter-spacing:.08em}
+.status.ok{background:#102418;color:#75e59a}.status.warn{background:#291f08;color:#f5c518}.status.bad{background:#331515;color:#ff8c8c}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.tab{min-height:42px;padding:0 16px;border-radius:999px;border:1px solid #333;background:#0d0d0d;color:#fff;font-size:10px;font-weight:900}.tab.active{border-color:#f5c518;color:#f5c518}
+.view{display:none}.view.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.metric{border:1px solid #262626;background:#080808;border-radius:16px;padding:16px}.metric span{display:block;color:#888;font-size:9px;font-weight:900;letter-spacing:.12em}.metric strong{display:block;font-size:27px;margin-top:6px}.metric em{display:block;color:#777;font-size:9px;font-style:normal;margin-top:6px}
+.layout{display:grid;grid-template-columns:350px minmax(0,1fr);gap:16px;align-items:start}.panel{background:#080808;border:1px solid #252525;border-radius:18px;padding:15px}
+.list{display:grid;gap:9px;margin-top:12px}.listitem{border:1px solid #272727;background:#050505;border-radius:14px;padding:12px;cursor:pointer}.listitem.active{border-color:#f5c518}.listitem strong{display:block;font-size:12px}.listitem small{display:block;color:#777;font-size:9px;margin-top:5px;line-height:1.45}.badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.badge{padding:5px 8px;border-radius:999px;background:#171717;color:#aaa;font-size:8px;font-weight:900}.badge.gold{background:#2f280c;color:#f5c518}.badge.green{background:#102619;color:#77e69a}.badge.red{background:#321414;color:#ff8d8d}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.full{grid-column:1/-1}.field label{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;margin-bottom:7px;color:#d7d7d7}.input,.select,.textarea{width:100%;border:1px solid #303030;border-radius:13px;background:#080808;color:#fff;outline:none}.input,.select{min-height:48px;padding:0 13px}.textarea{min-height:110px;padding:12px 13px;resize:vertical}.input:focus,.select:focus,.textarea:focus{border-color:#f5c518}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.btn{min-height:43px;padding:0 16px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.06em}.red{background:#d72f22;color:#fff;border:0}.outline{background:transparent;color:#f5c518;border:1px solid #f5c518}.gray{background:#161616;color:#fff;border:1px solid #333}.danger{background:transparent;color:#ff8585;border:1px solid #5a2929}.message{min-height:19px;margin-top:11px;color:#f5c518;font-size:10px;font-weight:900;line-height:1.5}.empty{text-align:center;color:#777;border:1px dashed #303030;border-radius:14px;padding:24px}.subcard{border:1px solid #262626;border-radius:16px;background:#070707;padding:15px;margin-top:14px}.subhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:11px}.subhead h3{font-size:16px}.timeline{display:grid;gap:9px}.activity{border-left:3px solid #333;background:#090909;border-radius:0 12px 12px 0;padding:11px 12px}.activity.email{border-left-color:#f5c518}.activity.purchase{border-left-color:#67d890}.activity strong{display:block;font-size:11px}.activity small{display:block;color:#777;font-size:9px;margin-top:5px}.activity p{color:#bbb;font-size:10px;line-height:1.45;margin-top:6px}
+.blocklist{display:grid;gap:11px;margin-top:12px}.block{border:1px solid #282828;background:#060606;border-radius:15px;padding:13px}.blocktop{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}.blocktop strong{font-size:10px;color:#f5c518}.blockcontrols{display:flex;gap:6px}.mini{min-height:31px;padding:0 9px;border-radius:999px;border:1px solid #333;background:#111;color:#fff;font-size:8px;font-weight:900}.mediarow{display:grid;grid-template-columns:140px minmax(0,1fr) auto;gap:8px;align-items:end}.uploadstate{font-size:9px;color:#7ee39c;margin-top:7px}.campaignstats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}.campaignstats div{background:#0b0b0b;border:1px solid #252525;border-radius:12px;padding:10px}.campaignstats span{display:block;color:#777;font-size:8px;font-weight:900}.campaignstats strong{display:block;font-size:17px;margin-top:4px}
+.login{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}.login.hide{display:none}.loginbox{width:min(470px,100%);background:#0b0b0b;border:1px solid #2a2a2a;border-radius:22px;padding:24px}.loginbox h2{font-size:26px;margin:8px 0}.loginbox p{color:#888;font-size:11px;line-height:1.55;margin-bottom:18px}.note{padding:13px 14px;border-radius:13px;background:#110f03;border:1px solid #3c340a;color:#e6d370;font-size:10px;line-height:1.55;margin-top:13px}
+@media(max-width:980px){.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}}
+@media(max-width:680px){.grid,.metrics,.campaignstats,.mediarow{grid-template-columns:1fr}.full{grid-column:auto}.head{display:block}.status{margin-top:9px}.wrap{width:min(100% - 16px,1280px)}.card{padding:15px}}
+</style>
+</head>
+<body>
+
+<div id="login" class="login">
+  <div class="loginbox">
+    <div class="gold">PRIVATE CONTROL PANEL</div>
+    <h2>B.O.S.S CODE CRM</h2>
+    <p>Enter your B.O.S.S CODE GO admin key. The key stays in this browser session only.</p>
+    <div class="field">
+      <label>ADMIN KEY</label>
+      <input id="adminKey" class="input" type="password" autocomplete="off">
+    </div>
+    <div class="actions">
+      <button id="unlock" class="btn red">UNLOCK CRM</button>
+    </div>
+    <div id="loginMsg" class="message"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <header class="header">
+    <img src="images/boss-code-go-logo.png" alt="B.O.S.S CODE GO">
+    <div class="gold">CUSTOMER RELATIONSHIP MANAGEMENT</div>
+    <h1>B.O.S.S CODE CRM</h1>
+    <p class="muted small">Contacts, behavior, purchase history and email campaigns in one place.</p>
+  </header>
+
+  <section class="card">
+    <div class="head">
+      <div>
+        <small>SYSTEM</small>
+        <h2>CRM CONTROL</h2>
+      </div>
+      <div id="apiStatus" class="status">CHECKING</div>
+    </div>
+    <div class="actions">
+      <button id="refreshAll" class="btn outline">REFRESH</button>
+      <button id="syncExisting" class="btn red">SYNC EXISTING DATA</button>
+      <button id="lock" class="btn gray">LOCK CRM</button>
+    </div>
+    <div class="note">SYNC EXISTING DATA imports customer information already stored in Decision Makers, Clothing, Support, shirt claims and contact forms. It is safe to run again because duplicate activity is protected.</div>
+    <div id="systemMsg" class="message"></div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab active" data-view="overview">OVERVIEW</button>
+    <button class="tab" data-view="contacts">CONTACTS</button>
+    <button class="tab" data-view="email">EMAIL CAMPAIGNS</button>
+  </div>
+
+  <section id="view-overview" class="view active">
+    <section class="card">
+      <div class="head">
+        <div><small>CRM</small><h2>OVERVIEW</h2></div>
+        <div id="emailLimitStatus" class="status warn">EMAIL LIMIT</div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span>TOTAL CONTACTS</span><strong id="mContacts">0</strong><em id="mActive">0 active</em></div>
+        <div class="metric"><span>EMAILS SENT TODAY</span><strong id="mSentToday">0</strong><em id="mRemaining">0 remaining</em></div>
+        <div class="metric"><span>CAMPAIGNS</span><strong id="mCampaigns">0</strong><em id="mSending">0 sending</em></div>
+        <div class="metric"><span>UNSUBSCRIBED</span><strong id="mUnsub">0</strong><em>Automatically excluded</em></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head"><div><small>BEHAVIOR</small><h2>RECENT ACTIVITY</h2></div></div>
+      <div id="recentActivity" class="timeline"></div>
+    </section>
+  </section>
+
+  <section id="view-contacts" class="view">
+    <div class="layout">
+      <aside class="panel">
+        <div class="subhead"><div><div class="gold small">CONTACTS</div><h3>PEOPLE</h3></div><button id="newContact" class="mini">NEW</button></div>
+        <div class="field"><input id="contactSearch" class="input" placeholder="Search name, email or phone"></div>
+        <div class="grid" style="margin-top:9px">
+          <div class="field"><select id="contactMarketingFilter" class="select"><option value="">ALL EMAIL STATUS</option><option value="eligible">ELIGIBLE</option><option value="subscribed">SUBSCRIBED</option><option value="paused">PAUSED</option><option value="unsubscribed">UNSUBSCRIBED</option></select></div>
+          <div class="field"><input id="contactTagFilter" class="input" placeholder="Tag"></div>
+        </div>
+        <div class="actions"><button id="searchContacts" class="btn outline">SEARCH</button></div>
+        <div id="contactList" class="list"></div>
+      </aside>
+
+      <section>
+        <section class="card">
+          <div class="head"><div><small>CONTACT PROFILE</small><h2 id="contactEditorTitle">NEW CONTACT</h2></div><div id="contactStatus" class="status">NEW</div></div>
+          <div class="grid">
+            <div class="field"><label>NAME</label><input id="cName" class="input"></div>
+            <div class="field"><label>EMAIL</label><input id="cEmail" class="input" type="email"></div>
+            <div class="field"><label>PHONE</label><input id="cPhone" class="input"></div>
+            <div class="field"><label>COMPANY</label><input id="cCompany" class="input"></div>
+            <div class="field"><label>SOURCE</label><input id="cSource" class="input" placeholder="manual"></div>
+            <div class="field"><label>EMAIL STATUS</label><select id="cMarketing" class="select"><option value="eligible">ELIGIBLE</option><option value="subscribed">SUBSCRIBED</option><option value="paused">PAUSED</option><option value="unsubscribed">UNSUBSCRIBED</option></select></div>
+            <div class="field"><label>CONTACT STATUS</label><select id="cStatus" class="select"><option value="active">ACTIVE</option><option value="archived">ARCHIVED</option></select></div>
+            <div class="field"><label>TAGS</label><input id="cTags" class="input" placeholder="customer, supporter, vip"></div>
+            <div class="field full"><label>NOTES</label><textarea id="cNotes" class="textarea"></textarea></div>
+          </div>
+          <div class="actions"><button id="saveContact" class="btn red">SAVE CONTACT</button><button id="clearContact" class="btn gray">CLEAR</button></div>
+          <div id="contactMsg" class="message"></div>
+        </section>
+
+        <section id="contactSummaryCard" class="card" style="display:none">
+          <div class="metrics">
+            <div class="metric"><span>TOTAL SPENT</span><strong id="contactSpent">$0</strong><em>All paid orders</em></div>
+            <div class="metric"><span>TOTAL SUPPORT</span><strong id="contactSupport">$0</strong><em>Support payments</em></div>
+            <div class="metric"><span>ACTIVITY</span><strong id="contactActivityCount">0</strong><em>Known CRM events</em></div>
+            <div class="metric"><span>LAST ACTIVE</span><strong id="contactLastActive" style="font-size:13px">NONE</strong><em>Most recent known behavior</em></div>
+          </div>
+          <div class="subcard">
+            <div class="subhead"><h3>ACTIVITY TIMELINE</h3><button id="refreshTimeline" class="mini">REFRESH</button></div>
+            <div id="contactTimeline" class="timeline"></div>
+          </div>
+        </section>
+      </section>
+    </div>
+  </section>
+
+  <section id="view-email" class="view">
+    <div class="layout">
+      <aside class="panel">
+        <div class="subhead"><div><div class="gold small">CAMPAIGNS</div><h3>EMAIL HISTORY</h3></div><button id="newCampaign" class="mini">NEW</button></div>
+        <div id="campaignList" class="list"></div>
+      </aside>
+
+      <section>
+        <section class="card">
+          <div class="head"><div><small>EMAIL BUILDER</small><h2 id="campaignEditorTitle">NEW CAMPAIGN</h2></div><div id="campaignStatus" class="status">DRAFT</div></div>
+          <div class="grid">
+            <div class="field"><label>CAMPAIGN NAME</label><input id="eName" class="input" placeholder="September Decision Makers Update"></div>
+            <div class="field"><label>SUBJECT</label><input id="eSubject" class="input"></div>
+            <div class="field full"><label>PREVIEW TEXT</label><input id="ePreview" class="input"></div>
+            <div class="field"><label>AUDIENCE</label><select id="eAudienceType" class="select"><option value="all">ALL ELIGIBLE CONTACTS</option><option value="tag">CONTACT TAG</option><option value="source">CONTACT SOURCE</option></select></div>
+            <div class="field"><label>AUDIENCE VALUE</label><input id="eAudienceValue" class="input" placeholder="Only needed for tag or source"></div>
+          </div>
+
+          <div class="subcard">
+            <div class="subhead"><div><div class="gold small">CONTENT</div><h3>EMAIL BLOCKS</h3></div></div>
+            <div class="actions" style="margin-top:0"><button class="btn gray addBlock" data-type="text">ADD TEXT</button><button class="btn gray addBlock" data-type="image">ADD IMAGE</button><button class="btn gray addBlock" data-type="video">ADD VIDEO</button><button class="btn gray addBlock" data-type="audio">ADD AUDIO</button><button class="btn gray addBlock" data-type="button">ADD BUTTON</button></div>
+            <div class="note">Images can be uploaded and placed inside the email. Video and audio uploads are sent as actual attachments. For YouTube or another online media source choose LINK and paste the address.</div>
+            <div id="blockList" class="blocklist"></div>
+          </div>
+
+          <div class="actions"><button id="saveCampaign" class="btn red">SAVE CAMPAIGN</button><button id="startCampaign" class="btn outline">START CAMPAIGN</button><button id="sendNextBatch" class="btn gray">SEND NEXT BATCH</button><button id="clearCampaign" class="btn gray">CLEAR</button></div>
+          <div id="campaignMsg" class="message"></div>
+          <div id="campaignStats" class="campaignstats" style="display:none"></div>
+          <div class="note">Marketing sends default to 90 messages per day so login code emails still have room on a 100 message daily plan. Set CRM_DAILY_MARKETING_LIMIT in the Worker later if your Resend plan changes. For automatic continuation over multiple days add an hourly Cloudflare Cron Trigger after this system is live.</div>
+        </section>
+      </section>
+    </div>
+  </section>
+</main>
+
+<script>
+const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+let ADMIN_KEY=sessionStorage.getItem('boss-code-crm-admin-key')||'';
+let contacts=[];
+let activeContact=null;
+let campaigns=[];
+let activeCampaign=null;
+let draftBlocks=[];
+
+function money(cents){return '$'+(Number(cents||0)/100).toFixed(2)}
+function dateText(value){if(!value)return 'NONE';try{return new Date(value.replace(' ','T')+'Z').toLocaleString()}catch{return value}}
+function setMsg(id,text,type=''){const el=$(id);if(!el)return;el.textContent=text||'';el.style.color=type==='bad'?'#ff8c8c':type==='ok'?'#7ce49b':'#f5c518'}
+function authHeaders(json=true){const headers={'X-Admin-Key':ADMIN_KEY,'Accept':'application/json'};if(json)headers['Content-Type']='application/json';return headers}
+async function api(path,options={}){const response=await fetch(API+path,{...options,headers:{...(options.headers||{}),'X-Admin-Key':ADMIN_KEY,'Accept':'application/json'}});let data={};try{data=await response.json()}catch{}if(!response.ok||data.success===false)throw new Error(data.error||data.message||'Request failed');return data}
+
+async function unlock(){ADMIN_KEY=$('adminKey').value.trim();if(!ADMIN_KEY){setMsg('loginMsg','ENTER YOUR ADMIN KEY','bad');return}try{await api('/crm/overview');sessionStorage.setItem('boss-code-crm-admin-key',ADMIN_KEY);$('login').classList.add('hide');await refreshEverything()}catch(error){setMsg('loginMsg',error.message,'bad')}}
+function lock(){sessionStorage.removeItem('boss-code-crm-admin-key');ADMIN_KEY='';$('adminKey').value='';$('login').classList.remove('hide')}
+
+function selectView(name){document.querySelectorAll('.tab').forEach(button=>button.classList.toggle('active',button.dataset.view===name));document.querySelectorAll('.view').forEach(view=>view.classList.toggle('active',view.id==='view-'+name));if(name==='contacts')loadContacts();if(name==='email')loadCampaigns()}
+
+document.querySelectorAll('.tab').forEach(button=>button.addEventListener('click',()=>selectView(button.dataset.view)));
+$('unlock').addEventListener('click',unlock);$('adminKey').addEventListener('keydown',event=>{if(event.key==='Enter')unlock()});$('lock').addEventListener('click',lock);$('refreshAll').addEventListener('click',refreshEverything);
+
+async function refreshEverything(){try{$('apiStatus').textContent='CONNECTED';$('apiStatus').className='status ok';await Promise.all([loadOverview(),loadContacts(),loadCampaigns()])}catch(error){$('apiStatus').textContent='ERROR';$('apiStatus').className='status bad';setMsg('systemMsg',error.message,'bad');if(String(error.message).toLowerCase().includes('admin'))lock()}}
+
+async function loadOverview(){const result=await api('/crm/overview');const data=result.data||{};$('mContacts').textContent=data.contacts?.total||0;$('mActive').textContent=(data.contacts?.active||0)+' active';$('mSentToday').textContent=data.email_usage?.sent_today||0;$('mRemaining').textContent=(data.email_usage?.remaining_today||0)+' remaining of '+(data.email_usage?.daily_marketing_limit||0);$('mCampaigns').textContent=data.campaigns?.total||0;$('mSending').textContent=(data.campaigns?.sending||0)+' sending';const unsub=(data.marketing_statuses||[]).find(item=>item.marketing_status==='unsubscribed');$('mUnsub').textContent=unsub?.total||0;$('emailLimitStatus').textContent='DAILY '+(data.email_usage?.daily_marketing_limit||0);renderActivity('recentActivity',data.recent_activity||[],true)}
+
+$('syncExisting').addEventListener('click',async()=>{setMsg('systemMsg','SYNCING EXISTING CUSTOMER DATA');try{const result=await api('/crm/backfill',{method:'POST'});setMsg('systemMsg','SYNC COMPLETE. '+(result.data?.contacts_touched||0)+' CONTACT RECORDS CHECKED AND '+(result.data?.activities_added||0)+' ACTIVITIES ADDED.','ok');await refreshEverything()}catch(error){setMsg('systemMsg',error.message,'bad')}});
+
+function renderActivity(targetId,items,showContact=false){const box=$(targetId);if(!items.length){box.innerHTML='<div class="empty">NO ACTIVITY YET</div>';return}box.innerHTML=items.map(item=>{const type=String(item.event_type||'');const kind=type.includes('purchase')||type.includes('payment')?'purchase':type.includes('email')?'email':'';let detail='';try{const parsed=JSON.parse(item.detail_json||'{}');const keys=Object.keys(parsed);if(keys.length)detail=keys.slice(0,4).map(key=>key.replaceAll('_',' ') + ': '+String(parsed[key])).join(' • ')}catch{}return `<div class="activity ${kind}"><strong>${esc(type.replaceAll('_',' ').toUpperCase())}${showContact&&item.name?' • '+esc(item.name):''}</strong><small>${esc(item.item_title||item.section||'B.O.S.S CODE')} • ${esc(dateText(item.created_at))}</small>${item.value_numeric!==null&&item.value_numeric!==undefined?`<p>VALUE: ${esc(item.value_numeric)}</p>`:''}${detail?`<p>${esc(detail)}</p>`:''}</div>`}).join('')}
+
+async function loadContacts(){const params=new URLSearchParams();const search=$('contactSearch')?.value.trim();const marketing=$('contactMarketingFilter')?.value;const tag=$('contactTagFilter')?.value.trim();if(search)params.set('search',search);if(marketing)params.set('marketing_status',marketing);if(tag)params.set('tag',tag);params.set('limit','300');const result=await api('/crm/contacts?'+params.toString());contacts=result.data||[];renderContactList()}
+function renderContactList(){const box=$('contactList');if(!contacts.length){box.innerHTML='<div class="empty">NO CONTACTS FOUND</div>';return}box.innerHTML=contacts.map(contact=>`<div class="listitem ${activeContact?.id===contact.id?'active':''}" data-contact-id="${contact.id}"><strong>${esc(contact.name||contact.email)}</strong><small>${esc(contact.email)}${contact.phone?' • '+esc(contact.phone):''}</small><div class="badges"><span class="badge ${contact.marketing_status==='unsubscribed'?'red':'green'}">${esc(String(contact.marketing_status||'').toUpperCase())}</span>${contact.tags_text?contact.tags_text.split(', ').slice(0,3).map(tag=>`<span class="badge gold">${esc(tag.toUpperCase())}</span>`).join(''):''}</div></div>`).join('');box.querySelectorAll('[data-contact-id]').forEach(item=>item.addEventListener('click',()=>openContact(Number(item.dataset.contactId))))}
+$('searchContacts').addEventListener('click',loadContacts);$('contactSearch').addEventListener('keydown',event=>{if(event.key==='Enter')loadContacts()});
+
+function clearContact(){activeContact=null;$('contactEditorTitle').textContent='NEW CONTACT';$('contactStatus').textContent='NEW';$('contactStatus').className='status';['cName','cEmail','cPhone','cCompany','cSource','cTags','cNotes'].forEach(id=>$(id).value='');$('cMarketing').value='eligible';$('cStatus').value='active';$('contactSummaryCard').style.display='none';setMsg('contactMsg','');renderContactList()}
+$('newContact').addEventListener('click',clearContact);$('clearContact').addEventListener('click',clearContact);
+
+async function openContact(id){try{const result=await api('/crm/contacts/'+id);activeContact=result.data;$('contactEditorTitle').textContent=activeContact.name||activeContact.email;$('contactStatus').textContent=String(activeContact.status||'active').toUpperCase();$('contactStatus').className='status '+(activeContact.status==='active'?'ok':'warn');$('cName').value=activeContact.name||'';$('cEmail').value=activeContact.email||'';$('cPhone').value=activeContact.phone||'';$('cCompany').value=activeContact.company||'';$('cSource').value=activeContact.source||'';$('cMarketing').value=activeContact.marketing_status||'eligible';$('cStatus').value=activeContact.status||'active';$('cTags').value=(activeContact.tags||[]).join(', ');$('cNotes').value=activeContact.notes||'';$('contactSummaryCard').style.display='block';$('contactSpent').textContent=money(activeContact.total_spent_cents);$('contactSupport').textContent=money(activeContact.total_support_cents);$('contactActivityCount').textContent=activeContact.activity_count||0;$('contactLastActive').textContent=dateText(activeContact.latest_activity||activeContact.last_activity_at);await loadContactTimeline();renderContactList()}catch(error){setMsg('contactMsg',error.message,'bad')}}
+
+async function loadContactTimeline(){if(!activeContact)return;const result=await api('/crm/contacts/'+activeContact.id+'/activity?limit=300');renderActivity('contactTimeline',result.data||[])}
+$('refreshTimeline').addEventListener('click',loadContactTimeline);
+
+$('saveContact').addEventListener('click',async()=>{const body={name:$('cName').value.trim(),email:$('cEmail').value.trim(),phone:$('cPhone').value.trim(),company:$('cCompany').value.trim(),source:$('cSource').value.trim()||'manual',last_source:activeContact?.last_source||$('cSource').value.trim()||'manual',marketing_status:$('cMarketing').value,status:$('cStatus').value,tags:$('cTags').value.split(',').map(value=>value.trim()).filter(Boolean),notes:$('cNotes').value.trim()};if(!body.email){setMsg('contactMsg','EMAIL IS REQUIRED','bad');return}setMsg('contactMsg','SAVING CONTACT');try{const result=activeContact?await api('/crm/contacts/'+activeContact.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}):await api('/crm/contacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});setMsg('contactMsg','CONTACT SAVED','ok');activeContact=result.data;await loadContacts();await openContact(activeContact.id);await loadOverview()}catch(error){setMsg('contactMsg',error.message,'bad')}});
+
+function clearCampaign(){activeCampaign=null;draftBlocks=[];$('campaignEditorTitle').textContent='NEW CAMPAIGN';$('campaignStatus').textContent='DRAFT';$('campaignStatus').className='status';$('eName').value='';$('eSubject').value='';$('ePreview').value='';$('eAudienceType').value='all';$('eAudienceValue').value='';$('campaignStats').style.display='none';setMsg('campaignMsg','');renderBlocks();renderCampaignList()}
+$('newCampaign').addEventListener('click',clearCampaign);$('clearCampaign').addEventListener('click',clearCampaign);
+
+async function loadCampaigns(){const result=await api('/crm/campaigns');campaigns=result.data||[];renderCampaignList()}
+function renderCampaignList(){const box=$('campaignList');if(!campaigns.length){box.innerHTML='<div class="empty">NO CAMPAIGNS YET</div>';return}box.innerHTML=campaigns.map(campaign=>`<div class="listitem ${activeCampaign?.id===campaign.id?'active':''}" data-campaign-id="${campaign.id}"><strong>${esc(campaign.name)}</strong><small>${esc(campaign.subject)}</small><div class="badges"><span class="badge ${campaign.status==='completed'?'green':campaign.status==='sending'?'gold':''}">${esc(String(campaign.status||'draft').toUpperCase())}</span><span class="badge">${campaign.sent_count||0} SENT</span></div></div>`).join('');box.querySelectorAll('[data-campaign-id]').forEach(item=>item.addEventListener('click',()=>openCampaign(Number(item.dataset.campaignId))))}
+
+async function openCampaign(id){try{const result=await api('/crm/campaigns/'+id);activeCampaign=result.data;draftBlocks=JSON.parse(JSON.stringify(activeCampaign.blocks||[]));$('campaignEditorTitle').textContent=activeCampaign.name;$('campaignStatus').textContent=String(activeCampaign.status||'draft').toUpperCase();$('campaignStatus').className='status '+(activeCampaign.status==='completed'?'ok':activeCampaign.status==='sending'?'warn':'');$('eName').value=activeCampaign.name||'';$('eSubject').value=activeCampaign.subject||'';$('ePreview').value=activeCampaign.preview_text||'';$('eAudienceType').value=activeCampaign.audience_type||'all';$('eAudienceValue').value=activeCampaign.audience_type==='tag'?(activeCampaign.audience?.tag||''):activeCampaign.audience_type==='source'?(activeCampaign.audience?.source||''):'';renderBlocks();renderCampaignStats(activeCampaign);renderCampaignList()}catch(error){setMsg('campaignMsg',error.message,'bad')}}
+
+function renderCampaignStats(campaign){const box=$('campaignStats');if(!campaign){box.style.display='none';return}box.style.display='grid';box.innerHTML=`<div><span>RECIPIENTS</span><strong>${campaign.recipient_count||0}</strong></div><div><span>SENT</span><strong>${campaign.sent_count||0}</strong></div><div><span>FAILED</span><strong>${campaign.failed_count||0}</strong></div><div><span>OPENS</span><strong>${campaign.opened_count||0}</strong></div><div><span>CLICKS</span><strong>${campaign.clicked_count||0}</strong></div>`}
+
+function newBlock(type){if(type==='text')return{type:'text',text:''};if(type==='button')return{type:'button',label:'LEARN MORE',url:''};return{type,label:type==='video'?'WATCH VIDEO':type==='audio'?'LISTEN TO AUDIO':'',source_type:'upload',url:'',key:'',filename:'',mime_type:'',alt:''}}
+document.querySelectorAll('.addBlock').forEach(button=>button.addEventListener('click',()=>{draftBlocks.push(newBlock(button.dataset.type));renderBlocks()}));
+
+function moveBlock(index,direction){const next=index+direction;if(next<0||next>=draftBlocks.length)return;const temp=draftBlocks[index];draftBlocks[index]=draftBlocks[next];draftBlocks[next]=temp;renderBlocks()}
+function removeBlock(index){draftBlocks.splice(index,1);renderBlocks()}
+
+function renderBlocks(){const box=$('blockList');if(!draftBlocks.length){box.innerHTML='<div class="empty">ADD TEXT, IMAGE, VIDEO, AUDIO OR A BUTTON</div>';return}box.innerHTML=draftBlocks.map((block,index)=>{let content='';if(block.type==='text'){content=`<div class="field"><label>TEXT</label><textarea class="textarea blockText" data-index="${index}" placeholder="Write the email message here">${esc(block.text||'')}</textarea></div>`}else if(block.type==='button'){content=`<div class="grid"><div class="field"><label>BUTTON TEXT</label><input class="input blockLabel" data-index="${index}" value="${esc(block.label||'')}"></div><div class="field"><label>LINK</label><input class="input blockUrl" data-index="${index}" value="${esc(block.url||'')}"></div></div>`}else{const accept=block.type==='image'?'image/*':block.type==='video'?'video/*':'audio/*';content=`<div class="grid"><div class="field"><label>LABEL</label><input class="input blockLabel" data-index="${index}" value="${esc(block.label||'')}"></div><div class="field"><label>SOURCE</label><select class="select blockSource" data-index="${index}"><option value="upload" ${block.source_type==='upload'?'selected':''}>UPLOAD</option><option value="link" ${block.source_type==='link'?'selected':''}>LINK</option></select></div></div><div class="mediarow" style="margin-top:10px"><div class="field"><label>FILE OR LINK</label><input class="input blockFileName" value="${esc(block.filename||'')}" placeholder="${block.source_type==='link'?'Paste link':'No file uploaded'}" ${block.source_type==='upload'?'readonly':''}></div><div class="field"><label>${block.source_type==='link'?'LINK':'UPLOADED LOCATION'}</label><input class="input blockUrl" data-index="${index}" value="${esc(block.url||'')}" ${block.source_type==='upload'?'readonly':''}></div>${block.source_type==='upload'?`<div><input id="mediaFile${index}" type="file" accept="${accept}" hidden><button class="btn outline uploadMedia" data-index="${index}">UPLOAD</button></div>`:'<div></div>'}</div>${block.key?`<div class="uploadstate">UPLOAD READY: ${esc(block.filename||block.key)}</div>`:''}`;if(block.type==='image')content+=`<div class="field" style="margin-top:10px"><label>IMAGE DESCRIPTION</label><input class="input blockAlt" data-index="${index}" value="${esc(block.alt||'')}"></div>`}
+return `<div class="block"><div class="blocktop"><strong>${esc(block.type.toUpperCase())}</strong><div class="blockcontrols"><button class="mini moveUp" data-index="${index}">UP</button><button class="mini moveDown" data-index="${index}">DOWN</button><button class="mini removeBlock" data-index="${index}">REMOVE</button></div></div>${content}</div>`}).join('');
+box.querySelectorAll('.blockText').forEach(input=>input.addEventListener('input',()=>draftBlocks[Number(input.dataset.index)].text=input.value));box.querySelectorAll('.blockLabel').forEach(input=>input.addEventListener('input',()=>draftBlocks[Number(input.dataset.index)].label=input.value));box.querySelectorAll('.blockUrl').forEach(input=>input.addEventListener('input',()=>draftBlocks[Number(input.dataset.index)].url=input.value));box.querySelectorAll('.blockAlt').forEach(input=>input.addEventListener('input',()=>draftBlocks[Number(input.dataset.index)].alt=input.value));box.querySelectorAll('.blockSource').forEach(input=>input.addEventListener('change',()=>{const block=draftBlocks[Number(input.dataset.index)];block.source_type=input.value;block.url='';block.key='';block.filename='';block.mime_type='';renderBlocks()}));box.querySelectorAll('.moveUp').forEach(button=>button.addEventListener('click',()=>moveBlock(Number(button.dataset.index),-1)));box.querySelectorAll('.moveDown').forEach(button=>button.addEventListener('click',()=>moveBlock(Number(button.dataset.index),1)));box.querySelectorAll('.removeBlock').forEach(button=>button.addEventListener('click',()=>removeBlock(Number(button.dataset.index))));box.querySelectorAll('.uploadMedia').forEach(button=>button.addEventListener('click',()=>{const input=$('mediaFile'+button.dataset.index);input.onchange=()=>uploadBlockMedia(Number(button.dataset.index),input.files?.[0]);input.click()}))}
+
+async function uploadBlockMedia(index,file){if(!file)return;setMsg('campaignMsg','UPLOADING '+file.name);try{const form=new FormData();form.append('file',file);form.append('folder','crm-email-media');const response=await fetch(API+'/media/upload',{method:'POST',headers:{'X-Admin-Key':ADMIN_KEY,'Accept':'application/json'},body:form});let data={};try{data=await response.json()}catch{}if(!response.ok||data.success===false)throw new Error(data.error||'Upload failed');draftBlocks[index].source_type='upload';draftBlocks[index].url=data.url||'';draftBlocks[index].key=data.key||'';draftBlocks[index].filename=data.name||file.name;draftBlocks[index].mime_type=data.type||file.type;setMsg('campaignMsg','UPLOAD READY','ok');renderBlocks()}catch(error){setMsg('campaignMsg',error.message,'bad')}}
+
+function campaignBody(){const audienceType=$('eAudienceType').value;const audience=audienceType==='tag'?{tag:$('eAudienceValue').value.trim()}:audienceType==='source'?{source:$('eAudienceValue').value.trim()}:{};return{name:$('eName').value.trim(),subject:$('eSubject').value.trim(),preview_text:$('ePreview').value.trim(),audience_type:audienceType,audience,blocks:draftBlocks}}
+
+$('saveCampaign').addEventListener('click',async()=>{const body=campaignBody();if(!body.name||!body.subject||!body.blocks.length){setMsg('campaignMsg','ADD A NAME, SUBJECT AND AT LEAST ONE CONTENT BLOCK','bad');return}setMsg('campaignMsg','SAVING CAMPAIGN');try{const result=activeCampaign?await api('/crm/campaigns/'+activeCampaign.id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}):await api('/crm/campaigns',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});activeCampaign=result.data;setMsg('campaignMsg','CAMPAIGN SAVED','ok');await loadCampaigns();await openCampaign(activeCampaign.id)}catch(error){setMsg('campaignMsg',error.message,'bad')}});
+
+$('startCampaign').addEventListener('click',async()=>{if(!activeCampaign){setMsg('campaignMsg','SAVE THE CAMPAIGN FIRST','bad');return}if(activeCampaign.status!=='draft'){setMsg('campaignMsg','ONLY A DRAFT CAMPAIGN CAN BE STARTED','bad');return}if(!confirm('Start this campaign and begin sending to the selected audience?'))return;setMsg('campaignMsg','STARTING CAMPAIGN');try{const result=await api('/crm/campaigns/'+activeCampaign.id+'/start',{method:'POST'});setMsg('campaignMsg','CAMPAIGN STARTED. '+(result.data?.sent_now||0)+' EMAILS SENT IN THIS BATCH.','ok');await loadCampaigns();await openCampaign(activeCampaign.id);await loadOverview()}catch(error){setMsg('campaignMsg',error.message,'bad')}});
+
+$('sendNextBatch').addEventListener('click',async()=>{if(!activeCampaign){setMsg('campaignMsg','OPEN A CAMPAIGN FIRST','bad');return}setMsg('campaignMsg','SENDING NEXT BATCH');try{const result=await api('/crm/campaigns/'+activeCampaign.id+'/send-next',{method:'POST'});setMsg('campaignMsg',(result.data?.sent_now||0)+' EMAILS SENT. '+(result.data?.remaining_today||0)+' REMAIN TODAY.','ok');await loadCampaigns();await openCampaign(activeCampaign.id);await loadOverview()}catch(error){setMsg('campaignMsg',error.message,'bad')}});
+
+if(ADMIN_KEY){$('login').classList.add('hide');refreshEverything()}else{$('login').classList.remove('hide')}
+clearContact();clearCampaign();
+</script>
+</body>
+</html>
