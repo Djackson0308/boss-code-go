@@ -2797,6 +2797,131 @@ line-height:1.5;
 display:block;
 }
 
+#support-screen .support-shirt-claim{
+display:none;
+margin-top:18px;
+border:2px solid #f5c518;
+border-radius:18px;
+background:#090909;
+padding:18px;
+}
+
+#support-screen .support-shirt-claim.show{
+display:block;
+}
+
+#support-screen .support-shirt-claim-kicker{
+display:block;
+color:#f5c518;
+font-size:9px;
+font-weight:900;
+letter-spacing:.14em;
+}
+
+#support-screen .support-shirt-claim h3{
+margin:7px 0 0;
+color:#fff;
+font-size:24px;
+line-height:1.05;
+}
+
+#support-screen .support-shirt-claim-copy{
+margin:10px 0 0;
+color:#aaa;
+font-size:12px;
+line-height:1.55;
+}
+
+#support-screen .support-shirt-claim-black{
+margin-top:12px;
+padding:11px 13px;
+border:1px solid #2d2d2d;
+border-radius:12px;
+background:#000;
+color:#fff;
+font-size:11px;
+font-weight:900;
+letter-spacing:.08em;
+}
+
+#support-screen .support-shirt-claim-grid{
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:12px;
+margin-top:16px;
+}
+
+#support-screen .support-shirt-claim-grid .support-field{
+margin:0;
+}
+
+#support-screen .support-shirt-claim .support-field.full{
+grid-column:1 / -1;
+}
+
+#support-screen .support-shirt-claim select{
+width:100%;
+border:1px solid #333;
+border-radius:12px;
+background:#050505;
+color:#fff;
+padding:13px 14px;
+font:inherit;
+}
+
+#support-screen .support-shirt-special{
+display:none;
+}
+
+#support-screen .support-shirt-special.show{
+display:block;
+}
+
+#support-screen .support-shirt-claim-submit{
+width:100%;
+margin-top:16px;
+border:2px solid #f5c518;
+border-radius:999px;
+background:#f5c518;
+color:#000;
+font:inherit;
+font-weight:900;
+letter-spacing:.08em;
+padding:15px 20px;
+cursor:pointer;
+}
+
+#support-screen .support-shirt-claim-submit:disabled{
+opacity:.65;
+cursor:wait;
+}
+
+#support-screen .support-shirt-claim-status{
+min-height:18px;
+margin-top:12px;
+color:#aaa;
+font-size:11px;
+font-weight:800;
+line-height:1.45;
+}
+
+#support-screen .support-shirt-claim-status.error{
+color:#ff6b6b;
+}
+
+#support-screen .support-shirt-claim-status.success{
+color:#f5c518;
+}
+
+@media(max-width:620px){
+#support-screen .support-shirt-claim-grid{
+grid-template-columns:1fr;
+}
+#support-screen .support-shirt-claim .support-field.full{
+grid-column:auto;
+}
+}
+
 #support-screen .support-submit{
 width:100%;
 border:0;
@@ -3109,6 +3234,143 @@ aria-live="polite"
 ></div>
 
 
+<section
+id="support-shirt-claim"
+class="support-shirt-claim"
+>
+
+<span class="support-shirt-claim-kicker">
+$50 SUPPORTER REWARD
+</span>
+
+<h3>
+CLAIM YOUR SUPPORTER SHIRT
+</h3>
+
+<p class="support-shirt-claim-copy">
+Your black B.O.S.S CODE supporter shirt is included with your confirmed support payment of $50 or more. Choose your size and tell us where to ship it.
+</p>
+
+<div class="support-shirt-claim-black">
+SHIRT COLOR: BLACK
+</div>
+
+<div class="support-shirt-claim-grid">
+
+<div class="support-field">
+<label for="support-shirt-size">SIZE</label>
+<select id="support-shirt-size">
+<option value="">Choose size</option>
+<option value="S">S</option>
+<option value="M">M</option>
+<option value="L">L</option>
+<option value="XL">XL</option>
+<option value="2XL">2XL</option>
+<option value="SPECIAL">SPECIAL SIZE REQUEST</option>
+</select>
+</div>
+
+<div
+id="support-shirt-special-field"
+class="support-field support-shirt-special"
+>
+<label for="support-shirt-special-size">SPECIAL SIZE</label>
+<input
+id="support-shirt-special-size"
+type="text"
+placeholder="Tell us the size you need"
+>
+</div>
+
+<div class="support-field full">
+<label for="support-shirt-shipping-name">SHIPPING NAME</label>
+<input
+id="support-shirt-shipping-name"
+type="text"
+autocomplete="name"
+placeholder="Name for delivery"
+>
+</div>
+
+<div class="support-field full">
+<label for="support-shirt-address1">ADDRESS</label>
+<input
+id="support-shirt-address1"
+type="text"
+autocomplete="address-line1"
+placeholder="Street address"
+>
+</div>
+
+<div class="support-field full">
+<label for="support-shirt-address2">ADDRESS 2</label>
+<input
+id="support-shirt-address2"
+type="text"
+autocomplete="address-line2"
+placeholder="Apartment, suite or unit if needed"
+>
+</div>
+
+<div class="support-field">
+<label for="support-shirt-city">CITY</label>
+<input
+id="support-shirt-city"
+type="text"
+autocomplete="address-level2"
+placeholder="City"
+>
+</div>
+
+<div class="support-field">
+<label for="support-shirt-state">STATE OR REGION</label>
+<input
+id="support-shirt-state"
+type="text"
+autocomplete="address-level1"
+placeholder="State"
+>
+</div>
+
+<div class="support-field">
+<label for="support-shirt-postal">ZIP OR POSTAL CODE</label>
+<input
+id="support-shirt-postal"
+type="text"
+autocomplete="postal-code"
+placeholder="ZIP code"
+>
+</div>
+
+<div class="support-field">
+<label for="support-shirt-country">COUNTRY</label>
+<input
+id="support-shirt-country"
+type="text"
+autocomplete="country-name"
+value="United States"
+>
+</div>
+
+</div>
+
+<button
+id="support-shirt-claim-submit"
+class="support-shirt-claim-submit"
+type="button"
+>
+SUBMIT SHIRT CLAIM
+</button>
+
+<div
+id="support-shirt-claim-status"
+class="support-shirt-claim-status"
+aria-live="polite"
+></div>
+
+</section>
+
+
 <p class="support-payment-note">
 Secure payment is completed through Stripe. Support is separate from course purchases and does not unlock paid courses.
 </p>
@@ -3186,6 +3448,23 @@ on(
 'click',
 submitSupportIntent
 );
+
+
+on(
+'support-shirt-size',
+'change',
+updateSupportShirtSpecialSize
+);
+
+
+on(
+'support-shirt-claim-submit',
+'click',
+submitSupportShirtClaim
+);
+
+
+restorePendingSupportShirtClaim();
 
 
 return screen;
@@ -3303,6 +3582,417 @@ shirt.classList.toggle(
 'show',
 selectedSupportAmountCents>=5000
 );
+
+}
+
+
+function updateSupportShirtSpecialSize(){
+
+const size =
+String(
+$('support-shirt-size')
+?.value||
+''
+).toUpperCase();
+
+const field =
+$('support-shirt-special-field');
+
+if(field)
+field.classList.toggle(
+'show',
+size===
+'SPECIAL'
+);
+
+}
+
+
+function pendingSupportCheckout(){
+
+try{
+
+return JSON.parse(
+sessionStorage.getItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+)||
+'null'
+);
+
+}catch{
+
+return null;
+
+}
+
+}
+
+
+function showSupportShirtClaim(
+pending = null
+){
+
+const data =
+pending||
+pendingSupportCheckout();
+
+const panel =
+$('support-shirt-claim');
+
+if(
+!panel||
+!data?.stripe_session_id
+)
+return;
+
+panel.classList.add(
+'show'
+);
+
+const shippingName =
+$('support-shirt-shipping-name');
+
+if(
+shippingName&&
+!shippingName.value
+)
+shippingName.value=
+String(
+data.name||
+$('support-name')?.value||
+''
+).trim();
+
+updateSupportShirtSpecialSize();
+
+setTimeout(
+()=>panel.scrollIntoView({
+behavior:'smooth',
+block:'start'
+}),
+80
+);
+
+}
+
+
+function hideSupportShirtClaim(){
+
+const panel =
+$('support-shirt-claim');
+
+if(panel)
+panel.classList.remove(
+'show'
+);
+
+}
+
+
+function setSupportShirtClaimStatus(
+message,
+type=''
+){
+
+const status =
+$('support-shirt-claim-status');
+
+if(!status)
+return;
+
+status.className=
+`support-shirt-claim-status ${type}`
+.trim();
+
+status.textContent=
+message||
+'';
+
+}
+
+
+function restorePendingSupportShirtClaim(){
+
+const pending =
+pendingSupportCheckout();
+
+if(
+!pending||
+!pending.stripe_session_id||
+!pending.shirt_reward_eligible||
+!pending.payment_confirmed
+)
+return;
+
+showSupportShirtClaim(
+pending
+);
+
+}
+
+
+async function submitSupportShirtClaim(){
+
+const pending =
+pendingSupportCheckout();
+
+if(
+!pending?.stripe_session_id
+){
+
+setSupportShirtClaimStatus(
+'YOUR VERIFIED SUPPORT PAYMENT COULD NOT BE FOUND. PLEASE CONTACT B.O.S.S CODE MEDIA.',
+'error'
+);
+
+return;
+
+}
+
+const size =
+String(
+$('support-shirt-size')
+?.value||
+''
+).toUpperCase();
+
+const specialSize =
+$('support-shirt-special-size')
+?.value
+.trim()||
+'';
+
+const shippingName =
+$('support-shirt-shipping-name')
+?.value
+.trim()||
+'';
+
+const addressLine1 =
+$('support-shirt-address1')
+?.value
+.trim()||
+'';
+
+const addressLine2 =
+$('support-shirt-address2')
+?.value
+.trim()||
+'';
+
+const city =
+$('support-shirt-city')
+?.value
+.trim()||
+'';
+
+const stateRegion =
+$('support-shirt-state')
+?.value
+.trim()||
+'';
+
+const postalCode =
+$('support-shirt-postal')
+?.value
+.trim()||
+'';
+
+const country =
+$('support-shirt-country')
+?.value
+.trim()||
+'United States';
+
+if(!size){
+
+setSupportShirtClaimStatus(
+'CHOOSE YOUR SHIRT SIZE.',
+'error'
+);
+
+return;
+
+}
+
+if(
+size===
+'SPECIAL'&&
+!specialSize
+){
+
+setSupportShirtClaimStatus(
+'ENTER THE SPECIAL SHIRT SIZE YOU NEED.',
+'error'
+);
+
+return;
+
+}
+
+if(
+!shippingName||
+!addressLine1||
+!city||
+!stateRegion||
+!postalCode||
+!country
+){
+
+setSupportShirtClaimStatus(
+'COMPLETE YOUR SHIPPING INFORMATION.',
+'error'
+);
+
+return;
+
+}
+
+const button =
+$('support-shirt-claim-submit');
+
+if(button){
+button.disabled=true;
+button.textContent=
+'SAVING SHIRT CLAIM...';
+}
+
+setSupportShirtClaimStatus(
+'SAVING YOUR SUPPORTER SHIRT...'
+);
+
+try{
+
+const response =
+await fetch(
+`${API}/support/shirt-claims`,
+{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+Accept:'application/json'
+},
+body:JSON.stringify({
+stripe_session_id:
+pending.stripe_session_id,
+size,
+special_size:
+specialSize,
+shipping_name:
+shippingName,
+address_line1:
+addressLine1,
+address_line2:
+addressLine2,
+city,
+state_region:
+stateRegion,
+postal_code:
+postalCode,
+country
+})
+}
+);
+
+let data={};
+
+try{
+data=await response.json();
+}catch{}
+
+if(
+!response.ok||
+data.success===false
+){
+
+if(
+data.already_claimed
+){
+
+setSupportShirtClaimStatus(
+'YOUR SUPPORTER SHIRT HAS ALREADY BEEN CLAIMED.',
+'success'
+);
+
+try{
+sessionStorage.removeItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+);
+}catch{}
+
+if(button){
+button.disabled=true;
+button.textContent=
+'SHIRT CLAIMED';
+}
+
+return;
+
+}
+
+throw Error(
+data.error||
+data.message||
+'Unable to save your supporter shirt claim.'
+);
+
+}
+
+setSupportShirtClaimStatus(
+'SHIRT CLAIM SAVED. YOUR BLACK B.O.S.S CODE SUPPORTER SHIRT IS NOW MARKED FOR FULFILLMENT.',
+'success'
+);
+
+trackAnalytics(
+'support_shirt_claimed',
+{
+section:'support',
+itemId:
+data.data?.id||
+'',
+itemTitle:
+'B.O.S.S CODE SUPPORTER SHIRT',
+detail:{
+size:
+data.data?.size||
+size,
+color:'black'
+}
+}
+);
+
+try{
+sessionStorage.removeItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+);
+}catch{}
+
+if(button){
+button.disabled=true;
+button.textContent=
+'SHIRT CLAIMED';
+}
+
+}catch(error){
+
+console.warn(
+'Support shirt claim error',
+error
+);
+
+setSupportShirtClaimStatus(
+error.message||
+'YOUR SHIRT CLAIM COULD NOT BE SAVED. PLEASE TRY AGAIN.',
+'error'
+);
+
+if(button){
+button.disabled=false;
+button.textContent=
+'SUBMIT SHIRT CLAIM';
+}
+
+}
 
 }
 
@@ -3534,6 +4224,10 @@ data.shirt_reward_eligible
 support_contribution_id:
 data.support_contribution_id||
 null,
+
+name,
+
+email,
 
 created_at:
 Date.now()
@@ -17155,9 +17849,42 @@ status.className=
 status.textContent=
 shirtEligible
 ?
-'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA. YOU QUALIFY FOR THE SUPPORTER SHIRT. FULFILLMENT DETAILS WILL BE COLLECTED SEPARATELY.'
+'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA. CLAIM YOUR BLACK SUPPORTER SHIRT BELOW.'
 :
 'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA.';
+
+}
+
+
+if(
+shirtEligible
+){
+
+const shirtPending = {
+...(pendingSupport||{}),
+type:'support',
+amount_cents:
+amountCents,
+shirt_reward_eligible:true,
+payment_confirmed:true,
+stripe_session_id:
+sessionId
+};
+
+try{
+
+sessionStorage.setItem(
+SUPPORT_PENDING_CHECKOUT_KEY,
+JSON.stringify(
+shirtPending
+)
+);
+
+}catch{}
+
+showSupportShirtClaim(
+shirtPending
+);
 
 }
 
@@ -17244,6 +17971,23 @@ button.textContent=
 }
 
 
+if(
+!(
+confirmed?.status ===
+'paid'&&
+(
+Number(
+confirmed.amount_cents||
+pendingSupport?.amount_cents||
+0
+)>=5000||
+Boolean(
+pendingSupport?.shirt_reward_eligible
+)
+)
+)
+){
+
 try{
 
 sessionStorage.removeItem(
@@ -17251,6 +17995,8 @@ SUPPORT_PENDING_CHECKOUT_KEY
 );
 
 }catch{}
+
+}
 
 
 clearClothingCheckoutReturnFromUrl();
