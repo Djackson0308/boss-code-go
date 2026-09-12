@@ -1,19332 +1,20146 @@
-const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
-
-const $=id=>document.getElementById(id);
-const q=(s,r=document)=>r.querySelector(s);
-const qa=(s,r=document)=>[...r.querySelectorAll(s)];
-const on=(id,ev,fn)=>{const e=$(id);if(e)e.addEventListener(ev,fn)};
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
-'&':'&amp;',
-'<':'&lt;',
-'>':'&gt;',
-'"':'&quot;',
-"'":'&#39;'
-}[c]));
-
-
-/* =========================================================
-   APP ANALYTICS + PROMOTIONAL ADS
-========================================================= */
-
-const ANALYTICS_VISITOR_KEY='boss-code-go-visitor-id-v1';
-const DEMOGRAPHICS_PROMPT_KEY='boss-code-go-demographics-prompted-v1';
-const DEMOGRAPHICS_PROFILE_KEY='boss-code-go-demographics-profile-v1';
-const SONG_QUALIFIED_SECONDS=15;
-
-function makeBossId(prefix='id'){
-try{
-if(globalThis.crypto?.randomUUID)return `${prefix}-${globalThis.crypto.randomUUID()}`;
-}catch{}
-return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
-}
-
-function visitorId(){
-let id='';
-try{id=localStorage.getItem(ANALYTICS_VISITOR_KEY)||'';}catch{}
-if(!id){
-id=makeBossId('visitor');
-try{localStorage.setItem(ANALYTICS_VISITOR_KEY,id);}catch{}
-}
-return id;
-}
-
-const BOSS_VISITOR_ID=visitorId();
-const BOSS_SESSION_ID=makeBossId('visit');
-
-const CRM_IDENTITY_KEY='boss-code-go-crm-identity-v1';
-let CRM_LAST_IDENTIFY_SIGNATURE='';
-
-function crmSavedIdentity(){
-let value={};
-try{
-value=JSON.parse(localStorage.getItem(CRM_IDENTITY_KEY)||'{}')||{};
-}catch{}
-return{
-email:String(value.email||'').trim().toLowerCase(),
-name:String(value.name||'').trim()
-};
-}
-
-function crmValidEmail(value){
-return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());
-}
-
-function crmRememberIdentity(email,name='',source='app'){
-const normalized=String(email||'').trim().toLowerCase();
-if(!crmValidEmail(normalized))return;
-const cleanName=String(name||'').trim();
-try{
-localStorage.setItem(
-CRM_IDENTITY_KEY,
-JSON.stringify({email:normalized,name:cleanName})
-);
-}catch{}
-
-const signature=[normalized,cleanName,source].join('|');
-if(signature===CRM_LAST_IDENTIFY_SIGNATURE)return;
-CRM_LAST_IDENTIFY_SIGNATURE=signature;
-
-fetch(`${API}/crm/identify`,{
-method:'POST',
-headers:{'Content-Type':'application/json','Accept':'application/json'},
-body:JSON.stringify({
-email:normalized,
-name:cleanName,
-source,
-visitor_id:BOSS_VISITOR_ID,
-session_id:BOSS_SESSION_ID
-}),
-keepalive:true
-}).catch(()=>{CRM_LAST_IDENTIFY_SIGNATURE='';});
-}
-
-function crmIdentifyFromVisibleFields(source='app'){
-const candidates=[
-['dm-course-purchase-email','dm-course-purchase-name','course_interest'],
-['dm-course-email','','decision_makers_login'],
-['clothing-checkout-email','clothing-checkout-name','clothing_checkout'],
-['support-email','support-name','support'],
-['contact-email','contact-name','contact_form'],
-['clothing-special-email','clothing-special-name','clothing_special_size']
-];
-for(const [emailId,nameId,itemSource] of candidates){
-const email=$(emailId)?.value||'';
-if(!crmValidEmail(email))continue;
-const name=nameId?($(nameId)?.value||''):'';
-crmRememberIdentity(email,name,itemSource||source);
-return;
-}
-}
-
-document.addEventListener('change',event=>{
-const input=event.target;
-if(!input?.id)return;
-if([
-'dm-course-purchase-email',
-'dm-course-email',
-'clothing-checkout-email',
-'support-email',
-'contact-email',
-'clothing-special-email'
-].includes(input.id)){
-crmIdentifyFromVisibleFields('field');
-}
-});
-
-document.addEventListener('click',()=>{
-crmIdentifyFromVisibleFields('click');
-},true);
-
-try{
-const rememberedDmEmail=localStorage.getItem('boss-code-dm-course-email-v1')||'';
-if(crmValidEmail(rememberedDmEmail)){
-const existing=crmSavedIdentity();
-if(!existing.email){
-localStorage.setItem(
-CRM_IDENTITY_KEY,
-JSON.stringify({email:rememberedDmEmail.toLowerCase(),name:''})
-);
-}
-}
-}catch{}
-
-function analyticsSectionFromScreen(screen){
-const id=screen?.id||'';
-return({
-'home-screen':'home',
-'boss-bite-screen':'boss-bite',
-'boss-code-tv-screen':'boss-code-tv',
-'decision-makers-screen':'decision-makers',
-'boss-checkin-screen':'boss-checkin',
-'music-screen':'music',
-'contact-screen':'contact',
-'support-screen':'support'
-})[id]||'';
-}
-
-function trackAnalytics(eventType,options={}){
-const identity=crmSavedIdentity();
-const payload={
-event_type:eventType,
-section:options.section||'',
-item_id:String(options.itemId??''),
-item_title:String(options.itemTitle??''),
-visitor_id:BOSS_VISITOR_ID,
-session_id:BOSS_SESSION_ID,
-contact_email:identity.email||'',
-contact_name:identity.name||''
-};
-
-if(options.valueNumeric!==undefined&&options.valueNumeric!==null){
-payload.value_numeric=options.valueNumeric;
-}
-
-if(options.detail!==undefined){
-payload.detail=options.detail;
-}
-
-fetch(`${API}/analytics/events`,{
-method:'POST',
-headers:{'Content-Type':'application/json','Accept':'application/json'},
-body:JSON.stringify(payload),
-keepalive:true
-}).catch(()=>{});
-}
-
-function trackPageOpen(section,title=''){
-if(!section)return;
-trackAnalytics('page_open',{
-section,
-itemTitle:title||section
-});
-}
-
-function currentAnalyticsSection(target){
-const screen=target?.closest?.('.screen')||q('.screen.active-screen');
-let section=analyticsSectionFromScreen(screen);
-
-if(!section&&target?.closest?.('.maplibregl-popup'))section='boss-bite';
-
-if(!section&&target?.closest?.('#boss-internal-web-screen')){
-
-const title=
-$('boss-internal-title')
-?.textContent
-?.toUpperCase()||
-'';
-
-if(
-title.includes(
-'MAGAZINE'
-)
-)
-section='magazine';
-
-else if(
-title.includes(
-'CLOTHING'
-)
-)
-section='the-code-clothing';
-
-else
-section='internal';
-
-}
-
-return section||'unknown';
-}
-
-
-// Broad button / link analytics.
-// Specific events below add deeper meaning.
-
-document.addEventListener(
-'click',
-event=>{
-
-const control=
-event.target.closest?.(
-'button,a'
-);
-
-if(!control)
-return;
-
-if(
-control.dataset.analyticsIgnore===
-'1'
-)
-return;
-
-
-const label=
-(
-control.dataset.analyticsTitle||
-control.getAttribute(
-'aria-label'
-)||
-control.textContent||
-control.getAttribute(
-'href'
-)||
-'BUTTON'
-)
-
-.replace(
-/\s+/g,
-' '
-)
-
-.trim()
-
-.slice(
-0,
-220
-);
-
-
-trackAnalytics(
-'button_click',
-{
-
-section:
-currentAnalyticsSection(
-control
-),
-
-itemId:
-control.id||
-control.dataset.restaurant||
-'',
-
-itemTitle:
-label
-
-}
-);
-
-},
-true
-);
-
-
-let promoAds=[];
-
-let promoAdsLoaded=false;
-
-const promoShownThisVisit=
-new Set();
-
-let activePromoContext=
-null;
-
-
-function applyPromoAds(rows){
-
-promoAds=
-(
-rows||
-[]
-)
-
-.filter(
-row=>
-Number(
-row.published
-)===
-1
-)
-
-.sort(
-(a,b)=>
-
-Number(
-b.priority||
-0
-)
--
-Number(
-a.priority||
-0
-)
-
-||
-
-Number(
-b.id||
-0
-)
--
-Number(
-a.id||
-0
-)
-
-);
-
-
-promoAdsLoaded=
-true;
-
-}
-
-
-function todayKey(){
-
-const d=
-new Date();
-
-
-return`${
-
-d.getFullYear()
-
-}-${
-String(
-d.getMonth()+
-1
-)
-.padStart(
-2,
-'0'
-)
-
-}-${
-String(
-d.getDate()
-)
-.padStart(
-2,
-'0'
-)
-}`;
-
-}
-
-
-function adFrequencyAllows(ad){
-
-const mode=
-String(
-ad.frequency_mode||
-'once_per_visit'
-)
-.toLowerCase();
-
-
-const id=
-String(
-ad.id||
-''
-);
-
-
-if(!id)
-return false;
-
-
-if(
-mode===
-'every_time'
-)
-return true;
-
-
-if(
-mode===
-'once_per_day'
-){
-
-try{
-
-return localStorage.getItem(
-`boss-code-ad-day-${id}`
-)!==
-todayKey();
-
-}catch{
-
-return true;
-
-}
-
-}
-
-
-return !promoShownThisVisit.has(
-id
-);
-
-}
-
-
-function markAdShown(ad){
-
-const mode=
-String(
-ad.frequency_mode||
-'once_per_visit'
-)
-.toLowerCase();
-
-
-const id=
-String(
-ad.id||
-''
-);
+    const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
+
+    const $=id=>document.getElementById(id);
+    const q=(s,r=document)=>r.querySelector(s);
+    const qa=(s,r=document)=>[...r.querySelectorAll(s)];
+    const on=(id,ev,fn)=>{const e=$(id);if(e)e.addEventListener(ev,fn)};
+    const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+    }[c]));
+
+
+    /* =========================================================
+       APP ANALYTICS + PROMOTIONAL ADS
+    ========================================================= */
+
+    const ANALYTICS_VISITOR_KEY='boss-code-go-visitor-id-v1';
+    const DEMOGRAPHICS_PROMPT_KEY='boss-code-go-demographics-prompted-v1';
+    const DEMOGRAPHICS_PROFILE_KEY='boss-code-go-demographics-profile-v1';
+    const SONG_QUALIFIED_SECONDS=15;
+
+    function makeBossId(prefix='id'){
+    try{
+    if(globalThis.crypto?.randomUUID)return `${prefix}-${globalThis.crypto.randomUUID()}`;
+    }catch{}
+    return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function visitorId(){
+    let id='';
+    try{id=localStorage.getItem(ANALYTICS_VISITOR_KEY)||'';}catch{}
+    if(!id){
+    id=makeBossId('visitor');
+    try{localStorage.setItem(ANALYTICS_VISITOR_KEY,id);}catch{}
+    }
+    return id;
+    }
+
+    const BOSS_VISITOR_ID=visitorId();
+    const BOSS_SESSION_ID=makeBossId('visit');
+
+    const CRM_IDENTITY_KEY='boss-code-go-crm-identity-v1';
+    let CRM_LAST_IDENTIFY_SIGNATURE='';
+
+    function crmSavedIdentity(){
+    let value={};
+    try{
+    value=JSON.parse(localStorage.getItem(CRM_IDENTITY_KEY)||'{}')||{};
+    }catch{}
+    return{
+    email:String(value.email||'').trim().toLowerCase(),
+    name:String(value.name||'').trim()
+    };
+    }
+
+    function crmValidEmail(value){
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value||'').trim());
+    }
+
+    function crmRememberIdentity(email,name='',source='app'){
+    const normalized=String(email||'').trim().toLowerCase();
+    if(!crmValidEmail(normalized))return;
+    const cleanName=String(name||'').trim();
+    try{
+    localStorage.setItem(
+    CRM_IDENTITY_KEY,
+    JSON.stringify({email:normalized,name:cleanName})
+    );
+    }catch{}
+
+    const signature=[normalized,cleanName,source].join('|');
+    if(signature===CRM_LAST_IDENTIFY_SIGNATURE)return;
+    CRM_LAST_IDENTIFY_SIGNATURE=signature;
+
+    fetch(`${API}/crm/identify`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify({
+    email:normalized,
+    name:cleanName,
+    source,
+    visitor_id:BOSS_VISITOR_ID,
+    session_id:BOSS_SESSION_ID
+    }),
+    keepalive:true
+    }).catch(()=>{CRM_LAST_IDENTIFY_SIGNATURE='';});
+    }
+
+    function crmIdentifyFromVisibleFields(source='app'){
+    const candidates=[
+    ['dm-course-purchase-email','dm-course-purchase-name','course_interest'],
+    ['dm-course-email','','decision_makers_login'],
+    ['clothing-checkout-email','clothing-checkout-name','clothing_checkout'],
+    ['support-email','support-name','support'],
+    ['contact-email','contact-name','contact_form'],
+    ['clothing-special-email','clothing-special-name','clothing_special_size']
+    ];
+    for(const [emailId,nameId,itemSource] of candidates){
+    const email=$(emailId)?.value||'';
+    if(!crmValidEmail(email))continue;
+    const name=nameId?($(nameId)?.value||''):'';
+    crmRememberIdentity(email,name,itemSource||source);
+    return;
+    }
+    }
+
+    document.addEventListener('change',event=>{
+    const input=event.target;
+    if(!input?.id)return;
+    if([
+    'dm-course-purchase-email',
+    'dm-course-email',
+    'clothing-checkout-email',
+    'support-email',
+    'contact-email',
+    'clothing-special-email'
+    ].includes(input.id)){
+    crmIdentifyFromVisibleFields('field');
+    }
+    });
+
+    document.addEventListener('click',()=>{
+    crmIdentifyFromVisibleFields('click');
+    },true);
+
+    try{
+    const rememberedDmEmail=localStorage.getItem('boss-code-dm-course-email-v1')||'';
+    if(crmValidEmail(rememberedDmEmail)){
+    const existing=crmSavedIdentity();
+    if(!existing.email){
+    localStorage.setItem(
+    CRM_IDENTITY_KEY,
+    JSON.stringify({email:rememberedDmEmail.toLowerCase(),name:''})
+    );
+    }
+    }
+    }catch{}
+
+    function analyticsSectionFromScreen(screen){
+    const id=screen?.id||'';
+    return({
+    'home-screen':'home',
+    'boss-bite-screen':'boss-bite',
+    'boss-code-tv-screen':'boss-code-tv',
+    'decision-makers-screen':'decision-makers',
+    'boss-checkin-screen':'boss-checkin',
+    'music-screen':'music',
+    'contact-screen':'contact',
+    'support-screen':'support'
+    })[id]||'';
+    }
+
+    function trackAnalytics(eventType,options={}){
+    const identity=crmSavedIdentity();
+    const payload={
+    event_type:eventType,
+    section:options.section||'',
+    item_id:String(options.itemId??''),
+    item_title:String(options.itemTitle??''),
+    visitor_id:BOSS_VISITOR_ID,
+    session_id:BOSS_SESSION_ID,
+    contact_email:identity.email||'',
+    contact_name:identity.name||''
+    };
+
+    if(options.valueNumeric!==undefined&&options.valueNumeric!==null){
+    payload.value_numeric=options.valueNumeric;
+    }
+
+    if(options.detail!==undefined){
+    payload.detail=options.detail;
+    }
+
+    fetch(`${API}/analytics/events`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','Accept':'application/json'},
+    body:JSON.stringify(payload),
+    keepalive:true
+    }).catch(()=>{});
+    }
+
+    function trackPageOpen(section,title=''){
+    if(!section)return;
+    trackAnalytics('page_open',{
+    section,
+    itemTitle:title||section
+    });
+    }
+
+    function currentAnalyticsSection(target){
+    const screen=target?.closest?.('.screen')||q('.screen.active-screen');
+    let section=analyticsSectionFromScreen(screen);
+
+    if(!section&&target?.closest?.('.maplibregl-popup'))section='boss-bite';
+
+    if(!section&&target?.closest?.('#boss-internal-web-screen')){
+
+    const title=
+    $('boss-internal-title')
+    ?.textContent
+    ?.toUpperCase()||
+    '';
+
+    if(
+    title.includes(
+    'MAGAZINE'
+    )
+    )
+    section='magazine';
+
+    else if(
+    title.includes(
+    'CLOTHING'
+    )
+    )
+    section='the-code-clothing';
+
+    else
+    section='internal';
+
+    }
+
+    return section||'unknown';
+    }
+
+
+    // Broad button / link analytics.
+    // Specific events below add deeper meaning.
+
+    document.addEventListener(
+    'click',
+    event=>{
+
+    const control=
+    event.target.closest?.(
+    'button,a'
+    );
+
+    if(!control)
+    return;
+
+    if(
+    control.dataset.analyticsIgnore===
+    '1'
+    )
+    return;
+
+
+    const label=
+    (
+    control.dataset.analyticsTitle||
+    control.getAttribute(
+    'aria-label'
+    )||
+    control.textContent||
+    control.getAttribute(
+    'href'
+    )||
+    'BUTTON'
+    )
+
+    .replace(
+    /\s+/g,
+    ' '
+    )
+
+    .trim()
+
+    .slice(
+    0,
+    220
+    );
+
+
+    trackAnalytics(
+    'button_click',
+    {
+
+    section:
+    currentAnalyticsSection(
+    control
+    ),
+
+    itemId:
+    control.id||
+    control.dataset.restaurant||
+    '',
+
+    itemTitle:
+    label
+
+    }
+    );
+
+    },
+    true
+    );
+
+
+    let promoAds=[];
+
+    let promoAdsLoaded=false;
+
+    const promoShownThisVisit=
+    new Set();
+
+    let activePromoContext=
+    null;
+
+
+    function applyPromoAds(rows){
+
+    promoAds=
+    (
+    rows||
+    []
+    )
+
+    .filter(
+    row=>
+    Number(
+    row.published
+    )===
+    1
+    )
+
+    .sort(
+    (a,b)=>
+
+    Number(
+    b.priority||
+    0
+    )
+    -
+    Number(
+    a.priority||
+    0
+    )
+
+    ||
+
+    Number(
+    b.id||
+    0
+    )
+    -
+    Number(
+    a.id||
+    0
+    )
+
+    );
+
+
+    promoAdsLoaded=
+    true;
+
+    }
+
+
+    function todayKey(){
+
+    const d=
+    new Date();
+
+
+    return`${
+
+    d.getFullYear()
+
+    }-${
+    String(
+    d.getMonth()+
+    1
+    )
+    .padStart(
+    2,
+    '0'
+    )
+
+    }-${
+    String(
+    d.getDate()
+    )
+    .padStart(
+    2,
+    '0'
+    )
+    }`;
+
+    }
+
+
+    function adFrequencyAllows(ad){
+
+    const mode=
+    String(
+    ad.frequency_mode||
+    'once_per_visit'
+    )
+    .toLowerCase();
+
+
+    const id=
+    String(
+    ad.id||
+    ''
+    );
+
+
+    if(!id)
+    return false;
+
+
+    if(
+    mode===
+    'every_time'
+    )
+    return true;
+
+
+    if(
+    mode===
+    'once_per_day'
+    ){
+
+    try{
+
+    return localStorage.getItem(
+    `boss-code-ad-day-${id}`
+    )!==
+    todayKey();
+
+    }catch{
+
+    return true;
+
+    }
+
+    }
+
+
+    return !promoShownThisVisit.has(
+    id
+    );
+
+    }
+
+
+    function markAdShown(ad){
+
+    const mode=
+    String(
+    ad.frequency_mode||
+    'once_per_visit'
+    )
+    .toLowerCase();
+
+
+    const id=
+    String(
+    ad.id||
+    ''
+    );
 
 
-if(!id)
-return;
-
+    if(!id)
+    return;
+
 
-if(
-mode===
-'once_per_day'
-){
+    if(
+    mode===
+    'once_per_day'
+    ){
 
-try{
+    try{
 
-localStorage.setItem(
-`boss-code-ad-day-${id}`,
-todayKey()
-);
+    localStorage.setItem(
+    `boss-code-ad-day-${id}`,
+    todayKey()
+    );
 
-}catch{}
-
-}
-else if(
-mode!==
-'every_time'
-){
-
-promoShownThisVisit.add(
-id
-);
-
-}
-
-}
-
-
-function adMatchesSection(
-ad,
-section
-){
-
-const target=
-String(
-ad.target_section||
-'all'
-)
-.toLowerCase();
-
-
-return(
-target===
-'all'
-||
-target===
-section
-);
+    }catch{}
+
+    }
+    else if(
+    mode!==
+    'every_time'
+    ){
+
+    promoShownThisVisit.add(
+    id
+    );
+
+    }
+
+    }
+
+
+    function adMatchesSection(
+    ad,
+    section
+    ){
+
+    const target=
+    String(
+    ad.target_section||
+    'all'
+    )
+    .toLowerCase();
+
+
+    return(
+    target===
+    'all'
+    ||
+    target===
+    section
+    );
 
-}
+    }
 
 
-function activeAdForSection(
-section
-){
+    function activeAdForSection(
+    section
+    ){
 
-return promoAds.find(
-ad=>
-adMatchesSection(
-ad,
-section
-)
-&&
-adFrequencyAllows(
-ad
-)
-)
-||
-null;
+    return promoAds.find(
+    ad=>
+    adMatchesSection(
+    ad,
+    section
+    )
+    &&
+    adFrequencyAllows(
+    ad
+    )
+    )
+    ||
+    null;
 
-}
+    }
 
 
-function ensurePromoAdUI(){
+    function ensurePromoAdUI(){
 
-if(
-$('boss-promo-ad-overlay')
-)
-return;
+    if(
+    $('boss-promo-ad-overlay')
+    )
+    return;
 
 
-const overlay=
-document.createElement(
-'div'
-);
+    const overlay=
+    document.createElement(
+    'div'
+    );
 
 
-overlay.id=
-'boss-promo-ad-overlay';
+    overlay.id=
+    'boss-promo-ad-overlay';
 
-overlay.className=
-'boss-promo-ad-overlay';
+    overlay.className=
+    'boss-promo-ad-overlay';
 
-overlay.setAttribute(
-'aria-hidden',
-'true'
-);
+    overlay.setAttribute(
+    'aria-hidden',
+    'true'
+    );
 
 
-overlay.innerHTML=`
+    overlay.innerHTML=`
 
-<div
-class="boss-promo-ad-card"
-role="dialog"
-aria-modal="true"
-aria-label="Sponsored message"
->
+    <div
+    class="boss-promo-ad-card"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Sponsored message"
+    >
 
-<button
-id="boss-promo-ad-close"
-class="boss-promo-ad-close"
-type="button"
-aria-label="Close ad"
-data-analytics-ignore="1"
->
-×
-</button>
+    <button
+    id="boss-promo-ad-close"
+    class="boss-promo-ad-close"
+    type="button"
+    aria-label="Close ad"
+    data-analytics-ignore="1"
+    >
+    ×
+    </button>
 
-<div class="boss-promo-ad-sponsored">
-SPONSORED
-</div>
+    <div class="boss-promo-ad-sponsored">
+    SPONSORED
+    </div>
 
-<div
-id="boss-promo-ad-media"
-class="boss-promo-ad-media"
-></div>
+    <div
+    id="boss-promo-ad-media"
+    class="boss-promo-ad-media"
+    ></div>
 
-<div class="boss-promo-ad-copy">
+    <div class="boss-promo-ad-copy">
 
-<h2 id="boss-promo-ad-headline"></h2>
+    <h2 id="boss-promo-ad-headline"></h2>
 
-<p id="boss-promo-ad-description"></p>
+    <p id="boss-promo-ad-description"></p>
 
-<button
-id="boss-promo-ad-cta"
-class="boss-promo-ad-cta"
-type="button"
-data-analytics-ignore="1"
->
-LEARN MORE
-</button>
+    <button
+    id="boss-promo-ad-cta"
+    class="boss-promo-ad-cta"
+    type="button"
+    data-analytics-ignore="1"
+    >
+    LEARN MORE
+    </button>
 
-</div>
+    </div>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-document.body.appendChild(
-overlay
-);
+    document.body.appendChild(
+    overlay
+    );
 
 
-on(
-'boss-promo-ad-close',
-'click',
-()=>finishPromoAd(false)
-);
+    on(
+    'boss-promo-ad-close',
+    'click',
+    ()=>finishPromoAd(false)
+    );
 
 
-on(
-'boss-promo-ad-cta',
-'click',
-()=>finishPromoAd(true)
-);
+    on(
+    'boss-promo-ad-cta',
+    'click',
+    ()=>finishPromoAd(true)
+    );
 
-}
+    }
 
 
-async function refreshPromoAdsForSection(
-section
-){
+    async function refreshPromoAdsForSection(
+    section
+    ){
 
-try{
+    try{
 
-const rows=
-await Promise.race([
+    const rows=
+    await Promise.race([
 
-api(
-'/promo-ads'
-),
+    api(
+    '/promo-ads'
+    ),
 
-new Promise(
-resolve=>
-setTimeout(
-()=>resolve(null),
-1200
-)
-)
+    new Promise(
+    resolve=>
+    setTimeout(
+    ()=>resolve(null),
+    1200
+    )
+    )
 
-]);
+    ]);
 
 
-if(
-rows===
-null
-)
-return;
+    if(
+    rows===
+    null
+    )
+    return;
 
 
-if(
-Array.isArray(
-rows
-)
-)
-applyPromoAds(
-rows
-);
+    if(
+    Array.isArray(
+    rows
+    )
+    )
+    applyPromoAds(
+    rows
+    );
 
-}catch{}
+    }catch{}
 
-}
+    }
 
 
-async function openWithPromo(
-section,
-next
-){
+    async function openWithPromo(
+    section,
+    next
+    ){
 
-if(
-typeof next!==
-'function'
-)
-return;
+    if(
+    typeof next!==
+    'function'
+    )
+    return;
 
 
-if(
-!promoAdsLoaded
-){
+    if(
+    !promoAdsLoaded
+    ){
 
-await refreshPromoAdsForSection(
-section
-);
+    await refreshPromoAdsForSection(
+    section
+    );
 
-}
+    }
 
 
-const ad=
-activeAdForSection(
-section
-);
+    const ad=
+    activeAdForSection(
+    section
+    );
 
 
-if(!ad){
+    if(!ad){
 
-next();
+    next();
 
-return;
+    return;
 
-}
+    }
 
 
-ensurePromoAdUI();
+    ensurePromoAdUI();
 
-markAdShown(
-ad
-);
+    markAdShown(
+    ad
+    );
 
 
-activePromoContext={
+    activePromoContext={
 
-ad,
+    ad,
 
-section,
+    section,
 
-next
+    next
 
-};
+    };
 
 
-const media=
-$('boss-promo-ad-media');
+    const media=
+    $('boss-promo-ad-media');
 
-const headline=
-$('boss-promo-ad-headline');
+    const headline=
+    $('boss-promo-ad-headline');
 
-const description=
-$('boss-promo-ad-description');
+    const description=
+    $('boss-promo-ad-description');
 
-const cta=
-$('boss-promo-ad-cta');
+    const cta=
+    $('boss-promo-ad-cta');
 
-const overlay=
-$('boss-promo-ad-overlay');
+    const overlay=
+    $('boss-promo-ad-overlay');
 
 
-if(media){
+    if(media){
 
-const url=
-esc(
-ad.media_url||
-''
-);
+    const url=
+    esc(
+    ad.media_url||
+    ''
+    );
 
 
-if(
-String(
-ad.media_type||
-'image'
-)
-.toLowerCase()===
-'video'
-){
+    if(
+    String(
+    ad.media_type||
+    'image'
+    )
+    .toLowerCase()===
+    'video'
+    ){
 
-media.innerHTML=`
+    media.innerHTML=`
 
-<video
-src="${url}"
-autoplay
-muted
-controls
-playsinline
-preload="metadata"
-></video>
+    <video
+    src="${url}"
+    autoplay
+    muted
+    controls
+    playsinline
+    preload="metadata"
+    ></video>
 
-`;
+    `;
 
-}
-else{
+    }
+    else{
 
-media.innerHTML=`
+    media.innerHTML=`
 
-<img
-src="${url}"
-alt="${esc(
-ad.headline||
-ad.campaign_name||
-'Sponsored message'
-)}"
->
+    <img
+    src="${url}"
+    alt="${esc(
+    ad.headline||
+    ad.campaign_name||
+    'Sponsored message'
+    )}"
+    >
 
-`;
+    `;
 
-}
+    }
 
-}
+    }
 
 
-if(headline){
+    if(headline){
 
-headline.textContent=
-ad.headline||
-ad.campaign_name||
-'SPONSORED';
+    headline.textContent=
+    ad.headline||
+    ad.campaign_name||
+    'SPONSORED';
 
 
-headline.style.display=
-headline.textContent
-?
-'block'
-:
-'none';
+    headline.style.display=
+    headline.textContent
+    ?
+    'block'
+    :
+    'none';
 
-}
+    }
 
 
-if(description){
+    if(description){
 
-description.textContent=
-ad.description||
-'';
+    description.textContent=
+    ad.description||
+    '';
 
 
-description.style.display=
-ad.description
-?
-'block'
-:
-'none';
+    description.style.display=
+    ad.description
+    ?
+    'block'
+    :
+    'none';
 
-}
+    }
 
 
-if(cta){
+    if(cta){
 
-cta.textContent=
-ad.cta_text||
-'LEARN MORE';
+    cta.textContent=
+    ad.cta_text||
+    'LEARN MORE';
 
-}
+    }
 
 
-if(overlay){
+    if(overlay){
 
-overlay.classList.add(
-'open'
-);
+    overlay.classList.add(
+    'open'
+    );
 
-overlay.setAttribute(
-'aria-hidden',
-'false'
-);
+    overlay.setAttribute(
+    'aria-hidden',
+    'false'
+    );
 
-}
+    }
 
 
-document.body.style.overflow=
-'hidden';
+    document.body.style.overflow=
+    'hidden';
 
 
-trackAnalytics(
-'ad_impression',
-{
+    trackAnalytics(
+    'ad_impression',
+    {
 
-section,
+    section,
 
-itemId:
-ad.id,
+    itemId:
+    ad.id,
 
-itemTitle:
-ad.campaign_name||
-ad.headline||
-'PROMOTIONAL AD',
+    itemTitle:
+    ad.campaign_name||
+    ad.headline||
+    'PROMOTIONAL AD',
 
-detail:{
+    detail:{
 
-advertiser:
-ad.advertiser_name||
-'',
+    advertiser:
+    ad.advertiser_name||
+    '',
 
-media_type:
-ad.media_type||
-'image'
+    media_type:
+    ad.media_type||
+    'image'
 
-}
+    }
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-function finishPromoAd(
-clicked
-){
+    function finishPromoAd(
+    clicked
+    ){
 
-const context=
-activePromoContext;
+    const context=
+    activePromoContext;
 
 
-if(!context)
-return;
+    if(!context)
+    return;
 
 
-const{
-ad,
-section,
-next
-}=
-context;
+    const{
+    ad,
+    section,
+    next
+    }=
+    context;
 
 
-activePromoContext=
-null;
+    activePromoContext=
+    null;
 
 
-const overlay=
-$('boss-promo-ad-overlay');
+    const overlay=
+    $('boss-promo-ad-overlay');
 
-const media=
-$('boss-promo-ad-media');
+    const media=
+    $('boss-promo-ad-media');
 
 
-if(overlay){
+    if(overlay){
 
-overlay.classList.remove(
-'open'
-);
+    overlay.classList.remove(
+    'open'
+    );
 
-overlay.setAttribute(
-'aria-hidden',
-'true'
-);
+    overlay.setAttribute(
+    'aria-hidden',
+    'true'
+    );
 
-}
+    }
 
 
-if(media)
-media.innerHTML='';
+    if(media)
+    media.innerHTML='';
 
 
-document.body.style.overflow=
-'';
+    document.body.style.overflow=
+    '';
 
 
-if(clicked){
+    if(clicked){
 
-trackAnalytics(
-'ad_click',
-{
+    trackAnalytics(
+    'ad_click',
+    {
 
-section,
+    section,
 
-itemId:
-ad.id,
+    itemId:
+    ad.id,
 
-itemTitle:
-ad.campaign_name||
-ad.headline||
-'PROMOTIONAL AD',
+    itemTitle:
+    ad.campaign_name||
+    ad.headline||
+    'PROMOTIONAL AD',
 
-detail:{
+    detail:{
 
-advertiser:
-ad.advertiser_name||
-''
+    advertiser:
+    ad.advertiser_name||
+    ''
 
-}
+    }
 
-}
-);
+    }
+    );
 
 
-const link=
-String(
-ad.link_url||
-''
-)
-.trim();
+    const link=
+    String(
+    ad.link_url||
+    ''
+    )
+    .trim();
 
 
-if(link){
+    if(link){
 
-try{
+    try{
 
-window.open(
+    window.open(
 
-link,
+    link,
 
-'_blank',
+    '_blank',
 
-'noopener,noreferrer'
+    'noopener,noreferrer'
 
-);
+    );
 
-}catch{}
+    }catch{}
 
-}
+    }
 
-}
+    }
 
 
-next();
+    next();
 
-}
+    }
 
 
-function ensureDemographicsPrompt(){
+    function ensureDemographicsPrompt(){
 
-if(
-$('boss-demographics-overlay')
-)
-return;
+    if(
+    $('boss-demographics-overlay')
+    )
+    return;
 
 
-let prompted=
-false;
+    let prompted=
+    false;
 
 
-try{
+    try{
 
-prompted=
-localStorage.getItem(
-DEMOGRAPHICS_PROMPT_KEY
-)===
-'1';
+    prompted=
+    localStorage.getItem(
+    DEMOGRAPHICS_PROMPT_KEY
+    )===
+    '1';
 
-}catch{}
+    }catch{}
 
 
-if(prompted)
-return;
+    if(prompted)
+    return;
 
 
-const overlay=
-document.createElement(
-'div'
-);
+    const overlay=
+    document.createElement(
+    'div'
+    );
 
 
-overlay.id=
-'boss-demographics-overlay';
+    overlay.id=
+    'boss-demographics-overlay';
 
-overlay.className=
-'boss-demographics-overlay';
+    overlay.className=
+    'boss-demographics-overlay';
 
 
-overlay.innerHTML=`
+    overlay.innerHTML=`
 
-<div
-class="boss-demographics-card"
-role="dialog"
-aria-modal="true"
-aria-label="Optional audience information"
->
+    <div
+    class="boss-demographics-card"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Optional audience information"
+    >
 
-<span>
-OPTIONAL
-</span>
+    <span>
+    OPTIONAL
+    </span>
 
-<h2>
-HELP US UNDERSTAND OUR AUDIENCE
-</h2>
+    <h2>
+    HELP US UNDERSTAND OUR AUDIENCE
+    </h2>
 
-<p>
-This information is voluntary and is used only for aggregate B.O.S.S CODE GO analytics.
-</p>
+    <p>
+    This information is voluntary and is used only for aggregate B.O.S.S CODE GO analytics.
+    </p>
 
-<label>
-AGE RANGE
-</label>
+    <label>
+    AGE RANGE
+    </label>
 
-<select id="boss-demo-age">
+    <select id="boss-demo-age">
 
-<option value="">
-CHOOSE ONE
-</option>
+    <option value="">
+    CHOOSE ONE
+    </option>
 
-<option value="under-18">
-UNDER 18
-</option>
+    <option value="under-18">
+    UNDER 18
+    </option>
 
-<option value="18-24">
-18 TO 24
-</option>
+    <option value="18-24">
+    18 TO 24
+    </option>
 
-<option value="25-34">
-25 TO 34
-</option>
+    <option value="25-34">
+    25 TO 34
+    </option>
 
-<option value="35-44">
-35 TO 44
-</option>
+    <option value="35-44">
+    35 TO 44
+    </option>
 
-<option value="45-54">
-45 TO 54
-</option>
+    <option value="45-54">
+    45 TO 54
+    </option>
 
-<option value="55-64">
-55 TO 64
-</option>
+    <option value="55-64">
+    55 TO 64
+    </option>
 
-<option value="65+">
-65+
-</option>
+    <option value="65+">
+    65+
+    </option>
 
-<option value="prefer-not-to-say">
-PREFER NOT TO SAY
-</option>
+    <option value="prefer-not-to-say">
+    PREFER NOT TO SAY
+    </option>
 
-</select>
+    </select>
 
-<label>
-GENDER
-</label>
+    <label>
+    GENDER
+    </label>
 
-<select id="boss-demo-gender">
+    <select id="boss-demo-gender">
 
-<option value="">
-CHOOSE ONE
-</option>
+    <option value="">
+    CHOOSE ONE
+    </option>
 
-<option value="male">
-MALE
-</option>
+    <option value="male">
+    MALE
+    </option>
 
-<option value="female">
-FEMALE
-</option>
+    <option value="female">
+    FEMALE
+    </option>
 
-<option value="prefer-not-to-say">
-PREFER NOT TO SAY
-</option>
+    <option value="prefer-not-to-say">
+    PREFER NOT TO SAY
+    </option>
 
-</select>
+    </select>
 
 
-<div class="boss-demographics-actions">
+    <div class="boss-demographics-actions">
 
-<button
-id="boss-demo-save"
-type="button"
->
-SAVE OPTIONAL INFO
-</button>
+    <button
+    id="boss-demo-save"
+    type="button"
+    >
+    SAVE OPTIONAL INFO
+    </button>
 
-<button
-id="boss-demo-skip"
-type="button"
->
-SKIP
-</button>
+    <button
+    id="boss-demo-skip"
+    type="button"
+    >
+    SKIP
+    </button>
 
-</div>
+    </div>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-document.body.appendChild(
-overlay
-);
+    document.body.appendChild(
+    overlay
+    );
 
 
-on(
-'boss-demo-skip',
-'click',
-()=>closeDemographicsPrompt(
-true
-)
-);
+    on(
+    'boss-demo-skip',
+    'click',
+    ()=>closeDemographicsPrompt(
+    true
+    )
+    );
 
 
-on(
-'boss-demo-save',
-'click',
-saveDemographicsProfile
-);
+    on(
+    'boss-demo-save',
+    'click',
+    saveDemographicsProfile
+    );
 
-}
+    }
 
 
-function showDemographicsPromptIfAppropriate(){
+    function showDemographicsPromptIfAppropriate(){
 
-let prompted=
-false;
+    let prompted=
+    false;
 
 
-try{
+    try{
 
-prompted=
-localStorage.getItem(
-DEMOGRAPHICS_PROMPT_KEY
-)===
-'1';
+    prompted=
+    localStorage.getItem(
+    DEMOGRAPHICS_PROMPT_KEY
+    )===
+    '1';
 
-}catch{}
+    }catch{}
 
 
-if(prompted)
-return;
+    if(prompted)
+    return;
 
 
-if(
-!home?.classList.contains(
-'active-screen'
-)
-)
-return;
+    if(
+    !home?.classList.contains(
+    'active-screen'
+    )
+    )
+    return;
 
 
-if(
-$('daily-decision-modal')
-?.classList
-.contains(
-'open'
-)
-)
-return;
+    if(
+    $('daily-decision-modal')
+    ?.classList
+    .contains(
+    'open'
+    )
+    )
+    return;
 
 
-if(
-$('boss-promo-ad-overlay')
-?.classList
-.contains(
-'open'
-)
-)
-return;
+    if(
+    $('boss-promo-ad-overlay')
+    ?.classList
+    .contains(
+    'open'
+    )
+    )
+    return;
 
 
-ensureDemographicsPrompt();
+    ensureDemographicsPrompt();
 
 
-const overlay=
-$('boss-demographics-overlay');
+    const overlay=
+    $('boss-demographics-overlay');
 
 
-if(overlay){
+    if(overlay){
 
-overlay.classList.add(
-'open'
-);
+    overlay.classList.add(
+    'open'
+    );
 
-document.body.style.overflow=
-'hidden';
+    document.body.style.overflow=
+    'hidden';
 
-}
+    }
 
-}
+    }
 
 
-function closeDemographicsPrompt(
-markPrompted=true
-){
+    function closeDemographicsPrompt(
+    markPrompted=true
+    ){
 
-const overlay=
-$('boss-demographics-overlay');
+    const overlay=
+    $('boss-demographics-overlay');
 
 
-if(overlay)
-overlay.classList.remove(
-'open'
-);
+    if(overlay)
+    overlay.classList.remove(
+    'open'
+    );
 
 
-document.body.style.overflow=
-'';
+    document.body.style.overflow=
+    '';
 
 
-if(markPrompted){
+    if(markPrompted){
 
-try{
+    try{
 
-localStorage.setItem(
-DEMOGRAPHICS_PROMPT_KEY,
-'1'
-);
+    localStorage.setItem(
+    DEMOGRAPHICS_PROMPT_KEY,
+    '1'
+    );
 
-}catch{}
+    }catch{}
 
-}
+    }
 
-}
+    }
 
 
-async function saveDemographicsProfile(){
+    async function saveDemographicsProfile(){
 
-const age=
-$('boss-demo-age')
-?.value||
-'';
+    const age=
+    $('boss-demo-age')
+    ?.value||
+    '';
 
 
-const gender=
-$('boss-demo-gender')
-?.value||
-'';
+    const gender=
+    $('boss-demo-gender')
+    ?.value||
+    '';
 
 
-if(
-!age&&
-!gender
-)
-return;
+    if(
+    !age&&
+    !gender
+    )
+    return;
 
 
-try{
+    try{
 
-await fetch(
-`${API}/analytics/profile`,
-{
+    await fetch(
+    `${API}/analytics/profile`,
+    {
 
-method:
-'POST',
+    method:
+    'POST',
 
-headers:{
+    headers:{
 
-'Content-Type':
-'application/json',
+    'Content-Type':
+    'application/json',
 
-'Accept':
-'application/json'
+    'Accept':
+    'application/json'
 
-},
+    },
 
-body:
-JSON.stringify({
+    body:
+    JSON.stringify({
 
-visitor_id:
-BOSS_VISITOR_ID,
+    visitor_id:
+    BOSS_VISITOR_ID,
 
-age_range:
-age||
-'prefer-not-to-say',
+    age_range:
+    age||
+    'prefer-not-to-say',
 
-gender:
-gender||
-'prefer-not-to-say'
+    gender:
+    gender||
+    'prefer-not-to-say'
 
-})
+    })
 
-}
-);
+    }
+    );
 
 
-try{
+    try{
 
-localStorage.setItem(
+    localStorage.setItem(
 
-DEMOGRAPHICS_PROFILE_KEY,
+    DEMOGRAPHICS_PROFILE_KEY,
 
-JSON.stringify({
+    JSON.stringify({
 
-age_range:
-age,
+    age_range:
+    age,
 
-gender
+    gender
 
-})
+    })
 
-);
+    );
 
 
-localStorage.setItem(
-DEMOGRAPHICS_PROMPT_KEY,
-'1'
-);
+    localStorage.setItem(
+    DEMOGRAPHICS_PROMPT_KEY,
+    '1'
+    );
 
-}catch{}
+    }catch{}
 
 
-closeDemographicsPrompt(
-false
-);
+    closeDemographicsPrompt(
+    false
+    );
 
-}catch{}
+    }catch{}
 
-}
+    }
 
 
-/* =========================================================
-   B.O.S.S CODE GO SHARED UI UPGRADES
-========================================================= */
+    /* =========================================================
+       B.O.S.S CODE GO SHARED UI UPGRADES
+    ========================================================= */
 
-(function injectBossCodeGoStyles(){
+    (function injectBossCodeGoStyles(){
 
-if(
-document.getElementById(
-'boss-code-go-runtime-styles'
-)
-)
-return;
+    if(
+    document.getElementById(
+    'boss-code-go-runtime-styles'
+    )
+    )
+    return;
 
 
-const style=
-document.createElement(
-'style'
-);
+    const style=
+    document.createElement(
+    'style'
+    );
 
 
-style.id=
-'boss-code-go-runtime-styles';
+    style.id=
+    'boss-code-go-runtime-styles';
 
 
-style.textContent=`
+    style.textContent=`
 
-html{
-scrollbar-color:#F5C518 #111;
-scrollbar-width:thin
-}
+    html{
+    scrollbar-color:#F5C518 #111;
+    scrollbar-width:thin
+    }
 
-*{
-scrollbar-color:#F5C518 #111;
-scrollbar-width:thin
-}
+    *{
+    scrollbar-color:#F5C518 #111;
+    scrollbar-width:thin
+    }
 
-*::-webkit-scrollbar{
-width:10px;
-height:10px
-}
+    *::-webkit-scrollbar{
+    width:10px;
+    height:10px
+    }
 
-*::-webkit-scrollbar-track{
-background:#111
-}
+    *::-webkit-scrollbar-track{
+    background:#111
+    }
 
-*::-webkit-scrollbar-thumb{
-background:#F5C518;
-border-radius:999px;
-border:2px solid #111
-}
+    *::-webkit-scrollbar-thumb{
+    background:#F5C518;
+    border-radius:999px;
+    border:2px solid #111
+    }
 
-.boss-return-home-bottom{
-display:block;
-width:min(420px,88%);
-margin:42px auto 22px;
-border:2px solid #d40000;
-border-radius:999px;
-background:#090909;
-color:#fff;
-padding:14px 20px;
-font:inherit;
-font-weight:900;
-letter-spacing:.08em;
-cursor:pointer
-}
+    .boss-return-home-bottom{
+    display:block;
+    width:min(420px,88%);
+    margin:42px auto 22px;
+    border:2px solid #d40000;
+    border-radius:999px;
+    background:#090909;
+    color:#fff;
+    padding:14px 20px;
+    font:inherit;
+    font-weight:900;
+    letter-spacing:.08em;
+    cursor:pointer
+    }
 
-.boss-return-home-bottom:hover{
-background:#d40000
-}
+    .boss-return-home-bottom:hover{
+    background:#d40000
+    }
 
-.music-track{
-grid-template-columns:58px 54px minmax(0,1fr) auto 45px!important
-}
+    .music-track{
+    grid-template-columns:58px 54px minmax(0,1fr) auto 45px!important
+    }
 
-.track-cover{
-width:54px;
-height:54px;
-border-radius:10px;
-overflow:hidden;
-background:#111;
-border:1px solid #2a2a2a
-}
+    .track-cover{
+    width:54px;
+    height:54px;
+    border-radius:10px;
+    overflow:hidden;
+    background:#111;
+    border:1px solid #2a2a2a
+    }
 
-.track-cover img{
-width:100%;
-height:100%;
-object-fit:cover;
-display:block
-}
+    .track-cover img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block
+    }
 
-.artist-media-grid{
-display:grid;
-grid-template-columns:repeat(3,minmax(0,1fr));
-gap:14px
-}
+    .artist-media-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px
+    }
 
-.artist-media-card{
-border:1px solid #282828;
-border-radius:16px;
-background:#090909;
-overflow:hidden;
-color:#fff;
-padding:0;
-text-align:left;
-cursor:pointer
-}
+    .artist-media-card{
+    border:1px solid #282828;
+    border-radius:16px;
+    background:#090909;
+    overflow:hidden;
+    color:#fff;
+    padding:0;
+    text-align:left;
+    cursor:pointer
+    }
 
-.artist-media-card img{
-width:100%;
-aspect-ratio:1/1;
-object-fit:cover;
-display:block
-}
+    .artist-media-card img{
+    width:100%;
+    aspect-ratio:1/1;
+    object-fit:cover;
+    display:block
+    }
 
-.artist-media-card.video img{
-aspect-ratio:16/9
-}
+    .artist-media-card.video img{
+    aspect-ratio:16/9
+    }
 
-.artist-media-card-body{
-padding:12px
-}
+    .artist-media-card-body{
+    padding:12px
+    }
 
-.artist-media-card-body strong{
-display:block
-}
+    .artist-media-card-body strong{
+    display:block
+    }
 
-.artist-media-card-body span{
-display:block;
-color:#F5C518;
-font-size:9px;
-font-weight:900;
-margin-top:4px
-}
+    .artist-media-card-body span{
+    display:block;
+    color:#F5C518;
+    font-size:9px;
+    font-weight:900;
+    margin-top:4px
+    }
 
-.artist-media-empty{
-padding:20px;
-border:1px dashed #333;
-border-radius:14px;
-color:#777;
-text-align:center
-}
+    .artist-media-empty{
+    padding:20px;
+    border:1px dashed #333;
+    border-radius:14px;
+    color:#777;
+    text-align:center
+    }
 
-.artist-media-lightbox{
-position:fixed;
-inset:0;
-z-index:20000;
-background:rgba(0,0,0,.96);
-display:none;
-align-items:center;
-justify-content:center;
-padding:24px
-}
+    .artist-media-lightbox{
+    position:fixed;
+    inset:0;
+    z-index:20000;
+    background:rgba(0,0,0,.96);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:24px
+    }
 
-.artist-media-lightbox.open{
-display:flex
-}
+    .artist-media-lightbox.open{
+    display:flex
+    }
 
-.artist-media-lightbox img{
-max-width:92vw;
-max-height:86vh;
-object-fit:contain
-}
+    .artist-media-lightbox img{
+    max-width:92vw;
+    max-height:86vh;
+    object-fit:contain
+    }
 
-.artist-media-lightbox button,
-.resource-viewer-close{
-position:absolute;
-top:20px;
-right:22px;
-width:48px;
-height:48px;
-border-radius:50%;
-border:2px solid #d40000;
-background:#000;
-color:#fff;
-font-size:24px;
-cursor:pointer
-}
+    .artist-media-lightbox button,
+    .resource-viewer-close{
+    position:absolute;
+    top:20px;
+    right:22px;
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    border:2px solid #d40000;
+    background:#000;
+    color:#fff;
+    font-size:24px;
+    cursor:pointer
+    }
 
-.resource-viewer{
-position:fixed;
-inset:0;
-z-index:21000;
-background:#000;
-display:none;
-padding:72px 16px 16px
-}
+    .resource-viewer{
+    position:fixed;
+    inset:0;
+    z-index:21000;
+    background:#000;
+    display:none;
+    padding:72px 16px 16px
+    }
 
-.resource-viewer.open{
-display:block
-}
+    .resource-viewer.open{
+    display:block
+    }
 
-.resource-viewer iframe{
-width:100%;
-height:100%;
-border:1px solid #333;
-border-radius:14px;
-background:#fff
-}
+    .resource-viewer iframe{
+    width:100%;
+    height:100%;
+    border:1px solid #333;
+    border-radius:14px;
+    background:#fff
+    }
 
-.dm-resource-grid{
-display:grid;
-grid-template-columns:repeat(3,minmax(0,1fr));
-gap:16px
-}
+    .dm-resource-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px
+    }
 
-.dm-resource-card{
-background:#0b0b0b;
-border:1px solid #292929;
-border-radius:18px;
-overflow:hidden
-}
+    .dm-resource-card{
+    background:#0b0b0b;
+    border:1px solid #292929;
+    border-radius:18px;
+    overflow:hidden
+    }
 
-.dm-resource-card img{
-width:100%;
-aspect-ratio:3/4;
-object-fit:cover;
-display:block
-}
+    .dm-resource-card img{
+    width:100%;
+    aspect-ratio:3/4;
+    object-fit:cover;
+    display:block
+    }
 
-.dm-resource-body{
-padding:16px
-}
+    .dm-resource-body{
+    padding:16px
+    }
 
-.dm-resource-body span{
-color:#F5C518;
-font-size:9px;
-font-weight:900
-}
+    .dm-resource-body span{
+    color:#F5C518;
+    font-size:9px;
+    font-weight:900
+    }
 
-.dm-resource-body p{
-color:#999;
-line-height:1.5;
-margin:8px 0 14px
-}
+    .dm-resource-body p{
+    color:#999;
+    line-height:1.5;
+    margin:8px 0 14px
+    }
 
-.dm-resource-button{
-border:2px solid #F5C518;
-border-radius:999px;
-background:transparent;
-color:#F5C518;
-padding:10px 14px;
-font-weight:900;
-cursor:pointer
-}
+    .dm-resource-button{
+    border:2px solid #F5C518;
+    border-radius:999px;
+    background:transparent;
+    color:#F5C518;
+    padding:10px 14px;
+    font-weight:900;
+    cursor:pointer
+    }
 
-.dm-session-media{
-width:150px;
-flex:0 0 150px;
-background:#000;
-position:relative
-}
+    .dm-session-media{
+    width:150px;
+    flex:0 0 150px;
+    background:#000;
+    position:relative
+    }
 
-.dm-session-media img{
-width:100%;
-height:100%;
-min-height:150px;
-object-fit:cover;
-display:block
-}
+    .dm-session-media img{
+    width:100%;
+    height:100%;
+    min-height:150px;
+    object-fit:cover;
+    display:block
+    }
 
-.dm-session-media iframe{
-width:100%;
-height:100%;
-min-height:150px;
-border:0;
-display:block
-}
+    .dm-session-media iframe{
+    width:100%;
+    height:100%;
+    min-height:150px;
+    border:0;
+    display:block
+    }
 
-.dm-session-play{
-position:absolute;
-inset:0;
-border:0;
-background:rgba(0,0,0,.25);
-color:#fff;
-font-size:34px;
-cursor:pointer
-}
+    .dm-session-play{
+    position:absolute;
+    inset:0;
+    border:0;
+    background:rgba(0,0,0,.25);
+    color:#fff;
+    font-size:34px;
+    cursor:pointer
+    }
 
-.action-card-thumb{
-width:100%;
-aspect-ratio:16/9;
-object-fit:cover;
-border-radius:12px;
-margin-bottom:14px
-}
+    .action-card-thumb{
+    width:100%;
+    aspect-ratio:16/9;
+    object-fit:cover;
+    border-radius:12px;
+    margin-bottom:14px
+    }
 
-.boss-promo-ad-overlay,
-.boss-demographics-overlay{
-position:fixed;
-inset:0;
-z-index:30000;
-background:rgba(0,0,0,.94);
-display:none;
-align-items:center;
-justify-content:center;
-padding:20px
-}
+    .boss-promo-ad-overlay,
+    .boss-demographics-overlay{
+    position:fixed;
+    inset:0;
+    z-index:30000;
+    background:rgba(0,0,0,.94);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px
+    }
 
-.boss-promo-ad-overlay.open,
-.boss-demographics-overlay.open{
-display:flex
-}
+    .boss-promo-ad-overlay.open,
+    .boss-demographics-overlay.open{
+    display:flex
+    }
 
-.boss-promo-ad-card{
-position:relative;
-width:min(560px,100%);
-max-height:92vh;
-overflow:auto;
-background:#080808;
-border:1px solid #333;
-border-radius:22px;
-box-shadow:0 24px 70px rgba(0,0,0,.65)
-}
+    .boss-promo-ad-card{
+    position:relative;
+    width:min(560px,100%);
+    max-height:92vh;
+    overflow:auto;
+    background:#080808;
+    border:1px solid #333;
+    border-radius:22px;
+    box-shadow:0 24px 70px rgba(0,0,0,.65)
+    }
 
-.boss-promo-ad-close{
-position:absolute;
-z-index:3;
-top:12px;
-right:12px;
-width:42px;
-height:42px;
-border-radius:50%;
-border:2px solid #fff;
-background:rgba(0,0,0,.82);
-color:#fff;
-font-size:26px;
-line-height:1;
-cursor:pointer
-}
+    .boss-promo-ad-close{
+    position:absolute;
+    z-index:3;
+    top:12px;
+    right:12px;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:2px solid #fff;
+    background:rgba(0,0,0,.82);
+    color:#fff;
+    font-size:26px;
+    line-height:1;
+    cursor:pointer
+    }
 
-.boss-promo-ad-sponsored{
-position:absolute;
-z-index:2;
-top:16px;
-left:16px;
-background:#F5C518;
-color:#000;
-border-radius:999px;
-padding:7px 10px;
-font-size:9px;
-font-weight:900;
-letter-spacing:.12em
-}
+    .boss-promo-ad-sponsored{
+    position:absolute;
+    z-index:2;
+    top:16px;
+    left:16px;
+    background:#F5C518;
+    color:#000;
+    border-radius:999px;
+    padding:7px 10px;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.12em
+    }
 
-.boss-promo-ad-media{
-background:#000;
-min-height:180px
-}
+    .boss-promo-ad-media{
+    background:#000;
+    min-height:180px
+    }
 
-.boss-promo-ad-media img,
-.boss-promo-ad-media video{
-display:block;
-width:100%;
-max-height:56vh;
-object-fit:contain;
-background:#000
-}
+    .boss-promo-ad-media img,
+    .boss-promo-ad-media video{
+    display:block;
+    width:100%;
+    max-height:56vh;
+    object-fit:contain;
+    background:#000
+    }
 
-.boss-promo-ad-copy{
-padding:18px
-}
+    .boss-promo-ad-copy{
+    padding:18px
+    }
 
-.boss-promo-ad-copy h2{
-font-size:24px;
-line-height:1.1;
-margin:0 0 8px
-}
+    .boss-promo-ad-copy h2{
+    font-size:24px;
+    line-height:1.1;
+    margin:0 0 8px
+    }
 
-.boss-promo-ad-copy p{
-color:#aaa;
-line-height:1.5;
-margin:0 0 15px
-}
+    .boss-promo-ad-copy p{
+    color:#aaa;
+    line-height:1.5;
+    margin:0 0 15px
+    }
 
-.boss-promo-ad-cta{
-width:100%;
-border:0;
-border-radius:999px;
-background:#d40000;
-color:#fff;
-padding:14px;
-font:inherit;
-font-weight:900;
-cursor:pointer
-}
+    .boss-promo-ad-cta{
+    width:100%;
+    border:0;
+    border-radius:999px;
+    background:#d40000;
+    color:#fff;
+    padding:14px;
+    font:inherit;
+    font-weight:900;
+    cursor:pointer
+    }
 
-.boss-demographics-card{
-width:min(470px,100%);
-background:#090909;
-border:1px solid #333;
-border-radius:22px;
-padding:22px
-}
+    .boss-demographics-card{
+    width:min(470px,100%);
+    background:#090909;
+    border:1px solid #333;
+    border-radius:22px;
+    padding:22px
+    }
 
-.boss-demographics-card>span{
-color:#F5C518;
-font-size:9px;
-font-weight:900;
-letter-spacing:.14em
-}
+    .boss-demographics-card>span{
+    color:#F5C518;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.14em
+    }
 
-.boss-demographics-card h2{
-font-size:24px;
-margin:6px 0 8px
-}
+    .boss-demographics-card h2{
+    font-size:24px;
+    margin:6px 0 8px
+    }
 
-.boss-demographics-card p{
-color:#999;
-line-height:1.5;
-margin-bottom:16px
-}
+    .boss-demographics-card p{
+    color:#999;
+    line-height:1.5;
+    margin-bottom:16px
+    }
 
-.boss-demographics-card label{
-display:block;
-font-size:9px;
-font-weight:900;
-margin:12px 0 6px
-}
+    .boss-demographics-card label{
+    display:block;
+    font-size:9px;
+    font-weight:900;
+    margin:12px 0 6px
+    }
 
-.boss-demographics-card select{
-width:100%;
-min-height:46px;
-border:1px solid #333;
-border-radius:12px;
-background:#050505;
-color:#fff;
-padding:0 12px
-}
+    .boss-demographics-card select{
+    width:100%;
+    min-height:46px;
+    border:1px solid #333;
+    border-radius:12px;
+    background:#050505;
+    color:#fff;
+    padding:0 12px
+    }
 
-.boss-demographics-actions{
-display:flex;
-gap:10px;
-margin-top:16px
-}
+    .boss-demographics-actions{
+    display:flex;
+    gap:10px;
+    margin-top:16px
+    }
 
-.boss-demographics-actions button{
-flex:1;
-border-radius:999px;
-padding:12px;
-border:1px solid #333;
-background:#151515;
-color:#fff;
-font-weight:900;
-cursor:pointer
-}
+    .boss-demographics-actions button{
+    flex:1;
+    border-radius:999px;
+    padding:12px;
+    border:1px solid #333;
+    background:#151515;
+    color:#fff;
+    font-weight:900;
+    cursor:pointer
+    }
 
-#boss-demo-save{
-background:#d40000;
-border-color:#d40000
-}
+    #boss-demo-save{
+    background:#d40000;
+    border-color:#d40000
+    }
 
-.magazine-issue-grid{
-display:grid;
-grid-template-columns:repeat(3,minmax(0,1fr));
-gap:16px;
-padding:12px 0 24px
-}
+    .magazine-issue-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:16px;
+    padding:12px 0 24px
+    }
 
-.magazine-issue-card{
-display:block;
-border:1px solid #292929;
-border-radius:18px;
-background:#090909;
-color:#fff;
-overflow:hidden;
-text-align:left;
-cursor:pointer;
-padding:0
-}
+    .magazine-issue-card{
+    display:block;
+    border:1px solid #292929;
+    border-radius:18px;
+    background:#090909;
+    color:#fff;
+    overflow:hidden;
+    text-align:left;
+    cursor:pointer;
+    padding:0
+    }
 
-.magazine-issue-card img{
-width:100%;
-aspect-ratio:3/4;
-object-fit:cover;
-background:#111;
-display:block
-}
+    .magazine-issue-card img{
+    width:100%;
+    aspect-ratio:3/4;
+    object-fit:cover;
+    background:#111;
+    display:block
+    }
 
-.magazine-issue-card div{
-padding:14px
-}
+    .magazine-issue-card div{
+    padding:14px
+    }
 
-.magazine-issue-card small{
-display:block;
-color:#F5C518;
-font-weight:900;
-margin-bottom:5px
-}
+    .magazine-issue-card small{
+    display:block;
+    color:#F5C518;
+    font-weight:900;
+    margin-bottom:5px
+    }
 
-.magazine-issue-card strong{
-display:block;
-font-size:17px
-}
+    .magazine-issue-card strong{
+    display:block;
+    font-size:17px
+    }
 
-.magazine-issue-card p{
-color:#999;
-line-height:1.4;
-margin-top:7px
-}
+    .magazine-issue-card p{
+    color:#999;
+    line-height:1.4;
+    margin-top:7px
+    }
 
-@media(max-width:750px){
+    @media(max-width:750px){
 
-.music-track{
-grid-template-columns:34px 46px minmax(0,1fr) 36px!important
-}
+    .music-track{
+    grid-template-columns:34px 46px minmax(0,1fr) 36px!important
+    }
 
-.track-cover{
-width:46px;
-height:46px
-}
+    .track-cover{
+    width:46px;
+    height:46px
+    }
 
-.artist-media-grid,
-.dm-resource-grid,
-.magazine-issue-grid{
-display:flex;
-overflow-x:auto
-}
+    .artist-media-grid,
+    .dm-resource-grid,
+    .magazine-issue-grid{
+    display:flex;
+    overflow-x:auto
+    }
 
-.artist-media-card,
-.dm-resource-card,
-.magazine-issue-card{
-flex:0 0 76%
-}
+    .artist-media-card,
+    .dm-resource-card,
+    .magazine-issue-card{
+    flex:0 0 76%
+    }
 
-.dm-session-media{
-width:110px;
-flex-basis:110px
-}
+    .dm-session-media{
+    width:110px;
+    flex-basis:110px
+    }
 
-.boss-demographics-actions{
-flex-direction:column
-}
+    .boss-demographics-actions{
+    flex-direction:column
+    }
 
-}
+    }
 
-`;
+    `;
 
 
-document.head.appendChild(
-style
-);
+    document.head.appendChild(
+    style
+    );
 
-})();
+    })();
 
 
-/* =========================================================
-   SCREEN NAVIGATION
-========================================================= */
+    /* =========================================================
+       SCREEN NAVIGATION
+    ========================================================= */
 
-function showScreen(s){
+    function showScreen(s){
 
-if(!s)
-return;
+    if(!s)
+    return;
 
 
-qa(
-'.screen'
-)
-.forEach(
-x=>
-x.classList.remove(
-'active-screen'
-)
-);
+    qa(
+    '.screen'
+    )
+    .forEach(
+    x=>
+    x.classList.remove(
+    'active-screen'
+    )
+    );
 
 
-s.classList.add(
-'active-screen'
-);
+    s.classList.add(
+    'active-screen'
+    );
 
 
-ensureReturnHomeButtons();
+    ensureReturnHomeButtons();
 
 
-const section=
-analyticsSectionFromScreen(
-s
-);
+    const section=
+    analyticsSectionFromScreen(
+    s
+    );
 
 
-if(section)
-trackPageOpen(
-section
-);
+    if(section)
+    trackPageOpen(
+    section
+    );
 
 
-window.scrollTo({
+    window.scrollTo({
 
-top:0,
+    top:0,
 
-behavior:
-'smooth'
+    behavior:
+    'smooth'
 
-});
+    });
 
 
-if(
-s.id===
-'boss-bite-screen'
-&&
-bossBiteMap
-){
+    if(
+    s.id===
+    'boss-bite-screen'
+    &&
+    bossBiteMap
+    ){
 
-setTimeout(
+    setTimeout(
 
-()=>bossBiteMap.resize(),
+    ()=>bossBiteMap.resize(),
 
-250
+    250
 
-);
+    );
 
-}
+    }
 
 
-if(
-s.id===
-'boss-code-tv-screen'
-){
+    if(
+    s.id===
+    'boss-code-tv-screen'
+    ){
 
-renderLive();
+    renderLive();
 
-}
+    }
 
-}
+    }
 
 
-const home=
-$('home-screen');
+    const home=
+    $('home-screen');
 
-const bite=
-$('boss-bite-screen');
+    const bite=
+    $('boss-bite-screen');
 
-const tv=
-$('boss-code-tv-screen');
+    const tv=
+    $('boss-code-tv-screen');
 
-const dm=
-$('decision-makers-screen');
+    const dm=
+    $('decision-makers-screen');
 
-const check=
-$('boss-checkin-screen');
+    const check=
+    $('boss-checkin-screen');
 
-const music=
-$('music-screen');
+    const music=
+    $('music-screen');
 
 
-function ensureReturnHomeButtons(){
+    function ensureReturnHomeButtons(){
 
-const defs=[
+    const defs=[
 
-[
-'boss-bite-screen',
-'boss-bite-back'
-],
+    [
+    'boss-bite-screen',
+    'boss-bite-back'
+    ],
 
-[
-'boss-code-tv-screen',
-'boss-code-tv-back'
-],
+    [
+    'boss-code-tv-screen',
+    'boss-code-tv-back'
+    ],
 
-[
-'decision-makers-screen',
-'decision-makers-back'
-],
+    [
+    'decision-makers-screen',
+    'decision-makers-back'
+    ],
 
-[
-'boss-checkin-screen',
-'boss-checkin-back'
-],
+    [
+    'boss-checkin-screen',
+    'boss-checkin-back'
+    ],
 
-[
-'music-screen',
-'music-back'
-],
+    [
+    'music-screen',
+    'music-back'
+    ],
 
-[
-'contact-screen',
-'contact-back'
-],
+    [
+    'contact-screen',
+    'contact-back'
+    ],
 
-[
-'support-screen',
-'support-back'
-],
+    [
+    'support-screen',
+    'support-back'
+    ],
 
-[
-'the-code-clothing-screen',
-'the-code-clothing-back'
-]
+    [
+    'the-code-clothing-screen',
+    'the-code-clothing-back'
+    ]
 
-];
+    ];
 
 
-defs.forEach(
-([
-screenId,
-topId
-])=>{
+    defs.forEach(
+    ([
+    screenId,
+    topId
+    ])=>{
 
-const screen=
-$(screenId);
+    const screen=
+    $(screenId);
 
 
-if(!screen)
-return;
+    if(!screen)
+    return;
 
 
-const top=
-$(topId);
+    const top=
+    $(topId);
 
 
-if(top)
-top.textContent=
-'RETURN TO HOME';
+    if(top)
+    top.textContent=
+    'RETURN TO HOME';
 
 
-let b=
-screen.querySelector(
-'.boss-return-home-bottom'
-);
+    let b=
+    screen.querySelector(
+    '.boss-return-home-bottom'
+    );
 
 
-if(!b){
+    if(!b){
 
-b=
-document.createElement(
-'button'
-);
+    b=
+    document.createElement(
+    'button'
+    );
 
 
-b.type=
-'button';
+    b.type=
+    'button';
 
-b.className=
-'boss-return-home-bottom';
+    b.className=
+    'boss-return-home-bottom';
 
-b.textContent=
-'RETURN TO HOME';
+    b.textContent=
+    'RETURN TO HOME';
 
 
-b.addEventListener(
-'click',
-()=>{
+    b.addEventListener(
+    'click',
+    ()=>{
 
-if(
-screenId===
-'decision-makers-screen'
-)
-stopDM();
+    if(
+    screenId===
+    'decision-makers-screen'
+    )
+    stopDM();
 
 
-if(
-screenId===
-'music-screen'
-&&
-audio
-&&
-!audio.paused
-)
-audio.pause();
+    if(
+    screenId===
+    'music-screen'
+    &&
+    audio
+    &&
+    !audio.paused
+    )
+    audio.pause();
 
 
-showScreen(
-home
-);
+    showScreen(
+    home
+    );
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-const footer=
-screen.querySelector(
-'.boss-footer, .contact-footer'
-);
+    const footer=
+    screen.querySelector(
+    '.boss-footer, .contact-footer'
+    );
 
 
-if(footer){
+    if(footer){
 
-footer.insertAdjacentElement(
-'beforebegin',
-b
-);
+    footer.insertAdjacentElement(
+    'beforebegin',
+    b
+    );
 
-}
-else{
+    }
+    else{
 
-screen.appendChild(
-b
-);
+    screen.appendChild(
+    b
+    );
 
-}
+    }
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-/* =========================================================
-   CONTACT SCREEN
-========================================================= */
+    /* =========================================================
+       CONTACT SCREEN
+    ========================================================= */
 
-function ensureContactScreen(){
+    function ensureContactScreen(){
 
-let screen=
-$('contact-screen');
+    let screen=
+    $('contact-screen');
 
 
-if(screen)
-return screen;
+    if(screen)
+    return screen;
 
 
-if(
-!$('boss-code-contact-styles')
-){
+    if(
+    !$('boss-code-contact-styles')
+    ){
 
-const style=
-document.createElement(
-'style'
-);
+    const style=
+    document.createElement(
+    'style'
+    );
 
 
-style.id=
-'boss-code-contact-styles';
+    style.id=
+    'boss-code-contact-styles';
 
 
-style.textContent=`
+    style.textContent=`
 
-#contact-screen{
-background:#000;
-color:#fff;
-min-height:100vh;
-}
+    #contact-screen{
+    background:#000;
+    color:#fff;
+    min-height:100vh;
+    }
 
-#contact-screen .contact-wrap{
-width:min(920px,calc(100% - 32px));
-margin:0 auto;
-padding:24px 0 56px;
-}
+    #contact-screen .contact-wrap{
+    width:min(920px,calc(100% - 32px));
+    margin:0 auto;
+    padding:24px 0 56px;
+    }
 
-#contact-screen .contact-back{
-appearance:none;
-border:1px solid #333;
-background:#090909;
-color:#fff;
-font:inherit;
-font-weight:800;
-letter-spacing:.06em;
-padding:12px 18px;
-border-radius:999px;
-cursor:pointer;
-margin-bottom:28px;
-}
+    #contact-screen .contact-back{
+    appearance:none;
+    border:1px solid #333;
+    background:#090909;
+    color:#fff;
+    font:inherit;
+    font-weight:800;
+    letter-spacing:.06em;
+    padding:12px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    margin-bottom:28px;
+    }
 
-#contact-screen .contact-back:hover{
-border-color:#f5c518;
-color:#f5c518;
-}
+    #contact-screen .contact-back:hover{
+    border-color:#f5c518;
+    color:#f5c518;
+    }
 
-#contact-screen .contact-hero{
-text-align:center;
-margin:0 auto 24px;
-}
+    #contact-screen .contact-hero{
+    text-align:center;
+    margin:0 auto 24px;
+    }
 
-#contact-screen .contact-logo{
-width:min(230px,60vw);
-height:auto;
-margin:0 auto 18px;
-display:block;
-}
+    #contact-screen .contact-logo{
+    width:min(230px,60vw);
+    height:auto;
+    margin:0 auto 18px;
+    display:block;
+    }
 
-#contact-screen .contact-kicker{
-color:#f5c518;
-font-size:12px;
-font-weight:900;
-letter-spacing:.18em;
-}
+    #contact-screen .contact-kicker{
+    color:#f5c518;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.18em;
+    }
 
-#contact-screen .contact-hero h1{
-margin:8px 0 10px;
-font-size:clamp(30px,6vw,54px);
-line-height:1;
-letter-spacing:.02em;
-}
+    #contact-screen .contact-hero h1{
+    margin:8px 0 10px;
+    font-size:clamp(30px,6vw,54px);
+    line-height:1;
+    letter-spacing:.02em;
+    }
 
-#contact-screen .contact-hero p{
-margin:0 auto;
-max-width:660px;
-color:#bbb;
-line-height:1.6;
-}
+    #contact-screen .contact-hero p{
+    margin:0 auto;
+    max-width:660px;
+    color:#bbb;
+    line-height:1.6;
+    }
 
-#contact-screen .contact-card{
-background:linear-gradient(180deg,#0d0d0d,#050505);
-border:2px solid #d72f22;
-border-radius:28px;
-padding:clamp(20px,4vw,34px);
-box-shadow:0 0 0 1px rgba(245,197,24,.15) inset;
-}
+    #contact-screen .contact-card{
+    background:linear-gradient(180deg,#0d0d0d,#050505);
+    border:2px solid #d72f22;
+    border-radius:28px;
+    padding:clamp(20px,4vw,34px);
+    box-shadow:0 0 0 1px rgba(245,197,24,.15) inset;
+    }
 
-#contact-screen .contact-field{
-margin-bottom:18px;
-}
+    #contact-screen .contact-field{
+    margin-bottom:18px;
+    }
 
-#contact-screen .contact-field label{
-display:block;
-margin-bottom:8px;
-font-size:12px;
-font-weight:900;
-letter-spacing:.08em;
-color:#f5c518;
-}
+    #contact-screen .contact-field label{
+    display:block;
+    margin-bottom:8px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.08em;
+    color:#f5c518;
+    }
 
-#contact-screen .contact-field input,
-#contact-screen .contact-field select,
-#contact-screen .contact-field textarea{
-width:100%;
-box-sizing:border-box;
-border:1px solid #343434;
-background:#000;
-color:#fff;
-font:inherit;
-border-radius:14px;
-padding:14px 15px;
-outline:none;
-}
+    #contact-screen .contact-field input,
+    #contact-screen .contact-field select,
+    #contact-screen .contact-field textarea{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid #343434;
+    background:#000;
+    color:#fff;
+    font:inherit;
+    border-radius:14px;
+    padding:14px 15px;
+    outline:none;
+    }
 
-#contact-screen .contact-field textarea{
-resize:vertical;
-min-height:150px;
-}
+    #contact-screen .contact-field textarea{
+    resize:vertical;
+    min-height:150px;
+    }
 
-#contact-screen .contact-field input:focus,
-#contact-screen .contact-field select:focus,
-#contact-screen .contact-field textarea:focus{
-border-color:#f5c518;
-box-shadow:0 0 0 2px rgba(245,197,24,.12);
-}
+    #contact-screen .contact-field input:focus,
+    #contact-screen .contact-field select:focus,
+    #contact-screen .contact-field textarea:focus{
+    border-color:#f5c518;
+    box-shadow:0 0 0 2px rgba(245,197,24,.12);
+    }
 
-#contact-screen .contact-submit{
-width:100%;
-border:0;
-border-radius:999px;
-background:#d72f22;
-color:#fff;
-font:inherit;
-font-weight:900;
-letter-spacing:.08em;
-padding:16px 20px;
-cursor:pointer;
-}
+    #contact-screen .contact-submit{
+    width:100%;
+    border:0;
+    border-radius:999px;
+    background:#d72f22;
+    color:#fff;
+    font:inherit;
+    font-weight:900;
+    letter-spacing:.08em;
+    padding:16px 20px;
+    cursor:pointer;
+    }
 
-#contact-screen .contact-submit:hover{
-filter:brightness(1.08);
-}
+    #contact-screen .contact-submit:hover{
+    filter:brightness(1.08);
+    }
 
-#contact-screen .contact-submit:disabled{
-opacity:.55;
-cursor:wait;
-}
+    #contact-screen .contact-submit:disabled{
+    opacity:.55;
+    cursor:wait;
+    }
 
-#contact-screen .contact-status{
-min-height:24px;
-margin-top:14px;
-text-align:center;
-font-weight:800;
-}
+    #contact-screen .contact-status{
+    min-height:24px;
+    margin-top:14px;
+    text-align:center;
+    font-weight:800;
+    }
 
-#contact-screen .contact-status.success{
-color:#f5c518;
-}
+    #contact-screen .contact-status.success{
+    color:#f5c518;
+    }
 
-#contact-screen .contact-status.error{
-color:#ff6666;
-}
+    #contact-screen .contact-status.error{
+    color:#ff6666;
+    }
 
-#contact-screen .contact-footer{
-text-align:center;
-margin-top:26px;
-color:#f5c518;
-font-size:12px;
-font-weight:900;
-letter-spacing:.14em;
-}
+    #contact-screen .contact-footer{
+    text-align:center;
+    margin-top:26px;
+    color:#f5c518;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.14em;
+    }
 
-@media (max-width:640px){
+    @media (max-width:640px){
 
-#contact-screen .contact-wrap{
-width:min(100% - 22px,920px);
-padding-top:16px;
-}
+    #contact-screen .contact-wrap{
+    width:min(100% - 22px,920px);
+    padding-top:16px;
+    }
 
-#contact-screen .contact-card{
-border-radius:22px;
-}
+    #contact-screen .contact-card{
+    border-radius:22px;
+    }
 
-}
+    }
 
-`;
+    `;
 
 
-document.head.appendChild(
-style
-);
+    document.head.appendChild(
+    style
+    );
 
-}
+    }
 
 
-screen=
-document.createElement(
-'div'
-);
+    screen=
+    document.createElement(
+    'div'
+    );
 
 
-screen.id=
-'contact-screen';
+    screen.id=
+    'contact-screen';
 
-screen.className=
-'screen';
+    screen.className=
+    'screen';
 
 
-screen.innerHTML=`
+    screen.innerHTML=`
 
-<div class="contact-wrap">
+    <div class="contact-wrap">
 
-<button
-id="contact-back"
-class="contact-back"
-type="button"
->
-← HOME
-</button>
+    <button
+    id="contact-back"
+    class="contact-back"
+    type="button"
+    >
+    ← HOME
+    </button>
 
-<header class="contact-hero">
+    <header class="contact-hero">
 
-<img
-class="contact-logo"
-src="images/boss-code-media-logo.png"
-alt="B.O.S.S CODE MEDIA"
->
+    <img
+    class="contact-logo"
+    src="images/boss-code-media-logo.png"
+    alt="B.O.S.S CODE MEDIA"
+    >
 
-<span class="contact-kicker">
-CONNECT WITH THE CODE
-</span>
+    <span class="contact-kicker">
+    CONNECT WITH THE CODE
+    </span>
 
-<h1>
-CONTACT B.O.S.S CODE MEDIA
-</h1>
+    <h1>
+    CONTACT B.O.S.S CODE MEDIA
+    </h1>
 
-<p>
-Advertising, partnerships, media inquiries and opportunities. Send us a message below.
-</p>
+    <p>
+    Advertising, partnerships, media inquiries and opportunities. Send us a message below.
+    </p>
 
-</header>
+    </header>
 
 
-<section class="contact-card">
+    <section class="contact-card">
 
-<div class="contact-field">
+    <div class="contact-field">
 
-<label for="contact-name">
-NAME
-</label>
+    <label for="contact-name">
+    NAME
+    </label>
 
-<input
-id="contact-name"
-type="text"
-autocomplete="name"
-placeholder="Your name"
->
+    <input
+    id="contact-name"
+    type="text"
+    autocomplete="name"
+    placeholder="Your name"
+    >
 
-</div>
+    </div>
 
 
-<div class="contact-field">
+    <div class="contact-field">
 
-<label for="contact-email">
-EMAIL
-</label>
+    <label for="contact-email">
+    EMAIL
+    </label>
 
-<input
-id="contact-email"
-type="email"
-autocomplete="email"
-placeholder="Your email address"
->
+    <input
+    id="contact-email"
+    type="email"
+    autocomplete="email"
+    placeholder="Your email address"
+    >
 
-</div>
+    </div>
 
 
-<div class="contact-field">
+    <div class="contact-field">
 
-<label for="contact-type">
-WHAT ARE YOU REACHING OUT ABOUT?
-</label>
+    <label for="contact-type">
+    WHAT ARE YOU REACHING OUT ABOUT?
+    </label>
 
-<select id="contact-type">
+    <select id="contact-type">
 
-<option value="General Inquiry">
-General Inquiry
-</option>
+    <option value="General Inquiry">
+    General Inquiry
+    </option>
 
-<option value="Advertising">
-Advertising
-</option>
+    <option value="Advertising">
+    Advertising
+    </option>
 
-<option value="Boss Bite">
-Boss Bite
-</option>
+    <option value="Boss Bite">
+    Boss Bite
+    </option>
 
-<option value="Magazine">
-Magazine
-</option>
+    <option value="Magazine">
+    Magazine
+    </option>
 
-<option value="Decision Makers">
-Decision Makers
-</option>
+    <option value="Decision Makers">
+    Decision Makers
+    </option>
 
-<option value="B.O.S.S CODE TV">
-B.O.S.S CODE TV
-</option>
+    <option value="B.O.S.S CODE TV">
+    B.O.S.S CODE TV
+    </option>
 
-<option value="Partnership/Business">
-Partnership / Business
-</option>
+    <option value="Partnership/Business">
+    Partnership / Business
+    </option>
 
-<option value="Other">
-Other
-</option>
+    <option value="Other">
+    Other
+    </option>
 
-</select>
+    </select>
 
-</div>
+    </div>
 
 
-<div class="contact-field">
+    <div class="contact-field">
 
-<label for="contact-message">
-MESSAGE
-</label>
+    <label for="contact-message">
+    MESSAGE
+    </label>
 
-<textarea
-id="contact-message"
-rows="7"
-placeholder="Tell us how we can help."
-></textarea>
+    <textarea
+    id="contact-message"
+    rows="7"
+    placeholder="Tell us how we can help."
+    ></textarea>
 
-</div>
+    </div>
 
 
-<button
-id="contact-submit"
-class="contact-submit"
-type="button"
->
-SEND MESSAGE
-</button>
+    <button
+    id="contact-submit"
+    class="contact-submit"
+    type="button"
+    >
+    SEND MESSAGE
+    </button>
 
-<div
-id="contact-status"
-class="contact-status"
-aria-live="polite"
-></div>
+    <div
+    id="contact-status"
+    class="contact-status"
+    aria-live="polite"
+    ></div>
 
-</section>
+    </section>
 
 
-<div class="contact-footer">
-GREATNESS IS A DECISION
-</div>
+    <div class="contact-footer">
+    GREATNESS IS A DECISION
+    </div>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-document.body.appendChild(
-screen
-);
+    document.body.appendChild(
+    screen
+    );
 
 
-return screen;
+    return screen;
 
-}
+    }
 
 
-const contact=
-ensureContactScreen();
+    const contact=
+    ensureContactScreen();
 
 
-/* =========================================================
-   SUPPORT IS A DECISION
-========================================================= */
+    /* =========================================================
+       SUPPORT IS A DECISION
+    ========================================================= */
 
-let selectedSupportAmountCents=
-0;
+    let selectedSupportAmountCents=
+    0;
 
 
-const SUPPORT_PENDING_CHECKOUT_KEY=
-'boss-code-support-pending-checkout-v1';
+    const SUPPORT_PENDING_CHECKOUT_KEY=
+    'boss-code-support-pending-checkout-v1';
 
 
-function ensureSupportScreen(){
+    function ensureSupportScreen(){
 
-let screen=
-$('support-screen');
+    let screen=
+    $('support-screen');
 
 
-if(screen)
-return screen;
+    if(screen)
+    return screen;
 
 
-if(
-!$('boss-code-support-styles')
-){
+    if(
+    !$('boss-code-support-styles')
+    ){
 
-const style=
-document.createElement(
-'style'
-);
+    const style=
+    document.createElement(
+    'style'
+    );
 
 
-style.id=
-'boss-code-support-styles';
+    style.id=
+    'boss-code-support-styles';
 
 
-style.textContent=`
+    style.textContent=`
 
-#support-screen{
-background:#000;
-color:#fff;
-min-height:100vh;
-}
+    #support-screen{
+    background:#000;
+    color:#fff;
+    min-height:100vh;
+    }
 
-#support-screen .support-wrap{
-width:min(940px,calc(100% - 32px));
-margin:0 auto;
-padding:24px 0 56px;
-}
+    #support-screen .support-wrap{
+    width:min(940px,calc(100% - 32px));
+    margin:0 auto;
+    padding:24px 0 56px;
+    }
 
-#support-screen .support-back{
-appearance:none;
-border:1px solid #333;
-background:#090909;
-color:#fff;
-font:inherit;
-font-weight:800;
-letter-spacing:.06em;
-padding:12px 18px;
-border-radius:999px;
-cursor:pointer;
-margin-bottom:28px;
-}
+    #support-screen .support-back{
+    appearance:none;
+    border:1px solid #333;
+    background:#090909;
+    color:#fff;
+    font:inherit;
+    font-weight:800;
+    letter-spacing:.06em;
+    padding:12px 18px;
+    border-radius:999px;
+    cursor:pointer;
+    margin-bottom:28px;
+    }
 
-#support-screen .support-back:hover{
-border-color:#f5c518;
-color:#f5c518;
-}
+    #support-screen .support-back:hover{
+    border-color:#f5c518;
+    color:#f5c518;
+    }
 
-#support-screen .support-hero{
-text-align:center;
-margin:0 auto 28px;
-}
+    #support-screen .support-hero{
+    text-align:center;
+    margin:0 auto 28px;
+    }
 
-#support-screen .support-logo{
-width:min(230px,60vw);
-height:auto;
-margin:0 auto 18px;
-display:block;
-}
+    #support-screen .support-logo{
+    width:min(230px,60vw);
+    height:auto;
+    margin:0 auto 18px;
+    display:block;
+    }
 
-#support-screen .support-kicker{
-display:block;
-color:#f5c518;
-font-size:11px;
-font-weight:900;
-letter-spacing:.18em;
-margin-bottom:8px;
-}
+    #support-screen .support-kicker{
+    display:block;
+    color:#f5c518;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.18em;
+    margin-bottom:8px;
+    }
 
-#support-screen .support-hero h1{
-margin:0 0 12px;
-font-size:clamp(34px,7vw,62px);
-line-height:.95;
-letter-spacing:.01em;
-}
+    #support-screen .support-hero h1{
+    margin:0 0 12px;
+    font-size:clamp(34px,7vw,62px);
+    line-height:.95;
+    letter-spacing:.01em;
+    }
 
-#support-screen .support-hero p{
-margin:0 auto;
-max-width:720px;
-color:#bbb;
-font-size:15px;
-line-height:1.65;
-}
+    #support-screen .support-hero p{
+    margin:0 auto;
+    max-width:720px;
+    color:#bbb;
+    font-size:15px;
+    line-height:1.65;
+    }
 
-#support-screen .support-principle{
-margin:18px auto 0;
-max-width:650px;
-border:1px solid rgba(245,197,24,.35);
-background:rgba(245,197,24,.06);
-border-radius:18px;
-padding:16px 18px;
-color:#fff;
-font-weight:900;
-line-height:1.5;
-}
+    #support-screen .support-principle{
+    margin:18px auto 0;
+    max-width:650px;
+    border:1px solid rgba(245,197,24,.35);
+    background:rgba(245,197,24,.06);
+    border-radius:18px;
+    padding:16px 18px;
+    color:#fff;
+    font-weight:900;
+    line-height:1.5;
+    }
 
-#support-screen .support-card{
-background:linear-gradient(180deg,#0d0d0d,#050505);
-border:2px solid #d72f22;
-border-radius:28px;
-padding:clamp(20px,4vw,34px);
-box-shadow:0 0 0 1px rgba(245,197,24,.15) inset;
-}
+    #support-screen .support-card{
+    background:linear-gradient(180deg,#0d0d0d,#050505);
+    border:2px solid #d72f22;
+    border-radius:28px;
+    padding:clamp(20px,4vw,34px);
+    box-shadow:0 0 0 1px rgba(245,197,24,.15) inset;
+    }
 
-#support-screen .support-card-title{
-text-align:center;
-margin-bottom:20px;
-}
+    #support-screen .support-card-title{
+    text-align:center;
+    margin-bottom:20px;
+    }
 
-#support-screen .support-card-title span{
-display:block;
-color:#f5c518;
-font-size:10px;
-font-weight:900;
-letter-spacing:.18em;
-margin-bottom:6px;
-}
+    #support-screen .support-card-title span{
+    display:block;
+    color:#f5c518;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.18em;
+    margin-bottom:6px;
+    }
 
-#support-screen .support-card-title h2{
-margin:0;
-font-size:clamp(24px,5vw,36px);
-}
+    #support-screen .support-card-title h2{
+    margin:0;
+    font-size:clamp(24px,5vw,36px);
+    }
 
-#support-screen .support-amount-grid{
-display:grid;
-grid-template-columns:repeat(4,minmax(0,1fr));
-gap:12px;
-margin:20px 0;
-}
+    #support-screen .support-amount-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:12px;
+    margin:20px 0;
+    }
 
-#support-screen .support-amount{
-appearance:none;
-border:1px solid #363636;
-background:#080808;
-color:#fff;
-border-radius:18px;
-min-height:112px;
-padding:18px 10px;
-font:inherit;
-cursor:pointer;
-transition:.18s ease;
-}
+    #support-screen .support-amount{
+    appearance:none;
+    border:1px solid #363636;
+    background:#080808;
+    color:#fff;
+    border-radius:18px;
+    min-height:112px;
+    padding:18px 10px;
+    font:inherit;
+    cursor:pointer;
+    transition:.18s ease;
+    }
 
-#support-screen .support-amount:hover,
-#support-screen .support-amount.selected{
-border-color:#f5c518;
-background:#151100;
-transform:translateY(-2px);
-}
+    #support-screen .support-amount:hover,
+    #support-screen .support-amount.selected{
+    border-color:#f5c518;
+    background:#151100;
+    transform:translateY(-2px);
+    }
 
-#support-screen .support-amount strong{
-display:block;
-font-size:30px;
-line-height:1;
-color:#fff;
-}
+    #support-screen .support-amount strong{
+    display:block;
+    font-size:30px;
+    line-height:1;
+    color:#fff;
+    }
 
-#support-screen .support-amount span{
-display:block;
-margin-top:9px;
-color:#f5c518;
-font-size:9px;
-font-weight:900;
-letter-spacing:.1em;
-line-height:1.35;
-}
+    #support-screen .support-amount span{
+    display:block;
+    margin-top:9px;
+    color:#f5c518;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.1em;
+    line-height:1.35;
+    }
 
-#support-screen .support-shirt-tag{
-display:inline-block!important;
-margin-top:7px!important;
-border-radius:999px;
-background:#d72f22;
-color:#fff!important;
-padding:5px 8px;
-font-size:8px!important;
-}
+    #support-screen .support-shirt-tag{
+    display:inline-block!important;
+    margin-top:7px!important;
+    border-radius:999px;
+    background:#d72f22;
+    color:#fff!important;
+    padding:5px 8px;
+    font-size:8px!important;
+    }
 
-#support-screen .support-custom{
-border-top:1px solid #252525;
-border-bottom:1px solid #252525;
-padding:18px 0;
-margin:6px 0 20px;
-}
+    #support-screen .support-custom{
+    border-top:1px solid #252525;
+    border-bottom:1px solid #252525;
+    padding:18px 0;
+    margin:6px 0 20px;
+    }
 
-#support-screen .support-custom label,
-#support-screen .support-field label{
-display:block;
-margin-bottom:8px;
-font-size:11px;
-font-weight:900;
-letter-spacing:.08em;
-color:#f5c518;
-}
+    #support-screen .support-custom label,
+    #support-screen .support-field label{
+    display:block;
+    margin-bottom:8px;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.08em;
+    color:#f5c518;
+    }
 
-#support-screen .support-custom-row{
-display:grid;
-grid-template-columns:auto 1fr;
-align-items:center;
-gap:8px;
-}
+    #support-screen .support-custom-row{
+    display:grid;
+    grid-template-columns:auto 1fr;
+    align-items:center;
+    gap:8px;
+    }
 
-#support-screen .support-dollar{
-height:52px;
-min-width:52px;
-display:grid;
-place-items:center;
-border:1px solid #343434;
-border-radius:14px;
-background:#050505;
-color:#f5c518;
-font-size:22px;
-font-weight:900;
-}
+    #support-screen .support-dollar{
+    height:52px;
+    min-width:52px;
+    display:grid;
+    place-items:center;
+    border:1px solid #343434;
+    border-radius:14px;
+    background:#050505;
+    color:#f5c518;
+    font-size:22px;
+    font-weight:900;
+    }
 
-#support-screen .support-custom input,
-#support-screen .support-field input,
-#support-screen .support-field textarea{
-width:100%;
-box-sizing:border-box;
-border:1px solid #343434;
-background:#000;
-color:#fff;
-font:inherit;
-border-radius:14px;
-padding:14px 15px;
-outline:none;
-}
+    #support-screen .support-custom input,
+    #support-screen .support-field input,
+    #support-screen .support-field textarea{
+    width:100%;
+    box-sizing:border-box;
+    border:1px solid #343434;
+    background:#000;
+    color:#fff;
+    font:inherit;
+    border-radius:14px;
+    padding:14px 15px;
+    outline:none;
+    }
 
-#support-screen .support-custom input:focus,
-#support-screen .support-field input:focus,
-#support-screen .support-field textarea:focus{
-border-color:#f5c518;
-box-shadow:0 0 0 2px rgba(245,197,24,.12);
-}
+    #support-screen .support-custom input:focus,
+    #support-screen .support-field input:focus,
+    #support-screen .support-field textarea:focus{
+    border-color:#f5c518;
+    box-shadow:0 0 0 2px rgba(245,197,24,.12);
+    }
 
-#support-screen .support-field{
-margin-bottom:16px;
-}
+    #support-screen .support-field{
+    margin-bottom:16px;
+    }
 
-#support-screen .support-field textarea{
-resize:vertical;
-min-height:110px;
-}
+    #support-screen .support-field textarea{
+    resize:vertical;
+    min-height:110px;
+    }
 
-#support-screen .support-selected{
-display:none;
-margin:18px 0;
-border-radius:18px;
-background:#111;
-border:1px solid #353535;
-padding:18px;
-text-align:center;
-}
+    #support-screen .support-selected{
+    display:none;
+    margin:18px 0;
+    border-radius:18px;
+    background:#111;
+    border:1px solid #353535;
+    padding:18px;
+    text-align:center;
+    }
 
-#support-screen .support-selected.show{
-display:block;
-}
+    #support-screen .support-selected.show{
+    display:block;
+    }
 
-#support-screen .support-selected span{
-display:block;
-color:#999;
-font-size:9px;
-font-weight:900;
-letter-spacing:.14em;
-}
+    #support-screen .support-selected span{
+    display:block;
+    color:#999;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.14em;
+    }
 
-#support-screen .support-selected strong{
-display:block;
-margin-top:5px;
-font-size:30px;
-color:#f5c518;
-}
+    #support-screen .support-selected strong{
+    display:block;
+    margin-top:5px;
+    font-size:30px;
+    color:#f5c518;
+    }
 
-#support-screen .support-shirt-message{
-display:none;
-margin:12px 0 0;
-border:1px solid rgba(215,47,34,.65);
-background:rgba(215,47,34,.08);
-border-radius:14px;
-padding:12px 14px;
-color:#fff;
-font-size:12px;
-font-weight:800;
-line-height:1.5;
-}
+    #support-screen .support-shirt-message{
+    display:none;
+    margin:12px 0 0;
+    border:1px solid rgba(215,47,34,.65);
+    background:rgba(215,47,34,.08);
+    border-radius:14px;
+    padding:12px 14px;
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.5;
+    }
 
-#support-screen .support-shirt-message.show{
-display:block;
-}
+    #support-screen .support-shirt-message.show{
+    display:block;
+    }
 
-#support-screen .support-shirt-claim{
-display:none;
-margin-top:18px;
-border:2px solid #f5c518;
-border-radius:18px;
-background:#090909;
-padding:18px;
-}
+    #support-screen .support-shirt-claim{
+    display:none;
+    margin-top:18px;
+    border:2px solid #f5c518;
+    border-radius:18px;
+    background:#090909;
+    padding:18px;
+    }
 
-#support-screen .support-shirt-claim.show{
-display:block;
-}
+    #support-screen .support-shirt-claim.show{
+    display:block;
+    }
 
-#support-screen .support-shirt-claim-kicker{
-display:block;
-color:#f5c518;
-font-size:9px;
-font-weight:900;
-letter-spacing:.14em;
-}
+    #support-screen .support-shirt-claim-kicker{
+    display:block;
+    color:#f5c518;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.14em;
+    }
 
-#support-screen .support-shirt-claim h3{
-margin:7px 0 0;
-color:#fff;
-font-size:24px;
-line-height:1.05;
-}
+    #support-screen .support-shirt-claim h3{
+    margin:7px 0 0;
+    color:#fff;
+    font-size:24px;
+    line-height:1.05;
+    }
 
-#support-screen .support-shirt-claim-copy{
-margin:10px 0 0;
-color:#aaa;
-font-size:12px;
-line-height:1.55;
-}
+    #support-screen .support-shirt-claim-copy{
+    margin:10px 0 0;
+    color:#aaa;
+    font-size:12px;
+    line-height:1.55;
+    }
 
-#support-screen .support-shirt-claim-black{
-margin-top:12px;
-padding:11px 13px;
-border:1px solid #2d2d2d;
-border-radius:12px;
-background:#000;
-color:#fff;
-font-size:11px;
-font-weight:900;
-letter-spacing:.08em;
-}
+    #support-screen .support-shirt-claim-black{
+    margin-top:12px;
+    padding:11px 13px;
+    border:1px solid #2d2d2d;
+    border-radius:12px;
+    background:#000;
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.08em;
+    }
 
-#support-screen .support-shirt-claim-grid{
-display:grid;
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:12px;
-margin-top:16px;
-}
+    #support-screen .support-shirt-claim-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:16px;
+    }
 
-#support-screen .support-shirt-claim-grid .support-field{
-margin:0;
-}
+    #support-screen .support-shirt-claim-grid .support-field{
+    margin:0;
+    }
 
-#support-screen .support-shirt-claim .support-field.full{
-grid-column:1 / -1;
-}
+    #support-screen .support-shirt-claim .support-field.full{
+    grid-column:1 / -1;
+    }
 
-#support-screen .support-shirt-claim select{
-width:100%;
-border:1px solid #333;
-border-radius:12px;
-background:#050505;
-color:#fff;
-padding:13px 14px;
-font:inherit;
-}
+    #support-screen .support-shirt-claim select{
+    width:100%;
+    border:1px solid #333;
+    border-radius:12px;
+    background:#050505;
+    color:#fff;
+    padding:13px 14px;
+    font:inherit;
+    }
 
-#support-screen .support-shirt-special{
-display:none;
-}
+    #support-screen .support-shirt-special{
+    display:none;
+    }
 
-#support-screen .support-shirt-special.show{
-display:block;
-}
+    #support-screen .support-shirt-special.show{
+    display:block;
+    }
 
-#support-screen .support-shirt-claim-submit{
-width:100%;
-margin-top:16px;
-border:2px solid #f5c518;
-border-radius:999px;
-background:#f5c518;
-color:#000;
-font:inherit;
-font-weight:900;
-letter-spacing:.08em;
-padding:15px 20px;
-cursor:pointer;
-}
+    #support-screen .support-shirt-claim-submit{
+    width:100%;
+    margin-top:16px;
+    border:2px solid #f5c518;
+    border-radius:999px;
+    background:#f5c518;
+    color:#000;
+    font:inherit;
+    font-weight:900;
+    letter-spacing:.08em;
+    padding:15px 20px;
+    cursor:pointer;
+    }
 
-#support-screen .support-shirt-claim-submit:disabled{
-opacity:.65;
-cursor:wait;
-}
+    #support-screen .support-shirt-claim-submit:disabled{
+    opacity:.65;
+    cursor:wait;
+    }
 
-#support-screen .support-shirt-claim-status{
-min-height:18px;
-margin-top:12px;
-color:#aaa;
-font-size:11px;
-font-weight:800;
-line-height:1.45;
-}
+    #support-screen .support-shirt-claim-status{
+    min-height:18px;
+    margin-top:12px;
+    color:#aaa;
+    font-size:11px;
+    font-weight:800;
+    line-height:1.45;
+    }
 
-#support-screen .support-shirt-claim-status.error{
-color:#ff6b6b;
-}
+    #support-screen .support-shirt-claim-status.error{
+    color:#ff6b6b;
+    }
 
-#support-screen .support-shirt-claim-status.success{
-color:#f5c518;
-}
+    #support-screen .support-shirt-claim-status.success{
+    color:#f5c518;
+    }
 
-@media(max-width:620px){
-#support-screen .support-shirt-claim-grid{
-grid-template-columns:1fr;
-}
-#support-screen .support-shirt-claim .support-field.full{
-grid-column:auto;
-}
-}
+    @media(max-width:620px){
+    #support-screen .support-shirt-claim-grid{
+    grid-template-columns:1fr;
+    }
+    #support-screen .support-shirt-claim .support-field.full{
+    grid-column:auto;
+    }
+    }
 
-#support-screen .support-submit{
-width:100%;
-border:0;
-border-radius:999px;
-background:#d72f22;
-color:#fff;
-font:inherit;
-font-weight:900;
-letter-spacing:.08em;
-padding:16px 20px;
-cursor:pointer;
-margin-top:4px;
-}
+    #support-screen .support-submit{
+    width:100%;
+    border:0;
+    border-radius:999px;
+    background:#d72f22;
+    color:#fff;
+    font:inherit;
+    font-weight:900;
+    letter-spacing:.08em;
+    padding:16px 20px;
+    cursor:pointer;
+    margin-top:4px;
+    }
 
-#support-screen .support-submit:hover{
-filter:brightness(1.08);
-}
+    #support-screen .support-submit:hover{
+    filter:brightness(1.08);
+    }
 
-#support-screen .support-submit:disabled{
-opacity:.55;
-cursor:wait;
-}
+    #support-screen .support-submit:disabled{
+    opacity:.55;
+    cursor:wait;
+    }
 
-#support-screen .support-status{
-min-height:24px;
-margin-top:14px;
-text-align:center;
-font-weight:800;
-line-height:1.5;
-}
+    #support-screen .support-status{
+    min-height:24px;
+    margin-top:14px;
+    text-align:center;
+    font-weight:800;
+    line-height:1.5;
+    }
 
-#support-screen .support-status.success{
-color:#f5c518;
-}
+    #support-screen .support-status.success{
+    color:#f5c518;
+    }
 
-#support-screen .support-status.error{
-color:#ff6666;
-}
+    #support-screen .support-status.error{
+    color:#ff6666;
+    }
 
-#support-screen .support-payment-note{
-margin:16px auto 0;
-max-width:700px;
-color:#777;
-font-size:11px;
-line-height:1.6;
-text-align:center;
-}
+    #support-screen .support-payment-note{
+    margin:16px auto 0;
+    max-width:700px;
+    color:#777;
+    font-size:11px;
+    line-height:1.6;
+    text-align:center;
+    }
 
-#support-screen .support-footer{
-margin-top:34px;
-}
+    #support-screen .support-footer{
+    margin-top:34px;
+    }
 
-@media(max-width:760px){
+    @media(max-width:760px){
 
-#support-screen .support-amount-grid{
-grid-template-columns:repeat(2,minmax(0,1fr));
-}
+    #support-screen .support-amount-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    }
 
-}
+    }
 
-@media(max-width:480px){
+    @media(max-width:480px){
 
-#support-screen .support-wrap{
-width:min(100% - 22px,940px);
-padding-top:16px;
-}
+    #support-screen .support-wrap{
+    width:min(100% - 22px,940px);
+    padding-top:16px;
+    }
 
-#support-screen .support-card{
-border-radius:22px;
-}
+    #support-screen .support-card{
+    border-radius:22px;
+    }
 
-#support-screen .support-amount{
-min-height:100px;
-}
+    #support-screen .support-amount{
+    min-height:100px;
+    }
 
-}
+    }
 
-`;
+    `;
 
 
-document.head.appendChild(
-style
-);
+    document.head.appendChild(
+    style
+    );
 
-}
+    }
 
 
-screen=
-document.createElement(
-'div'
-);
+    screen=
+    document.createElement(
+    'div'
+    );
 
 
-screen.id=
-'support-screen';
+    screen.id=
+    'support-screen';
 
-screen.className=
-'screen';
+    screen.className=
+    'screen';
 
 
-screen.innerHTML=`
+    screen.innerHTML=`
 
-<div class="support-wrap">
+    <div class="support-wrap">
 
-<button
-id="support-back"
-class="support-back"
-type="button"
->
-← HOME
-</button>
+    <button
+    id="support-back"
+    class="support-back"
+    type="button"
+    >
+    ← HOME
+    </button>
 
 
-<header class="support-hero">
+    <header class="support-hero">
 
-<img
-class="support-logo"
-src="images/boss-code-media-logo.png"
-alt="B.O.S.S CODE MEDIA"
->
+    <img
+    class="support-logo"
+    src="images/boss-code-media-logo.png"
+    alt="B.O.S.S CODE MEDIA"
+    >
 
-<span class="support-kicker">
-WHAT YOU SUPPORT HELPS SHAPE WHAT CONTINUES
-</span>
+    <span class="support-kicker">
+    WHAT YOU SUPPORT HELPS SHAPE WHAT CONTINUES
+    </span>
 
-<h1>
-SUPPORT IS A DECISION
-</h1>
+    <h1>
+    SUPPORT IS A DECISION
+    </h1>
 
-<p>
-Your support helps B.O.S.S CODE MEDIA continue creating independent media, music, education, stories and opportunities.
-</p>
+    <p>
+    Your support helps B.O.S.S CODE MEDIA continue creating independent media, music, education, stories and opportunities.
+    </p>
 
-<div class="support-principle">
-Support is never required. It is a decision.
-</div>
+    <div class="support-principle">
+    Support is never required. It is a decision.
+    </div>
 
-</header>
+    </header>
 
 
-<section class="support-card">
+    <section class="support-card">
 
-<div class="support-card-title">
+    <div class="support-card-title">
 
-<span>
-CHOOSE YOUR SUPPORT
-</span>
+    <span>
+    CHOOSE YOUR SUPPORT
+    </span>
 
-<h2>
-MAKE YOUR DECISION
-</h2>
+    <h2>
+    MAKE YOUR DECISION
+    </h2>
 
-</div>
+    </div>
 
 
-<div
-id="support-amount-grid"
-class="support-amount-grid"
->
+    <div
+    id="support-amount-grid"
+    class="support-amount-grid"
+    >
 
-<button
-class="support-amount"
-type="button"
-data-amount-cents="500"
->
-<strong>$5</strong>
-<span>KEEP IT MOVING</span>
-</button>
+    <button
+    class="support-amount"
+    type="button"
+    data-amount-cents="500"
+    >
+    <strong>$5</strong>
+    <span>KEEP IT MOVING</span>
+    </button>
 
-<button
-class="support-amount"
-type="button"
-data-amount-cents="1000"
->
-<strong>$10</strong>
-<span>BUILD WITH US</span>
-</button>
+    <button
+    class="support-amount"
+    type="button"
+    data-amount-cents="1000"
+    >
+    <strong>$10</strong>
+    <span>BUILD WITH US</span>
+    </button>
 
-<button
-class="support-amount"
-type="button"
-data-amount-cents="2000"
->
-<strong>$20</strong>
-<span>FUEL THE MISSION</span>
-</button>
+    <button
+    class="support-amount"
+    type="button"
+    data-amount-cents="2000"
+    >
+    <strong>$20</strong>
+    <span>FUEL THE MISSION</span>
+    </button>
 
-<button
-class="support-amount"
-type="button"
-data-amount-cents="5000"
->
-<strong>$50</strong>
-<span>B.O.S.S CODE SUPPORTER</span>
-<span class="support-shirt-tag">SHIRT ELIGIBLE</span>
-</button>
+    <button
+    class="support-amount"
+    type="button"
+    data-amount-cents="5000"
+    >
+    <strong>$50</strong>
+    <span>B.O.S.S CODE SUPPORTER</span>
+    <span class="support-shirt-tag">SHIRT ELIGIBLE</span>
+    </button>
 
-</div>
+    </div>
 
 
-<div class="support-custom">
+    <div class="support-custom">
 
-<label for="support-custom-amount">
-CUSTOM AMOUNT
-</label>
+    <label for="support-custom-amount">
+    CUSTOM AMOUNT
+    </label>
 
-<div class="support-custom-row">
+    <div class="support-custom-row">
 
-<div class="support-dollar">
-$
-</div>
+    <div class="support-dollar">
+    $
+    </div>
 
-<input
-id="support-custom-amount"
-type="number"
-min="1"
-step="1"
-inputmode="decimal"
-placeholder="Enter amount"
->
+    <input
+    id="support-custom-amount"
+    type="number"
+    min="1"
+    step="1"
+    inputmode="decimal"
+    placeholder="Enter amount"
+    >
 
-</div>
+    </div>
 
-</div>
+    </div>
 
 
-<div
-id="support-selected"
-class="support-selected"
->
+    <div
+    id="support-selected"
+    class="support-selected"
+    >
 
-<span>
-YOUR SUPPORT DECISION
-</span>
+    <span>
+    YOUR SUPPORT DECISION
+    </span>
 
-<strong id="support-selected-amount">
-$0
-</strong>
+    <strong id="support-selected-amount">
+    $0
+    </strong>
 
-<div
-id="support-shirt-message"
-class="support-shirt-message"
->
-Support of $50 or more is eligible for a B.O.S.S CODE supporter shirt. Fulfillment details will be handled after successful payment.
-</div>
+    <div
+    id="support-shirt-message"
+    class="support-shirt-message"
+    >
+    Support of $50 or more is eligible for a B.O.S.S CODE supporter shirt. Fulfillment details will be handled after successful payment.
+    </div>
 
-</div>
+    </div>
 
 
-<div class="support-field">
+    <div class="support-field">
 
-<label for="support-name">
-NAME
-</label>
+    <label for="support-name">
+    NAME
+    </label>
 
-<input
-id="support-name"
-type="text"
-autocomplete="name"
-placeholder="Your name"
->
+    <input
+    id="support-name"
+    type="text"
+    autocomplete="name"
+    placeholder="Your name"
+    >
 
-</div>
+    </div>
 
 
-<div class="support-field">
+    <div class="support-field">
 
-<label for="support-email">
-EMAIL
-</label>
+    <label for="support-email">
+    EMAIL
+    </label>
 
-<input
-id="support-email"
-type="email"
-autocomplete="email"
-placeholder="Your email address"
->
+    <input
+    id="support-email"
+    type="email"
+    autocomplete="email"
+    placeholder="Your email address"
+    >
 
-</div>
+    </div>
 
 
-<div class="support-field">
+    <div class="support-field">
 
-<label for="support-message">
-MESSAGE
-</label>
+    <label for="support-message">
+    MESSAGE
+    </label>
 
-<textarea
-id="support-message"
-rows="5"
-placeholder="Optional message to B.O.S.S CODE MEDIA"
-></textarea>
+    <textarea
+    id="support-message"
+    rows="5"
+    placeholder="Optional message to B.O.S.S CODE MEDIA"
+    ></textarea>
 
-</div>
+    </div>
 
 
-<button
-id="support-submit"
-class="support-submit"
-type="button"
->
-CONTINUE TO SUPPORT
-</button>
+    <button
+    id="support-submit"
+    class="support-submit"
+    type="button"
+    >
+    CONTINUE TO SUPPORT
+    </button>
 
 
-<div
-id="support-status"
-class="support-status"
-aria-live="polite"
-></div>
+    <div
+    id="support-status"
+    class="support-status"
+    aria-live="polite"
+    ></div>
 
 
-<section
-id="support-shirt-claim"
-class="support-shirt-claim"
->
+    <section
+    id="support-shirt-claim"
+    class="support-shirt-claim"
+    >
 
-<span class="support-shirt-claim-kicker">
-$50 SUPPORTER REWARD
-</span>
+    <span class="support-shirt-claim-kicker">
+    $50 SUPPORTER REWARD
+    </span>
 
-<h3>
-CLAIM YOUR SUPPORTER SHIRT
-</h3>
+    <h3>
+    CLAIM YOUR SUPPORTER SHIRT
+    </h3>
 
-<p class="support-shirt-claim-copy">
-Your black B.O.S.S CODE supporter shirt is included with your confirmed support payment of $50 or more. Choose your size and tell us where to ship it.
-</p>
+    <p class="support-shirt-claim-copy">
+    Your black B.O.S.S CODE supporter shirt is included with your confirmed support payment of $50 or more. Choose your size and tell us where to ship it.
+    </p>
 
-<div class="support-shirt-claim-black">
-SHIRT COLOR: BLACK
-</div>
+    <div class="support-shirt-claim-black">
+    SHIRT COLOR: BLACK
+    </div>
 
-<div class="support-shirt-claim-grid">
+    <div class="support-shirt-claim-grid">
 
-<div class="support-field">
-<label for="support-shirt-size">SIZE</label>
-<select id="support-shirt-size">
-<option value="">Choose size</option>
-<option value="S">S</option>
-<option value="M">M</option>
-<option value="L">L</option>
-<option value="XL">XL</option>
-<option value="2XL">2XL</option>
-<option value="SPECIAL">SPECIAL SIZE REQUEST</option>
-</select>
-</div>
+    <div class="support-field">
+    <label for="support-shirt-size">SIZE</label>
+    <select id="support-shirt-size">
+    <option value="">Choose size</option>
+    <option value="S">S</option>
+    <option value="M">M</option>
+    <option value="L">L</option>
+    <option value="XL">XL</option>
+    <option value="2XL">2XL</option>
+    <option value="SPECIAL">SPECIAL SIZE REQUEST</option>
+    </select>
+    </div>
 
-<div
-id="support-shirt-special-field"
-class="support-field support-shirt-special"
->
-<label for="support-shirt-special-size">SPECIAL SIZE</label>
-<input
-id="support-shirt-special-size"
-type="text"
-placeholder="Tell us the size you need"
->
-</div>
+    <div
+    id="support-shirt-special-field"
+    class="support-field support-shirt-special"
+    >
+    <label for="support-shirt-special-size">SPECIAL SIZE</label>
+    <input
+    id="support-shirt-special-size"
+    type="text"
+    placeholder="Tell us the size you need"
+    >
+    </div>
 
-<div class="support-field full">
-<label for="support-shirt-shipping-name">SHIPPING NAME</label>
-<input
-id="support-shirt-shipping-name"
-type="text"
-autocomplete="name"
-placeholder="Name for delivery"
->
-</div>
+    <div class="support-field full">
+    <label for="support-shirt-shipping-name">SHIPPING NAME</label>
+    <input
+    id="support-shirt-shipping-name"
+    type="text"
+    autocomplete="name"
+    placeholder="Name for delivery"
+    >
+    </div>
 
-<div class="support-field full">
-<label for="support-shirt-address1">ADDRESS</label>
-<input
-id="support-shirt-address1"
-type="text"
-autocomplete="address-line1"
-placeholder="Street address"
->
-</div>
+    <div class="support-field full">
+    <label for="support-shirt-address1">ADDRESS</label>
+    <input
+    id="support-shirt-address1"
+    type="text"
+    autocomplete="address-line1"
+    placeholder="Street address"
+    >
+    </div>
 
-<div class="support-field full">
-<label for="support-shirt-address2">ADDRESS 2</label>
-<input
-id="support-shirt-address2"
-type="text"
-autocomplete="address-line2"
-placeholder="Apartment, suite or unit if needed"
->
-</div>
+    <div class="support-field full">
+    <label for="support-shirt-address2">ADDRESS 2</label>
+    <input
+    id="support-shirt-address2"
+    type="text"
+    autocomplete="address-line2"
+    placeholder="Apartment, suite or unit if needed"
+    >
+    </div>
 
-<div class="support-field">
-<label for="support-shirt-city">CITY</label>
-<input
-id="support-shirt-city"
-type="text"
-autocomplete="address-level2"
-placeholder="City"
->
-</div>
+    <div class="support-field">
+    <label for="support-shirt-city">CITY</label>
+    <input
+    id="support-shirt-city"
+    type="text"
+    autocomplete="address-level2"
+    placeholder="City"
+    >
+    </div>
 
-<div class="support-field">
-<label for="support-shirt-state">STATE OR REGION</label>
-<input
-id="support-shirt-state"
-type="text"
-autocomplete="address-level1"
-placeholder="State"
->
-</div>
+    <div class="support-field">
+    <label for="support-shirt-state">STATE OR REGION</label>
+    <input
+    id="support-shirt-state"
+    type="text"
+    autocomplete="address-level1"
+    placeholder="State"
+    >
+    </div>
 
-<div class="support-field">
-<label for="support-shirt-postal">ZIP OR POSTAL CODE</label>
-<input
-id="support-shirt-postal"
-type="text"
-autocomplete="postal-code"
-placeholder="ZIP code"
->
-</div>
+    <div class="support-field">
+    <label for="support-shirt-postal">ZIP OR POSTAL CODE</label>
+    <input
+    id="support-shirt-postal"
+    type="text"
+    autocomplete="postal-code"
+    placeholder="ZIP code"
+    >
+    </div>
 
-<div class="support-field">
-<label for="support-shirt-country">COUNTRY</label>
-<input
-id="support-shirt-country"
-type="text"
-autocomplete="country-name"
-value="United States"
->
-</div>
+    <div class="support-field">
+    <label for="support-shirt-country">COUNTRY</label>
+    <input
+    id="support-shirt-country"
+    type="text"
+    autocomplete="country-name"
+    value="United States"
+    >
+    </div>
 
-</div>
+    </div>
 
-<button
-id="support-shirt-claim-submit"
-class="support-shirt-claim-submit"
-type="button"
->
-SUBMIT SHIRT CLAIM
-</button>
+    <button
+    id="support-shirt-claim-submit"
+    class="support-shirt-claim-submit"
+    type="button"
+    >
+    SUBMIT SHIRT CLAIM
+    </button>
 
-<div
-id="support-shirt-claim-status"
-class="support-shirt-claim-status"
-aria-live="polite"
-></div>
+    <div
+    id="support-shirt-claim-status"
+    class="support-shirt-claim-status"
+    aria-live="polite"
+    ></div>
 
-</section>
+    </section>
 
 
-<p class="support-payment-note">
-Secure payment is completed through Stripe. Support is separate from course purchases and does not unlock paid courses.
-</p>
+    <p class="support-payment-note">
+    Secure payment is completed through Stripe. Support is separate from course purchases and does not unlock paid courses.
+    </p>
 
-</section>
+    </section>
 
 
-<footer class="boss-footer support-footer">
+    <footer class="boss-footer support-footer">
 
-<img
-src="images/boss-code-media-logo.png"
-alt="B.O.S.S CODE MEDIA"
->
+    <img
+    src="images/boss-code-media-logo.png"
+    alt="B.O.S.S CODE MEDIA"
+    >
 
-<p>
-GREATNESS IS A DECISION
-</p>
+    <p>
+    GREATNESS IS A DECISION
+    </p>
 
-</footer>
+    </footer>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-document.body.appendChild(
-screen
-);
+    document.body.appendChild(
+    screen
+    );
 
 
-screen
-.querySelectorAll(
-'.support-amount'
-)
-.forEach(
-button=>
-button.addEventListener(
-'click',
-()=>selectSupportAmount(
-Number(
-button.dataset.amountCents||
-0
-)
-)
-)
-);
+    screen
+    .querySelectorAll(
+    '.support-amount'
+    )
+    .forEach(
+    button=>
+    button.addEventListener(
+    'click',
+    ()=>selectSupportAmount(
+    Number(
+    button.dataset.amountCents||
+    0
+    )
+    )
+    )
+    );
 
 
-on(
-'support-custom-amount',
-'input',
-()=>{
-const value=
-Number(
-$('support-custom-amount')
-?.value||
-0
-);
+    on(
+    'support-custom-amount',
+    'input',
+    ()=>{
+    const value=
+    Number(
+    $('support-custom-amount')
+    ?.value||
+    0
+    );
 
-selectSupportAmount(
-Math.max(
-0,
-Math.round(
-value*100
-)
-),
-true
-);
-}
-);
+    selectSupportAmount(
+    Math.max(
+    0,
+    Math.round(
+    value*100
+    )
+    ),
+    true
+    );
+    }
+    );
 
 
-on(
-'support-submit',
-'click',
-submitSupportIntent
-);
+    on(
+    'support-submit',
+    'click',
+    submitSupportIntent
+    );
 
 
-on(
-'support-shirt-size',
-'change',
-updateSupportShirtSpecialSize
-);
+    on(
+    'support-shirt-size',
+    'change',
+    updateSupportShirtSpecialSize
+    );
 
 
-on(
-'support-shirt-claim-submit',
-'click',
-submitSupportShirtClaim
-);
+    on(
+    'support-shirt-claim-submit',
+    'click',
+    submitSupportShirtClaim
+    );
 
 
-restorePendingSupportShirtClaim();
+    restorePendingSupportShirtClaim();
 
 
-return screen;
+    return screen;
 
-}
+    }
 
 
-function selectSupportAmount(
-amountCents,
-fromCustom=false
-){
+    function selectSupportAmount(
+    amountCents,
+    fromCustom=false
+    ){
 
-selectedSupportAmountCents=
-Math.max(
-0,
-Math.round(
-Number(
-amountCents||
-0
-)
-)
-);
+    selectedSupportAmountCents=
+    Math.max(
+    0,
+    Math.round(
+    Number(
+    amountCents||
+    0
+    )
+    )
+    );
 
 
-qa(
-'#support-screen .support-amount'
-)
-.forEach(
-button=>{
+    qa(
+    '#support-screen .support-amount'
+    )
+    .forEach(
+    button=>{
 
-const amount=
-Number(
-button.dataset.amountCents||
-0
-);
+    const amount=
+    Number(
+    button.dataset.amountCents||
+    0
+    );
 
 
-button.classList.toggle(
-'selected',
-!fromCustom&&
-amount===
-selectedSupportAmountCents
-);
+    button.classList.toggle(
+    'selected',
+    !fromCustom&&
+    amount===
+    selectedSupportAmountCents
+    );
 
-}
-);
+    }
+    );
 
 
-if(
-!fromCustom&&
-$('support-custom-amount')
-)
-$('support-custom-amount')
-.value=
-'';
+    if(
+    !fromCustom&&
+    $('support-custom-amount')
+    )
+    $('support-custom-amount')
+    .value=
+    '';
 
 
-updateSupportSelection();
+    updateSupportSelection();
 
-}
+    }
 
 
-function updateSupportSelection(){
+    function updateSupportSelection(){
 
-const box=
-$('support-selected');
+    const box=
+    $('support-selected');
 
-const amount=
-$('support-selected-amount');
+    const amount=
+    $('support-selected-amount');
 
-const shirt=
-$('support-shirt-message');
+    const shirt=
+    $('support-shirt-message');
 
 
-if(
-!box||
-!amount
-)
-return;
+    if(
+    !box||
+    !amount
+    )
+    return;
 
 
-if(
-selectedSupportAmountCents<=0
-){
+    if(
+    selectedSupportAmountCents<=0
+    ){
 
-box.classList.remove(
-'show'
-);
+    box.classList.remove(
+    'show'
+    );
 
-return;
+    return;
 
-}
+    }
 
 
-box.classList.add(
-'show'
-);
+    box.classList.add(
+    'show'
+    );
 
 
-amount.textContent=
-`$${(
-selectedSupportAmountCents/
-100
-).toFixed(
-selectedSupportAmountCents%100
-?
-2
-:
-0
-)}`;
+    amount.textContent=
+    `$${(
+    selectedSupportAmountCents/
+    100
+    ).toFixed(
+    selectedSupportAmountCents%100
+    ?
+    2
+    :
+    0
+    )}`;
 
 
-if(shirt)
-shirt.classList.toggle(
-'show',
-selectedSupportAmountCents>=5000
-);
+    if(shirt)
+    shirt.classList.toggle(
+    'show',
+    selectedSupportAmountCents>=5000
+    );
 
-}
+    }
 
 
-function updateSupportShirtSpecialSize(){
+    function updateSupportShirtSpecialSize(){
 
-const size =
-String(
-$('support-shirt-size')
-?.value||
-''
-).toUpperCase();
+    const size =
+    String(
+    $('support-shirt-size')
+    ?.value||
+    ''
+    ).toUpperCase();
 
-const field =
-$('support-shirt-special-field');
+    const field =
+    $('support-shirt-special-field');
 
-if(field)
-field.classList.toggle(
-'show',
-size===
-'SPECIAL'
-);
+    if(field)
+    field.classList.toggle(
+    'show',
+    size===
+    'SPECIAL'
+    );
 
-}
+    }
 
 
-function pendingSupportCheckout(){
+    function pendingSupportCheckout(){
 
-try{
+    try{
 
-return JSON.parse(
-sessionStorage.getItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-)||
-'null'
-);
+    return JSON.parse(
+    sessionStorage.getItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    )||
+    'null'
+    );
 
-}catch{
+    }catch{
 
-return null;
+    return null;
 
-}
+    }
 
-}
+    }
 
 
-function showSupportShirtClaim(
-pending = null
-){
+    function showSupportShirtClaim(
+    pending = null
+    ){
 
-const data =
-pending||
-pendingSupportCheckout();
+    const data =
+    pending||
+    pendingSupportCheckout();
 
-const panel =
-$('support-shirt-claim');
+    const panel =
+    $('support-shirt-claim');
 
-if(
-!panel||
-!data?.stripe_session_id
-)
-return;
+    if(
+    !panel||
+    !data?.stripe_session_id
+    )
+    return;
 
-panel.classList.add(
-'show'
-);
+    panel.classList.add(
+    'show'
+    );
 
-const shippingName =
-$('support-shirt-shipping-name');
+    const shippingName =
+    $('support-shirt-shipping-name');
 
-if(
-shippingName&&
-!shippingName.value
-)
-shippingName.value=
-String(
-data.name||
-$('support-name')?.value||
-''
-).trim();
+    if(
+    shippingName&&
+    !shippingName.value
+    )
+    shippingName.value=
+    String(
+    data.name||
+    $('support-name')?.value||
+    ''
+    ).trim();
 
-updateSupportShirtSpecialSize();
+    updateSupportShirtSpecialSize();
 
-setTimeout(
-()=>panel.scrollIntoView({
-behavior:'smooth',
-block:'start'
-}),
-80
-);
+    setTimeout(
+    ()=>panel.scrollIntoView({
+    behavior:'smooth',
+    block:'start'
+    }),
+    80
+    );
 
-}
+    }
 
 
-function hideSupportShirtClaim(){
+    function hideSupportShirtClaim(){
 
-const panel =
-$('support-shirt-claim');
+    const panel =
+    $('support-shirt-claim');
 
-if(panel)
-panel.classList.remove(
-'show'
-);
+    if(panel)
+    panel.classList.remove(
+    'show'
+    );
 
-}
+    }
 
 
-function setSupportShirtClaimStatus(
-message,
-type=''
-){
+    function setSupportShirtClaimStatus(
+    message,
+    type=''
+    ){
 
-const status =
-$('support-shirt-claim-status');
+    const status =
+    $('support-shirt-claim-status');
 
-if(!status)
-return;
+    if(!status)
+    return;
 
-status.className=
-`support-shirt-claim-status ${type}`
-.trim();
+    status.className=
+    `support-shirt-claim-status ${type}`
+    .trim();
 
-status.textContent=
-message||
-'';
+    status.textContent=
+    message||
+    '';
 
-}
+    }
 
 
-function restorePendingSupportShirtClaim(){
+    function restorePendingSupportShirtClaim(){
 
-const pending =
-pendingSupportCheckout();
+    const pending =
+    pendingSupportCheckout();
 
-if(
-!pending||
-!pending.stripe_session_id||
-!pending.shirt_reward_eligible||
-!pending.payment_confirmed
-)
-return;
+    if(
+    !pending||
+    !pending.stripe_session_id||
+    !pending.shirt_reward_eligible||
+    !pending.payment_confirmed
+    )
+    return;
 
-showSupportShirtClaim(
-pending
-);
+    showSupportShirtClaim(
+    pending
+    );
 
-}
+    }
 
 
-async function submitSupportShirtClaim(){
+    async function submitSupportShirtClaim(){
 
-const pending =
-pendingSupportCheckout();
+    const pending =
+    pendingSupportCheckout();
 
-if(
-!pending?.stripe_session_id
-){
+    if(
+    !pending?.stripe_session_id
+    ){
 
-setSupportShirtClaimStatus(
-'YOUR VERIFIED SUPPORT PAYMENT COULD NOT BE FOUND. PLEASE CONTACT B.O.S.S CODE MEDIA.',
-'error'
-);
+    setSupportShirtClaimStatus(
+    'YOUR VERIFIED SUPPORT PAYMENT COULD NOT BE FOUND. PLEASE CONTACT B.O.S.S CODE MEDIA.',
+    'error'
+    );
 
-return;
+    return;
 
-}
+    }
 
-const size =
-String(
-$('support-shirt-size')
-?.value||
-''
-).toUpperCase();
+    const size =
+    String(
+    $('support-shirt-size')
+    ?.value||
+    ''
+    ).toUpperCase();
 
-const specialSize =
-$('support-shirt-special-size')
-?.value
-.trim()||
-'';
+    const specialSize =
+    $('support-shirt-special-size')
+    ?.value
+    .trim()||
+    '';
 
-const shippingName =
-$('support-shirt-shipping-name')
-?.value
-.trim()||
-'';
+    const shippingName =
+    $('support-shirt-shipping-name')
+    ?.value
+    .trim()||
+    '';
 
-const addressLine1 =
-$('support-shirt-address1')
-?.value
-.trim()||
-'';
+    const addressLine1 =
+    $('support-shirt-address1')
+    ?.value
+    .trim()||
+    '';
 
-const addressLine2 =
-$('support-shirt-address2')
-?.value
-.trim()||
-'';
+    const addressLine2 =
+    $('support-shirt-address2')
+    ?.value
+    .trim()||
+    '';
 
-const city =
-$('support-shirt-city')
-?.value
-.trim()||
-'';
+    const city =
+    $('support-shirt-city')
+    ?.value
+    .trim()||
+    '';
 
-const stateRegion =
-$('support-shirt-state')
-?.value
-.trim()||
-'';
+    const stateRegion =
+    $('support-shirt-state')
+    ?.value
+    .trim()||
+    '';
 
-const postalCode =
-$('support-shirt-postal')
-?.value
-.trim()||
-'';
+    const postalCode =
+    $('support-shirt-postal')
+    ?.value
+    .trim()||
+    '';
 
-const country =
-$('support-shirt-country')
-?.value
-.trim()||
-'United States';
+    const country =
+    $('support-shirt-country')
+    ?.value
+    .trim()||
+    'United States';
 
-if(!size){
+    if(!size){
 
-setSupportShirtClaimStatus(
-'CHOOSE YOUR SHIRT SIZE.',
-'error'
-);
+    setSupportShirtClaimStatus(
+    'CHOOSE YOUR SHIRT SIZE.',
+    'error'
+    );
 
-return;
+    return;
 
-}
+    }
 
-if(
-size===
-'SPECIAL'&&
-!specialSize
-){
+    if(
+    size===
+    'SPECIAL'&&
+    !specialSize
+    ){
 
-setSupportShirtClaimStatus(
-'ENTER THE SPECIAL SHIRT SIZE YOU NEED.',
-'error'
-);
+    setSupportShirtClaimStatus(
+    'ENTER THE SPECIAL SHIRT SIZE YOU NEED.',
+    'error'
+    );
 
-return;
+    return;
 
-}
+    }
 
-if(
-!shippingName||
-!addressLine1||
-!city||
-!stateRegion||
-!postalCode||
-!country
-){
+    if(
+    !shippingName||
+    !addressLine1||
+    !city||
+    !stateRegion||
+    !postalCode||
+    !country
+    ){
 
-setSupportShirtClaimStatus(
-'COMPLETE YOUR SHIPPING INFORMATION.',
-'error'
-);
+    setSupportShirtClaimStatus(
+    'COMPLETE YOUR SHIPPING INFORMATION.',
+    'error'
+    );
 
-return;
+    return;
 
-}
+    }
 
-const button =
-$('support-shirt-claim-submit');
+    const button =
+    $('support-shirt-claim-submit');
 
-if(button){
-button.disabled=true;
-button.textContent=
-'SAVING SHIRT CLAIM...';
-}
+    if(button){
+    button.disabled=true;
+    button.textContent=
+    'SAVING SHIRT CLAIM...';
+    }
 
-setSupportShirtClaimStatus(
-'SAVING YOUR SUPPORTER SHIRT...'
-);
+    setSupportShirtClaimStatus(
+    'SAVING YOUR SUPPORTER SHIRT...'
+    );
 
-try{
+    try{
 
-const response =
-await fetch(
-`${API}/support/shirt-claims`,
-{
-method:'POST',
-headers:{
-'Content-Type':'application/json',
-Accept:'application/json'
-},
-body:JSON.stringify({
-stripe_session_id:
-pending.stripe_session_id,
-size,
-special_size:
-specialSize,
-shipping_name:
-shippingName,
-address_line1:
-addressLine1,
-address_line2:
-addressLine2,
-city,
-state_region:
-stateRegion,
-postal_code:
-postalCode,
-country
-})
-}
-);
+    const response =
+    await fetch(
+    `${API}/support/shirt-claims`,
+    {
+    method:'POST',
+    headers:{
+    'Content-Type':'application/json',
+    Accept:'application/json'
+    },
+    body:JSON.stringify({
+    stripe_session_id:
+    pending.stripe_session_id,
+    size,
+    special_size:
+    specialSize,
+    shipping_name:
+    shippingName,
+    address_line1:
+    addressLine1,
+    address_line2:
+    addressLine2,
+    city,
+    state_region:
+    stateRegion,
+    postal_code:
+    postalCode,
+    country
+    })
+    }
+    );
 
-let data={};
+    let data={};
 
-try{
-data=await response.json();
-}catch{}
+    try{
+    data=await response.json();
+    }catch{}
 
-if(
-!response.ok||
-data.success===false
-){
+    if(
+    !response.ok||
+    data.success===false
+    ){
 
-if(
-data.already_claimed
-){
+    if(
+    data.already_claimed
+    ){
 
-setSupportShirtClaimStatus(
-'YOUR SUPPORTER SHIRT HAS ALREADY BEEN CLAIMED.',
-'success'
-);
+    setSupportShirtClaimStatus(
+    'YOUR SUPPORTER SHIRT HAS ALREADY BEEN CLAIMED.',
+    'success'
+    );
 
-try{
-sessionStorage.removeItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-);
-}catch{}
+    try{
+    sessionStorage.removeItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    );
+    }catch{}
 
-if(button){
-button.disabled=true;
-button.textContent=
-'SHIRT CLAIMED';
-}
+    if(button){
+    button.disabled=true;
+    button.textContent=
+    'SHIRT CLAIMED';
+    }
 
-return;
+    return;
 
-}
+    }
 
-throw Error(
-data.error||
-data.message||
-'Unable to save your supporter shirt claim.'
-);
+    throw Error(
+    data.error||
+    data.message||
+    'Unable to save your supporter shirt claim.'
+    );
 
-}
+    }
 
-setSupportShirtClaimStatus(
-'SHIRT CLAIM SAVED. YOUR BLACK B.O.S.S CODE SUPPORTER SHIRT IS NOW MARKED FOR FULFILLMENT.',
-'success'
-);
+    setSupportShirtClaimStatus(
+    'SHIRT CLAIM SAVED. YOUR BLACK B.O.S.S CODE SUPPORTER SHIRT IS NOW MARKED FOR FULFILLMENT.',
+    'success'
+    );
 
-trackAnalytics(
-'support_shirt_claimed',
-{
-section:'support',
-itemId:
-data.data?.id||
-'',
-itemTitle:
-'B.O.S.S CODE SUPPORTER SHIRT',
-detail:{
-size:
-data.data?.size||
-size,
-color:'black'
-}
-}
-);
+    trackAnalytics(
+    'support_shirt_claimed',
+    {
+    section:'support',
+    itemId:
+    data.data?.id||
+    '',
+    itemTitle:
+    'B.O.S.S CODE SUPPORTER SHIRT',
+    detail:{
+    size:
+    data.data?.size||
+    size,
+    color:'black'
+    }
+    }
+    );
 
-try{
-sessionStorage.removeItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-);
-}catch{}
+    try{
+    sessionStorage.removeItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    );
+    }catch{}
 
-if(button){
-button.disabled=true;
-button.textContent=
-'SHIRT CLAIMED';
-}
+    if(button){
+    button.disabled=true;
+    button.textContent=
+    'SHIRT CLAIMED';
+    }
 
-}catch(error){
+    }catch(error){
 
-console.warn(
-'Support shirt claim error',
-error
-);
+    console.warn(
+    'Support shirt claim error',
+    error
+    );
 
-setSupportShirtClaimStatus(
-error.message||
-'YOUR SHIRT CLAIM COULD NOT BE SAVED. PLEASE TRY AGAIN.',
-'error'
-);
+    setSupportShirtClaimStatus(
+    error.message||
+    'YOUR SHIRT CLAIM COULD NOT BE SAVED. PLEASE TRY AGAIN.',
+    'error'
+    );
 
-if(button){
-button.disabled=false;
-button.textContent=
-'SUBMIT SHIRT CLAIM';
-}
+    if(button){
+    button.disabled=false;
+    button.textContent=
+    'SUBMIT SHIRT CLAIM';
+    }
 
-}
+    }
 
-}
+    }
 
 
-async function submitSupportIntent(){
+    async function submitSupportIntent(){
 
-const status=
-$('support-status');
+    const status=
+    $('support-status');
 
-const button=
-$('support-submit');
+    const button=
+    $('support-submit');
 
 
-if(status){
+    if(status){
 
-status.className=
-'support-status';
+    status.className=
+    'support-status';
 
-status.textContent=
-'';
+    status.textContent=
+    '';
 
-}
+    }
 
 
-if(
-selectedSupportAmountCents<
-100
-){
+    if(
+    selectedSupportAmountCents<
+    100
+    ){
 
-if(status){
+    if(status){
 
-status.className=
-'support-status error';
+    status.className=
+    'support-status error';
 
-status.textContent=
-'CHOOSE A SUPPORT AMOUNT OF AT LEAST $1.';
+    status.textContent=
+    'CHOOSE A SUPPORT AMOUNT OF AT LEAST $1.';
 
-}
+    }
 
-return;
+    return;
 
-}
+    }
 
 
-const name=
-$('support-name')
-?.value
-.trim()||
-'';
+    const name=
+    $('support-name')
+    ?.value
+    .trim()||
+    '';
 
 
-const email=
-$('support-email')
-?.value
-.trim()
-.toLowerCase()||
-'';
+    const email=
+    $('support-email')
+    ?.value
+    .trim()
+    .toLowerCase()||
+    '';
 
 
-const message=
-$('support-message')
-?.value
-.trim()||
-'';
+    const message=
+    $('support-message')
+    ?.value
+    .trim()||
+    '';
 
 
-if(
-!name
-){
+    if(
+    !name
+    ){
 
-if(status){
+    if(status){
 
-status.className=
-'support-status error';
+    status.className=
+    'support-status error';
 
-status.textContent=
-'ENTER YOUR NAME.';
+    status.textContent=
+    'ENTER YOUR NAME.';
 
-}
+    }
 
-return;
+    return;
 
-}
+    }
 
 
-if(
-!email||
-!/^\S+@\S+\.\S+$/.test(
-email
-)
-){
+    if(
+    !email||
+    !/^\S+@\S+\.\S+$/.test(
+    email
+    )
+    ){
 
-if(status){
+    if(status){
 
-status.className=
-'support-status error';
+    status.className=
+    'support-status error';
 
-status.textContent=
-'ENTER A VALID EMAIL ADDRESS.';
+    status.textContent=
+    'ENTER A VALID EMAIL ADDRESS.';
 
-}
+    }
 
-return;
+    return;
 
-}
+    }
 
 
-crmRememberIdentity(
-email,
-name,
-'support'
-);
+    crmRememberIdentity(
+    email,
+    name,
+    'support'
+    );
 
 
-if(button){
+    if(button){
 
-button.disabled=
-true;
+    button.disabled=
+    true;
 
-button.textContent=
-'OPENING SECURE CHECKOUT...';
+    button.textContent=
+    'OPENING SECURE CHECKOUT...';
 
-}
+    }
 
 
-if(status){
+    if(status){
 
-status.className=
-'support-status';
+    status.className=
+    'support-status';
 
-status.textContent=
-'CONNECTING TO STRIPE...';
+    status.textContent=
+    'CONNECTING TO STRIPE...';
 
-}
+    }
 
 
-try{
+    try{
 
-const response=
-await fetch(
-`${API}/payments/checkout/support`,
-{
+    const response=
+    await fetch(
+    `${API}/payments/checkout/support`,
+    {
 
-method:
-'POST',
+    method:
+    'POST',
 
-headers:{
+    headers:{
 
-'Content-Type':
-'application/json',
+    'Content-Type':
+    'application/json',
 
-Accept:
-'application/json'
+    Accept:
+    'application/json'
 
-},
+    },
 
-body:
-JSON.stringify({
+    body:
+    JSON.stringify({
 
-name,
+    name,
 
-email,
+    email,
 
-amount_cents:
-selectedSupportAmountCents,
+    amount_cents:
+    selectedSupportAmountCents,
 
-message,
+    message,
 
-visitor_id:
-BOSS_VISITOR_ID
+    visitor_id:
+    BOSS_VISITOR_ID
 
-})
+    })
 
-}
-);
+    }
+    );
 
 
-let data={};
+    let data={};
 
 
-try{
+    try{
 
-data=
-await response.json();
+    data=
+    await response.json();
 
-}catch{}
+    }catch{}
 
 
-if(
-!response.ok||
-data.success===
-false
-){
+    if(
+    !response.ok||
+    data.success===
+    false
+    ){
 
-throw Error(
-data.error||
-data.message||
-'Unable to start secure support checkout.'
-);
+    throw Error(
+    data.error||
+    data.message||
+    'Unable to start secure support checkout.'
+    );
 
-}
+    }
 
 
-const checkoutUrl=
-String(
-data.checkout_url||
-''
-).trim();
+    const checkoutUrl=
+    String(
+    data.checkout_url||
+    ''
+    ).trim();
 
 
-if(
-!checkoutUrl
-){
+    if(
+    !checkoutUrl
+    ){
 
-throw Error(
-'Stripe checkout did not return a checkout link.'
-);
+    throw Error(
+    'Stripe checkout did not return a checkout link.'
+    );
 
-}
+    }
 
 
-try{
+    try{
 
-sessionStorage.setItem(
-SUPPORT_PENDING_CHECKOUT_KEY,
-JSON.stringify({
+    sessionStorage.setItem(
+    SUPPORT_PENDING_CHECKOUT_KEY,
+    JSON.stringify({
 
-type:
-'support',
+    type:
+    'support',
 
-amount_cents:
-selectedSupportAmountCents,
+    amount_cents:
+    selectedSupportAmountCents,
 
-shirt_reward_eligible:
-Boolean(
-data.shirt_reward_eligible
-),
+    shirt_reward_eligible:
+    Boolean(
+    data.shirt_reward_eligible
+    ),
 
-support_contribution_id:
-data.support_contribution_id||
-null,
+    support_contribution_id:
+    data.support_contribution_id||
+    null,
 
-name,
+    name,
 
-email,
+    email,
 
-created_at:
-Date.now()
+    created_at:
+    Date.now()
 
-})
-);
+    })
+    );
 
-}catch{}
+    }catch{}
 
 
-trackAnalytics(
-'support_checkout_started',
-{
+    trackAnalytics(
+    'support_checkout_started',
+    {
 
-section:
-'support',
+    section:
+    'support',
 
-itemId:
-data.support_contribution_id||
-'',
+    itemId:
+    data.support_contribution_id||
+    '',
 
-itemTitle:
-'SUPPORT IS A DECISION',
+    itemTitle:
+    'SUPPORT IS A DECISION',
 
-valueNumeric:
-selectedSupportAmountCents/
-100,
+    valueNumeric:
+    selectedSupportAmountCents/
+    100,
 
-detail:{
+    detail:{
 
-shirt_eligible:
-Boolean(
-data.shirt_reward_eligible
-)
+    shirt_eligible:
+    Boolean(
+    data.shirt_reward_eligible
+    )
 
-}
+    }
 
-}
-);
+    }
+    );
 
 
-window.location.href=
-checkoutUrl;
+    window.location.href=
+    checkoutUrl;
 
 
-}catch(error){
+    }catch(error){
 
-console.warn(
-'Support checkout error',
-error
-);
+    console.warn(
+    'Support checkout error',
+    error
+    );
 
 
-if(status){
+    if(status){
 
-status.className=
-'support-status error';
+    status.className=
+    'support-status error';
 
-status.textContent=
-error.message||
-'YOUR SECURE SUPPORT CHECKOUT COULD NOT START. PLEASE TRY AGAIN.';
+    status.textContent=
+    error.message||
+    'YOUR SECURE SUPPORT CHECKOUT COULD NOT START. PLEASE TRY AGAIN.';
 
-}
+    }
 
 
-if(button){
+    if(button){
 
-button.disabled=
-false;
+    button.disabled=
+    false;
 
-button.textContent=
-'CONTINUE TO SUPPORT';
+    button.textContent=
+    'CONTINUE TO SUPPORT';
 
-}
+    }
 
-}
+    }
 
-}
+    }
 
 
-const support=
-ensureSupportScreen();
+    const support=
+    ensureSupportScreen();
 
 
-ensureReturnHomeButtons();
+    ensureReturnHomeButtons();
 
 
-/* =========================================================
-   NAVIGATION EVENTS
-========================================================= */
+    /* =========================================================
+       NAVIGATION EVENTS
+    ========================================================= */
 
-on(
-'boss-bite-button',
-'click',
-()=>openWithPromo(
-'boss-bite',
-()=>{
+    on(
+    'boss-bite-button',
+    'click',
+    ()=>openWithPromo(
+    'boss-bite',
+    ()=>{
 
-showScreen(
-bite
-);
+    showScreen(
+    bite
+    );
 
-initMap();
+    initMap();
 
-}
-)
-);
+    }
+    )
+    );
 
 
-on(
-'boss-bite-back',
-'click',
-()=>showScreen(
-home
-)
-);
+    on(
+    'boss-bite-back',
+    'click',
+    ()=>showScreen(
+    home
+    )
+    );
 
 
-on(
-'boss-code-tv-button',
-'click',
-()=>openWithPromo(
-'boss-code-tv',
-()=>showScreen(
-tv
-)
-)
-);
+    on(
+    'boss-code-tv-button',
+    'click',
+    ()=>openWithPromo(
+    'boss-code-tv',
+    ()=>showScreen(
+    tv
+    )
+    )
+    );
 
 
-on(
-'boss-code-tv-back',
-'click',
-()=>{
+    on(
+    'boss-code-tv-back',
+    'click',
+    ()=>{
 
-buildTv();
+    buildTv();
 
-showScreen(
-home
-);
+    showScreen(
+    home
+    );
 
-}
-);
+    }
+    );
 
 
-on(
-'decision-makers-button',
-'click',
-()=>openWithPromo(
-'decision-makers',
-()=>showScreen(
-dm
-)
-)
-);
+    on(
+    'decision-makers-button',
+    'click',
+    ()=>openWithPromo(
+    'decision-makers',
+    ()=>showScreen(
+    dm
+    )
+    )
+    );
 
 
-on(
-'decision-makers-back',
-'click',
-()=>{
+    on(
+    'decision-makers-back',
+    'click',
+    ()=>{
 
-stopDM();
+    stopDM();
 
-showScreen(
-home
-);
+    showScreen(
+    home
+    );
 
-}
-);
+    }
+    );
 
 
-on(
-'boss-checkin-button',
-'click',
-()=>openWithPromo(
-'boss-checkin',
-()=>{
+    on(
+    'boss-checkin-button',
+    'click',
+    ()=>openWithPromo(
+    'boss-checkin',
+    ()=>{
 
-showScreen(
-check
-);
+    showScreen(
+    check
+    );
 
-showCheckIntro();
+    showCheckIntro();
 
-}
-)
-);
+    }
+    )
+    );
 
 
-on(
-'boss-checkin-back',
-'click',
-()=>showScreen(
-home
-)
-);
+    on(
+    'boss-checkin-back',
+    'click',
+    ()=>showScreen(
+    home
+    )
+    );
 
 
-on(
-'music-button',
-'click',
-()=>openWithPromo(
-'music',
-()=>{
+    on(
+    'music-button',
+    'click',
+    ()=>openWithPromo(
+    'music',
+    ()=>{
 
-showScreen(
-music
-);
+    showScreen(
+    music
+    );
 
-renderArtists();
+    renderArtists();
 
-}
-)
-);
+    }
+    )
+    );
 
 
-on(
-'music-back',
-'click',
-()=>{
+    on(
+    'music-back',
+    'click',
+    ()=>{
 
-if(
-audio&&
-!audio.paused
-)
-audio.pause();
+    if(
+    audio&&
+    !audio.paused
+    )
+    audio.pause();
 
 
-showScreen(
-home
-);
+    showScreen(
+    home
+    );
 
-}
-);
+    }
+    );
 
 
-on(
-'contact-button',
-'click',
-()=>showScreen(
-contact
-)
-);
+    on(
+    'contact-button',
+    'click',
+    ()=>showScreen(
+    contact
+    )
+    );
 
 
-on(
-'contact-back',
-'click',
-()=>showScreen(
-home
-)
-);
+    on(
+    'contact-back',
+    'click',
+    ()=>showScreen(
+    home
+    )
+    );
 
 
-on(
-'support-button',
-'click',
-()=>showScreen(
-support
-)
-);
+    on(
+    'support-button',
+    'click',
+    ()=>showScreen(
+    support
+    )
+    );
 
 
-on(
-'support-back',
-'click',
-()=>showScreen(
-home
-)
-);
+    on(
+    'support-back',
+    'click',
+    ()=>showScreen(
+    home
+    )
+    );
 
 
-on(
-'go-to-decision-makers',
-'click',
-()=>openWithPromo(
-'decision-makers',
-()=>showScreen(
-dm
-)
-)
-);
+    on(
+    'go-to-decision-makers',
+    'click',
+    ()=>openWithPromo(
+    'decision-makers',
+    ()=>showScreen(
+    dm
+    )
+    )
+    );
 
 
-/* =========================================================
-   CONTACT SUBMISSION
-========================================================= */
+    /* =========================================================
+       CONTACT SUBMISSION
+    ========================================================= */
 
-on(
-'contact-submit',
-'click',
-async()=>{
+    on(
+    'contact-submit',
+    'click',
+    async()=>{
 
-const name=
-$('contact-name')
-?.value
-.trim()||
-'';
+    const name=
+    $('contact-name')
+    ?.value
+    .trim()||
+    '';
 
 
-const email=
-$('contact-email')
-?.value
-.trim()||
-'';
+    const email=
+    $('contact-email')
+    ?.value
+    .trim()||
+    '';
 
 
-const inquiryType=
-$('contact-type')
-?.value||
-'General Inquiry';
+    const inquiryType=
+    $('contact-type')
+    ?.value||
+    'General Inquiry';
 
 
-const message=
-$('contact-message')
-?.value
-.trim()||
-'';
+    const message=
+    $('contact-message')
+    ?.value
+    .trim()||
+    '';
 
 
-const status=
-$('contact-status');
+    const status=
+    $('contact-status');
 
 
-const button=
-$('contact-submit');
+    const button=
+    $('contact-submit');
 
 
-if(status){
+    if(status){
 
-status.className=
-'contact-status';
+    status.className=
+    'contact-status';
 
-status.textContent='';
+    status.textContent='';
 
-}
+    }
 
 
-if(
-!name||
-!email||
-!message
-){
+    if(
+    !name||
+    !email||
+    !message
+    ){
 
-if(status){
+    if(status){
 
-status.className=
-'contact-status error';
+    status.className=
+    'contact-status error';
 
-status.textContent=
-'Please complete your name, email and message.';
+    status.textContent=
+    'Please complete your name, email and message.';
 
-}
+    }
 
-return;
+    return;
 
-}
+    }
 
 
-if(
-!/^\S+@\S+\.\S+$/.test(
-email
-)
-){
+    if(
+    !/^\S+@\S+\.\S+$/.test(
+    email
+    )
+    ){
 
-if(status){
+    if(status){
 
-status.className=
-'contact-status error';
+    status.className=
+    'contact-status error';
 
-status.textContent=
-'Please enter a valid email address.';
+    status.textContent=
+    'Please enter a valid email address.';
 
-}
+    }
 
-return;
+    return;
 
-}
+    }
 
 
-crmRememberIdentity(
-email,
-name,
-'contact_form'
-);
+    crmRememberIdentity(
+    email,
+    name,
+    'contact_form'
+    );
 
-trackAnalytics(
-'contact_submit',
-{
-section:'contact',
-itemTitle:inquiryType
-}
-);
+    trackAnalytics(
+    'contact_submit',
+    {
+    section:'contact',
+    itemTitle:inquiryType
+    }
+    );
 
-if(button){
+    if(button){
 
-button.disabled=
-true;
+    button.disabled=
+    true;
 
-button.textContent=
-'SENDING...';
+    button.textContent=
+    'SENDING...';
 
-}
+    }
 
 
-try{
+    try{
 
-const r=
-await fetch(
+    const r=
+    await fetch(
 
-API+
-'/contact-inquiries',
+    API+
+    '/contact-inquiries',
 
-{
+    {
 
-method:
-'POST',
+    method:
+    'POST',
 
-headers:{
+    headers:{
 
-'Content-Type':
-'application/json',
+    'Content-Type':
+    'application/json',
 
-Accept:
-'application/json'
+    Accept:
+    'application/json'
 
-},
+    },
 
-body:
-JSON.stringify({
+    body:
+    JSON.stringify({
 
-name,
+    name,
 
-email,
+    email,
 
-inquiry_type:
-inquiryType,
+    inquiry_type:
+    inquiryType,
 
-message,
+    message,
 
-visitor_id:
-BOSS_VISITOR_ID
+    visitor_id:
+    BOSS_VISITOR_ID
 
-})
+    })
 
-}
+    }
 
-);
+    );
 
 
-let data={};
+    let data={};
 
 
-try{
+    try{
 
-data=
-await r.json();
+    data=
+    await r.json();
 
-}catch{}
+    }catch{}
 
 
-if(
-!r.ok||
-data.success===
-false
-){
+    if(
+    !r.ok||
+    data.success===
+    false
+    ){
 
-throw Error(
+    throw Error(
 
-data.error||
-data.message||
-'Unable to send message.'
+    data.error||
+    data.message||
+    'Unable to send message.'
 
-);
+    );
 
-}
+    }
 
 
-if(
-$('contact-name')
-)
-$('contact-name')
-.value='';
+    if(
+    $('contact-name')
+    )
+    $('contact-name')
+    .value='';
 
 
-if(
-$('contact-email')
-)
-$('contact-email')
-.value='';
+    if(
+    $('contact-email')
+    )
+    $('contact-email')
+    .value='';
 
 
-if(
-$('contact-type')
-)
-$('contact-type')
-.value=
-'General Inquiry';
+    if(
+    $('contact-type')
+    )
+    $('contact-type')
+    .value=
+    'General Inquiry';
 
 
-if(
-$('contact-message')
-)
-$('contact-message')
-.value='';
+    if(
+    $('contact-message')
+    )
+    $('contact-message')
+    .value='';
 
 
-if(status){
+    if(status){
 
-status.className=
-'contact-status success';
+    status.className=
+    'contact-status success';
 
-status.textContent=
-'MESSAGE SENT. B.O.S.S CODE MEDIA RECEIVED YOUR INQUIRY.';
+    status.textContent=
+    'MESSAGE SENT. B.O.S.S CODE MEDIA RECEIVED YOUR INQUIRY.';
 
-}
+    }
 
 
-}catch(e){
+    }catch(e){
 
-console.warn(
+    console.warn(
 
-'Contact form error',
+    'Contact form error',
 
-e
+    e
 
-);
+    );
 
 
-if(status){
+    if(status){
 
-status.className=
-'contact-status error';
+    status.className=
+    'contact-status error';
 
-status.textContent=
-'Message could not be sent. Please try again.';
+    status.textContent=
+    'Message could not be sent. Please try again.';
 
-}
+    }
 
 
-}finally{
+    }finally{
 
 
-if(button){
+    if(button){
 
-button.disabled=
-false;
+    button.disabled=
+    false;
 
-button.textContent=
-'SEND MESSAGE';
+    button.textContent=
+    'SEND MESSAGE';
 
-}
+    }
 
 
-}
+    }
 
-}
-);
+    }
+    );
 
 
-/* =========================================================
-   DAILY DECISION
-   PERMANENT BANK + ADMIN ADDITIONS
-========================================================= */
+    /* =========================================================
+       DAILY DECISION
+       PERMANENT BANK + ADMIN ADDITIONS
+    ========================================================= */
 
-const builtDaily=[
+    const builtDaily=[
 
-[
-'Finish one thing you have been avoiding before you start something new.',
-'Choose the unfinished task that has been following you around and complete the next real step today.'
-],
+    [
+    'Finish one thing you have been avoiding before you start something new.',
+    'Choose the unfinished task that has been following you around and complete the next real step today.'
+    ],
 
-[
-'Stop waiting for somebody else to believe in an idea you already know deserves a chance.',
-'Take one action toward the idea without asking anyone for permission.'
-],
+    [
+    'Stop waiting for somebody else to believe in an idea you already know deserves a chance.',
+    'Take one action toward the idea without asking anyone for permission.'
+    ],
 
-[
-'Protect the first hour of your day from unnecessary noise.',
-'Give your first focused hour to something that moves your life forward.'
-],
+    [
+    'Protect the first hour of your day from unnecessary noise.',
+    'Give your first focused hour to something that moves your life forward.'
+    ],
 
-[
-'Do the important thing before the easy thing.',
-'Identify the task with the greatest impact and work on it first.'
-],
+    [
+    'Do the important thing before the easy thing.',
+    'Identify the task with the greatest impact and work on it first.'
+    ],
 
-[
-'Stop measuring your beginning against somebody else’s middle.',
-'Return your attention to one measurable step on your own path.'
-],
+    [
+    'Stop measuring your beginning against somebody else’s middle.',
+    'Return your attention to one measurable step on your own path.'
+    ],
 
-[
-'Choose discipline over mood for one hour.',
-'Work on the goal for one uninterrupted hour whether you feel motivated or not.'
-],
+    [
+    'Choose discipline over mood for one hour.',
+    'Work on the goal for one uninterrupted hour whether you feel motivated or not.'
+    ],
 
-[
-'Make a decision your future self will thank you for.',
-'Choose one action today that improves tomorrow instead of only comforting today.'
-],
+    [
+    'Make a decision your future self will thank you for.',
+    'Choose one action today that improves tomorrow instead of only comforting today.'
+    ],
 
-[
-'Finish what you said you would finish.',
-'Pick one promise you made to yourself and honor it before the day ends.'
-],
+    [
+    'Finish what you said you would finish.',
+    'Pick one promise you made to yourself and honor it before the day ends.'
+    ],
 
-[
-'Do not let one bad moment become a bad day.',
-'Reset your attention and make the next decision a useful one.'
-],
+    [
+    'Do not let one bad moment become a bad day.',
+    'Reset your attention and make the next decision a useful one.'
+    ],
 
-[
-'Choose progress that can be measured.',
-'Complete one task you can point to at the end of the day.'
-],
+    [
+    'Choose progress that can be measured.',
+    'Complete one task you can point to at the end of the day.'
+    ],
 
-[
-'Stop making fear sound like wisdom.',
-'Ask whether the concern is a real fact or simply discomfort about moving.'
-],
+    [
+    'Stop making fear sound like wisdom.',
+    'Ask whether the concern is a real fact or simply discomfort about moving.'
+    ],
 
-[
-'Stop waiting for the perfect conditions.',
-'Use what you have and create the best next version possible.'
-],
+    [
+    'Stop waiting for the perfect conditions.',
+    'Use what you have and create the best next version possible.'
+    ],
 
-[
-'Protect your attention like it has value, because it does.',
-'Turn off one source of interruption during your most important work.'
-],
+    [
+    'Protect your attention like it has value, because it does.',
+    'Turn off one source of interruption during your most important work.'
+    ],
 
-[
-'Do not confuse being busy with moving forward.',
-'Remove one low value task and replace it with meaningful progress.'
-],
+    [
+    'Do not confuse being busy with moving forward.',
+    'Remove one low value task and replace it with meaningful progress.'
+    ],
 
-[
-'Use your talent instead of only talking about it.',
-'Create, practice, publish or perform something today.'
-],
+    [
+    'Use your talent instead of only talking about it.',
+    'Create, practice, publish or perform something today.'
+    ],
 
-[
-'Stop negotiating with a task you already decided matters.',
-'Start it now for ten minutes and let momentum take over.'
-],
+    [
+    'Stop negotiating with a task you already decided matters.',
+    'Start it now for ten minutes and let momentum take over.'
+    ],
 
-[
-'Create before you consume.',
-'Make something of your own before opening entertainment or social media.'
-],
+    [
+    'Create before you consume.',
+    'Make something of your own before opening entertainment or social media.'
+    ],
 
-[
-'Stop waiting to feel confident before acting.',
-'Take the action that confidence is supposed to help you take.'
-],
+    [
+    'Stop waiting to feel confident before acting.',
+    'Take the action that confidence is supposed to help you take.'
+    ],
 
-[
-'Turn one excuse into a plan.',
-'Take the obstacle you keep naming and write one practical way around it.'
-],
+    [
+    'Turn one excuse into a plan.',
+    'Take the obstacle you keep naming and write one practical way around it.'
+    ],
 
-[
-'Choose consistency over intensity.',
-'Do the smaller action you can repeat instead of waiting for a dramatic burst of motivation.'
-],
+    [
+    'Choose consistency over intensity.',
+    'Do the smaller action you can repeat instead of waiting for a dramatic burst of motivation.'
+    ],
 
-[
-'Do not let perfection delay something useful.',
-'Release, send, post or finish the version that is ready enough to move.'
-],
+    [
+    'Do not let perfection delay something useful.',
+    'Release, send, post or finish the version that is ready enough to move.'
+    ],
 
-[
-'Make your next hour intentional.',
-'Decide exactly what the next sixty minutes are for before they disappear.'
-],
+    [
+    'Make your next hour intentional.',
+    'Decide exactly what the next sixty minutes are for before they disappear.'
+    ],
 
-[
-'Create a boundary before resentment creates one for you.',
-'Communicate one limit clearly and respectfully today.'
-],
+    [
+    'Create a boundary before resentment creates one for you.',
+    'Communicate one limit clearly and respectfully today.'
+    ],
 
-[
-'Stop using preparation to hide from execution.',
-'Move one idea from planning into real world action today.'
-],
+    [
+    'Stop using preparation to hide from execution.',
+    'Move one idea from planning into real world action today.'
+    ],
 
-[
-'Do not let uncertainty become inactivity.',
-'Take the step that remains sensible even without knowing the whole path.'
-],
+    [
+    'Do not let uncertainty become inactivity.',
+    'Take the step that remains sensible even without knowing the whole path.'
+    ],
 
-[
-'Choose responsibility over excuses.',
-'Name what is within your control and take action on that part today.'
-],
+    [
+    'Choose responsibility over excuses.',
+    'Name what is within your control and take action on that part today.'
+    ],
 
-[
-'Make today’s decision something you can prove with action.',
-'Before the day ends, create visible evidence that you followed through.'
-]
+    [
+    'Make today’s decision something you can prove with action.',
+    'Before the day ends, create visible evidence that you followed through.'
+    ]
 
-];
+    ];
 
 
-let daily=[
-...builtDaily
-];
+    let daily=[
+    ...builtDaily
+    ];
 
 
-const DK=
-'boss-code-daily-decision-v3';
+    const DK=
+    'boss-code-daily-decision-v3';
 
 
-const DAY=
-86400000;
+    const DAY=
+    86400000;
 
 
-function dailyState(){
+    function dailyState(){
 
-let s;
+    let s;
 
 
-try{
+    try{
 
-s=
-JSON.parse(
+    s=
+    JSON.parse(
 
-localStorage.getItem(
-DK
-)
-||
-'null'
+    localStorage.getItem(
+    DK
+    )
+    ||
+    'null'
 
-);
+    );
 
-}catch{}
+    }catch{}
 
 
-const now=
-Date.now();
+    const now=
+    Date.now();
 
 
-if(
-!s||
-!Number.isInteger(
-s.i
-)||
-!s.t
-){
+    if(
+    !s||
+    !Number.isInteger(
+    s.i
+    )||
+    !s.t
+    ){
 
-s={
+    s={
 
-i:
-daily.length
-?
-Math.floor(
-now/
-DAY
-)
-%
-daily.length
-:
-0,
+    i:
+    daily.length
+    ?
+    Math.floor(
+    now/
+    DAY
+    )
+    %
+    daily.length
+    :
+    0,
 
-t:
-now,
+    t:
+    now,
 
-seen:
-false
+    seen:
+    false
 
-};
+    };
 
-}
+    }
 
 
-const c=
-Math.floor(
+    const c=
+    Math.floor(
 
-(
-now-
-s.t
-)
-/
-DAY
+    (
+    now-
+    s.t
+    )
+    /
+    DAY
 
-);
+    );
 
 
-if(
-c>
-0
-){
+    if(
+    c>
+    0
+    ){
 
-if(
-daily.length
-){
+    if(
+    daily.length
+    ){
 
-s.i=
-(
-s.i+
-c
-)
-%
-daily.length;
+    s.i=
+    (
+    s.i+
+    c
+    )
+    %
+    daily.length;
 
-}
-else{
+    }
+    else{
 
-s.i=
-0;
+    s.i=
+    0;
 
-}
+    }
 
 
-s.t+=
-c*
-DAY;
+    s.t+=
+    c*
+    DAY;
 
 
-s.seen=
-false;
+    s.seen=
+    false;
 
-}
+    }
 
 
-if(
-daily.length&&
-s.i>=
-daily.length
-){
+    if(
+    daily.length&&
+    s.i>=
+    daily.length
+    ){
 
-s.i=
-0;
+    s.i=
+    0;
 
-}
+    }
 
 
-localStorage.setItem(
+    localStorage.setItem(
 
-DK,
+    DK,
 
-JSON.stringify(
-s
-)
+    JSON.stringify(
+    s
+    )
 
-);
+    );
 
 
-return s;
+    return s;
 
-}
+    }
 
 
-function renderDaily(){
+    function renderDaily(){
 
-const title=
-$('daily-decision-title');
+    const title=
+    $('daily-decision-title');
 
 
-const move=
-$('daily-decision-move-text');
+    const move=
+    $('daily-decision-move-text');
 
 
-const preview=
-$('daily-decision-home-preview');
+    const preview=
+    $('daily-decision-home-preview');
 
 
-const number=
-$('daily-decision-number');
+    const number=
+    $('daily-decision-number');
 
 
-const confirmation=
-$('daily-decision-confirmation');
+    const confirmation=
+    $('daily-decision-confirmation');
 
 
-if(
-!daily.length
-){
+    if(
+    !daily.length
+    ){
 
-if(number){
+    if(number){
 
-number.textContent=
-'TODAY';
+    number.textContent=
+    'TODAY';
 
-}
+    }
 
 
-if(title){
+    if(title){
 
-title.textContent=
-'CHECK BACK FOR TODAY’S DECISION';
+    title.textContent=
+    'CHECK BACK FOR TODAY’S DECISION';
 
-}
+    }
 
 
-if(move){
+    if(move){
 
-move.textContent=
-'New Daily Decisions are controlled from B.O.S.S CODE GO Admin.';
+    move.textContent=
+    'New Daily Decisions are controlled from B.O.S.S CODE GO Admin.';
 
-}
+    }
 
 
-if(preview){
+    if(preview){
 
-preview.textContent=
-'CHECK BACK FOR TODAY’S DECISION';
+    preview.textContent=
+    'CHECK BACK FOR TODAY’S DECISION';
 
-}
+    }
 
 
-if(confirmation){
+    if(confirmation){
 
-confirmation.textContent=
-'';
+    confirmation.textContent=
+    '';
 
-}
+    }
 
 
-return;
+    return;
 
-}
+    }
 
 
-const s=
-dailyState();
+    const s=
+    dailyState();
 
 
-const d=
-daily[
-s.i
-];
+    const d=
+    daily[
+    s.i
+    ];
 
 
-if(!d)
-return;
+    if(!d)
+    return;
 
 
-if(number){
+    if(number){
 
-number.textContent=
-'DECISION '+
-String(
-s.i+
-1
-)
-.padStart(
-3,
-'0'
-);
+    number.textContent=
+    'DECISION '+
+    String(
+    s.i+
+    1
+    )
+    .padStart(
+    3,
+    '0'
+    );
 
-}
+    }
 
 
-if(title){
+    if(title){
 
-title.textContent=
-d[0]||
-'';
+    title.textContent=
+    d[0]||
+    '';
 
-}
+    }
 
 
-if(move){
+    if(move){
 
-move.textContent=
-d[1]||
-'';
+    move.textContent=
+    d[1]||
+    '';
 
-}
+    }
 
 
-if(preview){
+    if(preview){
 
-preview.textContent=
-d[0]||
-'';
+    preview.textContent=
+    d[0]||
+    '';
 
-}
+    }
 
 
-if(confirmation){
+    if(confirmation){
 
-confirmation.textContent=
-s.seen
-?
-'DECISION MADE. NOW MOVE.'
-:
-'';
+    confirmation.textContent=
+    s.seen
+    ?
+    'DECISION MADE. NOW MOVE.'
+    :
+    '';
 
-}
+    }
 
-}
+    }
 
 
-function openDaily(){
+    function openDaily(){
 
-if(
-!daily.length
-)
-return;
+    if(
+    !daily.length
+    )
+    return;
 
 
-const state=
-dailyState();
+    const state=
+    dailyState();
 
 
-const current=
-daily[
-state.i
-];
+    const current=
+    daily[
+    state.i
+    ];
 
 
-trackAnalytics(
-'daily_decision_view',
-{
+    trackAnalytics(
+    'daily_decision_view',
+    {
 
-section:
-'home',
+    section:
+    'home',
 
-itemId:
-state.i,
+    itemId:
+    state.i,
 
-itemTitle:
-current?.[0]||
-"TODAY'S DECISION"
+    itemTitle:
+    current?.[0]||
+    "TODAY'S DECISION"
 
-}
-);
+    }
+    );
 
 
-const m=
-$('daily-decision-modal');
+    const m=
+    $('daily-decision-modal');
 
 
-if(!m)
-return;
+    if(!m)
+    return;
 
 
-renderDaily();
+    renderDaily();
 
 
-m.classList.add(
-'open'
-);
+    m.classList.add(
+    'open'
+    );
 
 
-m.setAttribute(
-'aria-hidden',
-'false'
-);
+    m.setAttribute(
+    'aria-hidden',
+    'false'
+    );
 
 
-document.body.style.overflow=
-'hidden';
+    document.body.style.overflow=
+    'hidden';
 
-}
+    }
 
 
-function closeDaily(
-mark=true
-){
+    function closeDaily(
+    mark=true
+    ){
 
-const m=
-$('daily-decision-modal');
+    const m=
+    $('daily-decision-modal');
 
 
-if(mark){
+    if(mark){
 
-const s=
-dailyState();
+    const s=
+    dailyState();
 
 
-s.seen=
-true;
+    s.seen=
+    true;
 
 
-localStorage.setItem(
+    localStorage.setItem(
 
-DK,
+    DK,
 
-JSON.stringify(
-s
-)
+    JSON.stringify(
+    s
+    )
 
-);
+    );
 
-}
+    }
 
 
-if(m){
+    if(m){
 
-m.classList.remove(
-'open'
-);
+    m.classList.remove(
+    'open'
+    );
 
 
-m.setAttribute(
-'aria-hidden',
-'true'
-);
+    m.setAttribute(
+    'aria-hidden',
+    'true'
+    );
 
-}
+    }
 
 
-document.body.style.overflow=
-'';
+    document.body.style.overflow=
+    '';
 
-}
+    }
 
 
-on(
-'daily-decision-close',
-'click',
-()=>closeDaily()
-);
+    on(
+    'daily-decision-close',
+    'click',
+    ()=>closeDaily()
+    );
 
 
-on(
-'daily-decision-reopen',
-'click',
-openDaily
-);
+    on(
+    'daily-decision-reopen',
+    'click',
+    openDaily
+    );
 
 
-on(
-'daily-decision-made',
-'click',
-()=>{
+    on(
+    'daily-decision-made',
+    'click',
+    ()=>{
 
-if(
-!daily.length
-)
-return;
+    if(
+    !daily.length
+    )
+    return;
 
 
-const s=
-dailyState();
+    const s=
+    dailyState();
 
 
-s.seen=
-true;
+    s.seen=
+    true;
 
 
-localStorage.setItem(
+    localStorage.setItem(
 
-DK,
+    DK,
 
-JSON.stringify(
-s
-)
+    JSON.stringify(
+    s
+    )
 
-);
+    );
 
 
-const current=
-daily[
-s.i
-];
+    const current=
+    daily[
+    s.i
+    ];
 
 
-trackAnalytics(
-'daily_decision_made',
-{
+    trackAnalytics(
+    'daily_decision_made',
+    {
 
-section:
-'home',
+    section:
+    'home',
 
-itemId:
-s.i,
+    itemId:
+    s.i,
 
-itemTitle:
-current?.[0]||
-"TODAY'S DECISION"
+    itemTitle:
+    current?.[0]||
+    "TODAY'S DECISION"
 
-}
-);
+    }
+    );
 
 
-renderDaily();
+    renderDaily();
 
 
-setTimeout(
+    setTimeout(
 
-()=>closeDaily(
-false
-),
+    ()=>closeDaily(
+    false
+    ),
 
-600
+    600
 
-);
+    );
 
-}
-);
+    }
+    );
 
 
-window.addEventListener(
-'load',
-()=>{
+    window.addEventListener(
+    'load',
+    ()=>{
 
-renderDaily();
+    renderDaily();
 
 
-setTimeout(
-()=>{
+    setTimeout(
+    ()=>{
 
-const s=
-$('splash-screen');
+    const s=
+    $('splash-screen');
 
 
-if(s){
+    if(s){
 
-s.classList.add(
-'fade-out'
-);
+    s.classList.add(
+    'fade-out'
+    );
 
 
-setTimeout(
-()=>{
+    setTimeout(
+    ()=>{
 
-s.style.display=
-'none';
+    s.style.display=
+    'none';
 
 
-if(
-daily.length&&
-!dailyState().seen
-){
+    if(
+    daily.length&&
+    !dailyState().seen
+    ){
 
-openDaily();
+    openDaily();
 
-}
+    }
 
-},
-700
-);
+    },
+    700
+    );
 
-}
-else if(
-daily.length&&
-!dailyState().seen
-){
+    }
+    else if(
+    daily.length&&
+    !dailyState().seen
+    ){
 
-openDaily();
+    openDaily();
 
-}
+    }
 
-},
-1500
-);
+    },
+    1500
+    );
 
-}
-);
-/* =========================================================
-   MUSIC
-   BACKEND ONLY
-========================================================= */
+    }
+    );
+    /* =========================================================
+       MUSIC
+       BACKEND ONLY
+    ========================================================= */
 
-let artists=[];
+    let artists=[];
 
-let activeArtist=null;
+    let activeArtist=null;
 
-let artistGalleryRows=[];
+    let artistGalleryRows=[];
 
-let artistMusicVideoRows=[];
+    let artistMusicVideoRows=[];
 
-let trackIndex=-1;
+    let trackIndex=-1;
 
-let sourceIndex=0;
+    let sourceIndex=0;
 
-let musicQueue=[];
+    let musicQueue=[];
 
-let activeReleaseId=null;
+    let activeReleaseId=null;
 
-let musicAnalyticsTrack=null;
+    let musicAnalyticsTrack=null;
 
-let musicAnalyticsLastTime=0;
+    let musicAnalyticsLastTime=0;
 
-let musicAnalyticsQualifiedSeconds=0;
+    let musicAnalyticsQualifiedSeconds=0;
 
-let musicAnalyticsQualifiedSent=false;
+    let musicAnalyticsQualifiedSent=false;
 
-const audio=
-$('boss-music-audio');
+    const audio=
+    $('boss-music-audio');
 
 
-function musicYoutubeId(url=''){
+    function musicYoutubeId(url=''){
 
-for(
-const r of[
+    for(
+    const r of[
 
-/youtube\.com\/live\/([^?&/]+)/,
+    /youtube\.com\/live\/([^?&/]+)/,
 
-/youtube\.com\/watch\?v=([^&]+)/,
+    /youtube\.com\/watch\?v=([^&]+)/,
 
-/youtu\.be\/([^?&/]+)/,
+    /youtu\.be\/([^?&/]+)/,
 
-/youtube\.com\/embed\/([^?&/]+)/,
+    /youtube\.com\/embed\/([^?&/]+)/,
 
-/youtube\.com\/shorts\/([^?&/]+)/
-]
-){
+    /youtube\.com\/shorts\/([^?&/]+)/
+    ]
+    ){
 
-const m=
-String(url)
-.match(r);
+    const m=
+    String(url)
+    .match(r);
 
-if(m)
-return m[1];
+    if(m)
+    return m[1];
 
-}
+    }
 
-return'';
+    return'';
 
-}
+    }
 
 
-function ensureArtistUI(){
+    function ensureArtistUI(){
 
-const h=
-q(
-'#music-screen .music-header'
-);
+    const h=
+    q(
+    '#music-screen .music-header'
+    );
 
-if(!h)
-return;
+    if(!h)
+    return;
 
 
-if(
-!$('artist-picker-section')
-){
+    if(
+    !$('artist-picker-section')
+    ){
 
-const s=
-document.createElement(
-'section'
-);
+    const s=
+    document.createElement(
+    'section'
+    );
 
-s.id=
-'artist-picker-section';
+    s.id=
+    'artist-picker-section';
 
-s.className=
-'artist-picker-section';
+    s.className=
+    'artist-picker-section';
 
-s.innerHTML=`
+    s.innerHTML=`
 
-<div class="artist-picker-heading">
+    <div class="artist-picker-heading">
 
-<span>
-B.O.S.S CODE MUSIC
-</span>
+    <span>
+    B.O.S.S CODE MUSIC
+    </span>
 
-<h2>
-CHOOSE YOUR ARTIST
-</h2>
+    <h2>
+    CHOOSE YOUR ARTIST
+    </h2>
 
-<p>
-Pick an artist to explore their music.
-</p>
+    <p>
+    Pick an artist to explore their music.
+    </p>
 
-</div>
+    </div>
 
-<div
-id="artist-grid"
-class="artist-grid"
-></div>
+    <div
+    id="artist-grid"
+    class="artist-grid"
+    ></div>
 
-`;
+    `;
 
 
-h.insertAdjacentElement(
-'afterend',
-s
-);
+    h.insertAdjacentElement(
+    'afterend',
+    s
+    );
 
 
-const b=
-document.createElement(
-'section'
-);
+    const b=
+    document.createElement(
+    'section'
+    );
 
-b.id=
-'selected-artist-banner';
+    b.id=
+    'selected-artist-banner';
 
-b.className=
-'selected-artist-banner';
+    b.className=
+    'selected-artist-banner';
 
 
-s.insertAdjacentElement(
-'afterend',
-b
-);
+    s.insertAdjacentElement(
+    'afterend',
+    b
+    );
 
-}
+    }
 
 
-ensureArtistMediaSections();
+    ensureArtistMediaSections();
 
-}
+    }
 
 
-function ensureArtistMediaSections(){
+    function ensureArtistMediaSections(){
 
-const screen=
-$('music-screen');
+    const screen=
+    $('music-screen');
 
-if(!screen)
-return;
+    if(!screen)
+    return;
 
 
-const wrap=
-q(
-'#music-screen .music-wrap'
-);
+    const wrap=
+    q(
+    '#music-screen .music-wrap'
+    );
 
-if(!wrap)
-return;
+    if(!wrap)
+    return;
 
 
-const footer=
-q(
-'#music-screen .boss-footer'
-);
+    const footer=
+    q(
+    '#music-screen .boss-footer'
+    );
 
 
-if(
-!$('artist-gallery-section')
-){
+    if(
+    !$('artist-gallery-section')
+    ){
 
-const section=
-document.createElement(
-'section'
-);
+    const section=
+    document.createElement(
+    'section'
+    );
 
-section.id=
-'artist-gallery-section';
+    section.id=
+    'artist-gallery-section';
 
-section.className=
-'music-section';
+    section.className=
+    'music-section';
 
-section.innerHTML=`
+    section.innerHTML=`
 
-<div class="music-section-heading">
+    <div class="music-section-heading">
 
-<div>
+    <div>
 
-<span>
-ARTIST MEDIA
-</span>
+    <span>
+    ARTIST MEDIA
+    </span>
 
-<h2>
-PHOTO GALLERY
-</h2>
+    <h2>
+    PHOTO GALLERY
+    </h2>
 
-</div>
+    </div>
 
-<div class="music-heading-line"></div>
+    <div class="music-heading-line"></div>
 
-</div>
+    </div>
 
-<div
-id="artist-photo-gallery"
-class="artist-media-grid"
-></div>
+    <div
+    id="artist-photo-gallery"
+    class="artist-media-grid"
+    ></div>
 
-`;
+    `;
 
 
-if(footer){
+    if(footer){
 
-footer.insertAdjacentElement(
-'beforebegin',
-section
-);
+    footer.insertAdjacentElement(
+    'beforebegin',
+    section
+    );
 
-}
-else{
+    }
+    else{
 
-wrap.appendChild(
-section
-);
+    wrap.appendChild(
+    section
+    );
 
-}
+    }
 
-}
+    }
 
 
-if(
-!$('artist-videos-section')
-){
+    if(
+    !$('artist-videos-section')
+    ){
 
-const section=
-document.createElement(
-'section'
-);
+    const section=
+    document.createElement(
+    'section'
+    );
 
-section.id=
-'artist-videos-section';
+    section.id=
+    'artist-videos-section';
 
-section.className=
-'music-section';
+    section.className=
+    'music-section';
 
-section.innerHTML=`
+    section.innerHTML=`
 
-<div class="music-section-heading">
+    <div class="music-section-heading">
 
-<div>
+    <div>
 
-<span>
-WATCH
-</span>
+    <span>
+    WATCH
+    </span>
 
-<h2>
-MUSIC VIDEOS
-</h2>
+    <h2>
+    MUSIC VIDEOS
+    </h2>
 
-</div>
+    </div>
 
-<div class="music-heading-line"></div>
+    <div class="music-heading-line"></div>
 
-</div>
+    </div>
 
-<div
-id="artist-music-videos"
-class="artist-media-grid"
-></div>
+    <div
+    id="artist-music-videos"
+    class="artist-media-grid"
+    ></div>
 
-`;
+    `;
 
 
-const gallery=
-$('artist-gallery-section');
+    const gallery=
+    $('artist-gallery-section');
 
 
-if(gallery){
+    if(gallery){
 
-gallery.insertAdjacentElement(
-'afterend',
-section
-);
+    gallery.insertAdjacentElement(
+    'afterend',
+    section
+    );
 
-}
-else if(footer){
+    }
+    else if(footer){
 
-footer.insertAdjacentElement(
-'beforebegin',
-section
-);
+    footer.insertAdjacentElement(
+    'beforebegin',
+    section
+    );
 
-}
-else{
+    }
+    else{
 
-wrap.appendChild(
-section
-);
+    wrap.appendChild(
+    section
+    );
 
-}
+    }
 
-}
+    }
 
 
-if(
-!$('artist-photo-lightbox')
-){
+    if(
+    !$('artist-photo-lightbox')
+    ){
 
-const box=
-document.createElement(
-'div'
-);
+    const box=
+    document.createElement(
+    'div'
+    );
 
-box.id=
-'artist-photo-lightbox';
+    box.id=
+    'artist-photo-lightbox';
 
-box.className=
-'artist-media-lightbox';
+    box.className=
+    'artist-media-lightbox';
 
-box.innerHTML=`
+    box.innerHTML=`
 
-<button
-id="artist-photo-lightbox-close"
-type="button"
-aria-label="Close"
->
-×
-</button>
+    <button
+    id="artist-photo-lightbox-close"
+    type="button"
+    aria-label="Close"
+    >
+    ×
+    </button>
 
-<img
-id="artist-photo-lightbox-image"
-alt=""
->
+    <img
+    id="artist-photo-lightbox-image"
+    alt=""
+    >
 
-`;
+    `;
 
 
-document.body.appendChild(
-box
-);
+    document.body.appendChild(
+    box
+    );
 
 
-on(
-'artist-photo-lightbox-close',
-'click',
-closeArtistPhoto
-);
+    on(
+    'artist-photo-lightbox-close',
+    'click',
+    closeArtistPhoto
+    );
 
 
-box.addEventListener(
-'click',
-e=>{
+    box.addEventListener(
+    'click',
+    e=>{
 
-if(
-e.target===
-box
-){
+    if(
+    e.target===
+    box
+    ){
 
-closeArtistPhoto();
+    closeArtistPhoto();
 
-}
+    }
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-if(
-!$('artist-video-lightbox')
-){
+    if(
+    !$('artist-video-lightbox')
+    ){
 
-const box=
-document.createElement(
-'div'
-);
+    const box=
+    document.createElement(
+    'div'
+    );
 
-box.id=
-'artist-video-lightbox';
+    box.id=
+    'artist-video-lightbox';
 
-box.className=
-'artist-media-lightbox';
+    box.className=
+    'artist-media-lightbox';
 
-box.innerHTML=`
+    box.innerHTML=`
 
-<button
-id="artist-video-lightbox-close"
-type="button"
-aria-label="Close"
->
-×
-</button>
+    <button
+    id="artist-video-lightbox-close"
+    type="button"
+    aria-label="Close"
+    >
+    ×
+    </button>
 
-<div
-style="
-width:min(1000px,94vw);
-aspect-ratio:16/9;
-background:#000;
-"
->
+    <div
+    style="
+    width:min(1000px,94vw);
+    aspect-ratio:16/9;
+    background:#000;
+    "
+    >
 
-<iframe
-id="artist-video-lightbox-frame"
-title="Music Video"
-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-allowfullscreen
-style="
-width:100%;
-height:100%;
-border:0;
-display:block;
-"
-></iframe>
+    <iframe
+    id="artist-video-lightbox-frame"
+    title="Music Video"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+    style="
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+    "
+    ></iframe>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-document.body.appendChild(
-box
-);
+    document.body.appendChild(
+    box
+    );
 
 
-on(
-'artist-video-lightbox-close',
-'click',
-closeArtistVideo
-);
+    on(
+    'artist-video-lightbox-close',
+    'click',
+    closeArtistVideo
+    );
 
 
-box.addEventListener(
-'click',
-e=>{
+    box.addEventListener(
+    'click',
+    e=>{
 
-if(
-e.target===
-box
-){
+    if(
+    e.target===
+    box
+    ){
 
-closeArtistVideo();
+    closeArtistVideo();
 
-}
+    }
 
-}
-);
+    }
+    );
 
-}
+    }
 
-}
+    }
 
 
-function openArtistPhoto(url){
+    function openArtistPhoto(url){
 
-const box=
-$('artist-photo-lightbox');
+    const box=
+    $('artist-photo-lightbox');
 
-const image=
-$('artist-photo-lightbox-image');
+    const image=
+    $('artist-photo-lightbox-image');
 
 
-if(
-!box||
-!image||
-!url
-)
-return;
+    if(
+    !box||
+    !image||
+    !url
+    )
+    return;
 
 
-image.src=
-url;
+    image.src=
+    url;
 
 
-box.classList.add(
-'open'
-);
+    box.classList.add(
+    'open'
+    );
 
 
-document.body.style.overflow=
-'hidden';
+    document.body.style.overflow=
+    'hidden';
 
-}
+    }
 
 
-function closeArtistPhoto(){
+    function closeArtistPhoto(){
 
-const box=
-$('artist-photo-lightbox');
+    const box=
+    $('artist-photo-lightbox');
 
-const image=
-$('artist-photo-lightbox-image');
+    const image=
+    $('artist-photo-lightbox-image');
 
 
-if(box){
+    if(box){
 
-box.classList.remove(
-'open'
-);
+    box.classList.remove(
+    'open'
+    );
 
-}
+    }
 
 
-if(image){
+    if(image){
 
-image.removeAttribute(
-'src'
-);
+    image.removeAttribute(
+    'src'
+    );
 
-}
+    }
 
 
-document.body.style.overflow=
-'';
+    document.body.style.overflow=
+    '';
 
-}
+    }
 
 
-function openArtistVideo(item){
+    function openArtistVideo(item){
 
-const id=
-item.youtubeId||
-item.youtube_id||
-musicYoutubeId(
-item.youtubeUrl||
-item.youtube_url||
-''
-);
+    const id=
+    item.youtubeId||
+    item.youtube_id||
+    musicYoutubeId(
+    item.youtubeUrl||
+    item.youtube_url||
+    ''
+    );
 
 
-if(!id)
-return;
+    if(!id)
+    return;
 
 
-const box=
-$('artist-video-lightbox');
+    const box=
+    $('artist-video-lightbox');
 
-const frame=
-$('artist-video-lightbox-frame');
+    const frame=
+    $('artist-video-lightbox-frame');
 
 
-if(
-!box||
-!frame
-)
-return;
+    if(
+    !box||
+    !frame
+    )
+    return;
 
 
-if(
-audio&&
-!audio.paused
-){
+    if(
+    audio&&
+    !audio.paused
+    ){
 
-audio.pause();
+    audio.pause();
 
-}
+    }
 
 
-trackAnalytics(
-'video_play',
-{
+    trackAnalytics(
+    'video_play',
+    {
 
-section:
-'music',
+    section:
+    'music',
 
-itemId:
-item.id||
-item.backendId||
-id,
+    itemId:
+    item.id||
+    item.backendId||
+    id,
 
-itemTitle:
-item.title||
-'MUSIC VIDEO',
+    itemTitle:
+    item.title||
+    'MUSIC VIDEO',
 
-detail:{
+    detail:{
 
-artist:
-activeArtist?.name||
-''
+    artist:
+    activeArtist?.name||
+    ''
 
-}
+    }
 
-}
-);
+    }
+    );
 
 
-frame.src=
-`https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+    frame.src=
+    `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
 
 
-box.classList.add(
-'open'
-);
+    box.classList.add(
+    'open'
+    );
 
 
-document.body.style.overflow=
-'hidden';
+    document.body.style.overflow=
+    'hidden';
 
-}
+    }
 
 
-function closeArtistVideo(){
+    function closeArtistVideo(){
 
-const box=
-$('artist-video-lightbox');
+    const box=
+    $('artist-video-lightbox');
 
-const frame=
-$('artist-video-lightbox-frame');
+    const frame=
+    $('artist-video-lightbox-frame');
 
 
-if(box){
+    if(box){
 
-box.classList.remove(
-'open'
-);
+    box.classList.remove(
+    'open'
+    );
 
-}
+    }
 
 
-if(frame){
+    if(frame){
 
-frame.src='';
+    frame.src='';
 
-}
+    }
 
 
-document.body.style.overflow=
-'';
+    document.body.style.overflow=
+    '';
 
-}
+    }
 
 
-function renderArtists(){
+    function renderArtists(){
 
-ensureArtistUI();
+    ensureArtistUI();
 
 
-const g=
-$('artist-grid');
+    const g=
+    $('artist-grid');
 
 
-if(!g)
-return;
+    if(!g)
+    return;
 
 
-g.innerHTML='';
+    g.innerHTML='';
 
 
-if(
-!artists.length
-){
+    if(
+    !artists.length
+    ){
 
-g.innerHTML=`
+    g.innerHTML=`
 
-<div class="artist-media-empty">
-NO ARTISTS ARE PUBLISHED RIGHT NOW.
-</div>
+    <div class="artist-media-empty">
+    NO ARTISTS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-`;
+    `;
 
 
-clearMusicArtistUI();
+    clearMusicArtistUI();
 
-return;
+    return;
 
-}
+    }
 
 
-if(
-!activeArtist||
-!artists.some(
-a=>
-String(a.id)===
-String(activeArtist.id)
-)
-){
+    if(
+    !activeArtist||
+    !artists.some(
+    a=>
+    String(a.id)===
+    String(activeArtist.id)
+    )
+    ){
 
-activeArtist=
-artists[0];
+    activeArtist=
+    artists[0];
 
-}
+    }
 
 
-artists.forEach(
-a=>{
+    artists.forEach(
+    a=>{
 
-const b=
-document.createElement(
-'button'
-);
+    const b=
+    document.createElement(
+    'button'
+    );
 
 
-b.type=
-'button';
+    b.type=
+    'button';
 
 
-b.className=
-'artist-card'+
-(
-a===
-activeArtist
-?
-' active'
-:
-''
-);
+    b.className=
+    'artist-card'+
+    (
+    a===
+    activeArtist
+    ?
+    ' active'
+    :
+    ''
+    );
 
 
-const image=
-a.image||
-'images/boss-code-media-logo.png';
+    const image=
+    a.image||
+    'images/boss-code-media-logo.png';
 
 
-b.innerHTML=`
+    b.innerHTML=`
 
-<div class="artist-card-image">
+    <div class="artist-card-image">
 
-<img
-src="${esc(image)}"
-alt="${esc(a.name)}"
->
+    <img
+    src="${esc(image)}"
+    alt="${esc(a.name)}"
+    >
 
-</div>
+    </div>
 
-<div class="artist-card-body">
+    <div class="artist-card-body">
 
-<span>
-ARTIST
-</span>
+    <span>
+    ARTIST
+    </span>
 
-<strong>
-${esc(a.name)}
-</strong>
+    <strong>
+    ${esc(a.name)}
+    </strong>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-b.onclick=
-()=>loadArtist(a);
+    b.onclick=
+    ()=>loadArtist(a);
 
 
-g.appendChild(
-b
-);
+    g.appendChild(
+    b
+    );
 
-}
-);
+    }
+    );
 
 
-updateArtistUI();
+    updateArtistUI();
 
-renderArtistGallery();
+    renderArtistGallery();
 
-renderArtistMusicVideos();
+    renderArtistMusicVideos();
 
-}
+    }
 
 
-function clearMusicArtistUI(){
+    function clearMusicArtistUI(){
 
-activeArtist=
-null;
+    activeArtist=
+    null;
 
 
-const b=
-$('selected-artist-banner');
+    const b=
+    $('selected-artist-banner');
 
 
-if(b){
+    if(b){
 
-b.innerHTML=`
+    b.innerHTML=`
 
-<div
-class="artist-media-empty"
-style="width:100%"
->
-NO ARTISTS ARE PUBLISHED RIGHT NOW.
-</div>
+    <div
+    class="artist-media-empty"
+    style="width:100%"
+    >
+    NO ARTISTS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-`;
+    `;
 
-}
+    }
 
 
-const title=
-q(
-'.featured-release-info h2'
-);
+    const title=
+    q(
+    '.featured-release-info h2'
+    );
 
-const artist=
-q(
-'.featured-artist'
-);
+    const artist=
+    q(
+    '.featured-artist'
+    );
 
-const label=
-q(
-'.featured-label'
-);
+    const label=
+    q(
+    '.featured-label'
+    );
 
-const description=
-q(
-'.featured-description'
-);
+    const description=
+    q(
+    '.featured-description'
+    );
 
-const cover=
-q(
-'.placeholder-cover'
-);
+    const cover=
+    q(
+    '.placeholder-cover'
+    );
 
 
-if(title){
+    if(title){
 
-title.textContent=
-'NO RELEASE AVAILABLE';
+    title.textContent=
+    'NO RELEASE AVAILABLE';
 
-}
+    }
 
 
-if(artist){
+    if(artist){
 
-artist.textContent=
-'B.O.S.S CODE MUSIC';
+    artist.textContent=
+    'B.O.S.S CODE MUSIC';
 
-}
+    }
 
 
-if(label){
+    if(label){
 
-label.textContent=
-'MUSIC';
+    label.textContent=
+    'MUSIC';
 
-}
+    }
 
 
-if(description){
+    if(description){
 
-description.textContent=
-'New music will appear here when it is published from Admin.';
+    description.textContent=
+    'New music will appear here when it is published from Admin.';
 
-}
+    }
 
 
-if(cover){
+    if(cover){
 
-cover.innerHTML=`
+    cover.innerHTML=`
 
-<img
-src="images/boss-code-media-logo.png"
-alt="B.O.S.S CODE MEDIA"
->
+    <img
+    src="images/boss-code-media-logo.png"
+    alt="B.O.S.S CODE MEDIA"
+    >
 
-`;
+    `;
 
-}
+    }
 
 
-if(
-$('music-track-list')
-){
+    if(
+    $('music-track-list')
+    ){
 
-$('music-track-list').innerHTML=
-'<div class="artist-media-empty">NO TRACKS PUBLISHED.</div>';
+    $('music-track-list').innerHTML=
+    '<div class="artist-media-empty">NO TRACKS PUBLISHED.</div>';
 
-}
+    }
 
 
-const releases=
-q(
-'.release-grid'
-);
+    const releases=
+    q(
+    '.release-grid'
+    );
 
 
-if(releases){
+    if(releases){
 
-releases.innerHTML=
-'<div class="artist-media-empty">NO RELEASES PUBLISHED.</div>';
+    releases.innerHTML=
+    '<div class="artist-media-empty">NO RELEASES PUBLISHED.</div>';
 
-}
+    }
 
 
-renderArtistGallery();
+    renderArtistGallery();
 
-renderArtistMusicVideos();
+    renderArtistMusicVideos();
 
-resetPlayer();
+    resetPlayer();
 
-}
+    }
 
 
-function loadArtist(a){
+    function loadArtist(a){
 
-if(!a)
-return;
+    if(!a)
+    return;
 
 
-if(audio){
+    if(audio){
 
-audio.pause();
+    audio.pause();
 
-audio.removeAttribute(
-'src'
-);
+    audio.removeAttribute(
+    'src'
+    );
 
-audio.load();
+    audio.load();
 
-}
+    }
 
 
-activeArtist=
-a;
+    activeArtist=
+    a;
 
 
-trackIndex=
--1;
+    trackIndex=
+    -1;
 
-sourceIndex=
-0;
+    sourceIndex=
+    0;
 
-musicQueue=[];
+    musicQueue=[];
 
-activeReleaseId=
-null;
+    activeReleaseId=
+    null;
 
 
-renderArtists();
+    renderArtists();
 
-renderTracks();
+    renderTracks();
 
-renderReleases();
+    renderReleases();
 
-updateArtistUI();
+    updateArtistUI();
 
-renderArtistGallery();
+    renderArtistGallery();
 
-renderArtistMusicVideos();
+    renderArtistMusicVideos();
 
-resetPlayer();
+    resetPlayer();
 
-}
+    }
 
 
-function updateArtistUI(){
+    function updateArtistUI(){
 
-if(
-!activeArtist
-){
+    if(
+    !activeArtist
+    ){
 
-clearMusicArtistUI();
+    clearMusicArtistUI();
 
-return;
+    return;
 
-}
+    }
 
 
-const banner=
-$('selected-artist-banner');
+    const banner=
+    $('selected-artist-banner');
 
 
-if(banner){
+    if(banner){
 
-banner.innerHTML=`
+    banner.innerHTML=`
 
-<div class="selected-artist-photo">
+    <div class="selected-artist-photo">
 
-<img
-src="${esc(
-activeArtist.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(activeArtist.name)}"
->
+    <img
+    src="${esc(
+    activeArtist.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(activeArtist.name)}"
+    >
 
-</div>
+    </div>
 
-<div class="selected-artist-info">
+    <div class="selected-artist-info">
 
-<span>
-NOW VIEWING
-</span>
+    <span>
+    NOW VIEWING
+    </span>
 
-<h2>
-${esc(activeArtist.name)}
-</h2>
+    <h2>
+    ${esc(activeArtist.name)}
+    </h2>
 
-<p>
-${esc(activeArtist.tagline||'')}
-</p>
+    <p>
+    ${esc(activeArtist.tagline||'')}
+    </p>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-banner.classList.add(
-'show'
-);
+    banner.classList.add(
+    'show'
+    );
 
-}
+    }
 
 
-const logo=
-q(
-'#music-screen .music-artist-logo'
-);
+    const logo=
+    q(
+    '#music-screen .music-artist-logo'
+    );
 
 
-if(logo){
+    if(logo){
 
-logo.src=
-activeArtist.image||
-'images/boss-code-media-logo.png';
+    logo.src=
+    activeArtist.image||
+    'images/boss-code-media-logo.png';
 
 
-logo.alt=
-activeArtist.name;
+    logo.alt=
+    activeArtist.name;
 
-}
+    }
 
 
-const featured=
-activeArtist.featuredRelease;
+    const featured=
+    activeArtist.featuredRelease;
 
 
-const title=
-q(
-'.featured-release-info h2'
-);
+    const title=
+    q(
+    '.featured-release-info h2'
+    );
 
-const artist=
-q(
-'.featured-artist'
-);
+    const artist=
+    q(
+    '.featured-artist'
+    );
 
-const label=
-q(
-'.featured-label'
-);
+    const label=
+    q(
+    '.featured-label'
+    );
 
-const description=
-q(
-'.featured-description'
-);
+    const description=
+    q(
+    '.featured-description'
+    );
 
-const cover=
-q(
-'.placeholder-cover'
-);
+    const cover=
+    q(
+    '.placeholder-cover'
+    );
 
 
-if(
-!featured
-){
+    if(
+    !featured
+    ){
 
-if(title){
+    if(title){
 
-title.textContent=
-'NO RELEASE AVAILABLE';
+    title.textContent=
+    'NO RELEASE AVAILABLE';
 
-}
+    }
 
 
-if(artist){
+    if(artist){
 
-artist.textContent=
-activeArtist.name.toUpperCase();
+    artist.textContent=
+    activeArtist.name.toUpperCase();
 
-}
+    }
 
 
-if(label){
+    if(label){
 
-label.textContent=
-'B.O.S.S CODE MUSIC';
+    label.textContent=
+    'B.O.S.S CODE MUSIC';
 
-}
+    }
 
 
-if(description){
+    if(description){
 
-description.textContent=
-'New releases will appear here when they are published.';
+    description.textContent=
+    'New releases will appear here when they are published.';
 
-}
+    }
 
 
-if(cover){
+    if(cover){
 
-cover.innerHTML=`
+    cover.innerHTML=`
 
-<img
-src="${esc(
-activeArtist.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(activeArtist.name)}"
->
+    <img
+    src="${esc(
+    activeArtist.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(activeArtist.name)}"
+    >
 
-`;
+    `;
 
-}
+    }
 
 
-return;
+    return;
 
-}
+    }
 
 
-if(title){
+    if(title){
 
-title.textContent=
-featured.title;
+    title.textContent=
+    featured.title;
 
-}
+    }
 
 
-if(artist){
+    if(artist){
 
-artist.textContent=
-activeArtist.name.toUpperCase();
+    artist.textContent=
+    activeArtist.name.toUpperCase();
 
-}
+    }
 
 
-if(label){
+    if(label){
 
-label.textContent=
-featured.type||
-'FEATURED RELEASE';
+    label.textContent=
+    featured.type||
+    'FEATURED RELEASE';
 
-}
+    }
 
 
-if(description){
+    if(description){
 
-description.textContent=
-featured.description||
-'';
+    description.textContent=
+    featured.description||
+    '';
 
-}
+    }
 
 
-if(cover){
+    if(cover){
 
-cover.innerHTML=`
+    cover.innerHTML=`
 
-<img
-src="${esc(
-featured.artwork||
-activeArtist.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(featured.title)}"
->
+    <img
+    src="${esc(
+    featured.artwork||
+    activeArtist.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(featured.title)}"
+    >
 
-`;
+    `;
 
-}
+    }
 
 
-const featuredButton=
-$('play-featured-release');
+    const featuredButton=
+    $('play-featured-release');
 
 
-if(featuredButton){
+    if(featuredButton){
 
-const type=
-String(
-featured.releaseType||
-featured.type||
-''
-)
-.toLowerCase();
+    const type=
+    String(
+    featured.releaseType||
+    featured.type||
+    ''
+    )
+    .toLowerCase();
 
 
-featuredButton.textContent=
-type.includes(
-'single'
-)
-?
-'▶ LISTEN NOW'
-:
-'▶ PLAY ALBUM';
+    featuredButton.textContent=
+    type.includes(
+    'single'
+    )
+    ?
+    '▶ LISTEN NOW'
+    :
+    '▶ PLAY ALBUM';
 
-}
+    }
 
-}
+    }
 
 
-function renderArtistGallery(){
+    function renderArtistGallery(){
 
-ensureArtistMediaSections();
+    ensureArtistMediaSections();
 
 
-const g=
-$('artist-photo-gallery');
+    const g=
+    $('artist-photo-gallery');
 
 
-if(!g)
-return;
+    if(!g)
+    return;
 
 
-g.innerHTML='';
+    g.innerHTML='';
 
 
-if(
-!activeArtist
-){
+    if(
+    !activeArtist
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-const rows=
-artistGalleryRows.filter(
-item=>
-String(item.artistId)===
-String(activeArtist.backendId)
-);
+    const rows=
+    artistGalleryRows.filter(
+    item=>
+    String(item.artistId)===
+    String(activeArtist.backendId)
+    );
 
 
-if(
-!rows.length
-){
+    if(
+    !rows.length
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">NO PHOTOS PUBLISHED FOR THIS ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">NO PHOTOS PUBLISHED FOR THIS ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-rows.forEach(
-item=>{
+    rows.forEach(
+    item=>{
 
-const b=
-document.createElement(
-'button'
-);
+    const b=
+    document.createElement(
+    'button'
+    );
 
 
-b.type=
-'button';
+    b.type=
+    'button';
 
-b.className=
-'artist-media-card';
+    b.className=
+    'artist-media-card';
 
 
-b.innerHTML=`
+    b.innerHTML=`
 
-<img
-src="${esc(item.imageUrl)}"
-alt="${esc(
-item.caption||
-activeArtist.name
-)}"
->
+    <img
+    src="${esc(item.imageUrl)}"
+    alt="${esc(
+    item.caption||
+    activeArtist.name
+    )}"
+    >
 
-<div class="artist-media-card-body">
+    <div class="artist-media-card-body">
 
-<strong>
-${esc(
-item.caption||
-activeArtist.name
-)}
-</strong>
+    <strong>
+    ${esc(
+    item.caption||
+    activeArtist.name
+    )}
+    </strong>
 
-<span>
-PHOTO GALLERY
-</span>
+    <span>
+    PHOTO GALLERY
+    </span>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-b.addEventListener(
-'click',
-()=>openArtistPhoto(
-item.imageUrl
-)
-);
+    b.addEventListener(
+    'click',
+    ()=>openArtistPhoto(
+    item.imageUrl
+    )
+    );
 
 
-g.appendChild(
-b
-);
+    g.appendChild(
+    b
+    );
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-function renderArtistMusicVideos(){
+    function renderArtistMusicVideos(){
 
-ensureArtistMediaSections();
+    ensureArtistMediaSections();
 
 
-const g=
-$('artist-music-videos');
+    const g=
+    $('artist-music-videos');
 
 
-if(!g)
-return;
+    if(!g)
+    return;
 
 
-g.innerHTML='';
+    g.innerHTML='';
 
 
-if(
-!activeArtist
-){
+    if(
+    !activeArtist
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">CHOOSE AN ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-const rows=
-artistMusicVideoRows.filter(
-item=>
-String(item.artistId)===
-String(activeArtist.backendId)
-);
+    const rows=
+    artistMusicVideoRows.filter(
+    item=>
+    String(item.artistId)===
+    String(activeArtist.backendId)
+    );
 
 
-if(
-!rows.length
-){
+    if(
+    !rows.length
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">NO MUSIC VIDEOS PUBLISHED FOR THIS ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">NO MUSIC VIDEOS PUBLISHED FOR THIS ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-rows.forEach(
-item=>{
+    rows.forEach(
+    item=>{
 
-const id=
-item.youtubeId||
-musicYoutubeId(
-item.youtubeUrl
-);
+    const id=
+    item.youtubeId||
+    musicYoutubeId(
+    item.youtubeUrl
+    );
 
 
-if(!id)
-return;
+    if(!id)
+    return;
 
 
-const thumb=
-item.thumbnailUrl||
-`https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    const thumb=
+    item.thumbnailUrl||
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
 
-const b=
-document.createElement(
-'button'
-);
+    const b=
+    document.createElement(
+    'button'
+    );
 
 
-b.type=
-'button';
+    b.type=
+    'button';
 
-b.className=
-'artist-media-card video';
+    b.className=
+    'artist-media-card video';
 
 
-b.innerHTML=`
+    b.innerHTML=`
 
-<img
-src="${esc(thumb)}"
-alt="${esc(item.title)}"
->
+    <img
+    src="${esc(thumb)}"
+    alt="${esc(item.title)}"
+    >
 
-<div class="artist-media-card-body">
+    <div class="artist-media-card-body">
 
-<strong>
-${esc(item.title)}
-</strong>
+    <strong>
+    ${esc(item.title)}
+    </strong>
 
-<span>
-▶ WATCH VIDEO
-</span>
+    <span>
+    ▶ WATCH VIDEO
+    </span>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-b.addEventListener(
-'click',
-()=>openArtistVideo(
-item
-)
-);
+    b.addEventListener(
+    'click',
+    ()=>openArtistVideo(
+    item
+    )
+    );
 
 
-g.appendChild(
-b
-);
+    g.appendChild(
+    b
+    );
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-function releaseTrackIndexes(
-release
-){
+    function releaseTrackIndexes(
+    release
+    ){
 
-if(
-!release||
-!activeArtist
-)
-return[];
+    if(
+    !release||
+    !activeArtist
+    )
+    return[];
 
 
-const releaseId=
-release.id??
-release.releaseId??
-null;
+    const releaseId=
+    release.id??
+    release.releaseId??
+    null;
 
 
-const title=
-String(
-release.title||
-''
-)
-.trim()
-.toLowerCase();
+    const title=
+    String(
+    release.title||
+    ''
+    )
+    .trim()
+    .toLowerCase();
 
 
-return(
-activeArtist.tracks||
-[]
-)
+    return(
+    activeArtist.tracks||
+    []
+    )
 
-.map(
-(t,i)=>({
-t,
-i
-})
-)
+    .map(
+    (t,i)=>({
+    t,
+    i
+    })
+    )
 
-.filter(
-item=>{
+    .filter(
+    item=>{
 
-if(
-releaseId!==null&&
-releaseId!==undefined&&
-item.t.releaseId!==null&&
-item.t.releaseId!==undefined&&
-String(item.t.releaseId)===
-String(releaseId)
-){
+    if(
+    releaseId!==null&&
+    releaseId!==undefined&&
+    item.t.releaseId!==null&&
+    item.t.releaseId!==undefined&&
+    String(item.t.releaseId)===
+    String(releaseId)
+    ){
 
-return true;
+    return true;
 
-}
+    }
 
 
-return(
-title&&
-String(
-item.t.album||
-''
-)
-.trim()
-.toLowerCase()===
-title
-);
+    return(
+    title&&
+    String(
+    item.t.album||
+    ''
+    )
+    .trim()
+    .toLowerCase()===
+    title
+    );
 
-}
-)
+    }
+    )
 
-.map(
-item=>
-item.i
-);
+    .map(
+    item=>
+    item.i
+    );
 
-}
+    }
 
 
-function playRelease(
-release
-){
+    function playRelease(
+    release
+    ){
 
-const indexes=
-releaseTrackIndexes(
-release
-);
+    const indexes=
+    releaseTrackIndexes(
+    release
+    );
 
 
-if(
-!indexes.length
-)
-return;
+    if(
+    !indexes.length
+    )
+    return;
 
 
-musicQueue=
-indexes;
+    musicQueue=
+    indexes;
 
 
-activeReleaseId=
-release.id??
-release.releaseId??
-release.title;
+    activeReleaseId=
+    release.id??
+    release.releaseId??
+    release.title;
 
 
-renderTracks();
+    renderTracks();
 
 
-playTrack(
-indexes[0]
-);
+    playTrack(
+    indexes[0]
+    );
 
-}
+    }
 
 
-function renderTracks(){
+    function renderTracks(){
 
-const g=
-$('music-track-list');
+    const g=
+    $('music-track-list');
 
 
-if(!g)
-return;
+    if(!g)
+    return;
 
 
-g.innerHTML='';
+    g.innerHTML='';
 
 
-if(
-!activeArtist||
-!activeArtist.tracks?.length
-){
+    if(
+    !activeArtist||
+    !activeArtist.tracks?.length
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">NO TRACKS PUBLISHED FOR THIS ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">NO TRACKS PUBLISHED FOR THIS ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-activeArtist.tracks.forEach(
-(t,i)=>{
+    activeArtist.tracks.forEach(
+    (t,i)=>{
 
-const row=
-document.createElement(
-'article'
-);
+    const row=
+    document.createElement(
+    'article'
+    );
 
 
-row.className=
-'music-track';
+    row.className=
+    'music-track';
 
 
-row.dataset.track=
-i;
+    row.dataset.track=
+    i;
 
 
-const artwork=
-t.artwork||
-activeArtist.featuredRelease?.artwork||
-activeArtist.image||
-'images/boss-code-media-logo.png';
+    const artwork=
+    t.artwork||
+    activeArtist.featuredRelease?.artwork||
+    activeArtist.image||
+    'images/boss-code-media-logo.png';
 
 
-row.innerHTML=`
+    row.innerHTML=`
 
-<div class="track-number">
-${String(i+1).padStart(2,'0')}
-</div>
+    <div class="track-number">
+    ${String(i+1).padStart(2,'0')}
+    </div>
 
-<div class="track-cover">
+    <div class="track-cover">
 
-<img
-src="${esc(artwork)}"
-alt="${esc(t.title)}"
->
+    <img
+    src="${esc(artwork)}"
+    alt="${esc(t.title)}"
+    >
 
-</div>
+    </div>
 
-<div class="track-info">
+    <div class="track-info">
 
-<strong>
-${esc(t.title)}
-</strong>
+    <strong>
+    ${esc(t.title)}
+    </strong>
 
-<span>
-${esc(activeArtist.name)}${t.album?' • '+esc(t.album):''}
-</span>
+    <span>
+    ${esc(activeArtist.name)}${t.album?' • '+esc(t.album):''}
+    </span>
 
-</div>
+    </div>
 
-<div class="track-status">
-${esc(t.status||'PLAY')}
-</div>
+    <div class="track-status">
+    ${esc(t.status||'PLAY')}
+    </div>
 
-<div class="track-play-icon">
-▶
-</div>
+    <div class="track-play-icon">
+    ▶
+    </div>
 
-`;
+    `;
 
 
-row.onclick=
-()=>playTrack(i);
+    row.onclick=
+    ()=>playTrack(i);
 
 
-g.appendChild(
-row
-);
+    g.appendChild(
+    row
+    );
 
-}
-);
+    }
+    );
 
-}
+    }
 
 
-function renderReleases(){
+    function renderReleases(){
 
-const g=
-q(
-'.release-grid'
-);
+    const g=
+    q(
+    '.release-grid'
+    );
 
 
-if(!g)
-return;
+    if(!g)
+    return;
 
 
-g.innerHTML='';
+    g.innerHTML='';
 
 
-if(
-!activeArtist||
-!activeArtist.releases?.length
-){
+    if(
+    !activeArtist||
+    !activeArtist.releases?.length
+    ){
 
-g.innerHTML=
-'<div class="artist-media-empty">NO RELEASES PUBLISHED FOR THIS ARTIST.</div>';
+    g.innerHTML=
+    '<div class="artist-media-empty">NO RELEASES PUBLISHED FOR THIS ARTIST.</div>';
 
-return;
+    return;
 
-}
+    }
 
 
-activeArtist.releases.forEach(
-release=>{
+    activeArtist.releases.forEach(
+    release=>{
 
-const card=
-document.createElement(
-'article'
-);
+    const card=
+    document.createElement(
+    'article'
+    );
 
 
-card.className=
-'release-card';
+    card.className=
+    'release-card';
 
 
-card.style.cursor=
-'pointer';
+    card.style.cursor=
+    'pointer';
 
 
-const type=
-String(
-release.releaseType||
-release.type||
-''
-)
-.toLowerCase();
+    const type=
+    String(
+    release.releaseType||
+    release.type||
+    ''
+    )
+    .toLowerCase();
 
 
-const single=
-type.includes(
-'single'
-);
+    const single=
+    type.includes(
+    'single'
+    );
 
 
-card.innerHTML=`
+    card.innerHTML=`
 
-<div class="release-placeholder">
+    <div class="release-placeholder">
 
-<img
-src="${esc(
-release.artwork||
-activeArtist.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(release.title)}"
->
+    <img
+    src="${esc(
+    release.artwork||
+    activeArtist.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(release.title)}"
+    >
 
-</div>
+    </div>
 
-<div class="release-info">
+    <div class="release-info">
 
-<span>
-${esc(release.type||'RELEASE')}
-</span>
+    <span>
+    ${esc(release.type||'RELEASE')}
+    </span>
 
-<h3>
-${esc(release.title)}
-</h3>
+    <h3>
+    ${esc(release.title)}
+    </h3>
 
-<p>
-${single?'▶ PLAY SINGLE':'▶ PLAY ALBUM'}
-</p>
+    <p>
+    ${single?'▶ PLAY SINGLE':'▶ PLAY ALBUM'}
+    </p>
 
-</div>
+    </div>
 
-`;
+    `;
 
 
-card.onclick=
-()=>playRelease(
-release
-);
+    card.onclick=
+    ()=>playRelease(
+    release
+    );
 
 
-g.appendChild(
-card
-);
+    g.appendChild(
+    card
+    );
 
-}
-);
+    }
+    );
 
-}
+    }
+    /* =========================================================
+       MUSIC ANALYTICS
+    ========================================================= */
 
+    function resetMusicAnalyticsForTrack(
+    track,
+    index
+    ){
 
-/* =========================================================
-   MUSIC ANALYTICS
-========================================================= */
+    musicAnalyticsTrack={
 
-function resetMusicAnalyticsForTrack(
-track,
-index
-){
+    itemId:
+    track.backendId||
+    track.id||
+    `${activeArtist?.backendId||activeArtist?.id||'artist'}:${index}`,
 
-musicAnalyticsTrack={
+    itemTitle:
+    track.title||
+    'TRACK',
 
-itemId:
-track.backendId||
-track.id||
-`${activeArtist?.backendId||activeArtist?.id||'artist'}:${index}`,
+    artist:
+    activeArtist?.name||
+    '',
 
-itemTitle:
-track.title||
-'TRACK',
+    album:
+    track.album||
+    ''
 
-artist:
-activeArtist?.name||
-'',
+    };
 
-album:
-track.album||
-''
 
-};
+    musicAnalyticsLastTime=
+    0;
 
 
-musicAnalyticsLastTime=
-0;
+    musicAnalyticsQualifiedSeconds=
+    0;
 
 
-musicAnalyticsQualifiedSeconds=
-0;
+    musicAnalyticsQualifiedSent=
+    false;
 
 
-musicAnalyticsQualifiedSent=
-false;
+    trackAnalytics(
+    'song_start',
+    {
 
+    section:
+    'music',
 
-trackAnalytics(
-'song_start',
-{
+    itemId:
+    musicAnalyticsTrack.itemId,
 
-section:
-'music',
+    itemTitle:
+    musicAnalyticsTrack.itemTitle,
 
-itemId:
-musicAnalyticsTrack.itemId,
+    detail:{
 
-itemTitle:
-musicAnalyticsTrack.itemTitle,
+    artist:
+    musicAnalyticsTrack.artist,
 
-detail:{
+    album:
+    musicAnalyticsTrack.album
 
-artist:
-musicAnalyticsTrack.artist,
+    }
 
-album:
-musicAnalyticsTrack.album
+    }
+    );
 
-}
+    }
 
-}
-);
 
-}
+    function updateQualifiedMusicListen(){
 
+    if(
+    !audio||
+    !musicAnalyticsTrack||
+    musicAnalyticsQualifiedSent||
+    audio.paused
+    )
+    return;
 
-function updateQualifiedMusicListen(){
 
-if(
-!audio||
-!musicAnalyticsTrack||
-musicAnalyticsQualifiedSent||
-audio.paused
-)
-return;
+    const current=
+    Number(
+    audio.currentTime||
+    0
+    );
 
 
-const current=
-Number(
-audio.currentTime||
-0
-);
+    if(
+    Number.isFinite(
+    musicAnalyticsLastTime
+    )&&
+    musicAnalyticsLastTime>0
+    ){
 
+    const delta=
+    current-
+    musicAnalyticsLastTime;
 
-if(
-Number.isFinite(
-musicAnalyticsLastTime
-)&&
-musicAnalyticsLastTime>0
-){
 
-const delta=
-current-
-musicAnalyticsLastTime;
+    /*
+    Do not count a large jump as listening.
+    This prevents seeking ahead from creating
+    a false qualified listen.
+    */
 
+    if(
+    delta>0&&
+    delta<2.5
+    ){
 
-/*
-Do not count a large jump as listening.
-This prevents seeking ahead from creating
-a false qualified listen.
-*/
+    musicAnalyticsQualifiedSeconds+=
+    delta;
 
-if(
-delta>0&&
-delta<2.5
-){
+    }
 
-musicAnalyticsQualifiedSeconds+=
-delta;
+    }
 
-}
 
-}
+    musicAnalyticsLastTime=
+    current;
 
 
-musicAnalyticsLastTime=
-current;
+    if(
+    musicAnalyticsQualifiedSeconds>=
+    SONG_QUALIFIED_SECONDS
+    ){
 
+    musicAnalyticsQualifiedSent=
+    true;
 
-if(
-musicAnalyticsQualifiedSeconds>=
-SONG_QUALIFIED_SECONDS
-){
 
-musicAnalyticsQualifiedSent=
-true;
+    trackAnalytics(
+    'song_qualified_listen',
+    {
 
+    section:
+    'music',
 
-trackAnalytics(
-'song_qualified_listen',
-{
+    itemId:
+    musicAnalyticsTrack.itemId,
 
-section:
-'music',
+    itemTitle:
+    musicAnalyticsTrack.itemTitle,
 
-itemId:
-musicAnalyticsTrack.itemId,
+    valueNumeric:
+    Math.round(
+    musicAnalyticsQualifiedSeconds
+    ),
 
-itemTitle:
-musicAnalyticsTrack.itemTitle,
+    detail:{
 
-valueNumeric:
-Math.round(
-musicAnalyticsQualifiedSeconds
-),
+    artist:
+    musicAnalyticsTrack.artist,
 
-detail:{
+    album:
+    musicAnalyticsTrack.album,
 
-artist:
-musicAnalyticsTrack.artist,
+    qualified_seconds:
+    SONG_QUALIFIED_SECONDS
 
-album:
-musicAnalyticsTrack.album,
+    }
 
-qualified_seconds:
-SONG_QUALIFIED_SECONDS
+    }
+    );
 
-}
+    }
 
-}
-);
+    }
 
-}
 
-}
+    /* =========================================================
+       MUSIC PLAYER
+    ========================================================= */
 
+    function playTrack(i){
 
-/* =========================================================
-   MUSIC PLAYER
-========================================================= */
+    if(
+    !activeArtist||
+    !audio
+    )
+    return;
 
-function playTrack(i){
 
-if(
-!activeArtist||
-!audio
-)
-return;
+    const track=
+    (
+    activeArtist.tracks||
+    []
+    )[i];
 
 
-const track=
-(
-activeArtist.tracks||
-[]
-)[i];
+    if(!track)
+    return;
 
 
-if(!track)
-return;
+    trackIndex=
+    i;
 
 
-trackIndex=
-i;
+    sourceIndex=
+    0;
 
 
-sourceIndex=
-0;
+    qa(
+    '.music-track'
+    )
+    .forEach(
+    item=>
+    item.classList.remove(
+    'active'
+    )
+    );
 
 
-qa(
-'.music-track'
-)
-.forEach(
-item=>
-item.classList.remove(
-'active'
-)
-);
+    const row=
+    q(
+    `.music-track[data-track="${i}"]`
+    );
 
 
-const row=
-q(
-`.music-track[data-track="${i}"]`
-);
+    if(row){
 
+    row.classList.add(
+    'active'
+    );
 
-if(row){
+    }
 
-row.classList.add(
-'active'
-);
 
-}
+    if(
+    $('now-playing-title')
+    ){
 
+    $('now-playing-title')
+    .textContent=
+    track.title;
 
-if(
-$('now-playing-title')
-){
+    }
 
-$('now-playing-title')
-.textContent=
-track.title;
 
-}
+    if(
+    $('now-playing-artist')
+    ){
 
+    $('now-playing-artist')
+    .textContent=
+    activeArtist.name;
 
-if(
-$('now-playing-artist')
-){
+    }
 
-$('now-playing-artist')
-.textContent=
-activeArtist.name;
 
-}
+    if(
+    $('now-playing-art')
+    ){
 
+    $('now-playing-art')
+    .innerHTML=`
 
-if(
-$('now-playing-art')
-){
+    <img
+    src="${esc(
+    track.artwork||
+    activeArtist.featuredRelease?.artwork||
+    activeArtist.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(track.title)}"
+    >
 
-$('now-playing-art')
-.innerHTML=`
+    `;
 
-<img
-src="${esc(
-track.artwork||
-activeArtist.featuredRelease?.artwork||
-activeArtist.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(track.title)}"
->
+    }
 
-`;
 
-}
+    resetMusicAnalyticsForTrack(
+    track,
+    i
+    );
 
 
-resetMusicAnalyticsForTrack(
-track,
-i
-);
+    loadSource(
+    true
+    );
 
+    }
 
-loadSource(
-true
-);
 
-}
+    function loadSource(
+    play
+    ){
 
+    if(
+    !activeArtist||
+    !audio
+    )
+    return;
 
-function loadSource(
-play
-){
 
-if(
-!activeArtist||
-!audio
-)
-return;
+    const track=
+    (
+    activeArtist.tracks||
+    []
+    )[trackIndex];
 
 
-const track=
-(
-activeArtist.tracks||
-[]
-)[trackIndex];
+    const src=
+    track?.audioSources?.[
+    sourceIndex
+    ];
 
 
-const src=
-track?.audioSources?.[
-sourceIndex
-];
+    if(!src)
+    return;
 
 
-if(!src)
-return;
+    audio.src=
+    src;
 
 
-audio.src=
-src;
+    audio.load();
 
 
-audio.load();
+    if(play){
 
+    audio.play()
+    .catch(
+    error=>
+    console.warn(
+    'Music playback could not start',
+    error
+    )
+    );
 
-if(play){
+    }
 
-audio.play()
-.catch(
-error=>
-console.warn(
-'Music playback could not start',
-error
-)
-);
+    }
 
-}
 
-}
+    function resetPlayer(){
 
+    if(audio){
 
-function resetPlayer(){
+    audio.pause();
 
-if(audio){
 
-audio.pause();
+    audio.removeAttribute(
+    'src'
+    );
 
 
-audio.removeAttribute(
-'src'
-);
+    audio.load();
 
+    }
 
-audio.load();
 
-}
+    trackIndex=
+    -1;
 
 
-trackIndex=
--1;
+    sourceIndex=
+    0;
 
 
-sourceIndex=
-0;
+    musicAnalyticsTrack=
+    null;
 
 
-musicAnalyticsTrack=
-null;
+    musicAnalyticsLastTime=
+    0;
 
 
-musicAnalyticsLastTime=
-0;
+    musicAnalyticsQualifiedSeconds=
+    0;
 
 
-musicAnalyticsQualifiedSeconds=
-0;
+    musicAnalyticsQualifiedSent=
+    false;
 
 
-musicAnalyticsQualifiedSent=
-false;
+    if(
+    $('now-playing-title')
+    ){
 
+    $('now-playing-title')
+    .textContent=
+    'SELECT A TRACK';
 
-if(
-$('now-playing-title')
-){
+    }
 
-$('now-playing-title')
-.textContent=
-'SELECT A TRACK';
 
-}
+    if(
+    $('now-playing-artist')
+    ){
 
+    $('now-playing-artist')
+    .textContent=
+    activeArtist
+    ?
+    activeArtist.name
+    :
+    'B.O.S.S CODE MUSIC';
 
-if(
-$('now-playing-artist')
-){
+    }
 
-$('now-playing-artist')
-.textContent=
-activeArtist
-?
-activeArtist.name
-:
-'B.O.S.S CODE MUSIC';
 
-}
+    if(
+    $('now-playing-art')
+    ){
 
+    const artwork=
+    activeArtist?.featuredRelease?.artwork||
+    activeArtist?.image||
+    'images/boss-code-media-logo.png';
 
-if(
-$('now-playing-art')
-){
 
-const artwork=
-activeArtist?.featuredRelease?.artwork||
-activeArtist?.image||
-'images/boss-code-media-logo.png';
+    $('now-playing-art')
+    .innerHTML=`
 
+    <img
+    src="${esc(artwork)}"
+    alt="B.O.S.S CODE MUSIC"
+    >
 
-$('now-playing-art')
-.innerHTML=`
+    `;
 
-<img
-src="${esc(artwork)}"
-alt="B.O.S.S CODE MUSIC"
->
+    }
 
-`;
 
-}
+    if(
+    $('music-progress')
+    ){
 
+    $('music-progress')
+    .value=
+    0;
 
-if(
-$('music-progress')
-){
+    }
 
-$('music-progress')
-.value=
-0;
 
-}
+    if(
+    $('music-current-time')
+    ){
 
+    $('music-current-time')
+    .textContent=
+    '0:00';
 
-if(
-$('music-current-time')
-){
+    }
 
-$('music-current-time')
-.textContent=
-'0:00';
 
-}
+    if(
+    $('music-duration')
+    ){
 
+    $('music-duration')
+    .textContent=
+    '0:00';
 
-if(
-$('music-duration')
-){
+    }
 
-$('music-duration')
-.textContent=
-'0:00';
 
-}
+    if(
+    $('music-play-pause')
+    ){
 
+    $('music-play-pause')
+    .textContent=
+    '▶';
 
-if(
-$('music-play-pause')
-){
+    }
 
-$('music-play-pause')
-.textContent=
-'▶';
+    }
 
-}
 
-}
+    function currentMusicQueue(){
 
+    if(
+    !activeArtist
+    )
+    return[];
 
-function currentMusicQueue(){
 
-if(
-!activeArtist
-)
-return[];
+    return musicQueue.length
+    ?
+    musicQueue
+    :
+    (
+    activeArtist.tracks||
+    []
+    )
+    .map(
+    (_,i)=>i
+    );
 
+    }
 
-return musicQueue.length
-?
-musicQueue
-:
-(
-activeArtist.tracks||
-[]
-)
-.map(
-(_,i)=>i
-);
 
-}
+    function nextMusicTrack(){
 
+    const queue=
+    currentMusicQueue();
 
-function nextMusicTrack(){
 
-const queue=
-currentMusicQueue();
+    if(
+    !queue.length
+    )
+    return;
 
 
-if(
-!queue.length
-)
-return;
+    let position=
+    queue.indexOf(
+    trackIndex
+    );
 
 
-let position=
-queue.indexOf(
-trackIndex
-);
+    position=
+    position<0
+    ?
+    0
+    :
+    (
+    position+
+    1
+    )%
+    queue.length;
 
 
-position=
-position<0
-?
-0
-:
-(
-position+
-1
-)%
-queue.length;
+    playTrack(
+    queue[position]
+    );
 
+    }
 
-playTrack(
-queue[position]
-);
 
-}
+    function previousMusicTrack(){
 
+    const queue=
+    currentMusicQueue();
 
-function previousMusicTrack(){
 
-const queue=
-currentMusicQueue();
+    if(
+    !queue.length
+    )
+    return;
 
 
-if(
-!queue.length
-)
-return;
+    let position=
+    queue.indexOf(
+    trackIndex
+    );
 
 
-let position=
-queue.indexOf(
-trackIndex
-);
+    position=
+    position<0
+    ?
+    queue.length-
+    1
+    :
+    (
+    position-
+    1+
+    queue.length
+    )%
+    queue.length;
 
 
-position=
-position<0
-?
-queue.length-
-1
-:
-(
-position-
-1+
-queue.length
-)%
-queue.length;
+    playTrack(
+    queue[position]
+    );
 
+    }
 
-playTrack(
-queue[position]
-);
 
-}
+    const fmt=
+    seconds=>
+    !Number.isFinite(
+    seconds
+    )
+    ?
+    '0:00'
+    :
+    Math.floor(
+    seconds/
+    60
+    )
+    +
+    ':'
+    +
+    String(
+    Math.floor(
+    seconds%
+    60
+    )
+    )
+    .padStart(
+    2,
+    '0'
+    );
 
 
-const fmt=
-seconds=>
-!Number.isFinite(
-seconds
-)
-?
-'0:00'
-:
-Math.floor(
-seconds/
-60
-)
-+
-':'
-+
-String(
-Math.floor(
-seconds%
-60
-)
-)
-.padStart(
-2,
-'0'
-);
+    /* =========================================================
+       MUSIC CONTROLS
+    ========================================================= */
 
+    on(
+    'music-play-pause',
+    'click',
+    ()=>{
 
-/* =========================================================
-   MUSIC CONTROLS
-========================================================= */
+    if(
+    !audio||
+    !activeArtist
+    )
+    return;
 
-on(
-'music-play-pause',
-'click',
-()=>{
 
-if(
-!audio||
-!activeArtist
-)
-return;
+    if(
+    trackIndex<0
+    ){
 
+    if(
+    activeArtist.tracks?.length
+    ){
 
-if(
-trackIndex<0
-){
+    playTrack(
+    0
+    );
 
-if(
-activeArtist.tracks?.length
-){
+    }
 
-playTrack(
-0
-);
+    return;
 
-}
+    }
 
-return;
 
-}
+    if(
+    audio.paused
+    ){
 
+    audio.play()
+    .catch(()=>{});
 
-if(
-audio.paused
-){
+    }
+    else{
 
-audio.play()
-.catch(()=>{});
+    audio.pause();
 
-}
-else{
+    }
 
-audio.pause();
+    }
+    );
 
-}
 
-}
-);
+    on(
+    'music-next',
+    'click',
+    nextMusicTrack
+    );
 
 
-on(
-'music-next',
-'click',
-nextMusicTrack
-);
+    on(
+    'music-previous',
+    'click',
+    previousMusicTrack
+    );
 
 
-on(
-'music-previous',
-'click',
-previousMusicTrack
-);
+    on(
+    'play-featured-release',
+    'click',
+    ()=>{
 
+    if(
+    !activeArtist
+    )
+    return;
 
-on(
-'play-featured-release',
-'click',
-()=>{
 
-if(
-!activeArtist
-)
-return;
+    if(
+    activeArtist.featuredRelease
+    ){
 
+    playRelease(
+    activeArtist.featuredRelease
+    );
 
-if(
-activeArtist.featuredRelease
-){
+    return;
 
-playRelease(
-activeArtist.featuredRelease
-);
+    }
 
-return;
 
-}
+    if(
+    activeArtist.tracks?.length
+    ){
 
+    musicQueue=[];
 
-if(
-activeArtist.tracks?.length
-){
+    activeReleaseId=
+    null;
 
-musicQueue=[];
 
-activeReleaseId=
-null;
+    playTrack(
+    0
+    );
 
+    }
 
-playTrack(
-0
-);
+    }
+    );
 
-}
 
-}
-);
+    on(
+    'music-progress',
+    'input',
+    event=>{
 
+    if(
+    audio?.duration
+    ){
 
-on(
-'music-progress',
-'input',
-event=>{
+    audio.currentTime=
+    (
+    Number(
+    event.target.value
+    )/
+    100
+    )*
+    audio.duration;
 
-if(
-audio?.duration
-){
+    }
 
-audio.currentTime=
-(
-Number(
-event.target.value
-)/
-100
-)*
-audio.duration;
+    }
+    );
 
-}
 
-}
-);
+    if(audio){
 
 
-if(audio){
+    audio.addEventListener(
+    'play',
+    ()=>{
 
+    musicAnalyticsLastTime=
+    Number(
+    audio.currentTime||
+    0
+    );
 
-audio.addEventListener(
-'play',
-()=>{
 
-musicAnalyticsLastTime=
-Number(
-audio.currentTime||
-0
-);
+    if(
+    $('music-play-pause')
+    ){
 
+    $('music-play-pause')
+    .textContent=
+    'Ⅱ';
 
-if(
-$('music-play-pause')
-){
+    }
 
-$('music-play-pause')
-.textContent=
-'Ⅱ';
+    }
+    );
 
-}
 
-}
-);
+    audio.addEventListener(
+    'pause',
+    ()=>{
 
+    musicAnalyticsLastTime=
+    Number(
+    audio.currentTime||
+    0
+    );
 
-audio.addEventListener(
-'pause',
-()=>{
 
-musicAnalyticsLastTime=
-Number(
-audio.currentTime||
-0
-);
+    if(
+    $('music-play-pause')
+    ){
 
+    $('music-play-pause')
+    .textContent=
+    '▶';
 
-if(
-$('music-play-pause')
-){
+    }
 
-$('music-play-pause')
-.textContent=
-'▶';
+    }
+    );
 
-}
 
-}
-);
+    audio.addEventListener(
+    'timeupdate',
+    ()=>{
 
+    updateQualifiedMusicListen();
 
-audio.addEventListener(
-'timeupdate',
-()=>{
 
-updateQualifiedMusicListen();
+    if(
+    $('music-current-time')
+    ){
 
+    $('music-current-time')
+    .textContent=
+    fmt(
+    audio.currentTime
+    );
 
-if(
-$('music-current-time')
-){
+    }
 
-$('music-current-time')
-.textContent=
-fmt(
-audio.currentTime
-);
 
-}
+    if(
+    $('music-duration')
+    ){
 
+    $('music-duration')
+    .textContent=
+    fmt(
+    audio.duration
+    );
 
-if(
-$('music-duration')
-){
+    }
 
-$('music-duration')
-.textContent=
-fmt(
-audio.duration
-);
 
-}
+    if(
+    $('music-progress')
+    ){
 
+    $('music-progress')
+    .value=
+    audio.duration
+    ?
+    audio.currentTime/
+    audio.duration*
+    100
+    :
+    0;
 
-if(
-$('music-progress')
-){
+    }
 
-$('music-progress')
-.value=
-audio.duration
-?
-audio.currentTime/
-audio.duration*
-100
-:
-0;
+    }
+    );
 
-}
 
-}
-);
+    audio.addEventListener(
+    'ended',
+    nextMusicTrack
+    );
 
 
-audio.addEventListener(
-'ended',
-nextMusicTrack
-);
+    audio.addEventListener(
+    'error',
+    ()=>{
 
+    if(
+    !activeArtist
+    )
+    return;
 
-audio.addEventListener(
-'error',
-()=>{
 
-if(
-!activeArtist
-)
-return;
+    const track=
+    activeArtist.tracks?.[
+    trackIndex
+    ];
 
 
-const track=
-activeArtist.tracks?.[
-trackIndex
-];
+    if(
+    track&&
+    sourceIndex<
+    (
+    track.audioSources?.length||
+    0
+    )-
+    1
+    ){
 
+    sourceIndex++;
 
-if(
-track&&
-sourceIndex<
-(
-track.audioSources?.length||
-0
-)-
-1
-){
 
-sourceIndex++;
+    loadSource(
+    true
+    );
 
+    }
 
-loadSource(
-true
-);
+    }
+    );
 
-}
 
-}
-);
+    }
+    /* =========================================================
+       DECISION MAKERS
+       APP VIDEO DISPLAY
+       PROGRAM RESOURCES REMAIN OWNED BY
+       decision-makers-backend.js
+    ========================================================= */
 
+    let dmVideos=[];
 
-}
-/* =========================================================
-   DECISION MAKERS
-   APP VIDEO DISPLAY
-   PROGRAM RESOURCES REMAIN OWNED BY
-   decision-makers-backend.js
-========================================================= */
+    let dmSessions=[];
 
-let dmVideos=[];
+    let dmChallenges=[];
 
-let dmSessions=[];
 
-let dmChallenges=[];
+    function yt(url=''){
 
+    return musicYoutubeId(
+    url
+    );
 
-function yt(url=''){
+    }
 
-return musicYoutubeId(
-url
-);
 
-}
+    function playDMVideoInBox(
+    box,
+    videoId,
+    title,
+    analyticsId,
+    type='video'
+    ){
 
+    if(
+    !box||
+    !videoId
+    )
+    return;
 
-function playDMVideoInBox(
-box,
-videoId,
-title,
-analyticsId,
-type='video'
-){
 
-if(
-!box||
-!videoId
-)
-return;
+    if(
+    audio&&
+    !audio.paused
+    ){
 
+    audio.pause();
 
-if(
-audio&&
-!audio.paused
-){
+    }
 
-audio.pause();
 
-}
+    trackAnalytics(
+    'video_play',
+    {
 
+    section:
+    'decision-makers',
 
-trackAnalytics(
-'video_play',
-{
+    itemId:
+    analyticsId||
+    videoId,
 
-section:
-'decision-makers',
+    itemTitle:
+    title||
+    'DECISION MAKERS VIDEO',
 
-itemId:
-analyticsId||
-videoId,
+    detail:{
 
-itemTitle:
-title||
-'DECISION MAKERS VIDEO',
+    video_type:
+    type
 
-detail:{
+    }
 
-video_type:
-type
+    }
+    );
 
-}
 
-}
-);
+    box.innerHTML=`
 
+    <iframe
+    data-dm-youtube
+    src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1"
+    title="${esc(title||'Decision Makers')}"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    allowfullscreen
+    style="
+    width:100%;
+    height:100%;
+    display:block;
+    border:0;
+    background:#000;
+    "
+    ></iframe>
 
-box.innerHTML=`
+    `;
 
-<iframe
-data-dm-youtube
-src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1"
-title="${esc(title||'Decision Makers')}"
-allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-allowfullscreen
-style="
-width:100%;
-height:100%;
-display:block;
-border:0;
-background:#000;
-"
-></iframe>
+    }
 
-`;
 
-}
+    function buildDM(){
 
+    const row=
+    q(
+    '#decision-makers-screen .on-the-go-row'
+    );
 
-function buildDM(){
 
-const row=
-q(
-'#decision-makers-screen .on-the-go-row'
-);
+    if(!row)
+    return;
 
 
-if(!row)
-return;
+    row.innerHTML='';
 
 
-row.innerHTML='';
+    if(
+    !dmVideos.length
+    ){
 
+    row.innerHTML=`
 
-if(
-!dmVideos.length
-){
+    <div
+    class="artist-media-empty"
+    style="width:100%"
+    >
+    NO DECISION MAKERS VIDEOS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-row.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="width:100%"
->
-NO DECISION MAKERS VIDEOS ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    dmVideos.forEach(
+    v=>{
 
+    const id=
+    v.youtubeId||
+    yt(
+    v.youtubeUrl||
+    ''
+    );
 
-dmVideos.forEach(
-v=>{
 
-const id=
-v.youtubeId||
-yt(
-v.youtubeUrl||
-''
-);
+    if(!id)
+    return;
 
 
-if(!id)
-return;
+    const thumbnail=
+    v.thumbnailUrl||
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 
 
-const thumbnail=
-v.thumbnailUrl||
-`https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    const c=
+    document.createElement(
+    'article'
+    );
 
 
-const c=
-document.createElement(
-'article'
-);
+    c.className=
+    'on-the-go-card';
 
 
-c.className=
-'on-the-go-card';
+    c.innerHTML=`
 
+    <div
+    class="decision-placeholder-video"
+    data-dm-quick-media
+    style="
+    aspect-ratio:9/16;
+    background:#000;
+    overflow:hidden;
+    position:relative;
+    "
+    >
 
-c.innerHTML=`
+    <img
+    src="${esc(thumbnail)}"
+    alt="${esc(v.title)}"
+    style="
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    "
+    >
 
-<div
-class="decision-placeholder-video"
-data-dm-quick-media
-style="
-aspect-ratio:9/16;
-background:#000;
-overflow:hidden;
-position:relative;
-"
->
+    <button
+    class="dm-session-play"
+    type="button"
+    aria-label="Play ${esc(v.title)}"
+    style="
+    position:absolute;
+    inset:0;
+    "
+    >
+    ▶
+    </button>
 
-<img
-src="${esc(thumbnail)}"
-alt="${esc(v.title)}"
-style="
-width:100%;
-height:100%;
-object-fit:cover;
-display:block;
-"
->
+    <span
+    class="coming-label"
+    style="pointer-events:none"
+    >
+    ${esc(v.category||'ON THE GO')}
+    </span>
 
-<button
-class="dm-session-play"
-type="button"
-aria-label="Play ${esc(v.title)}"
-style="
-position:absolute;
-inset:0;
-"
->
-▶
-</button>
+    </div>
 
-<span
-class="coming-label"
-style="pointer-events:none"
->
-${esc(v.category||'ON THE GO')}
-</span>
+    <div class="decision-card-body">
 
-</div>
+    <span class="decision-card-type">
+    QUICK DECISION
+    </span>
 
-<div class="decision-card-body">
+    <h3>
+    ${esc(v.title)}
+    </h3>
 
-<span class="decision-card-type">
-QUICK DECISION
-</span>
+    <p>
+    ${esc(v.description||'')}
+    </p>
 
-<h3>
-${esc(v.title)}
-</h3>
+    </div>
 
-<p>
-${esc(v.description||'')}
-</p>
+    `;
 
-</div>
 
-`;
+    const play=
+    q(
+    '.dm-session-play',
+    c
+    );
 
 
-const play=
-q(
-'.dm-session-play',
-c
-);
+    if(play){
 
+    play.addEventListener(
+    'click',
+    ()=>{
 
-if(play){
+    const media=
+    q(
+    '[data-dm-quick-media]',
+    c
+    );
 
-play.addEventListener(
-'click',
-()=>{
 
-const media=
-q(
-'[data-dm-quick-media]',
-c
-);
+    playDMVideoInBox(
 
+    media,
 
-playDMVideoInBox(
+    id,
 
-media,
+    v.title,
 
-id,
+    v.backendId||
+    v.id||
+    id,
 
-v.title,
+    'on-the-go'
 
-v.backendId||
-v.id||
-id,
+    );
 
-'on-the-go'
+    }
+    );
 
-);
+    }
 
-}
-);
 
-}
+    row.appendChild(
+    c
+    );
 
+    }
+    );
 
-row.appendChild(
-c
-);
+    }
 
-}
-);
 
-}
+    function buildDMSessions(){
 
+    const grid=
+    q(
+    '#decision-makers-screen .session-grid'
+    );
 
-function buildDMSessions(){
 
-const grid=
-q(
-'#decision-makers-screen .session-grid'
-);
+    if(!grid)
+    return;
 
 
-if(!grid)
-return;
+    grid.innerHTML='';
 
 
-grid.innerHTML='';
+    if(
+    !dmSessions.length
+    ){
 
+    grid.innerHTML=`
 
-if(
-!dmSessions.length
-){
+    <div
+    class="artist-media-empty"
+    style="grid-column:1/-1"
+    >
+    NO DECISION MAKER SESSIONS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-grid.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO DECISION MAKER SESSIONS ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    dmSessions.forEach(
+    session=>{
 
+    const id=
+    session.youtubeId||
+    yt(
+    session.youtubeUrl||
+    ''
+    );
 
-dmSessions.forEach(
-session=>{
 
-const id=
-session.youtubeId||
-yt(
-session.youtubeUrl||
-''
-);
+    const number=
+    String(
+    session.sessionNumber||
+    1
+    )
+    .padStart(
+    2,
+    '0'
+    );
 
 
-const number=
-String(
-session.sessionNumber||
-1
-)
-.padStart(
-2,
-'0'
-);
+    const thumbnail=
 
+    session.thumbnailUrl||
+    (
+    id
+    ?
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+    :
+    ''
+    );
 
-const thumbnail=
 
-session.thumbnailUrl||
-(
-id
-?
-`https://img.youtube.com/vi/${id}/hqdefault.jpg`
-:
-''
-);
+    const card=
+    document.createElement(
+    'article'
+    );
 
 
-const card=
-document.createElement(
-'article'
-);
+    card.className=
+    'session-card';
 
 
-card.className=
-'session-card';
+    const media=
+    thumbnail
+    ?
+    `
 
+    <div
+    class="dm-session-media"
+    data-session-media
+    >
 
-const media=
-thumbnail
-?
-`
+    <img
+    src="${esc(thumbnail)}"
+    alt="${esc(session.title)}"
+    >
 
-<div
-class="dm-session-media"
-data-session-media
->
+    ${id
+    ?
+    `
 
-<img
-src="${esc(thumbnail)}"
-alt="${esc(session.title)}"
->
+    <button
+    class="dm-session-play"
+    type="button"
+    aria-label="Play ${esc(session.title)}"
+    >
+    ▶
+    </button>
 
-${id
-?
-`
+    `
+    :
+    ''
+    }
 
-<button
-class="dm-session-play"
-type="button"
-aria-label="Play ${esc(session.title)}"
->
-▶
-</button>
+    </div>
 
-`
-:
-''
-}
+    `
+    :
+    '';
 
-</div>
 
-`
-:
-'';
+    card.innerHTML=`
 
+    ${media}
 
-card.innerHTML=`
+    <div class="session-number">
+    ${number}
+    </div>
 
-${media}
+    <div class="session-content">
 
-<div class="session-number">
-${number}
-</div>
+    <span>
+    FOCUSED SESSION
+    </span>
 
-<div class="session-content">
+    <h3>
+    ${esc(session.title)}
+    </h3>
 
-<span>
-FOCUSED SESSION
-</span>
+    <p>
+    ${esc(session.description||'')}
+    </p>
 
-<h3>
-${esc(session.title)}
-</h3>
+    <div class="session-status">
 
-<p>
-${esc(session.description||'')}
-</p>
+    ${id
+    ?
+    '▶ WATCH SESSION'
+    :
+    'SESSION COMING SOON'
+    }
 
-<div class="session-status">
+    </div>
 
-${id
-?
-'▶ WATCH SESSION'
-:
-'SESSION COMING SOON'
-}
+    </div>
 
-</div>
+    `;
 
-</div>
 
-`;
+    if(id){
 
+    const play=
+    q(
+    '.dm-session-play',
+    card
+    );
 
-if(id){
 
-const play=
-q(
-'.dm-session-play',
-card
-);
+    if(play){
 
+    play.addEventListener(
+    'click',
+    ()=>{
 
-if(play){
+    const mediaBox=
+    q(
+    '[data-session-media]',
+    card
+    );
 
-play.addEventListener(
-'click',
-()=>{
 
-const mediaBox=
-q(
-'[data-session-media]',
-card
-);
+    playDMVideoInBox(
 
+    mediaBox,
 
-playDMVideoInBox(
+    id,
 
-mediaBox,
+    session.title,
 
-id,
+    session.backendId||
+    session.id||
+    id,
 
-session.title,
+    'session'
 
-session.backendId||
-session.id||
-id,
+    );
 
-'session'
+    }
+    );
 
-);
+    }
 
-}
-);
+    }
 
-}
 
-}
+    grid.appendChild(
+    card
+    );
 
+    }
+    );
 
-grid.appendChild(
-card
-);
+    }
 
-}
-);
 
-}
+    function buildDMChallenges(){
 
+    const grid=
+    q(
+    '#decision-makers-screen .action-grid'
+    );
 
-function buildDMChallenges(){
 
-const grid=
-q(
-'#decision-makers-screen .action-grid'
-);
+    if(!grid)
+    return;
 
 
-if(!grid)
-return;
+    grid.innerHTML='';
 
 
-grid.innerHTML='';
+    const message=
+    $('decision-challenge-message');
 
 
-const message=
-$('decision-challenge-message');
+    if(message){
 
+    message.classList.remove(
+    'show'
+    );
 
-if(message){
+    }
 
-message.classList.remove(
-'show'
-);
 
-}
+    if(
+    !dmChallenges.length
+    ){
 
+    grid.innerHTML=`
 
-if(
-!dmChallenges.length
-){
+    <div
+    class="artist-media-empty"
+    style="grid-column:1/-1"
+    >
+    NO TAKE ACTION CHALLENGES ARE PUBLISHED RIGHT NOW.
+    </div>
 
-grid.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO TAKE ACTION CHALLENGES ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    dmChallenges.forEach(
+    challenge=>{
 
+    const card=
+    document.createElement(
+    'article'
+    );
 
-dmChallenges.forEach(
-challenge=>{
 
-const card=
-document.createElement(
-'article'
-);
+    card.className=
+    'action-card';
 
 
-card.className=
-'action-card';
+    const thumb=
+    challenge.thumbnailUrl
+    ?
+    `
 
+    <img
+    class="action-card-thumb"
+    src="${esc(challenge.thumbnailUrl)}"
+    alt="${esc(challenge.title)}"
+    >
 
-const thumb=
-challenge.thumbnailUrl
-?
-`
+    `
+    :
+    '';
 
-<img
-class="action-card-thumb"
-src="${esc(challenge.thumbnailUrl)}"
-alt="${esc(challenge.title)}"
->
 
-`
-:
-'';
+    card.innerHTML=`
 
+    ${thumb}
 
-card.innerHTML=`
+    <div class="action-number">
 
-${thumb}
+    ${String(
+    challenge.challengeNumber||
+    1
+    )
+    .padStart(
+    2,
+    '0'
+    )}
 
-<div class="action-number">
+    </div>
 
-${String(
-challenge.challengeNumber||
-1
-)
-.padStart(
-2,
-'0'
-)}
+    <h3>
+    ${esc(challenge.title)}
+    </h3>
 
-</div>
+    <p>
+    ${esc(challenge.description||'')}
+    </p>
 
-<h3>
-${esc(challenge.title)}
-</h3>
+    <button
+    class="action-button"
+    type="button"
+    >
+    ${esc(
+    challenge.buttonText||
+    'ACCEPT CHALLENGE'
+    )}
+    </button>
 
-<p>
-${esc(challenge.description||'')}
-</p>
+    `;
 
-<button
-class="action-button"
-type="button"
->
-${esc(
-challenge.buttonText||
-'ACCEPT CHALLENGE'
-)}
-</button>
 
-`;
+    const button=
+    q(
+    '.action-button',
+    card
+    );
 
 
-const button=
-q(
-'.action-button',
-card
-);
+    if(button){
 
+    button.addEventListener(
+    'click',
+    ()=>{
 
-if(button){
+    button.classList.add(
+    'accepted'
+    );
 
-button.addEventListener(
-'click',
-()=>{
 
-button.classList.add(
-'accepted'
-);
+    button.textContent=
+    'CHALLENGE ACCEPTED ✓';
 
 
-button.textContent=
-'CHALLENGE ACCEPTED ✓';
+    if(
+    $('challenge-title')
+    ){
 
+    $('challenge-title')
+    .textContent=
+    challenge.title||
+    'YOU MADE THE DECISION.';
 
-if(
-$('challenge-title')
-){
+    }
 
-$('challenge-title')
-.textContent=
-challenge.title||
-'YOU MADE THE DECISION.';
 
-}
+    if(
+    $('challenge-copy')
+    ){
 
+    $('challenge-copy')
+    .textContent=
+    challenge.completionMessage||
+    'NOW TAKE ACTION.';
 
-if(
-$('challenge-copy')
-){
+    }
 
-$('challenge-copy')
-.textContent=
-challenge.completionMessage||
-'NOW TAKE ACTION.';
 
-}
+    if(message){
 
+    message.classList.add(
+    'show'
+    );
 
-if(message){
 
-message.classList.add(
-'show'
-);
+    message.scrollIntoView({
 
+    behavior:
+    'smooth',
 
-message.scrollIntoView({
+    block:
+    'nearest'
 
-behavior:
-'smooth',
+    });
 
-block:
-'nearest'
+    }
 
-});
+    }
+    );
 
-}
+    }
 
-}
-);
 
-}
+    grid.appendChild(
+    card
+    );
 
+    }
+    );
 
-grid.appendChild(
-card
-);
+    }
 
-}
-);
 
-}
+    /*
+    IMPORTANT:
+    Decision Maker resources are intentionally NOT
+    rendered by app.js.
 
+    decision-makers-backend.js owns the official
+    Decision Maker Resource section.
 
-/*
-IMPORTANT:
-Decision Maker resources are intentionally NOT
-rendered by app.js.
+    This removes the duplicate lower resource card
+    that was appearing beneath the original
+    black/yellow DOWNLOAD FREE SAMPLE card.
+    */
 
-decision-makers-backend.js owns the official
-Decision Maker Resource section.
 
-This removes the duplicate lower resource card
-that was appearing beneath the original
-black/yellow DOWNLOAD FREE SAMPLE card.
-*/
+    function stopDM(){
 
+    qa(
+    '[data-dm-youtube]'
+    )
+    .forEach(
+    frame=>{
 
-function stopDM(){
+    try{
 
-qa(
-'[data-dm-youtube]'
-)
-.forEach(
-frame=>{
+    frame.contentWindow
+    ?.postMessage(
 
-try{
+    JSON.stringify({
 
-frame.contentWindow
-?.postMessage(
+    event:
+    'command',
 
-JSON.stringify({
+    func:
+    'pauseVideo',
 
-event:
-'command',
+    args:[]
 
-func:
-'pauseVideo',
+    }),
 
-args:[]
+    '*'
 
-}),
+    );
 
-'*'
+    }catch{}
 
-);
+    }
+    );
 
-}catch{}
+    }
 
-}
-);
 
-}
+    function renderDecisionMakers(){
 
+    buildDM();
 
-function renderDecisionMakers(){
+    buildDMSessions();
 
-buildDM();
+    buildDMChallenges();
 
-buildDMSessions();
+    }
 
-buildDMChallenges();
 
-}
+    on(
+    'decision-makers-button',
+    'click',
+    renderDecisionMakers
+    );
 
 
-on(
-'decision-makers-button',
-'click',
-renderDecisionMakers
-);
+    /* =========================================================
+       B.O.S.S CHECK IN
+       PERMANENT BUILT IN BANK + ADMIN ADDITIONS
+    ========================================================= */
 
+    const builtBank={
 
-/* =========================================================
-   B.O.S.S CHECK IN
-   PERMANENT BUILT IN BANK + ADMIN ADDITIONS
-========================================================= */
+    APPROVAL:[
 
-const builtBank={
+    'I change what I really want because I worry how people will react.',
 
-APPROVAL:[
+    'I feel pressure to explain my decisions so other people approve of them.',
 
-'I change what I really want because I worry how people will react.',
+    'I hesitate to say no because I do not want to disappoint people.',
 
-'I feel pressure to explain my decisions so other people approve of them.',
+    'Praise from other people strongly affects how confident I feel about my choices.',
 
-'I hesitate to say no because I do not want to disappoint people.',
+    'I sometimes choose what looks good instead of what is right for me.',
 
-'Praise from other people strongly affects how confident I feel about my choices.',
+    'I avoid a decision if I think people close to me may criticize it.'
 
-'I sometimes choose what looks good instead of what is right for me.',
+    ],
 
-'I avoid a decision if I think people close to me may criticize it.'
 
-],
+    COMPARISON:[
 
+    'Seeing other people succeed can make me question my own progress.',
 
-COMPARISON:[
+    'I compare my timeline to people who are further ahead.',
 
-'Seeing other people succeed can make me question my own progress.',
+    'Social media can make me feel like I should be doing more.',
 
-'I compare my timeline to people who are further ahead.',
+    'I sometimes change goals because somebody else appears to be winning with something different.',
 
-'Social media can make me feel like I should be doing more.',
+    'I judge my progress by what other people have instead of where I started.',
 
-'I sometimes change goals because somebody else appears to be winning with something different.',
+    'I can lose focus on my own plan when I see somebody else moving faster.'
 
-'I judge my progress by what other people have instead of where I started.',
+    ],
 
-'I can lose focus on my own plan when I see somebody else moving faster.'
 
-],
+    CONFIDENCE:[
 
+    'I delay action because I am not sure I can handle the result.',
 
-CONFIDENCE:[
+    'I second guess decisions even after I have enough information.',
 
-'I delay action because I am not sure I can handle the result.',
+    'I sometimes need reassurance before I trust my own judgment.',
 
-'I second guess decisions even after I have enough information.',
+    'I avoid opportunities because I worry I may not be ready.',
 
-'I sometimes need reassurance before I trust my own judgment.',
+    'A mistake can make me question my overall ability.',
 
-'I avoid opportunities because I worry I may not be ready.',
+    'I find it difficult to speak confidently about what I want.'
 
-'A mistake can make me question my overall ability.',
+    ],
 
-'I find it difficult to speak confidently about what I want.'
 
-],
+    ACTION:[
 
+    'I know what I need to do but still put it off.',
 
-ACTION:[
+    'I spend more time planning than executing.',
 
-'I know what I need to do but still put it off.',
+    'I wait for motivation before doing important work.',
 
-'I spend more time planning than executing.',
+    'I sometimes let discomfort stop a decision I know is necessary.',
 
-'I wait for motivation before doing important work.',
+    'I start things but struggle to consistently finish them.',
 
-'I sometimes let discomfort stop a decision I know is necessary.',
+    'I delay a useful move while waiting for the perfect time.'
 
-'I start things but struggle to consistently finish them.',
+    ]
 
-'I delay a useful move while waiting for the perfect time.'
+    };
 
-]
 
-};
+    const bank={
 
+    APPROVAL:[
+    ...builtBank.APPROVAL
+    ],
 
-const bank={
+    COMPARISON:[
+    ...builtBank.COMPARISON
+    ],
 
-APPROVAL:[
-...builtBank.APPROVAL
-],
+    CONFIDENCE:[
+    ...builtBank.CONFIDENCE
+    ],
 
-COMPARISON:[
-...builtBank.COMPARISON
-],
+    ACTION:[
+    ...builtBank.ACTION
+    ]
 
-CONFIDENCE:[
-...builtBank.CONFIDENCE
-],
+    };
 
-ACTION:[
-...builtBank.ACTION
-]
 
-};
+    let cq=[];
 
+    let ci=0;
 
-let cq=[];
+    let resp=[];
 
-let ci=0;
 
-let resp=[];
+    const shuffle=
+    a=>
+    [...a]
+    .sort(
+    ()=>Math.random()-.5
+    );
 
 
-const shuffle=
-a=>
-[...a]
-.sort(
-()=>Math.random()-.5
-);
+    function showCheckIntro(){
 
+    if(
+    $('checkin-intro')
+    ){
 
-function showCheckIntro(){
+    $('checkin-intro')
+    .style.display=
+    'flex';
 
-if(
-$('checkin-intro')
-){
+    }
 
-$('checkin-intro')
-.style.display=
-'flex';
 
-}
+    if(
+    $('checkin-questions')
+    ){
 
+    $('checkin-questions')
+    .style.display=
+    'none';
 
-if(
-$('checkin-questions')
-){
+    }
 
-$('checkin-questions')
-.style.display=
-'none';
 
-}
+    if(
+    $('checkin-results')
+    ){
 
+    $('checkin-results')
+    .style.display=
+    'none';
 
-if(
-$('checkin-results')
-){
+    }
 
-$('checkin-results')
-.style.display=
-'none';
+    }
 
-}
 
-}
+    function startCheck(){
 
+    const available=
+    Object.entries(
+    bank
+    )
+    .flatMap(
+    ([cat,arr])=>
 
-function startCheck(){
+    shuffle(
+    arr
+    )
 
-const available=
-Object.entries(
-bank
-)
-.flatMap(
-([cat,arr])=>
+    .slice(
+    0,
+    3
+    )
 
-shuffle(
-arr
-)
+    .map(
+    text=>({
 
-.slice(
-0,
-3
-)
+    cat,
 
-.map(
-text=>({
+    text
 
-cat,
+    })
+    )
 
-text
+    );
 
-})
-)
 
-);
+    if(
+    !available.length
+    ){
 
+    if(
+    $('checkin-question-text')
+    ){
 
-if(
-!available.length
-){
+    $('checkin-question-text')
+    .textContent=
+    'NO CHECK IN QUESTIONS ARE AVAILABLE RIGHT NOW.';
 
-if(
-$('checkin-question-text')
-){
+    }
 
-$('checkin-question-text')
-.textContent=
-'NO CHECK IN QUESTIONS ARE AVAILABLE RIGHT NOW.';
 
-}
+    if(
+    $('checkin-intro')
+    ){
 
+    $('checkin-intro')
+    .style.display=
+    'none';
 
-if(
-$('checkin-intro')
-){
+    }
 
-$('checkin-intro')
-.style.display=
-'none';
 
-}
+    if(
+    $('checkin-questions')
+    ){
 
+    $('checkin-questions')
+    .style.display=
+    'block';
 
-if(
-$('checkin-questions')
-){
+    }
 
-$('checkin-questions')
-.style.display=
-'block';
 
-}
+    if(
+    $('checkin-answers')
+    ){
 
+    $('checkin-answers')
+    .innerHTML=
 
-if(
-$('checkin-answers')
-){
+    '<div class="artist-media-empty">CHECK BACK SOON.</div>';
 
-$('checkin-answers')
-.innerHTML=
+    }
 
-'<div class="artist-media-empty">CHECK BACK SOON.</div>';
 
-}
+    if(
+    $('previous-question')
+    ){
 
+    $('previous-question')
+    .style.visibility=
+    'hidden';
 
-if(
-$('previous-question')
-){
+    }
 
-$('previous-question')
-.style.visibility=
-'hidden';
 
-}
+    return;
 
+    }
 
-return;
 
-}
+    trackAnalytics(
+    'checkin_start',
+    {
 
+    section:
+    'boss-checkin',
 
-trackAnalytics(
-'checkin_start',
-{
+    itemTitle:
+    'B.O.S.S CHECK IN'
 
-section:
-'boss-checkin',
+    }
+    );
 
-itemTitle:
-'B.O.S.S CHECK IN'
 
-}
-);
+    cq=
+    shuffle(
+    available
+    );
 
 
-cq=
-shuffle(
-available
-);
+    ci=
+    0;
 
 
-ci=
-0;
+    resp=
+    new Array(
+    cq.length
+    )
+    .fill(
+    null
+    );
 
 
-resp=
-new Array(
-cq.length
-)
-.fill(
-null
-);
+    if(
+    $('checkin-intro')
+    ){
 
+    $('checkin-intro')
+    .style.display=
+    'none';
 
-if(
-$('checkin-intro')
-){
+    }
 
-$('checkin-intro')
-.style.display=
-'none';
 
-}
+    if(
+    $('checkin-results')
+    ){
 
+    $('checkin-results')
+    .style.display=
+    'none';
 
-if(
-$('checkin-results')
-){
+    }
 
-$('checkin-results')
-.style.display=
-'none';
 
-}
+    if(
+    $('checkin-questions')
+    ){
 
+    $('checkin-questions')
+    .style.display=
+    'block';
 
-if(
-$('checkin-questions')
-){
+    }
 
-$('checkin-questions')
-.style.display=
-'block';
 
-}
+    renderQ();
 
+    }
 
-renderQ();
 
-}
+    function renderQ(){
 
+    const x=
+    cq[
+    ci
+    ];
 
-function renderQ(){
 
-const x=
-cq[
-ci
-];
+    if(!x)
+    return;
 
 
-if(!x)
-return;
+    const n=
+    ci+
+    1;
 
 
-const n=
-ci+
-1;
+    const total=
+    cq.length;
 
 
-const total=
-cq.length;
+    const p=
+    Math.round(
 
+    n/
+    total*
+    100
 
-const p=
-Math.round(
+    );
 
-n/
-total*
-100
 
-);
+    if(
+    $('question-count')
+    ){
 
+    $('question-count')
+    .textContent=
+    `QUESTION ${n} OF ${total}`;
 
-if(
-$('question-count')
-){
+    }
 
-$('question-count')
-.textContent=
-`QUESTION ${n} OF ${total}`;
 
-}
+    if(
+    $('progress-percent')
+    ){
 
+    $('progress-percent')
+    .textContent=
+    `${p}%`;
 
-if(
-$('progress-percent')
-){
+    }
 
-$('progress-percent')
-.textContent=
-`${p}%`;
 
-}
+    if(
+    $('checkin-progress-bar')
+    ){
 
+    $('checkin-progress-bar')
+    .style.width=
+    `${p}%`;
 
-if(
-$('checkin-progress-bar')
-){
+    }
 
-$('checkin-progress-bar')
-.style.width=
-`${p}%`;
 
-}
+    if(
+    $('question-category')
+    ){
 
+    $('question-category')
+    .textContent=
+    x.cat;
 
-if(
-$('question-category')
-){
+    }
 
-$('question-category')
-.textContent=
-x.cat;
 
-}
+    if(
+    $('checkin-question-text')
+    ){
 
+    $('checkin-question-text')
+    .textContent=
+    x.text;
 
-if(
-$('checkin-question-text')
-){
+    }
 
-$('checkin-question-text')
-.textContent=
-x.text;
 
-}
+    const a=
+    $('checkin-answers');
 
 
-const a=
-$('checkin-answers');
+    if(!a)
+    return;
 
 
-if(!a)
-return;
+    a.innerHTML='';
 
 
-a.innerHTML='';
+    [
+    [
+    'NEVER',
+    0
+    ],
 
+    [
+    'RARELY',
+    1
+    ],
 
-[
-[
-'NEVER',
-0
-],
+    [
+    'SOMETIMES',
+    2
+    ],
 
-[
-'RARELY',
-1
-],
+    [
+    'OFTEN',
+    3
+    ],
 
-[
-'SOMETIMES',
-2
-],
+    [
+    'VERY OFTEN',
+    4
+    ]
 
-[
-'OFTEN',
-3
-],
+    ]
+    .forEach(
+    ([lab,val])=>{
 
-[
-'VERY OFTEN',
-4
-]
+    const b=
+    document.createElement(
+    'button'
+    );
 
-]
-.forEach(
-([lab,val])=>{
 
-const b=
-document.createElement(
-'button'
-);
+    b.type=
+    'button';
 
 
-b.type=
-'button';
+    b.className=
+    'checkin-answer-button';
 
 
-b.className=
-'checkin-answer-button';
+    b.textContent=
+    lab;
 
 
-b.textContent=
-lab;
+    if(
+    resp[
+    ci
+    ]===
+    val
+    ){
 
+    b.classList.add(
+    'selected'
+    );
 
-if(
-resp[
-ci
-]===
-val
-){
+    }
 
-b.classList.add(
-'selected'
-);
 
-}
+    b.onclick=
+    ()=>{
 
+    resp[
+    ci
+    ]=
+    val;
 
-b.onclick=
-()=>{
 
-resp[
-ci
-]=
-val;
+    if(
+    ci<
+    total-
+    1
+    ){
 
+    ci++;
 
-if(
-ci<
-total-
-1
-){
+    renderQ();
 
-ci++;
+    }
+    else{
 
-renderQ();
+    finishCheck();
 
-}
-else{
+    }
 
-finishCheck();
+    };
 
-}
 
-};
+    a.appendChild(
+    b
+    );
 
+    }
+    );
 
-a.appendChild(
-b
-);
 
-}
-);
+    if(
+    $('previous-question')
+    ){
 
+    $('previous-question')
+    .style.visibility=
+    ci
+    ?
+    'visible'
+    :
+    'hidden';
 
-if(
-$('previous-question')
-){
+    }
 
-$('previous-question')
-.style.visibility=
-ci
-?
-'visible'
-:
-'hidden';
+    }
 
-}
 
-}
+    function finishCheck(){
 
+    const cats={
 
-function finishCheck(){
+    APPROVAL:[],
 
-const cats={
+    COMPARISON:[],
 
-APPROVAL:[],
+    CONFIDENCE:[],
 
-COMPARISON:[],
+    ACTION:[]
 
-CONFIDENCE:[],
+    };
 
-ACTION:[]
 
-};
+    cq.forEach(
+    (x,i)=>{
 
+    if(
+    cats[
+    x.cat
+    ]
+    ){
 
-cq.forEach(
-(x,i)=>{
+    cats[
+    x.cat
+    ]
+    .push(
+    resp[
+    i
+    ]??
+    0
+    );
 
-if(
-cats[
-x.cat
-]
-){
+    }
 
-cats[
-x.cat
-]
-.push(
-resp[
-i
-]??
-0
-);
+    }
+    );
 
-}
 
-}
-);
+    const scores={};
 
 
-const scores={};
+    Object.entries(
+    cats
+    )
+    .forEach(
+    ([k,v])=>{
 
+    if(
+    !v.length
+    ){
 
-Object.entries(
-cats
-)
-.forEach(
-([k,v])=>{
+    scores[
+    k
+    ]=
+    100;
 
-if(
-!v.length
-){
+    return;
 
-scores[
-k
-]=
-100;
+    }
 
-return;
 
-}
+    scores[
+    k
+    ]=
+    100-
+    Math.round(
 
+    v.reduce(
+    (a,b)=>a+b,
+    0
+    )
+    /
+    (
+    v.length*
+    4
+    )
+    *
+    100
 
-scores[
-k
-]=
-100-
-Math.round(
+    );
 
-v.reduce(
-(a,b)=>a+b,
-0
-)
-/
-(
-v.length*
-4
-)
-*
-100
+    }
+    );
 
-);
 
-}
-);
+    const overall=
+    Math.round(
 
+    Object.values(
+    scores
+    )
+    .reduce(
+    (a,b)=>a+b,
+    0
+    )
+    /
+    4
 
-const overall=
-Math.round(
+    );
 
-Object.values(
-scores
-)
-.reduce(
-(a,b)=>a+b,
-0
-)
-/
-4
 
-);
+    if(
+    $('checkin-questions')
+    ){
 
+    $('checkin-questions')
+    .style.display=
+    'none';
 
-if(
-$('checkin-questions')
-){
+    }
 
-$('checkin-questions')
-.style.display=
-'none';
 
-}
+    if(
+    $('checkin-results')
+    ){
 
+    $('checkin-results')
+    .style.display=
+    'block';
 
-if(
-$('checkin-results')
-){
+    }
 
-$('checkin-results')
-.style.display=
-'block';
 
-}
+    if(
+    $('boss-score')
+    ){
 
+    $('boss-score')
+    .textContent=
+    overall;
 
-if(
-$('boss-score')
-){
+    }
 
-$('boss-score')
-.textContent=
-overall;
 
-}
+    if(
+    $('boss-score-title')
+    ){
 
+    $('boss-score-title')
+    .textContent=
 
-if(
-$('boss-score-title')
-){
+    overall>=80
+    ?
+    'STRONG DECISION CONTROL'
+    :
+    overall>=60
+    ?
+    'KEEP BUILDING'
+    :
+    'SOCIAL STRESS IS IN THE ROOM';
 
-$('boss-score-title')
-.textContent=
+    }
 
-overall>=80
-?
-'STRONG DECISION CONTROL'
-:
-overall>=60
-?
-'KEEP BUILDING'
-:
-'SOCIAL STRESS IS IN THE ROOM';
 
-}
+    if(
+    $('boss-score-description')
+    ){
 
+    $('boss-score-description')
+    .textContent=
 
-if(
-$('boss-score-description')
-){
+    overall>=80
+    ?
+    'Outside pressure is not driving most of your decisions. Keep protecting that clarity.'
+    :
+    overall>=60
+    ?
+    'You have a solid base, but a few areas are still influencing how you move.'
+    :
+    'Outside pressure, hesitation or comparison may be influencing too many decisions right now.';
 
-$('boss-score-description')
-.textContent=
+    }
 
-overall>=80
-?
-'Outside pressure is not driving most of your decisions. Keep protecting that clarity.'
-:
-overall>=60
-?
-'You have a solid base, but a few areas are still influencing how you move.'
-:
-'Outside pressure, hesitation or comparison may be influencing too many decisions right now.';
 
-}
+    Object.entries(
+    scores
+    )
+    .forEach(
+    ([k,v])=>{
 
+    const id=
+    k.toLowerCase();
 
-Object.entries(
-scores
-)
-.forEach(
-([k,v])=>{
 
-const id=
-k.toLowerCase();
+    if(
+    $(
+    `${id}-score`
+    )
+    ){
 
+    $(
+    `${id}-score`
+    )
+    .textContent=
+    v;
 
-if(
-$(
-`${id}-score`
-)
-){
+    }
 
-$(
-`${id}-score`
-)
-.textContent=
-v;
 
-}
+    if(
+    $(
+    `${id}-meter`
+    )
+    ){
 
+    $(
+    `${id}-meter`
+    )
+    .style.width=
+    `${v}%`;
 
-if(
-$(
-`${id}-meter`
-)
-){
+    }
 
-$(
-`${id}-meter`
-)
-.style.width=
-`${v}%`;
+    }
+    );
 
-}
 
-}
-);
+    const weak=
+    Object.entries(
+    scores
+    )
 
+    .sort(
+    (a,b)=>
+    a[1]-
+    b[1]
+    )[0]?.[0]
+    ||
+    'ACTION';
 
-const weak=
-Object.entries(
-scores
-)
 
-.sort(
-(a,b)=>
-a[1]-
-b[1]
-)[0]?.[0]
-||
-'ACTION';
+    if(
+    $('weakest-category')
+    ){
 
+    $('weakest-category')
+    .textContent=
+    weak;
 
-if(
-$('weakest-category')
-){
+    }
 
-$('weakest-category')
-.textContent=
-weak;
 
-}
+    if(
+    $('weakest-message')
+    ){
 
+    $('weakest-message')
+    .textContent={
 
-if(
-$('weakest-message')
-){
+    APPROVAL:
+    'You may be giving other people too much voting power over your decisions.',
 
-$('weakest-message')
-.textContent={
+    COMPARISON:
+    'Your attention may be drifting from your own lane into somebody else’s timeline.',
 
-APPROVAL:
-'You may be giving other people too much voting power over your decisions.',
+    CONFIDENCE:
+    'You may know more than you are allowing yourself to trust.',
 
-COMPARISON:
-'Your attention may be drifting from your own lane into somebody else’s timeline.',
+    ACTION:
+    'The issue may not be clarity. It may be execution.'
 
-CONFIDENCE:
-'You may know more than you are allowing yourself to trust.',
+    }[
+    weak
+    ];
 
-ACTION:
-'The issue may not be clarity. It may be execution.'
+    }
 
-}[
-weak
-];
 
-}
+    if(
+    $('next-decision')
+    ){
 
+    $('next-decision')
+    .textContent={
 
-if(
-$('next-decision')
-){
+    APPROVAL:
+    'Make one decision today without explaining it to anybody.',
 
-$('next-decision')
-.textContent={
+    COMPARISON:
+    'Measure today against your own last 30 days, not somebody else’s highlight reel.',
 
-APPROVAL:
-'Make one decision today without explaining it to anybody.',
+    CONFIDENCE:
+    'Take one action before asking anybody for reassurance.',
 
-COMPARISON:
-'Measure today against your own last 30 days, not somebody else’s highlight reel.',
+    ACTION:
+    'Complete the next obvious step before planning anything else.'
 
-CONFIDENCE:
-'Take one action before asking anybody for reassurance.',
+    }[
+    weak
+    ];
 
-ACTION:
-'Complete the next obvious step before planning anything else.'
+    }
 
-}[
-weak
-];
 
-}
+    /*
+    Store the overall score in value_numeric
+    so the dashboard can calculate averages
+    and score ranges.
 
+    Category scores are included in detail
+    for future category reporting.
+    */
 
-/*
-Store the overall score in value_numeric
-so the dashboard can calculate averages
-and score ranges.
+    trackAnalytics(
+    'checkin_complete',
+    {
 
-Category scores are included in detail
-for future category reporting.
-*/
+    section:
+    'boss-checkin',
 
-trackAnalytics(
-'checkin_complete',
-{
+    itemTitle:
+    'B.O.S.S CHECK IN',
 
-section:
-'boss-checkin',
+    valueNumeric:
+    overall,
 
-itemTitle:
-'B.O.S.S CHECK IN',
+    detail:{
 
-valueNumeric:
-overall,
+    approval:
+    scores.APPROVAL,
 
-detail:{
+    comparison:
+    scores.COMPARISON,
 
-approval:
-scores.APPROVAL,
+    confidence:
+    scores.CONFIDENCE,
 
-comparison:
-scores.COMPARISON,
+    action:
+    scores.ACTION,
 
-confidence:
-scores.CONFIDENCE,
+    weakest_category:
+    weak,
 
-action:
-scores.ACTION,
+    questions_answered:
+    cq.length
 
-weakest_category:
-weak,
+    }
 
-questions_answered:
-cq.length
+    }
+    );
 
-}
 
-}
-);
+    window.scrollTo({
 
+    top:0,
 
-window.scrollTo({
+    behavior:
+    'smooth'
 
-top:0,
+    });
 
-behavior:
-'smooth'
+    }
 
-});
 
-}
+    on(
+    'start-checkin',
+    'click',
+    startCheck
+    );
 
 
-on(
-'start-checkin',
-'click',
-startCheck
-);
+    on(
+    'previous-question',
+    'click',
+    ()=>{
 
+    if(
+    ci>
+    0
+    ){
 
-on(
-'previous-question',
-'click',
-()=>{
+    ci--;
 
-if(
-ci>
-0
-){
+    renderQ();
 
-ci--;
+    }
 
-renderQ();
+    }
+    );
 
-}
 
-}
-);
+    on(
+    'retake-checkin',
+    'click',
+    showCheckIntro
+    );
+    /* =========================================================
+       THE BOSS BITE
+       BACKEND MANAGED
+    ========================================================= */
 
+    const episodes=[];
 
-on(
-'retake-checkin',
-'click',
-showCheckIntro
-);
-/* =========================================================
-   THE BOSS BITE
-   BACKEND MANAGED
-========================================================= */
 
-const episodes=[];
+    function buildEpisodes(){
 
+    const g=
+    $('episode-grid');
 
-function buildEpisodes(){
 
-const g=
-$('episode-grid');
+    if(!g)
+    return;
 
 
-if(!g)
-return;
+    g.innerHTML='';
 
 
-g.innerHTML='';
+    if(
+    !episodes.length
+    ){
 
+    g.innerHTML=`
 
-if(
-!episodes.length
-){
+    <div
+    class="artist-media-empty"
+    style="grid-column:1/-1"
+    >
+    NO BOSS BITE EPISODES ARE PUBLISHED RIGHT NOW.
+    </div>
 
-g.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO BOSS BITE EPISODES ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    episodes.forEach(
+    e=>{
 
+    const id=
+    yt(
+    e.youtubeUrl
+    );
 
-episodes.forEach(
-e=>{
 
-const id=
-yt(
-e.youtubeUrl
-);
+    if(!id)
+    return;
 
 
-if(!id)
-return;
+    const c=
+    document.createElement(
+    'article'
+    );
 
 
-const c=
-document.createElement(
-'article'
-);
+    c.className=
+    'episode-card';
 
 
-c.className=
-'episode-card';
+    c.innerHTML=`
 
+    <div class="episode-thumbnail">
 
-c.innerHTML=`
+    <img
+    src="${
+    esc(
+    e.thumbnailUrl||
+    `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+    )
+    }"
+    alt="${esc(e.title)}"
+    >
 
-<div class="episode-thumbnail">
+    <div class="play-circle">
+    ▶
+    </div>
 
-<img
-src="${
-esc(
-e.thumbnailUrl||
-`https://img.youtube.com/vi/${id}/hqdefault.jpg`
-)
-}"
-alt="${esc(e.title)}"
->
+    </div>
 
-<div class="play-circle">
-▶
-</div>
+    <div class="episode-info">
 
-</div>
+    <h3>
+    ${esc(e.title)}
+    </h3>
 
-<div class="episode-info">
+    <p>
+    ${esc(e.description||'')}
+    </p>
 
-<h3>
-${esc(e.title)}
-</h3>
+    </div>
 
-<p>
-${esc(e.description||'')}
-</p>
+    `;
 
-</div>
 
-`;
+    c.onclick=
+    ()=>playEpisode(
 
+    id,
 
-c.onclick=
-()=>playEpisode(
+    e.title,
 
-id,
+    e.backendId||
+    e.id||
+    id
 
-e.title,
+    );
 
-e.backendId||
-e.id||
-id
 
-);
+    g.appendChild(
+    c
+    );
 
+    }
+    );
 
-g.appendChild(
-c
-);
+    }
 
-}
-);
 
-}
+    function playEpisode(
+    id,
+    title,
+    itemId=''
+    ){
 
+    const p=
+    $('featured-player');
 
-function playEpisode(
-id,
-title,
-itemId=''
-){
 
-const p=
-$('featured-player');
+    if(
+    !p||
+    !id
+    )
+    return;
 
 
-if(
-!p||
-!id
-)
-return;
+    if(
+    audio&&
+    !audio.paused
+    ){
 
+    audio.pause();
 
-if(
-audio&&
-!audio.paused
-){
+    }
 
-audio.pause();
 
-}
+    trackAnalytics(
+    'video_play',
+    {
 
+    section:
+    'boss-bite',
 
-trackAnalytics(
-'video_play',
-{
+    itemId:
+    itemId||
+    id,
 
-section:
-'boss-bite',
+    itemTitle:
+    title||
+    'THE BOSS BITE'
 
-itemId:
-itemId||
-id,
+    }
+    );
 
-itemTitle:
-title||
-'THE BOSS BITE'
 
-}
-);
+    p.innerHTML=`
 
+    <iframe
+    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
+    title="${esc(title)}"
+    allow="autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen
+    ></iframe>
 
-p.innerHTML=`
+    `;
 
-<iframe
-src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
-title="${esc(title)}"
-allow="autoplay; encrypted-media; picture-in-picture"
-allowfullscreen
-></iframe>
 
-`;
+    if(
+    $('featured-title')
+    ){
 
+    $('featured-title')
+    .textContent=
+    title;
 
-if(
-$('featured-title')
-){
+    }
 
-$('featured-title')
-.textContent=
-title;
 
-}
+    p.scrollIntoView({
 
+    behavior:
+    'smooth',
 
-p.scrollIntoView({
+    block:
+    'center'
 
-behavior:
-'smooth',
+    });
 
-block:
-'center'
+    }
 
-});
 
-}
+    function loadFirstEpisode(){
 
+    const e=
+    episodes[0];
 
-function loadFirstEpisode(){
+    const p=
+    $('featured-player');
 
-const e=
-episodes[0];
 
-const p=
-$('featured-player');
+    if(!p)
+    return;
 
 
-if(!p)
-return;
+    if(!e){
 
+    p.innerHTML=`
 
-if(!e){
+    <div
+    style="
+    min-height:280px;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    background:#050505;
+    color:#777;
+    padding:30px;
+    "
+    >
 
-p.innerHTML=`
+    <div>
 
-<div
-style="
-min-height:280px;
-display:grid;
-place-items:center;
-text-align:center;
-background:#050505;
-color:#777;
-padding:30px;
-"
->
+    <strong
+    style="
+    display:block;
+    font-size:26px;
+    color:#fff;
+    margin-bottom:8px;
+    "
+    >
+    THE BOSS BITE
+    </strong>
 
-<div>
+    <p>
+    New episodes will appear here when they are published from Admin.
+    </p>
 
-<strong
-style="
-display:block;
-font-size:26px;
-color:#fff;
-margin-bottom:8px;
-"
->
-THE BOSS BITE
-</strong>
+    </div>
 
-<p>
-New episodes will appear here when they are published from Admin.
-</p>
+    </div>
 
-</div>
+    `;
 
-</div>
 
-`;
+    if(
+    $('featured-title')
+    ){
 
+    $('featured-title')
+    .textContent=
+    'FUELING YOUR HUSTLE';
 
-if(
-$('featured-title')
-){
+    }
 
-$('featured-title')
-.textContent=
-'FUELING YOUR HUSTLE';
 
-}
+    return;
 
+    }
 
-return;
 
-}
+    const id=
+    yt(
+    e.youtubeUrl
+    );
 
 
-const id=
-yt(
-e.youtubeUrl
-);
+    if(!id)
+    return;
 
 
-if(!id)
-return;
+    p.innerHTML=`
 
+    <iframe
+    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
+    title="${esc(e.title)}"
+    allowfullscreen
+    ></iframe>
 
-p.innerHTML=`
+    `;
 
-<iframe
-src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
-title="${esc(e.title)}"
-allowfullscreen
-></iframe>
 
-`;
+    if(
+    $('featured-title')
+    ){
 
+    $('featured-title')
+    .textContent=
+    e.title;
 
-if(
-$('featured-title')
-){
+    }
 
-$('featured-title')
-.textContent=
-e.title;
+    }
 
-}
 
-}
+    /* =========================================================
+       B.O.S.S CODE TV
+       BACKEND MANAGED
+    ========================================================= */
 
+    const tvVideos=[];
 
-/* =========================================================
-   B.O.S.S CODE TV
-   BACKEND MANAGED
-========================================================= */
 
-const tvVideos=[];
+    let live={
 
+    on:false,
 
-let live={
+    id:'',
 
-on:false,
+    thumbnailUrl:''
 
-id:'',
+    };
 
-thumbnailUrl:''
 
-};
+    function buildTv(){
 
+    const g=
+    $('boss-code-tv-grid');
 
-function buildTv(){
 
-const g=
-$('boss-code-tv-grid');
+    if(!g)
+    return;
 
 
-if(!g)
-return;
+    g.innerHTML='';
 
 
-g.innerHTML='';
+    if(
+    !tvVideos.length
+    ){
 
+    g.innerHTML=`
 
-if(
-!tvVideos.length
-){
+    <div
+    class="artist-media-empty"
+    style="grid-column:1/-1"
+    >
+    NO RECORDED B.O.S.S CODE TV VIDEOS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-g.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO RECORDED B.O.S.S CODE TV VIDEOS ARE PUBLISHED RIGHT NOW.
-</div>
 
-`;
+    renderLive();
 
+    return;
 
-renderLive();
+    }
 
-return;
 
-}
+    tvVideos.forEach(
+    v=>{
 
+    if(!v.id)
+    return;
 
-tvVideos.forEach(
-v=>{
 
-if(!v.id)
-return;
+    const c=
+    document.createElement(
+    'article'
+    );
 
 
-const c=
-document.createElement(
-'article'
-);
+    c.className=
+    'tv-card';
 
 
-c.className=
-'tv-card';
+    const thumbnail=
+    v.thumbnailUrl||
+    `https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
 
 
-const thumbnail=
-v.thumbnailUrl||
-`https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
+    c.innerHTML=`
 
+    <div class="tv-player">
 
-c.innerHTML=`
+    <div class="tv-media">
 
-<div class="tv-player">
+    <button
+    class="tv-thumbnail"
+    type="button"
+    data-video-id="${esc(v.id)}"
+    data-video-backend-id="${esc(v.backendId||'')}"
+    data-video-title="${esc(v.title)}"
+    >
 
-<div class="tv-media">
+    <img
+    src="${esc(thumbnail)}"
+    alt="${esc(v.title)}"
+    >
 
-<button
-class="tv-thumbnail"
-type="button"
-data-video-id="${esc(v.id)}"
-data-video-backend-id="${esc(v.backendId||'')}"
-data-video-title="${esc(v.title)}"
->
+    <span class="tv-play-button">
+    </span>
 
-<img
-src="${esc(thumbnail)}"
-alt="${esc(v.title)}"
->
+    </button>
 
-<span class="tv-play-button">
-</span>
+    </div>
 
-</button>
+    </div>
 
-</div>
+    <div class="tv-card-body">
 
-</div>
+    <h3>
+    ${esc(v.title)}
+    </h3>
 
-<div class="tv-card-body">
+    ${v.description
+    ?
+    `
 
-<h3>
-${esc(v.title)}
-</h3>
+    <p>
+    ${esc(v.description)}
+    </p>
 
-${v.description
-?
-`
+    `
+    :
+    ''
+    }
 
-<p>
-${esc(v.description)}
-</p>
+    </div>
 
-`
-:
-''
-}
+    `;
 
-</div>
 
-`;
+    g.appendChild(
+    c
+    );
 
+    }
+    );
 
-g.appendChild(
-c
-);
 
-}
-);
+    renderLive();
 
+    }
 
-renderLive();
 
-}
+    $('boss-code-tv-grid')
+    ?.addEventListener(
+    'click',
+    e=>{
 
+    const b=
+    e.target.closest(
+    '.tv-thumbnail'
+    );
 
-$('boss-code-tv-grid')
-?.addEventListener(
-'click',
-e=>{
 
-const b=
-e.target.closest(
-'.tv-thumbnail'
-);
+    if(!b)
+    return;
 
 
-if(!b)
-return;
+    const id=
+    b.dataset.videoId;
 
 
-const id=
-b.dataset.videoId;
+    const backendId=
+    b.dataset.videoBackendId||
+    id;
 
 
-const backendId=
-b.dataset.videoBackendId||
-id;
+    const title=
+    b.dataset.videoTitle||
+    'B.O.S.S CODE TV';
 
 
-const title=
-b.dataset.videoTitle||
-'B.O.S.S CODE TV';
+    const media=
+    b.closest(
+    '.tv-media'
+    );
 
 
-const media=
-b.closest(
-'.tv-media'
-);
+    if(
+    audio&&
+    !audio.paused
+    ){
 
+    audio.pause();
 
-if(
-audio&&
-!audio.paused
-){
+    }
 
-audio.pause();
 
-}
+    trackAnalytics(
+    'video_play',
+    {
 
+    section:
+    'boss-code-tv',
 
-trackAnalytics(
-'video_play',
-{
+    itemId:
+    backendId,
 
-section:
-'boss-code-tv',
+    itemTitle:
+    title
 
-itemId:
-backendId,
+    }
+    );
 
-itemTitle:
-title
 
-}
-);
+    if(media){
 
+    media.innerHTML=`
 
-if(media){
+    <iframe
+    class="tv-iframe"
+    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
+    title="${esc(title)}"
+    allow="autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen
+    ></iframe>
 
-media.innerHTML=`
+    `;
 
-<iframe
-class="tv-iframe"
-src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
-title="${esc(title)}"
-allow="autoplay; encrypted-media; picture-in-picture"
-allowfullscreen
-></iframe>
+    }
 
-`;
+    }
+    );
 
-}
 
-}
-);
+    function renderLive(){
 
+    const s=
+    q(
+    '.boss-tv-live-section'
+    );
 
-function renderLive(){
 
-const s=
-q(
-'.boss-tv-live-section'
-);
+    if(!s)
+    return;
 
 
-if(!s)
-return;
+    const p=
+    q(
+    '.boss-tv-live-player',
+    s
+    );
 
 
-const p=
-q(
-'.boss-tv-live-player',
-s
-);
+    const badge=
+    q(
+    '.boss-tv-live-badge',
+    s
+    );
 
 
-const badge=
-q(
-'.boss-tv-live-badge',
-s
-);
+    const lab=
+    q(
+    '.boss-tv-live-label',
+    s
+    );
 
 
-const lab=
-q(
-'.boss-tv-live-label',
-s
-);
+    const title=
+    q(
+    '.boss-tv-live-bottom strong',
+    s
+    );
 
 
-const title=
-q(
-'.boss-tv-live-bottom strong',
-s
-);
+    const copy=
+    q(
+    '.boss-tv-live-bottom p',
+    s
+    );
 
 
-const copy=
-q(
-'.boss-tv-live-bottom p',
-s
-);
+    if(
+    live.on&&
+    live.id
+    ){
 
+    if(badge){
 
-if(
-live.on&&
-live.id
-){
+    badge.innerHTML=
+    '<span class="live-dot"></span> LIVE';
 
-if(badge){
 
-badge.innerHTML=
-'<span class="live-dot"></span> LIVE';
+    badge.style.background=
+    '#d40000';
 
 
-badge.style.background=
-'#d40000';
+    badge.style.color=
+    '#fff';
 
+    }
 
-badge.style.color=
-'#fff';
 
-}
+    if(p){
 
+    p.innerHTML=`
 
-if(p){
+    <iframe
+    src="https://www.youtube.com/embed/${encodeURIComponent(live.id)}?rel=0"
+    title="B.O.S.S CODE TV LIVE"
+    allow="autoplay; encrypted-media; picture-in-picture"
+    allowfullscreen
+    ></iframe>
 
-p.innerHTML=`
+    `;
 
-<iframe
-src="https://www.youtube.com/embed/${encodeURIComponent(live.id)}?rel=0"
-title="B.O.S.S CODE TV LIVE"
-allow="autoplay; encrypted-media; picture-in-picture"
-allowfullscreen
-></iframe>
+    }
 
-`;
 
-}
+    if(lab){
 
+    lab.textContent=
+    'LIVE BROADCAST';
 
-if(lab){
 
-lab.textContent=
-'LIVE BROADCAST';
+    lab.style.color=
+    '#d40000';
 
+    }
 
-lab.style.color=
-'#d40000';
 
-}
+    if(title){
 
+    title.textContent=
+    'B.O.S.S CODE MEDIA LIVE STREAM';
 
-if(title){
+    }
 
-title.textContent=
-'B.O.S.S CODE MEDIA LIVE STREAM';
 
-}
+    if(copy){
 
+    copy.textContent=
+    'Watch the current B.O.S.S CODE MEDIA broadcast live inside B.O.S.S CODE GO.';
 
-if(copy){
+    }
 
-copy.textContent=
-'Watch the current B.O.S.S CODE MEDIA broadcast live inside B.O.S.S CODE GO.';
+    }
+    else{
 
-}
 
-}
-else{
+    if(badge){
 
+    badge.textContent=
+    'OFF AIR';
 
-if(badge){
 
-badge.textContent=
-'OFF AIR';
+    badge.style.background=
+    '#181818';
 
 
-badge.style.background=
-'#181818';
+    badge.style.color=
+    '#888';
 
+    }
 
-badge.style.color=
-'#888';
 
-}
+    if(p){
 
+    if(
+    live.thumbnailUrl
+    ){
 
-if(p){
+    p.innerHTML=`
 
-if(
-live.thumbnailUrl
-){
+    <div
+    style="
+    position:relative;
+    width:100%;
+    aspect-ratio:16/9;
+    background:#050505;
+    overflow:hidden;
+    "
+    >
 
-p.innerHTML=`
+    <img
+    src="${esc(live.thumbnailUrl)}"
+    alt="B.O.S.S CODE TV OFF AIR"
+    style="
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    "
+    >
 
-<div
-style="
-position:relative;
-width:100%;
-aspect-ratio:16/9;
-background:#050505;
-overflow:hidden;
-"
->
+    <div
+    style="
+    position:absolute;
+    inset:0;
+    display:grid;
+    place-items:center;
+    background:rgba(0,0,0,.28);
+    "
+    >
 
-<img
-src="${esc(live.thumbnailUrl)}"
-alt="B.O.S.S CODE TV OFF AIR"
-style="
-width:100%;
-height:100%;
-object-fit:cover;
-display:block;
-"
->
+    <span
+    style="
+    background:rgba(0,0,0,.84);
+    border:2px solid #F5C518;
+    border-radius:999px;
+    padding:10px 18px;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.12em;
+    color:#fff;
+    "
+    >
+    OFF AIR
+    </span>
 
-<div
-style="
-position:absolute;
-inset:0;
-display:grid;
-place-items:center;
-background:rgba(0,0,0,.28);
-"
->
+    </div>
 
-<span
-style="
-background:rgba(0,0,0,.84);
-border:2px solid #F5C518;
-border-radius:999px;
-padding:10px 18px;
-font-size:12px;
-font-weight:900;
-letter-spacing:.12em;
-color:#fff;
-"
->
-OFF AIR
-</span>
+    </div>
 
-</div>
+    `;
 
-</div>
+    }
+    else{
 
-`;
+    p.innerHTML=`
 
-}
-else{
+    <div
+    style="
+    min-height:280px;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    background:#050505;
+    color:#777;
+    padding:30px;
+    "
+    >
 
-p.innerHTML=`
+    <div>
 
-<div
-style="
-min-height:280px;
-display:grid;
-place-items:center;
-text-align:center;
-background:#050505;
-color:#777;
-padding:30px;
-"
->
+    <strong
+    style="
+    display:block;
+    color:#fff;
+    font-size:36px;
+    "
+    >
+    OFF AIR
+    </strong>
 
-<div>
+    <p>
+    Check back for the next live conversation, interview or event.
+    </p>
 
-<strong
-style="
-display:block;
-color:#fff;
-font-size:36px;
-"
->
-OFF AIR
-</strong>
+    </div>
 
-<p>
-Check back for the next live conversation, interview or event.
-</p>
+    </div>
 
-</div>
+    `;
 
-</div>
+    }
 
-`;
+    }
 
-}
 
-}
+    if(lab){
 
+    lab.textContent=
+    'CURRENT STATUS';
 
-if(lab){
 
-lab.textContent=
-'CURRENT STATUS';
+    lab.style.color=
+    '#F5C518';
 
+    }
 
-lab.style.color=
-'#F5C518';
 
-}
+    if(title){
 
+    title.textContent=
+    'B.O.S.S CODE TV IS CURRENTLY OFF AIR';
 
-if(title){
+    }
 
-title.textContent=
-'B.O.S.S CODE TV IS CURRENTLY OFF AIR';
 
-}
+    if(copy){
 
+    copy.textContent=
+    'Previously recorded interviews and conversations are available below.';
 
-if(copy){
+    }
 
-copy.textContent=
-'Previously recorded interviews and conversations are available below.';
+    }
 
-}
+    }
 
-}
 
-}
+    /* =========================================================
+       BOSS BITE GALLERY
+       BACKEND MANAGED
+    ========================================================= */
 
+    let galleryPhotos=[];
 
-/* =========================================================
-   BOSS BITE GALLERY
-   BACKEND MANAGED
-========================================================= */
 
-let galleryPhotos=[];
+    const exts=[
 
+    '.jpg',
 
-const exts=[
+    '.jpeg',
 
-'.jpg',
+    '.png',
 
-'.jpeg',
+    '.webp'
 
-'.png',
+    ];
 
-'.webp'
 
-];
+    let gi=
+    0;
 
 
-let gi=
-0;
+    function gallerySrc(item){
 
+    return typeof item===
+    'string'
+    ?
+    item
+    :
+    item?.src||
+    '';
 
-function gallerySrc(item){
+    }
 
-return typeof item===
-'string'
-?
-item
-:
-item?.src||
-'';
 
-}
+    function galleryAlt(item){
 
+    if(
+    typeof item===
+    'string'
+    ){
 
-function galleryAlt(item){
+    return'Boss Bite photo';
 
-if(
-typeof item===
-'string'
-){
+    }
 
-return'Boss Bite photo';
 
-}
+    return[
 
+    item?.caption,
 
-return[
+    item?.location
 
-item?.caption,
+    ]
 
-item?.location
+    .filter(
+    Boolean
+    )
 
-]
+    .join(
+    ' • '
+    )
 
-.filter(
-Boolean
-)
+    ||
 
-.join(
-' • '
-)
+    'Boss Bite photo';
 
-||
+    }
 
-'Boss Bite photo';
 
-}
+    function isDirectImage(
+    src=''
+    ){
 
+    return(
 
-function isDirectImage(
-src=''
-){
+    /^(https?:|data:|blob:)/i
+    .test(
+    src
+    )
 
-return(
+    ||
 
-/^(https?:|data:|blob:)/i
-.test(
-src
-)
+    /\.(jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i
+    .test(
+    src
+    )
 
-||
+    );
 
-/\.(jpe?g|png|webp|gif|avif)(?:[?#].*)?$/i
-.test(
-src
-)
+    }
 
-);
 
-}
+    function setImg(
+    img,
+    item,
+    n=0
+    ){
 
+    const base=
+    gallerySrc(
+    item
+    );
 
-function setImg(
-img,
-item,
-n=0
-){
 
-const base=
-gallerySrc(
-item
-);
+    if(
+    !img||
+    !base
+    )
+    return;
 
 
-if(
-!img||
-!base
-)
-return;
+    img.onerror=
+    null;
 
 
-img.onerror=
-null;
+    if(
+    isDirectImage(
+    base
+    )
+    ){
 
+    img.src=
+    base;
 
-if(
-isDirectImage(
-base
-)
-){
+    return;
 
-img.src=
-base;
+    }
 
-return;
 
-}
+    if(
+    n>=
+    exts.length
+    )
+    return;
 
 
-if(
-n>=
-exts.length
-)
-return;
+    img.src=
+    base+
+    exts[n];
 
 
-img.src=
-base+
-exts[n];
+    img.onerror=
+    ()=>setImg(
 
+    img,
 
-img.onerror=
-()=>setImg(
+    item,
 
-img,
+    n+
+    1
 
-item,
+    );
 
-n+
-1
+    }
 
-);
 
-}
+    function buildGallery(){
 
+    const g=
+    $('boss-bite-gallery');
 
-function buildGallery(){
 
-const g=
-$('boss-bite-gallery');
+    if(!g)
+    return;
 
 
-if(!g)
-return;
+    g.innerHTML='';
 
 
-g.innerHTML='';
+    if(
+    !galleryPhotos.length
+    ){
 
+    g.innerHTML=`
 
-if(
-!galleryPhotos.length
-){
+    <div
+    class="artist-media-empty"
+    style="grid-column:1/-1"
+    >
+    NO BOSS BITE GALLERY PHOTOS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-g.innerHTML=`
+    `;
 
-<div
-class="artist-media-empty"
-style="grid-column:1/-1"
->
-NO BOSS BITE GALLERY PHOTOS ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    galleryPhotos.forEach(
+    (item,i)=>{
 
+    const b=
+    document.createElement(
+    'button'
+    );
 
-galleryPhotos.forEach(
-(item,i)=>{
 
-const b=
-document.createElement(
-'button'
-);
+    const im=
+    document.createElement(
+    'img'
+    );
 
 
-const im=
-document.createElement(
-'img'
-);
+    b.type=
+    'button';
 
 
-b.type=
-'button';
+    b.className=
+    'gallery-photo';
 
 
-b.className=
-'gallery-photo';
+    im.alt=
+    galleryAlt(
+    item
+    );
 
 
-im.alt=
-galleryAlt(
-item
-);
+    setImg(
 
+    im,
 
-setImg(
+    item
 
-im,
+    );
 
-item
 
-);
+    b.appendChild(
+    im
+    );
 
 
-b.appendChild(
-im
-);
+    b.onclick=
+    ()=>{
 
+    gi=
+    i;
 
-b.onclick=
-()=>{
 
-gi=
-i;
+    showGal();
 
 
-showGal();
+    $('gallery-lightbox')
+    ?.classList
+    .add(
+    'open'
+    );
 
 
-$('gallery-lightbox')
-?.classList
-.add(
-'open'
-);
+    document.body.style.overflow=
+    'hidden';
 
+    };
 
-document.body.style.overflow=
-'hidden';
 
-};
+    g.appendChild(
+    b
+    );
 
+    }
+    );
 
-g.appendChild(
-b
-);
+    }
 
-}
-);
 
-}
+    function showGal(){
 
+    if(
+    !galleryPhotos.length
+    )
+    return;
 
-function showGal(){
 
-if(
-!galleryPhotos.length
-)
-return;
+    const im=
+    $('gallery-large-image');
 
 
-const im=
-$('gallery-large-image');
+    const item=
+    galleryPhotos[
+    gi
+    ];
 
 
-const item=
-galleryPhotos[
-gi
-];
+    if(im){
 
+    im.alt=
+    galleryAlt(
+    item
+    );
 
-if(im){
 
-im.alt=
-galleryAlt(
-item
-);
+    setImg(
 
+    im,
 
-setImg(
+    item
 
-im,
+    );
 
-item
+    }
 
-);
 
-}
+    if(
+    $('gallery-counter')
+    ){
 
+    $('gallery-counter')
+    .textContent=
+    `${gi+1} / ${galleryPhotos.length}`;
 
-if(
-$('gallery-counter')
-){
+    }
 
-$('gallery-counter')
-.textContent=
-`${gi+1} / ${galleryPhotos.length}`;
+    }
 
-}
 
-}
+    on(
+    'gallery-close',
+    'click',
+    ()=>{
 
+    $('gallery-lightbox')
+    ?.classList
+    .remove(
+    'open'
+    );
 
-on(
-'gallery-close',
-'click',
-()=>{
 
-$('gallery-lightbox')
-?.classList
-.remove(
-'open'
-);
+    document.body.style.overflow=
+    '';
 
+    }
+    );
 
-document.body.style.overflow=
-'';
 
-}
-);
+    on(
+    'gallery-next',
+    'click',
+    ()=>{
 
+    if(
+    !galleryPhotos.length
+    )
+    return;
 
-on(
-'gallery-next',
-'click',
-()=>{
 
-if(
-!galleryPhotos.length
-)
-return;
+    gi=
+    (
+    gi+
+    1
+    )
+    %
+    galleryPhotos.length;
 
 
-gi=
-(
-gi+
-1
-)
-%
-galleryPhotos.length;
+    showGal();
 
+    }
+    );
 
-showGal();
 
-}
-);
+    on(
+    'gallery-previous',
+    'click',
+    ()=>{
 
+    if(
+    !galleryPhotos.length
+    )
+    return;
 
-on(
-'gallery-previous',
-'click',
-()=>{
 
-if(
-!galleryPhotos.length
-)
-return;
+    gi=
+    (
+    gi-
+    1+
+    galleryPhotos.length
+    )
+    %
+    galleryPhotos.length;
 
 
-gi=
-(
-gi-
-1+
-galleryPhotos.length
-)
-%
-galleryPhotos.length;
+    showGal();
 
+    }
+    );
 
-showGal();
 
-}
-);
+    /* =========================================================
+       BOSS BITE MAP
+       BACKEND MANAGED
+    ========================================================= */
 
+    const restaurants=[];
 
-/* =========================================================
-   BOSS BITE MAP
-   BACKEND MANAGED
-========================================================= */
 
-const restaurants=[];
+    let bossBiteMap=
+    null;
 
 
-let bossBiteMap=
-null;
+    let mapLoaded=
+    false;
 
 
-let mapLoaded=
-false;
+    const marks={};
 
 
-const marks={};
+    function fullLocationAddress(
+    row
+    ){
 
+    return[
 
-function fullLocationAddress(
-row
-){
+    row.address,
 
-return[
+    row.city,
 
-row.address,
+    row.state
 
-row.city,
+    ]
 
-row.state
+    .filter(
+    Boolean
+    )
 
-]
+    .join(
+    ', '
+    );
 
-.filter(
-Boolean
-)
+    }
 
-.join(
-', '
-);
 
-}
+    function validCoordinates(
+    lat,
+    lng
+    ){
 
+    return(
 
-function validCoordinates(
-lat,
-lng
-){
+    Number.isFinite(
+    lat
+    )
 
-return(
+    &&
 
-Number.isFinite(
-lat
-)
+    Number.isFinite(
+    lng
+    )
 
-&&
+    &&
 
-Number.isFinite(
-lng
-)
+    lat>=
+    -90
 
-&&
+    &&
 
-lat>=
--90
+    lat<=
+    90
 
-&&
+    &&
 
-lat<=
-90
+    lng>=
+    -180
 
-&&
+    &&
 
-lng>=
--180
+    lng<=
+    180
 
-&&
+    );
 
-lng<=
-180
+    }
 
-);
 
-}
+    function buildRestaurantList(){
 
+    const l=
+    $('restaurant-list');
 
-function buildRestaurantList(){
 
-const l=
-$('restaurant-list');
+    if(!l)
+    return;
 
 
-if(!l)
-return;
+    l.innerHTML='';
 
 
-l.innerHTML='';
+    if(
+    !restaurants.length
+    ){
 
+    l.innerHTML=`
 
-if(
-!restaurants.length
-){
+    <div class="artist-media-empty">
+    NO BOSS BITE MAP LOCATIONS ARE PUBLISHED RIGHT NOW.
+    </div>
 
-l.innerHTML=`
+    `;
 
-<div class="artist-media-empty">
-NO BOSS BITE MAP LOCATIONS ARE PUBLISHED RIGHT NOW.
-</div>
+    return;
 
-`;
+    }
 
-return;
 
-}
+    restaurants.forEach(
+    r=>{
 
+    const b=
+    document.createElement(
+    'button'
+    );
 
-restaurants.forEach(
-r=>{
 
-const b=
-document.createElement(
-'button'
-);
+    b.type=
+    'button';
 
 
-b.type=
-'button';
+    b.className=
+    'restaurant-list-item';
 
 
-b.className=
-'restaurant-list-item';
+    b.dataset.restaurant=
+    r.id;
 
 
-b.dataset.restaurant=
-r.id;
+    b.innerHTML=`
 
+    <img
+    class="restaurant-list-image"
+    src="${esc(
+    r.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(r.name)}"
+    >
 
-b.innerHTML=`
+    <div class="restaurant-list-info">
 
-<img
-class="restaurant-list-image"
-src="${esc(
-r.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(r.name)}"
->
+    <strong>
+    ${esc(r.name)}
+    </strong>
 
-<div class="restaurant-list-info">
+    <span>
+    ${esc(r.category||'BOSS BITE STOP')}
+    </span>
 
-<strong>
-${esc(r.name)}
-</strong>
+    </div>
 
-<span>
-${esc(r.category||'BOSS BITE STOP')}
-</span>
+    `;
 
-</div>
 
-`;
+    b.onclick=
+    ()=>{
 
+    trackAnalytics(
+    'boss_bite_pin_click',
+    {
 
-b.onclick=
-()=>{
+    section:
+    'boss-bite',
 
-trackAnalytics(
-'boss_bite_pin_click',
-{
+    itemId:
+    r.id,
 
-section:
-'boss-bite',
+    itemTitle:
+    r.name,
 
-itemId:
-r.id,
+    detail:{
 
-itemTitle:
-r.name,
+    source:
+    'restaurant_list'
 
-detail:{
+    }
 
-source:
-'restaurant_list'
+    }
+    );
 
-}
 
-}
-);
+    focusRestaurant(
+    r.id
+    );
 
+    };
 
-focusRestaurant(
-r.id
-);
 
-};
+    l.appendChild(
+    b
+    );
 
+    }
+    );
 
-l.appendChild(
-b
-);
+    }
 
-}
-);
 
-}
+    function popup(
+    r
+    ){
 
+    const directEpisodeId=
+    yt(
+    r.episodeUrl||
+    ''
+    );
 
-function popup(
-r
-){
 
-const directEpisodeId=
-yt(
-r.episodeUrl||
-''
-);
+    const directionsAddress=
+    r.address||
+    r.name||
+    '';
 
 
-const directionsAddress=
-r.address||
-r.name||
-'';
+    return`
 
+    <div
+    class="restaurant-popup"
+    data-restaurant-popup="${esc(r.id)}"
+    >
 
-return`
+    <img
+    class="restaurant-popup-image"
+    src="${esc(
+    r.image||
+    'images/boss-code-media-logo.png'
+    )}"
+    alt="${esc(r.name)}"
+    >
 
-<div
-class="restaurant-popup"
-data-restaurant-popup="${esc(r.id)}"
->
+    <div class="restaurant-popup-body">
 
-<img
-class="restaurant-popup-image"
-src="${esc(
-r.image||
-'images/boss-code-media-logo.png'
-)}"
-alt="${esc(r.name)}"
->
+    <h3>
+    ${esc(r.name)}
+    </h3>
 
-<div class="restaurant-popup-body">
+    <div class="restaurant-category">
 
-<h3>
-${esc(r.name)}
-</h3>
+    ${esc(
+    r.category||
+    'BOSS BITE STOP'
+    )}
 
-<div class="restaurant-category">
+    </div>
 
-${esc(
-r.category||
-'BOSS BITE STOP'
-)}
+    <div class="restaurant-address">
 
-</div>
+    ${esc(
+    r.address||
+    ''
+    )}
 
-<div class="restaurant-address">
+    </div>
 
-${esc(
-r.address||
-''
-)}
 
-</div>
+    ${r.description
+    ?
+    `
 
+    <div
+    style="
+    margin-top:8px;
+    font-size:12px;
+    line-height:1.45;
+    color:#555;
+    "
+    >
+    ${esc(r.description)}
+    </div>
 
-${r.description
-?
-`
+    `
+    :
+    ''
+    }
 
-<div
-style="
-margin-top:8px;
-font-size:12px;
-line-height:1.45;
-color:#555;
-"
->
-${esc(r.description)}
-</div>
 
-`
-:
-''
-}
+    ${r.episodeUrl&&
+    directEpisodeId
+    ?
+    `
 
+    <button
+    class="restaurant-action watch-episode-button"
+    data-restaurant-id="${esc(r.id)}"
+    data-episode-url="${esc(r.episodeUrl)}"
+    type="button"
+    >
+    ▶ WATCH EPISODE
+    </button>
 
-${r.episodeUrl&&
-directEpisodeId
-?
-`
+    `
+    :
+    ''
+    }
 
-<button
-class="restaurant-action watch-episode-button"
-data-restaurant-id="${esc(r.id)}"
-data-episode-url="${esc(r.episodeUrl)}"
-type="button"
->
-▶ WATCH EPISODE
-</button>
 
-`
-:
-''
-}
+    <a
+    class="restaurant-action directions-button"
+    data-restaurant-id="${esc(r.id)}"
+    href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(directionsAddress)}"
+    target="_blank"
+    rel="noopener noreferrer"
+    >
+    📍 GET DIRECTIONS
+    </a>
 
+    </div>
 
-<a
-class="restaurant-action directions-button"
-data-restaurant-id="${esc(r.id)}"
-href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(directionsAddress)}"
-target="_blank"
-rel="noopener noreferrer"
->
-📍 GET DIRECTIONS
-</a>
+    </div>
 
-</div>
+    `;
 
-</div>
+    }
 
-`;
 
-}
+    function clearMapMarkers(){
 
+    Object.keys(
+    marks
+    )
+    .forEach(
+    id=>{
 
-function clearMapMarkers(){
+    try{
 
-Object.keys(
-marks
-)
-.forEach(
-id=>{
+    marks[
+    id
+    ]
+    ?.remove();
 
-try{
+    }catch{}
 
-marks[
-id
-]
-?.remove();
 
-}catch{}
+    delete marks[
+    id
+    ];
 
+    }
+    );
 
-delete marks[
-id
-];
+    }
 
-}
-);
 
-}
+    function addMapMarkers(){
 
+    if(
+    !bossBiteMap||
+    !mapLoaded
+    )
+    return;
 
-function addMapMarkers(){
 
-if(
-!bossBiteMap||
-!mapLoaded
-)
-return;
+    clearMapMarkers();
 
 
-clearMapMarkers();
+    if(
+    !restaurants.length
+    ){
 
+    $('map-loading')
+    ?.classList
+    .add(
+    'hidden'
+    );
 
-if(
-!restaurants.length
-){
 
-$('map-loading')
-?.classList
-.add(
-'hidden'
-);
+    bossBiteMap.resize();
 
+    return;
 
-bossBiteMap.resize();
+    }
 
-return;
 
-}
+    const bounds=
+    new maplibregl.LngLatBounds();
 
 
-const bounds=
-new maplibregl.LngLatBounds();
+    let count=
+    0;
 
 
-let count=
-0;
+    restaurants.forEach(
+    r=>{
 
+    if(
 
-restaurants.forEach(
-r=>{
+    !Array.isArray(
+    r.c
+    )
 
-if(
+    ||
 
-!Array.isArray(
-r.c
-)
+    r.c.length!==
+    2
 
-||
+    ||
 
-r.c.length!==
-2
+    !validCoordinates(
 
-||
+    Number(
+    r.c[1]
+    ),
 
-!validCoordinates(
+    Number(
+    r.c[0]
+    )
 
-Number(
-r.c[1]
-),
+    )
 
-Number(
-r.c[0]
-)
+    )
+    return;
 
-)
 
-)
-return;
+    const el=
+    document.createElement(
+    'div'
+    );
 
 
-const el=
-document.createElement(
-'div'
-);
+    el.className=
+    'boss-bite-map-marker';
 
 
-el.className=
-'boss-bite-map-marker';
+    el.innerHTML=
+    '<img src="images/boss-bite-pin.png" alt="">';
 
 
-el.innerHTML=
-'<img src="images/boss-bite-pin.png" alt="">';
+    el.addEventListener(
+    'click',
+    ()=>{
 
+    trackAnalytics(
+    'boss_bite_pin_click',
+    {
 
-el.addEventListener(
-'click',
-()=>{
+    section:
+    'boss-bite',
 
-trackAnalytics(
-'boss_bite_pin_click',
-{
+    itemId:
+    r.id,
 
-section:
-'boss-bite',
+    itemTitle:
+    r.name,
 
-itemId:
-r.id,
+    detail:{
 
-itemTitle:
-r.name,
+    source:
+    'map_pin'
 
-detail:{
+    }
 
-source:
-'map_pin'
+    }
+    );
 
-}
+    }
+    );
 
-}
-);
 
-}
-);
+    const m=
 
+    new maplibregl.Marker({
 
-const m=
+    element:
+    el,
 
-new maplibregl.Marker({
+    anchor:
+    'bottom'
 
-element:
-el,
+    })
 
-anchor:
-'bottom'
+    .setLngLat(
+    r.c
+    )
 
-})
+    .setPopup(
 
-.setLngLat(
-r.c
-)
+    new maplibregl.Popup({
 
-.setPopup(
+    offset:
+    35,
 
-new maplibregl.Popup({
+    maxWidth:
+    '285px'
 
-offset:
-35,
+    })
 
-maxWidth:
-'285px'
+    .setHTML(
+    popup(
+    r
+    )
+    )
 
-})
+    )
 
-.setHTML(
-popup(
-r
-)
-)
+    .addTo(
+    bossBiteMap
+    );
 
-)
 
-.addTo(
-bossBiteMap
-);
+    marks[
+    r.id
+    ]=
+    m;
 
 
-marks[
-r.id
-]=
-m;
+    bounds.extend(
+    r.c
+    );
 
 
-bounds.extend(
-r.c
-);
+    count++;
 
+    }
+    );
 
-count++;
 
-}
-);
+    if(
+    count&&
+    !bounds.isEmpty()
+    ){
 
+    bossBiteMap.fitBounds(
 
-if(
-count&&
-!bounds.isEmpty()
-){
+    bounds,
 
-bossBiteMap.fitBounds(
+    {
 
-bounds,
+    padding:
+    60,
 
-{
+    maxZoom:
+    9
 
-padding:
-60,
+    }
 
-maxZoom:
-9
+    );
 
-}
+    }
 
-);
 
-}
+    $('map-loading')
+    ?.classList
+    .add(
+    'hidden'
+    );
 
 
-$('map-loading')
-?.classList
-.add(
-'hidden'
-);
+    bossBiteMap.resize();
 
+    }
 
-bossBiteMap.resize();
 
-}
+    function initMap(){
 
+    if(
 
-function initMap(){
+    !$('boss-bite-map')
 
-if(
+    ||
 
-!$('boss-bite-map')
+    typeof maplibregl===
+    'undefined'
 
-||
+    )
+    return;
 
-typeof maplibregl===
-'undefined'
 
-)
-return;
+    if(
+    bossBiteMap
+    ){
 
+    bossBiteMap.resize();
 
-if(
-bossBiteMap
-){
 
-bossBiteMap.resize();
+    if(
+    mapLoaded
+    ){
 
+    addMapMarkers();
 
-if(
-mapLoaded
-){
+    }
 
-addMapMarkers();
 
-}
+    return;
 
+    }
 
-return;
 
-}
+    bossBiteMap=
 
+    new maplibregl.Map({
 
-bossBiteMap=
+    container:
+    'boss-bite-map',
 
-new maplibregl.Map({
+    style:
+    'https://tiles.openfreemap.org/styles/dark',
 
-container:
-'boss-bite-map',
+    center:[
 
-style:
-'https://tiles.openfreemap.org/styles/dark',
+    -80.9,
 
-center:[
+    40.85
 
--80.9,
+    ],
 
-40.85
+    zoom:
+    7
 
-],
+    });
 
-zoom:
-7
 
-});
+    bossBiteMap.addControl(
 
+    new maplibregl.NavigationControl({
 
-bossBiteMap.addControl(
+    showCompass:
+    false
 
-new maplibregl.NavigationControl({
+    }),
 
-showCompass:
-false
+    'top-left'
 
-}),
+    );
 
-'top-left'
 
-);
+    bossBiteMap.on(
+    'load',
+    ()=>{
 
+    mapLoaded=
+    true;
 
-bossBiteMap.on(
-'load',
-()=>{
 
-mapLoaded=
-true;
+    addMapMarkers();
 
+    }
+    );
 
-addMapMarkers();
+    }
 
-}
-);
 
-}
+    function focusRestaurant(
+    id
+    ){
 
+    if(
+    !bossBiteMap
+    ){
 
-function focusRestaurant(
-id
-){
+    initMap();
 
-if(
-!bossBiteMap
-){
 
-initMap();
+    setTimeout(
+    ()=>focusRestaurant(
+    id
+    ),
+    600
+    );
 
 
-setTimeout(
-()=>focusRestaurant(
-id
-),
-600
-);
+    return;
 
+    }
 
-return;
 
-}
+    const m=
+    marks[
+    id
+    ];
 
 
-const m=
-marks[
-id
-];
+    if(!m)
+    return;
 
 
-if(!m)
-return;
+    const p=
+    m.getLngLat();
 
 
-const p=
-m.getLngLat();
+    bossBiteMap.flyTo({
 
+    center:[
 
-bossBiteMap.flyTo({
+    p.lng,
 
-center:[
+    p.lat
 
-p.lng,
+    ],
 
-p.lat
+    zoom:
+    15,
 
-],
+    essential:
+    true
 
-zoom:
-15,
+    });
 
-essential:
-true
 
-});
+    qa(
+    '.restaurant-list-item'
+    )
+    .forEach(
+    item=>
 
+    item.classList.remove(
+    'selected'
+    )
 
-qa(
-'.restaurant-list-item'
-)
-.forEach(
-item=>
+    );
 
-item.classList.remove(
-'selected'
-)
 
-);
+    const selected=
+    qa(
+    '.restaurant-list-item'
+    )
+    .find(
+    item=>
 
+    item.dataset.restaurant===
+    String(
+    id
+    )
 
-const selected=
-qa(
-'.restaurant-list-item'
-)
-.find(
-item=>
+    );
 
-item.dataset.restaurant===
-String(
-id
-)
 
-);
+    selected
+    ?.classList
+    .add(
+    'selected'
+    );
 
 
-selected
-?.classList
-.add(
-'selected'
-);
+    setTimeout(
+    ()=>{
 
+    if(
+    !m.getPopup()
+    .isOpen()
+    ){
 
-setTimeout(
-()=>{
+    m.togglePopup();
 
-if(
-!m.getPopup()
-.isOpen()
-){
+    }
 
-m.togglePopup();
+    },
+    500
+    );
 
-}
+    }
 
-},
-500
-);
 
-}
+    /* =========================================================
+       BOSS BITE POPUP ACTIONS
+    ========================================================= */
 
+    document.addEventListener(
+    'click',
+    e=>{
 
-/* =========================================================
-   BOSS BITE POPUP ACTIONS
-========================================================= */
+    const watch=
+    e.target.closest(
+    '.watch-episode-button'
+    );
 
-document.addEventListener(
-'click',
-e=>{
 
-const watch=
-e.target.closest(
-'.watch-episode-button'
-);
+    if(watch){
 
+    e.preventDefault();
 
-if(watch){
 
-e.preventDefault();
+    const restaurantId=
+    watch.dataset.restaurantId||
+    '';
 
 
-const restaurantId=
-watch.dataset.restaurantId||
-'';
+    const directUrl=
+    watch.dataset.episodeUrl||
+    '';
 
 
-const directUrl=
-watch.dataset.episodeUrl||
-'';
+    const directId=
+    yt(
+    directUrl
+    );
 
 
-const directId=
-yt(
-directUrl
-);
+    const restaurant=
+    restaurants.find(
+    r=>
 
+    String(
+    r.id
+    )===
+    String(
+    restaurantId
+    )
 
-const restaurant=
-restaurants.find(
-r=>
+    )
+    ||
 
-String(
-r.id
-)===
-String(
-restaurantId
-)
+    restaurants.find(
+    r=>
 
-)
-||
+    r.episodeUrl===
+    directUrl
 
-restaurants.find(
-r=>
+    );
 
-r.episodeUrl===
-directUrl
 
-);
+    if(
+    !directId
+    )
+    return;
 
 
-if(
-!directId
-)
-return;
+    trackAnalytics(
+    'watch_episode_click',
+    {
 
+    section:
+    'boss-bite',
 
-trackAnalytics(
-'watch_episode_click',
-{
+    itemId:
+    restaurant?.id||
+    restaurantId||
+    directId,
 
-section:
-'boss-bite',
+    itemTitle:
+    restaurant?.name||
+    'THE BOSS BITE'
 
-itemId:
-restaurant?.id||
-restaurantId||
-directId,
+    }
+    );
 
-itemTitle:
-restaurant?.name||
-'THE BOSS BITE'
 
-}
-);
+    playEpisode(
 
+    directId,
 
-playEpisode(
+    restaurant?.name||
+    'The Boss Bite',
 
-directId,
+    restaurant?.id||
+    directId
 
-restaurant?.name||
-'The Boss Bite',
+    );
 
-restaurant?.id||
-directId
 
-);
+    return;
 
+    }
 
-return;
 
-}
+    const directions=
+    e.target.closest(
+    '.directions-button'
+    );
 
 
-const directions=
-e.target.closest(
-'.directions-button'
-);
+    if(directions){
 
+    const restaurantId=
+    directions.dataset.restaurantId||
+    '';
 
-if(directions){
 
-const restaurantId=
-directions.dataset.restaurantId||
-'';
+    const restaurant=
+    restaurants.find(
+    r=>
 
+    String(
+    r.id
+    )===
+    String(
+    restaurantId
+    )
 
-const restaurant=
-restaurants.find(
-r=>
+    );
 
-String(
-r.id
-)===
-String(
-restaurantId
-)
 
-);
+    trackAnalytics(
+    'directions_click',
+    {
 
+    section:
+    'boss-bite',
 
-trackAnalytics(
-'directions_click',
-{
+    itemId:
+    restaurant?.id||
+    restaurantId,
 
-section:
-'boss-bite',
+    itemTitle:
+    restaurant?.name||
+    'BOSS BITE STOP',
 
-itemId:
-restaurant?.id||
-restaurantId,
+    detail:{
 
-itemTitle:
-restaurant?.name||
-'BOSS BITE STOP',
+    address:
+    restaurant?.address||
+    ''
 
-detail:{
+    }
 
-address:
-restaurant?.address||
-''
+    }
+    );
 
-}
+    }
 
-}
-);
+    }
+    );
+    /* =========================================================
+       THE CODE CLOTHING BUTTON
+    ========================================================= */
 
-}
+    const clothingButton=
+    qa('.app-menu .app-button')
+    .find(button=>
+    button.textContent
+    .toUpperCase()
+    .includes('THE CODE CLOTHING')
+    );
 
-}
-);
-/* =========================================================
-   THE CODE CLOTHING BUTTON
-========================================================= */
 
-const clothingButton=
-qa('.app-menu .app-button')
-.find(button=>
-button.textContent
-.toUpperCase()
-.includes('THE CODE CLOTHING')
-);
+    /* =========================================================
+       CLOUDFLARE BACKEND
+    ========================================================= */
 
+    async function api(path){
 
-/* =========================================================
-   CLOUDFLARE BACKEND
-========================================================= */
+    const r=
+    await fetch(
+    API+path,
+    {
+    cache:'no-store',
+    headers:{
+    Accept:'application/json'
+    }
+    }
+    );
 
-async function api(path){
+    if(!r.ok){
 
-const r=
-await fetch(
-API+path,
-{
-cache:'no-store',
-headers:{
-Accept:'application/json'
-}
-}
-);
+    throw Error(
+    `API ${r.status}`
+    );
 
-if(!r.ok){
+    }
 
-throw Error(
-`API ${r.status}`
-);
+    const j=
+    await r.json();
 
-}
+    return Array.isArray(
+    j.data
+    )
+    ?
+    j.data
+    :
+    [];
 
-const j=
-await r.json();
+    }
 
-return Array.isArray(
-j.data
-)
-?
-j.data
-:
-[];
 
-}
+    /* =========================================================
+       VIDEO BACKEND
+    ========================================================= */
 
+    function applyVideos(rows){
 
-/* =========================================================
-   VIDEO BACKEND
-========================================================= */
+    const published=
+    (rows||[])
+    .filter(
+    v=>
+    Number(v.published)===1
+    );
 
-function applyVideos(rows){
 
-const published=
-(rows||[])
-.filter(
-v=>
-Number(v.published)===1
-);
+    /* DECISION MAKERS */
 
+    dmVideos=
+    published
 
-/* DECISION MAKERS */
+    .filter(
+    v=>
+    v.section===
+    'decision-makers'
+    )
 
-dmVideos=
-published
+    .map(
+    v=>({
 
-.filter(
-v=>
-v.section===
-'decision-makers'
-)
+    id:
+    v.id,
 
-.map(
-v=>({
+    backendId:
+    v.id,
 
-id:
-v.id,
+    title:
+    v.title||
+    'Decision Makers',
 
-backendId:
-v.id,
+    youtubeUrl:
+    v.youtube_url||
+    '',
 
-title:
-v.title||
-'Decision Makers',
+    youtubeId:
+    v.youtube_id||
+    yt(
+    v.youtube_url||
+    ''
+    ),
 
-youtubeUrl:
-v.youtube_url||
-'',
+    thumbnailUrl:
+    v.thumbnail_url||
+    '',
 
-youtubeId:
-v.youtube_id||
-yt(
-v.youtube_url||
-''
-),
+    category:
+    v.category||
+    'ON THE GO',
 
-thumbnailUrl:
-v.thumbnail_url||
-'',
+    description:
+    v.description||
+    ''
 
-category:
-v.category||
-'ON THE GO',
+    })
+    )
 
-description:
-v.description||
-''
+    .filter(
+    v=>
+    v.youtubeId
+    );
 
-})
-)
 
-.filter(
-v=>
-v.youtubeId
-);
+    buildDM();
 
 
-buildDM();
+    /* BOSS BITE */
 
+    const bossBiteRows=
+    published
 
-/* BOSS BITE */
+    .filter(
+    v=>
+    v.section===
+    'boss-bite'
+    )
 
-const bossBiteRows=
-published
+    .map(
+    v=>({
 
-.filter(
-v=>
-v.section===
-'boss-bite'
-)
+    id:
+    v.id,
 
-.map(
-v=>({
+    backendId:
+    v.id,
 
-id:
-v.id,
+    title:
+    v.title||
+    'The Boss Bite',
 
-backendId:
-v.id,
+    description:
+    v.description||
+    [
+    v.business_name,
+    v.location_name
+    ]
+    .filter(Boolean)
+    .join(' • '),
 
-title:
-v.title||
-'The Boss Bite',
+    youtubeUrl:
+    v.youtube_url||
+    '',
 
-description:
-v.description||
-[
-v.business_name,
-v.location_name
-]
-.filter(Boolean)
-.join(' • '),
+    thumbnailUrl:
+    v.thumbnail_url||
+    ''
 
-youtubeUrl:
-v.youtube_url||
-'',
+    })
+    )
 
-thumbnailUrl:
-v.thumbnail_url||
-''
+    .filter(
+    v=>
+    yt(
+    v.youtubeUrl
+    )
+    );
 
-})
-)
 
-.filter(
-v=>
-yt(
-v.youtubeUrl
-)
-);
+    episodes.splice(
 
+    0,
 
-episodes.splice(
+    episodes.length,
 
-0,
+    ...bossBiteRows
 
-episodes.length,
+    );
 
-...bossBiteRows
 
-);
+    buildEpisodes();
 
+    loadFirstEpisode();
 
-buildEpisodes();
 
-loadFirstEpisode();
+    /* B.O.S.S CODE TV RECORDED */
 
+    const recorded=
+    published
 
-/* B.O.S.S CODE TV RECORDED */
+    .filter(
+    v=>
+    v.section===
+    'boss-code-tv'
+    )
 
-const recorded=
-published
+    .map(
+    v=>({
 
-.filter(
-v=>
-v.section===
-'boss-code-tv'
-)
+    backendId:
+    v.id,
 
-.map(
-v=>({
+    id:
+    v.youtube_id||
+    yt(
+    v.youtube_url||
+    ''
+    ),
 
-backendId:
-v.id,
+    title:
+    v.title||
+    'B.O.S.S CODE TV',
 
-id:
-v.youtube_id||
-yt(
-v.youtube_url||
-''
-),
+    description:
+    v.description||
+    '',
 
-title:
-v.title||
-'B.O.S.S CODE TV',
+    thumbnailUrl:
+    v.thumbnail_url||
+    ''
 
-description:
-v.description||
-'',
+    })
+    )
 
-thumbnailUrl:
-v.thumbnail_url||
-''
+    .filter(
+    v=>
+    v.id
+    );
 
-})
-)
 
-.filter(
-v=>
-v.id
-);
+    tvVideos.splice(
 
+    0,
 
-tvVideos.splice(
+    tvVideos.length,
 
-0,
+    ...recorded
 
-tvVideos.length,
+    );
 
-...recorded
 
-);
+    buildTv();
 
 
-buildTv();
+    /* LIVE / OFF AIR THUMBNAIL */
 
+    const liveRow=
+    (rows||[])
+    .find(
+    v=>
+    v.section===
+    'boss-code-tv-live'
+    );
 
-/* LIVE / OFF AIR THUMBNAIL */
 
-const liveRow=
-(rows||[])
-.find(
-v=>
-v.section===
-'boss-code-tv-live'
-);
+    live={
 
+    on:
+    Boolean(
 
-live={
+    liveRow&&
 
-on:
-Boolean(
+    Number(
+    liveRow.published
+    )===
+    1
 
-liveRow&&
+    &&
 
-Number(
-liveRow.published
-)===
-1
+    (
+    liveRow.youtube_id
+    ||
+    yt(
+    liveRow.youtube_url||
+    ''
+    )
+    )
 
-&&
+    ),
 
-(
-liveRow.youtube_id
-||
-yt(
-liveRow.youtube_url||
-''
-)
-)
+    id:
+    liveRow
+    ?
+    (
+    liveRow.youtube_id
+    ||
+    yt(
+    liveRow.youtube_url||
+    ''
+    )
+    )
+    :
+    '',
 
-),
+    thumbnailUrl:
+    liveRow?.thumbnail_url||
+    ''
 
-id:
-liveRow
-?
-(
-liveRow.youtube_id
-||
-yt(
-liveRow.youtube_url||
-''
-)
-)
-:
-'',
+    };
 
-thumbnailUrl:
-liveRow?.thumbnail_url||
-''
 
-};
+    renderLive();
 
+    }
 
-renderLive();
 
-}
+    /* =========================================================
+       DECISION MAKER PROGRAM BACKEND
+    ========================================================= */
 
+    function applyDMSessions(rows){
 
-/* =========================================================
-   DECISION MAKER PROGRAM BACKEND
-========================================================= */
+    dmSessions=
+    (rows||[])
 
-function applyDMSessions(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-dmSessions=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
+    Number(
+    a.session_number||
+    0
+    )
+    -
+    Number(
+    b.session_number||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.session_number||
-0
-)
--
-Number(
-b.session_number||
-0
-)
-)
+    id:
+    r.id,
 
-.map(
-r=>({
+    backendId:
+    r.id,
 
-id:
-r.id,
+    title:
+    r.title||
+    'Decision Makers Session',
 
-backendId:
-r.id,
+    description:
+    r.description||
+    '',
 
-title:
-r.title||
-'Decision Makers Session',
+    sessionNumber:
+    Number(
+    r.session_number||
+    1
+    ),
 
-description:
-r.description||
-'',
+    youtubeUrl:
+    r.youtube_url||
+    '',
 
-sessionNumber:
-Number(
-r.session_number||
-1
-),
+    youtubeId:
+    r.youtube_id||
+    yt(
+    r.youtube_url||
+    ''
+    ),
 
-youtubeUrl:
-r.youtube_url||
-'',
+    thumbnailUrl:
+    r.thumbnail_url||
+    '',
 
-youtubeId:
-r.youtube_id||
-yt(
-r.youtube_url||
-''
-),
+    featured:
+    Number(
+    r.featured||
+    0
+    )===
+    1
 
-thumbnailUrl:
-r.thumbnail_url||
-'',
+    })
+    );
 
-featured:
-Number(
-r.featured||
-0
-)===
-1
 
-})
-);
+    buildDMSessions();
 
+    }
 
-buildDMSessions();
 
-}
+    function applyDMChallenges(rows){
 
+    dmChallenges=
+    (rows||[])
 
-function applyDMChallenges(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-dmChallenges=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
+    Number(
+    a.challenge_number||
+    0
+    )
+    -
+    Number(
+    b.challenge_number||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.challenge_number||
-0
-)
--
-Number(
-b.challenge_number||
-0
-)
-)
+    id:
+    r.id,
 
-.map(
-r=>({
+    backendId:
+    r.id,
 
-id:
-r.id,
+    title:
+    r.title||
+    'Take Action',
 
-backendId:
-r.id,
+    description:
+    r.description||
+    '',
 
-title:
-r.title||
-'Take Action',
+    challengeNumber:
+    Number(
+    r.challenge_number||
+    1
+    ),
 
-description:
-r.description||
-'',
+    buttonText:
+    r.button_text||
+    'ACCEPT CHALLENGE',
 
-challengeNumber:
-Number(
-r.challenge_number||
-1
-),
+    completionMessage:
+    r.completion_message||
+    'NOW TAKE ACTION.',
 
-buttonText:
-r.button_text||
-'ACCEPT CHALLENGE',
+    thumbnailUrl:
+    r.thumbnail_url||
+    ''
 
-completionMessage:
-r.completion_message||
-'NOW TAKE ACTION.',
+    })
+    );
 
-thumbnailUrl:
-r.thumbnail_url||
-''
 
-})
-);
+    buildDMChallenges();
 
+    }
 
-buildDMChallenges();
 
-}
+    /* =========================================================
+       RESOURCE ANALYTICS
 
+       RESOURCE DISPLAY IS OWNED BY
+       decision-makers-backend.js
+    ========================================================= */
 
-/* =========================================================
-   RESOURCE ANALYTICS
+    document.addEventListener(
+    'click',
+    e=>{
 
-   RESOURCE DISPLAY IS OWNED BY
-   decision-makers-backend.js
-========================================================= */
+    const button=
+    e.target.closest?.(
+    '.dm-resource-download, .dm-resource-button'
+    );
 
-document.addEventListener(
-'click',
-e=>{
 
-const button=
-e.target.closest?.(
-'.dm-resource-download, .dm-resource-button'
-);
+    if(!button)
+    return;
 
 
-if(!button)
-return;
+    const card=
+    button.closest?.(
+    '.dm-resource-card'
+    );
 
 
-const card=
-button.closest?.(
-'.dm-resource-card'
-);
+    const title=
+    card?.querySelector?.(
+    'h3'
+    )
+    ?.textContent
+    ?.trim()
 
+    ||
 
-const title=
-card?.querySelector?.(
-'h3'
-)
-?.textContent
-?.trim()
+    button.textContent
+    ?.trim()
 
-||
+    ||
 
-button.textContent
-?.trim()
+    'DECISION MAKERS RESOURCE';
 
-||
 
-'DECISION MAKERS RESOURCE';
+    trackAnalytics(
+    'resource_click',
+    {
 
+    section:
+    'decision-makers',
 
-trackAnalytics(
-'resource_click',
-{
+    itemId:
+    button.dataset.resourceId||
+    '',
 
-section:
-'decision-makers',
+    itemTitle:
+    title
 
-itemId:
-button.dataset.resourceId||
-'',
+    }
+    );
 
-itemTitle:
-title
+    },
+    true
+    );
 
-}
-);
 
-},
-true
-);
+    /* =========================================================
+       ARTIST PHOTO GALLERY BACKEND
+    ========================================================= */
 
+    function applyArtistGallery(rows){
 
-/* =========================================================
-   ARTIST PHOTO GALLERY BACKEND
-========================================================= */
+    artistGalleryRows=
+    (rows||[])
 
-function applyArtistGallery(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-artistGalleryRows=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    id:
+    r.id,
 
-.map(
-r=>({
+    artistId:
+    r.artist_id,
 
-id:
-r.id,
+    imageUrl:
+    r.image_url||
+    '',
 
-artistId:
-r.artist_id,
+    caption:
+    r.caption||
+    ''
 
-imageUrl:
-r.image_url||
-'',
+    })
+    )
 
-caption:
-r.caption||
-''
+    .filter(
+    r=>
+    r.artistId&&
+    r.imageUrl
+    );
 
-})
-)
 
-.filter(
-r=>
-r.artistId&&
-r.imageUrl
-);
+    renderArtistGallery();
 
+    repositionReturnHomeButtons();
 
-renderArtistGallery();
+    }
 
-repositionReturnHomeButtons();
 
-}
+    /* =========================================================
+       ARTIST MUSIC VIDEOS BACKEND
+    ========================================================= */
 
+    function applyArtistMusicVideos(rows){
 
-/* =========================================================
-   ARTIST MUSIC VIDEOS BACKEND
-========================================================= */
+    artistMusicVideoRows=
+    (rows||[])
 
-function applyArtistMusicVideos(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-artistMusicVideoRows=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    id:
+    r.id,
 
-.map(
-r=>({
+    artistId:
+    r.artist_id,
 
-id:
-r.id,
+    title:
+    r.title||
+    'Music Video',
 
-artistId:
-r.artist_id,
+    youtubeUrl:
+    r.youtube_url||
+    '',
 
-title:
-r.title||
-'Music Video',
+    youtubeId:
+    r.youtube_id||
+    yt(
+    r.youtube_url||
+    ''
+    ),
 
-youtubeUrl:
-r.youtube_url||
-'',
+    thumbnailUrl:
+    r.thumbnail_url||
+    ''
 
-youtubeId:
-r.youtube_id||
-yt(
-r.youtube_url||
-''
-),
+    })
+    )
 
-thumbnailUrl:
-r.thumbnail_url||
-''
+    .filter(
+    r=>
+    r.artistId&&
+    r.youtubeId
+    );
 
-})
-)
 
-.filter(
-r=>
-r.artistId&&
-r.youtubeId
-);
+    renderArtistMusicVideos();
 
+    repositionReturnHomeButtons();
 
-renderArtistMusicVideos();
+    }
 
-repositionReturnHomeButtons();
 
-}
+    /* =========================================================
+       MUSIC BACKEND
+       ADMIN IS THE SOURCE OF MUSIC CONTENT
+    ========================================================= */
 
+    function applyMusic(
+    A,
+    R,
+    T
+    ){
 
-/* =========================================================
-   MUSIC BACKEND
-   ADMIN IS THE SOURCE OF MUSIC CONTENT
-========================================================= */
+    const order=
+    (x,y)=>
 
-function applyMusic(
-A,
-R,
-T
-){
+    Number(
+    x?.sort_order||
+    0
+    )
+    -
+    Number(
+    y?.sort_order||
+    0
+    )
 
-const order=
-(x,y)=>
+    ||
 
-Number(
-x?.sort_order||
-0
-)
--
-Number(
-y?.sort_order||
-0
-)
+    Number(
+    x?.track_number||
+    0
+    )
+    -
+    Number(
+    y?.track_number||
+    0
+    )
 
-||
+    ||
 
-Number(
-x?.track_number||
-0
-)
--
-Number(
-y?.track_number||
-0
-)
+    Number(
+    x?.id||
+    0
+    )
+    -
+    Number(
+    y?.id||
+    0
+    );
 
-||
 
-Number(
-x?.id||
-0
-)
--
-Number(
-y?.id||
-0
-);
+    const publishedArtists=
+    (A||[])
 
+    .filter(
+    x=>
+    Number(x.published)===1
+    )
 
-const publishedArtists=
-(A||[])
+    .sort(
+    order
+    );
 
-.filter(
-x=>
-Number(x.published)===1
-)
 
-.sort(
-order
-);
+    const publishedReleases=
+    (R||[])
 
+    .filter(
+    x=>
+    Number(x.published)===1
+    )
 
-const publishedReleases=
-(R||[])
+    .sort(
+    order
+    );
 
-.filter(
-x=>
-Number(x.published)===1
-)
 
-.sort(
-order
-);
+    const publishedTracks=
+    (T||[])
 
+    .filter(
+    x=>
+    Number(x.published)===1
+    )
 
-const publishedTracks=
-(T||[])
+    .sort(
+    order
+    );
 
-.filter(
-x=>
-Number(x.published)===1
-)
 
-.sort(
-order
-);
+    const rebuilt=
+    publishedArtists.map(
+    a=>{
 
+    const rs=
+    publishedReleases
 
-const rebuilt=
-publishedArtists.map(
-a=>{
+    .filter(
+    r=>
+    Number(r.artist_id)===
+    Number(a.id)
+    )
 
-const rs=
-publishedReleases
+    .sort(
+    order
+    );
 
-.filter(
-r=>
-Number(r.artist_id)===
-Number(a.id)
-)
 
-.sort(
-order
-);
+    const ts=
+    publishedTracks
 
+    .filter(
+    t=>
+    Number(t.artist_id)===
+    Number(a.id)
+    )
 
-const ts=
-publishedTracks
+    .sort(
+    order
+    );
 
-.filter(
-t=>
-Number(t.artist_id)===
-Number(a.id)
-)
 
-.sort(
-order
-);
+    const featured=
+    rs.find(
+    r=>
+    Number(r.featured)===1
+    )
 
+    ||
 
-const featured=
-rs.find(
-r=>
-Number(r.featured)===1
-)
+    rs[0]
 
-||
+    ||
 
-rs[0]
+    null;
 
-||
 
-null;
+    const artistImage=
 
+    a.artist_image_url
 
-const artistImage=
+    ||
 
-a.artist_image_url
+    featured?.artwork_url
 
-||
+    ||
 
-featured?.artwork_url
+    'images/boss-code-media-logo.png';
 
-||
 
-'images/boss-code-media-logo.png';
+    return{
 
+    id:
+    'artist-'+
+    a.id,
 
-return{
+    backendId:
+    a.id,
 
-id:
-'artist-'+
-a.id,
+    name:
+    a.name||
+    'B.O.S.S CODE Artist',
 
-backendId:
-a.id,
+    initials:
+    String(
+    a.name||
+    'BC'
+    )
 
-name:
-a.name||
-'B.O.S.S CODE Artist',
+    .split(
+    /\s+/
+    )
 
-initials:
-String(
-a.name||
-'BC'
-)
+    .map(
+    x=>
+    x[0]
+    )
 
-.split(
-/\s+/
-)
+    .join(
+    ''
+    )
 
-.map(
-x=>
-x[0]
-)
+    .slice(
+    0,
+    3
+    )
 
-.join(
-''
-)
+    .toUpperCase(),
 
-.slice(
-0,
-3
-)
+    image:
+    artistImage,
 
-.toUpperCase(),
+    tagline:
+    a.bio||
+    'Independent music. Direct from the artist.',
 
-image:
-artistImage,
 
-tagline:
-a.bio||
-'Independent music. Direct from the artist.',
+    featuredRelease:
+    featured
+    ?
+    {
 
+    id:
+    featured.id,
 
-featuredRelease:
-featured
-?
-{
+    releaseId:
+    featured.id,
 
-id:
-featured.id,
+    title:
+    featured.title||
+    'Release',
 
-releaseId:
-featured.id,
+    type:
+    'FEATURED RELEASE',
 
-title:
-featured.title||
-'Release',
+    releaseType:
+    featured.release_type||
+    'RELEASE',
 
-type:
-'FEATURED RELEASE',
+    artwork:
+    featured.artwork_url||
+    artistImage,
 
-releaseType:
-featured.release_type||
-'RELEASE',
+    description:
+    featured.description||
+    `Listen to ${a.name} directly inside B.O.S.S CODE Music.`
 
-artwork:
-featured.artwork_url||
-artistImage,
+    }
+    :
+    null,
 
-description:
-featured.description||
-`Listen to ${a.name} directly inside B.O.S.S CODE Music.`
 
-}
-:
-null,
+    tracks:
+    ts.map(
+    t=>{
 
+    const release=
+    rs.find(
+    r=>
+    Number(r.id)===
+    Number(t.release_id)
+    );
 
-tracks:
-ts.map(
-t=>{
 
-const release=
-rs.find(
-r=>
-Number(r.id)===
-Number(t.release_id)
-);
+    return{
 
+    id:
+    t.id,
 
-return{
+    backendId:
+    t.id,
 
-id:
-t.id,
+    title:
+    t.title||
+    'Track',
 
-backendId:
-t.id,
+    album:
+    release?.title||
+    'B.O.S.S CODE MUSIC',
 
-title:
-t.title||
-'Track',
+    releaseId:
+    t.release_id||
+    release?.id||
+    null,
 
-album:
-release?.title||
-'B.O.S.S CODE MUSIC',
+    releaseType:
+    release?.release_type||
+    '',
 
-releaseId:
-t.release_id||
-release?.id||
-null,
+    audioSources:[
+    t.audio_url
+    ]
+    .filter(
+    Boolean
+    ),
 
-releaseType:
-release?.release_type||
-'',
+    artwork:
+    t.artwork_url||
+    release?.artwork_url||
+    artistImage,
 
-audioSources:[
-t.audio_url
-]
-.filter(
-Boolean
-),
+    status:
+    'PLAY',
 
-artwork:
-t.artwork_url||
-release?.artwork_url||
-artistImage,
+    trackNumber:
+    Number(
+    t.track_number||
+    0
+    ),
 
-status:
-'PLAY',
+    sortOrder:
+    Number(
+    t.sort_order||
+    0
+    )
 
-trackNumber:
-Number(
-t.track_number||
-0
-),
+    };
 
-sortOrder:
-Number(
-t.sort_order||
-0
-)
+    }
+    )
 
-};
+    .filter(
+    t=>
+    t.audioSources.length
+    ),
 
-}
-)
 
-.filter(
-t=>
-t.audioSources.length
-),
+    releases:
+    rs.map(
+    r=>({
 
+    id:
+    r.id,
 
-releases:
-rs.map(
-r=>({
+    releaseId:
+    r.id,
 
-id:
-r.id,
+    title:
+    r.title||
+    'Release',
 
-releaseId:
-r.id,
+    type:
+    String(
+    r.release_type||
+    'RELEASE'
+    )
+    .toUpperCase(),
 
-title:
-r.title||
-'Release',
+    releaseType:
+    r.release_type||
+    'RELEASE',
 
-type:
-String(
-r.release_type||
-'RELEASE'
-)
-.toUpperCase(),
+    artwork:
+    r.artwork_url||
+    artistImage,
 
-releaseType:
-r.release_type||
-'RELEASE',
+    description:
+    r.description||
+    '',
 
-artwork:
-r.artwork_url||
-artistImage,
+    status:
+    'Listen now',
 
-description:
-r.description||
-'',
+    sortOrder:
+    Number(
+    r.sort_order||
+    0
+    )
 
-status:
-'Listen now',
+    })
+    )
 
-sortOrder:
-Number(
-r.sort_order||
-0
-)
+    };
 
-})
-)
+    }
+    );
 
-};
 
-}
-);
+    artists=
+    rebuilt;
 
 
-artists=
-rebuilt;
+    if(
+    !artists.length
+    ){
 
+    activeArtist=
+    null;
 
-if(
-!artists.length
-){
+    musicQueue=[];
 
-activeArtist=
-null;
+    activeReleaseId=
+    null;
 
-musicQueue=[];
 
-activeReleaseId=
-null;
+    clearMusicArtistUI();
 
+    repositionReturnHomeButtons();
 
-clearMusicArtistUI();
+    return;
 
-repositionReturnHomeButtons();
+    }
 
-return;
 
-}
+    if(
+    activeArtist
+    ){
 
+    activeArtist=
+    artists.find(
+    a=>
+    String(a.backendId)===
+    String(activeArtist.backendId)
+    )
 
-if(
-activeArtist
-){
+    ||
 
-activeArtist=
-artists.find(
-a=>
-String(a.backendId)===
-String(activeArtist.backendId)
-)
+    artists[0];
 
-||
+    }
+    else{
 
-artists[0];
+    activeArtist=
+    artists[0];
 
-}
-else{
+    }
 
-activeArtist=
-artists[0];
 
-}
+    musicQueue=[];
 
+    activeReleaseId=
+    null;
 
-musicQueue=[];
 
-activeReleaseId=
-null;
+    renderArtists();
 
+    renderTracks();
 
-renderArtists();
+    renderReleases();
 
-renderTracks();
+    updateArtistUI();
 
-renderReleases();
+    renderArtistGallery();
 
-updateArtistUI();
+    renderArtistMusicVideos();
 
-renderArtistGallery();
+    repositionReturnHomeButtons();
 
-renderArtistMusicVideos();
+    }
 
-repositionReturnHomeButtons();
 
-}
+    /* =========================================================
+       BOSS BITE GALLERY BACKEND
+    ========================================================= */
 
+    function applyGallery(rows){
 
-/* =========================================================
-   BOSS BITE GALLERY BACKEND
-========================================================= */
+    galleryPhotos=
+    (rows||[])
 
-function applyGallery(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-galleryPhotos=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    src:
+    r.image_url||
+    '',
 
-.map(
-r=>({
+    caption:
+    r.caption||
+    '',
 
-src:
-r.image_url||
-'',
+    location:
+    r.location_name||
+    ''
 
-caption:
-r.caption||
-'',
+    })
+    )
 
-location:
-r.location_name||
-''
+    .filter(
+    x=>
+    x.src
+    );
 
-})
-)
 
-.filter(
-x=>
-x.src
-);
+    if(
+    gi>=
+    galleryPhotos.length
+    ){
 
+    gi=
+    0;
 
-if(
-gi>=
-galleryPhotos.length
-){
+    }
 
-gi=
-0;
 
-}
+    buildGallery();
 
+    repositionReturnHomeButtons();
 
-buildGallery();
+    }
 
-repositionReturnHomeButtons();
 
-}
+    /* =========================================================
+       BOSS BITE MAP BACKEND
+    ========================================================= */
 
+    function applyLocations(rows){
 
-/* =========================================================
-   BOSS BITE MAP BACKEND
-========================================================= */
+    const cloud=
+    (rows||[])
 
-function applyLocations(rows){
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-const cloud=
-(rows||[])
+    .sort(
+    (a,b)=>
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>{
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    const lat=
+    Number(
+    r.latitude
+    );
 
-.map(
-r=>{
 
-const lat=
-Number(
-r.latitude
-);
+    const lng=
+    Number(
+    r.longitude
+    );
 
 
-const lng=
-Number(
-r.longitude
-);
+    const address=
+    fullLocationAddress(
+    r
+    );
 
 
-const address=
-fullLocationAddress(
-r
-);
+    const locationLabel=
+    [
+    r.city,
+    r.state
+    ]
 
+    .filter(
+    Boolean
+    )
 
-const locationLabel=
-[
-r.city,
-r.state
-]
+    .join(
+    ' • '
+    );
 
-.filter(
-Boolean
-)
 
-.join(
-' • '
-);
+    return{
 
+    id:
+    'cloud-location-'+
+    r.id,
 
-return{
+    backendId:
+    r.id,
 
-id:
-'cloud-location-'+
-r.id,
+    name:
+    r.name||
+    'Boss Bite Stop',
 
-backendId:
-r.id,
+    category:
+    locationLabel||
+    'BOSS BITE STOP',
 
-name:
-r.name||
-'Boss Bite Stop',
+    description:
+    r.description||
+    '',
 
-category:
-locationLabel||
-'BOSS BITE STOP',
+    address:
+    address||
+    r.address||
+    '',
 
-description:
-r.description||
-'',
+    image:
+    r.image_url||
+    'images/boss-code-media-logo.png',
 
-address:
-address||
-r.address||
-'',
+    episodeUrl:
+    r.episode_url||
+    '',
 
-image:
-r.image_url||
-'images/boss-code-media-logo.png',
+    c:
+    validCoordinates(
+    lat,
+    lng
+    )
+    ?
+    [
+    lng,
+    lat
+    ]
+    :
+    null
 
-episodeUrl:
-r.episode_url||
-'',
+    };
 
-c:
-validCoordinates(
-lat,
-lng
-)
-?
-[
-lng,
-lat
-]
-:
-null
+    }
+    )
 
-};
+    .filter(
+    r=>
+    r.name&&
+    r.c
+    );
 
-}
-)
 
-.filter(
-r=>
-r.name&&
-r.c
-);
+    restaurants.splice(
 
+    0,
 
-restaurants.splice(
+    restaurants.length,
 
-0,
+    ...cloud
 
-restaurants.length,
+    );
 
-...cloud
 
-);
+    buildRestaurantList();
 
 
-buildRestaurantList();
+    if(
+    bossBiteMap&&
+    mapLoaded
+    ){
 
+    addMapMarkers();
 
-if(
-bossBiteMap&&
-mapLoaded
-){
+    }
 
-addMapMarkers();
 
-}
+    repositionReturnHomeButtons();
 
+    }
+    /* =========================================================
+       DAILY DECISION BACKEND
 
-repositionReturnHomeButtons();
+       ADMIN CONTENT IS ADDITIVE TO THE PERMANENT BANK
+    ========================================================= */
 
-}
+    function applyDailyDecisions(rows){
 
+    const today=
+    new Date()
 
-/* =========================================================
-   DAILY DECISION BACKEND
+    .toISOString()
 
-   ADMIN CONTENT IS ADDITIVE TO THE PERMANENT BANK
-========================================================= */
+    .slice(
+    0,
+    10
+    );
 
-function applyDailyDecisions(rows){
 
-const today=
-new Date()
+    const published=
+    (rows||[])
 
-.toISOString()
+    .filter(
+    r=>
+    Number(r.published)===1
+    );
 
-.slice(
-0,
-10
-);
 
+    const scheduled=
+    published.filter(
+    r=>
+    r.scheduled_date===
+    today
+    );
 
-const published=
-(rows||[])
 
-.filter(
-r=>
-Number(r.published)===1
-);
+    const source=
+    scheduled.length
+    ?
+    scheduled
+    :
+    published;
 
 
-const scheduled=
-published.filter(
-r=>
-r.scheduled_date===
-today
-);
+    const cloud=
+    [
+    ...source
+    ]
 
+    .sort(
+    (a,b)=>
 
-const source=
-scheduled.length
-?
-scheduled
-:
-published;
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
+    ||
 
-const cloud=
-[
-...source
-]
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-.sort(
-(a,b)=>
+    .map(
+    r=>[
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    r.decision_text||
+    '',
 
-||
+    r.action_text||
+    r.description||
+    ''
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    ]
+    )
 
-.map(
-r=>[
+    .filter(
+    x=>
+    x[0]
+    );
 
-r.decision_text||
-'',
 
-r.action_text||
-r.description||
-''
+    const seen=
+    new Set();
 
-]
-)
 
-.filter(
-x=>
-x[0]
-);
+    daily=
+    [
+    ...cloud,
+    ...builtDaily
+    ]
 
+    .filter(
+    item=>{
 
-const seen=
-new Set();
+    const key=
+    String(
+    item?.[0]||
+    ''
+    )
 
+    .trim()
 
-daily=
-[
-...cloud,
-...builtDaily
-]
+    .toLowerCase();
 
-.filter(
-item=>{
 
-const key=
-String(
-item?.[0]||
-''
-)
+    if(
+    !key||
+    seen.has(
+    key
+    )
+    )
+    return false;
 
-.trim()
 
-.toLowerCase();
+    seen.add(
+    key
+    );
 
 
-if(
-!key||
-seen.has(
-key
-)
-)
-return false;
+    return true;
 
+    }
+    );
 
-seen.add(
-key
-);
 
+    const state=
+    dailyState();
 
-return true;
 
-}
-);
+    if(
+    daily.length&&
+    state.i>=
+    daily.length
+    ){
 
+    state.i=
+    0;
 
-const state=
-dailyState();
 
+    localStorage.setItem(
 
-if(
-daily.length&&
-state.i>=
-daily.length
-){
+    DK,
 
-state.i=
-0;
+    JSON.stringify(
+    state
+    )
 
+    );
 
-localStorage.setItem(
+    }
 
-DK,
 
-JSON.stringify(
-state
-)
+    renderDaily();
 
-);
+    }
 
-}
 
+    /* =========================================================
+       B.O.S.S CHECK IN BACKEND
 
-renderDaily();
+       ADMIN QUESTIONS ARE ADDITIVE TO THE PERMANENT BANK
+    ========================================================= */
 
-}
+    function normalizeCheckinCategory(category){
 
+    const c=
+    String(
+    category||
+    ''
+    )
 
-/* =========================================================
-   B.O.S.S CHECK IN BACKEND
+    .trim()
 
-   ADMIN QUESTIONS ARE ADDITIVE TO THE PERMANENT BANK
-========================================================= */
+    .toUpperCase();
 
-function normalizeCheckinCategory(category){
 
-const c=
-String(
-category||
-''
-)
+    if(
+    c.includes(
+    'APPROVAL'
+    )
+    )
+    return'APPROVAL';
 
-.trim()
 
-.toUpperCase();
+    if(
+    c.includes(
+    'COMPARISON'
+    )
+    )
+    return'COMPARISON';
 
 
-if(
-c.includes(
-'APPROVAL'
-)
-)
-return'APPROVAL';
+    if(
+    c.includes(
+    'CONFIDENCE'
+    )
+    )
+    return'CONFIDENCE';
 
 
-if(
-c.includes(
-'COMPARISON'
-)
-)
-return'COMPARISON';
+    if(
+    c.includes(
+    'ACTION'
+    )
+    )
+    return'ACTION';
 
 
-if(
-c.includes(
-'CONFIDENCE'
-)
-)
-return'CONFIDENCE';
+    return'';
 
+    }
 
-if(
-c.includes(
-'ACTION'
-)
-)
-return'ACTION';
 
+    function applyCheckinQuestions(rows){
 
-return'';
+    const cloudBank={
 
-}
+    APPROVAL:[],
 
+    COMPARISON:[],
 
-function applyCheckinQuestions(rows){
+    CONFIDENCE:[],
 
-const cloudBank={
+    ACTION:[]
 
-APPROVAL:[],
+    };
 
-COMPARISON:[],
 
-CONFIDENCE:[],
+    (rows||[])
 
-ACTION:[]
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
-};
+    .sort(
+    (a,b)=>
 
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+    )
 
-(rows||[])
+    .forEach(
+    r=>{
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    const category=
+    normalizeCheckinCategory(
+    r.category
+    );
 
-.sort(
-(a,b)=>
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
-)
+    const text=
+    String(
+    r.question_text||
+    ''
+    )
 
-.forEach(
-r=>{
+    .trim();
 
-const category=
-normalizeCheckinCategory(
-r.category
-);
 
+    if(
+    !category||
+    !text
+    )
+    return;
 
-const text=
-String(
-r.question_text||
-''
-)
 
-.trim();
+    if(
+    !cloudBank[
+    category
+    ]
+    .includes(
+    text
+    )
+    ){
 
+    cloudBank[
+    category
+    ]
+    .push(
+    text
+    );
 
-if(
-!category||
-!text
-)
-return;
+    }
 
+    }
+    );
 
-if(
-!cloudBank[
-category
-]
-.includes(
-text
-)
-){
 
-cloudBank[
-category
-]
-.push(
-text
-);
+    for(
+    const category of[
 
-}
+    'APPROVAL',
 
-}
-);
+    'COMPARISON',
 
+    'CONFIDENCE',
 
-for(
-const category of[
+    'ACTION'
 
-'APPROVAL',
+    ]
+    ){
 
-'COMPARISON',
+    const seen=
+    new Set();
 
-'CONFIDENCE',
 
-'ACTION'
+    bank[
+    category
+    ]=
+    [
+    ...cloudBank[
+    category
+    ],
+    ...builtBank[
+    category
+    ]
+    ]
 
-]
-){
+    .filter(
+    text=>{
 
-const seen=
-new Set();
+    const key=
+    String(
+    text||
+    ''
+    )
 
+    .trim()
 
-bank[
-category
-]=
-[
-...cloudBank[
-category
-],
-...builtBank[
-category
-]
-]
+    .toLowerCase();
 
-.filter(
-text=>{
 
-const key=
-String(
-text||
-''
-)
+    if(
+    !key||
+    seen.has(
+    key
+    )
+    )
+    return false;
 
-.trim()
 
-.toLowerCase();
+    seen.add(
+    key
+    );
 
 
-if(
-!key||
-seen.has(
-key
-)
-)
-return false;
+    return true;
 
+    }
+    );
 
-seen.add(
-key
-);
+    }
 
 
-return true;
+    console.info(
 
-}
-);
+    'B.O.S.S CHECK IN loaded with permanent questions + Admin additions.',
 
-}
+    {
 
+    approval:
+    bank.APPROVAL.length,
 
-console.info(
+    comparison:
+    bank.COMPARISON.length,
 
-'B.O.S.S CHECK IN loaded with permanent questions + Admin additions.',
+    confidence:
+    bank.CONFIDENCE.length,
 
-{
+    action:
+    bank.ACTION.length
 
-approval:
-bank.APPROVAL.length,
+    }
 
-comparison:
-bank.COMPARISON.length,
+    );
 
-confidence:
-bank.CONFIDENCE.length,
+    }
 
-action:
-bank.ACTION.length
 
-}
+    /* =========================================================
+       MAGAZINE
 
-);
+       PERMANENT READER + ADMIN ISSUES
 
-}
+       ALWAYS OPENS INSIDE THE APP
+    ========================================================= */
 
+    const BUILT_MAGAZINE={
 
-/* =========================================================
-   MAGAZINE
+    id:
+    'built-magazine-reader',
 
-   PERMANENT READER + ADMIN ISSUES
+    title:
+    'B.O.S.S CODE MAGAZINE',
 
-   ALWAYS OPENS INSIDE THE APP
-========================================================= */
+    description:
+    'Read B.O.S.S CODE Magazine inside B.O.S.S CODE GO.',
 
-const BUILT_MAGAZINE={
+    coverImageUrl:
+    'images/magazine-logo.png',
 
-id:
-'built-magazine-reader',
+    magazineUrl:
+    'https://magazine.bosscodemedia.com',
 
-title:
-'B.O.S.S CODE MAGAZINE',
+    issueLabel:
+    'B.O.S.S CODE MAGAZINE',
 
-description:
-'Read B.O.S.S CODE Magazine inside B.O.S.S CODE GO.',
+    featured:
+    false,
 
-coverImageUrl:
-'images/magazine-logo.png',
+    builtIn:
+    true
 
-magazineUrl:
-'https://magazine.bosscodemedia.com',
+    };
 
-issueLabel:
-'B.O.S.S CODE MAGAZINE',
 
-featured:
-false,
+    let magazineIssues=[
+    BUILT_MAGAZINE
+    ];
 
-builtIn:
-true
 
-};
+    let currentMagazineUrl=
+    BUILT_MAGAZINE.magazineUrl;
 
 
-let magazineIssues=[
-BUILT_MAGAZINE
-];
+    function applyMagazines(rows){
 
+    const adminIssues=
+    (rows||[])
 
-let currentMagazineUrl=
-BUILT_MAGAZINE.magazineUrl;
+    .filter(
+    r=>
+    Number(r.published)===1
+    )
 
+    .sort(
+    (a,b)=>
 
-function applyMagazines(rows){
+    Number(
+    b.featured||
+    0
+    )
+    -
+    Number(
+    a.featured||
+    0
+    )
 
-const adminIssues=
-(rows||[])
+    ||
 
-.filter(
-r=>
-Number(r.published)===1
-)
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
 
-.sort(
-(a,b)=>
+    ||
 
-Number(
-b.featured||
-0
-)
--
-Number(
-a.featured||
-0
-)
+    Number(
+    b.id||
+    0
+    )
+    -
+    Number(
+    a.id||
+    0
+    )
+    )
 
-||
+    .map(
+    r=>({
 
-Number(
-a.sort_order||
-0
-)
--
-Number(
-b.sort_order||
-0
-)
+    id:
+    'admin-magazine-'+
+    r.id,
 
-||
+    backendId:
+    r.id,
 
-Number(
-b.id||
-0
-)
--
-Number(
-a.id||
-0
-)
-)
+    title:
+    r.title||
+    'B.O.S.S CODE MAGAZINE',
 
-.map(
-r=>({
+    description:
+    r.description||
+    '',
 
-id:
-'admin-magazine-'+
-r.id,
+    coverImageUrl:
+    r.cover_image_url||
+    'images/magazine-logo.png',
 
-backendId:
-r.id,
+    magazineUrl:
+    r.magazine_url||
+    '',
 
-title:
-r.title||
-'B.O.S.S CODE MAGAZINE',
+    issueLabel:
+    r.issue_label||
+    'MAGAZINE ISSUE',
 
-description:
-r.description||
-'',
+    featured:
+    Number(
+    r.featured||
+    0
+    )===
+    1,
 
-coverImageUrl:
-r.cover_image_url||
-'images/magazine-logo.png',
+    builtIn:
+    false
 
-magazineUrl:
-r.magazine_url||
-'',
+    })
+    )
 
-issueLabel:
-r.issue_label||
-'MAGAZINE ISSUE',
+    .filter(
+    issue=>
+    issue.magazineUrl
+    );
 
-featured:
-Number(
-r.featured||
-0
-)===
-1,
 
-builtIn:
-false
+    const urls=
+    new Set(
 
-})
-)
+    adminIssues.map(
+    issue=>
 
-.filter(
-issue=>
-issue.magazineUrl
-);
+    String(
+    issue.magazineUrl
+    )
 
+    .trim()
 
-const urls=
-new Set(
+    .toLowerCase()
 
-adminIssues.map(
-issue=>
+    )
 
-String(
-issue.magazineUrl
-)
+    );
 
-.trim()
 
-.toLowerCase()
+    magazineIssues=
+    [
+    ...adminIssues,
 
-)
+    ...(
+    urls.has(
+    BUILT_MAGAZINE.magazineUrl
+    .toLowerCase()
+    )
+    ?
+    []
+    :
+    [
+    BUILT_MAGAZINE
+    ]
+    )
 
-);
+    ];
 
 
-magazineIssues=
-[
-...adminIssues,
+    if(
+    !magazineIssues.length
+    ){
 
-...(
-urls.has(
-BUILT_MAGAZINE.magazineUrl
-.toLowerCase()
-)
-?
-[]
-:
-[
-BUILT_MAGAZINE
-]
-)
+    magazineIssues=[
+    BUILT_MAGAZINE
+    ];
 
-];
+    }
 
 
-if(
-!magazineIssues.length
-){
+    currentMagazineUrl=
 
-magazineIssues=[
-BUILT_MAGAZINE
-];
+    magazineIssues[0]
+    ?.magazineUrl
 
-}
+    ||
 
+    BUILT_MAGAZINE.magazineUrl;
 
-currentMagazineUrl=
+    }
 
-magazineIssues[0]
-?.magazineUrl
 
-||
+    /* =========================================================
+       INTERNAL APP WEB VIEW
+    ========================================================= */
 
-BUILT_MAGAZINE.magazineUrl;
+    function ensureInternalWebStyles(){
 
-}
+    if(
+    $('boss-internal-web-styles')
+    )
+    return;
 
 
-/* =========================================================
-   INTERNAL APP WEB VIEW
-========================================================= */
+    const style=
+    document.createElement(
+    'style'
+    );
 
-function ensureInternalWebStyles(){
 
-if(
-$('boss-internal-web-styles')
-)
-return;
+    style.id=
+    'boss-internal-web-styles';
 
 
-const style=
-document.createElement(
-'style'
-);
+    style.textContent=`
 
+    .boss-internal-screen{
+    background:#000;
+    min-height:100vh;
+    color:#fff
+    }
 
-style.id=
-'boss-internal-web-styles';
+    .boss-internal-wrap{
+    width:min(1200px,100%);
+    margin:auto;
+    padding:16px
+    }
 
+    .boss-internal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:14px
+    }
 
-style.textContent=`
+    .boss-internal-title{
+    font-size:18px;
+    font-weight:900
+    }
 
-.boss-internal-screen{
-background:#000;
-min-height:100vh;
-color:#fff
-}
+    .boss-internal-back{
+    border:2px solid #d40000;
+    border-radius:999px;
+    background:#090909;
+    color:#fff;
+    padding:11px 16px;
+    font:inherit;
+    font-weight:900;
+    cursor:pointer
+    }
 
-.boss-internal-wrap{
-width:min(1200px,100%);
-margin:auto;
-padding:16px
-}
+    .boss-internal-frame{
+    display:block;
+    width:100%;
+    height:calc(100vh - 115px);
+    min-height:650px;
+    border:1px solid #252525;
+    border-radius:16px;
+    background:#fff
+    }
 
-.boss-internal-head{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:12px;
-margin-bottom:14px
-}
+    .boss-internal-empty{
+    min-height:60vh;
+    display:grid;
+    place-items:center;
+    text-align:center;
+    border:1px dashed #333;
+    border-radius:18px;
+    color:#888;
+    padding:30px
+    }
 
-.boss-internal-title{
-font-size:18px;
-font-weight:900
-}
+    .magazine-library-copy{
+    color:#999;
+    line-height:1.5;
+    margin:0 0 18px
+    }
 
-.boss-internal-back{
-border:2px solid #d40000;
-border-radius:999px;
-background:#090909;
-color:#fff;
-padding:11px 16px;
-font:inherit;
-font-weight:900;
-cursor:pointer
-}
+    `;
 
-.boss-internal-frame{
-display:block;
-width:100%;
-height:calc(100vh - 115px);
-min-height:650px;
-border:1px solid #252525;
-border-radius:16px;
-background:#fff
-}
 
-.boss-internal-empty{
-min-height:60vh;
-display:grid;
-place-items:center;
-text-align:center;
-border:1px dashed #333;
-border-radius:18px;
-color:#888;
-padding:30px
-}
+    document.head.appendChild(
+    style
+    );
 
-.magazine-library-copy{
-color:#999;
-line-height:1.5;
-margin:0 0 18px
-}
+    }
 
-`;
 
+    function ensureInternalScreen(){
 
-document.head.appendChild(
-style
-);
+    ensureInternalWebStyles();
 
-}
 
+    let screen=
+    $('boss-internal-web-screen');
 
-function ensureInternalScreen(){
 
-ensureInternalWebStyles();
+    if(screen)
+    return screen;
 
 
-let screen=
-$('boss-internal-web-screen');
+    screen=
+    document.createElement(
+    'div'
+    );
 
 
-if(screen)
-return screen;
+    screen.id=
+    'boss-internal-web-screen';
 
 
-screen=
-document.createElement(
-'div'
-);
+    screen.className=
+    'screen boss-internal-screen';
 
 
-screen.id=
-'boss-internal-web-screen';
+    screen.innerHTML=`
 
+    <div class="boss-internal-wrap">
 
-screen.className=
-'screen boss-internal-screen';
+    <div class="boss-internal-head">
 
+    <button
+    id="boss-internal-back"
+    class="boss-internal-back"
+    type="button"
+    >
+    RETURN TO HOME
+    </button>
 
-screen.innerHTML=`
+    <div
+    id="boss-internal-title"
+    class="boss-internal-title"
+    >
+    B.O.S.S CODE
+    </div>
 
-<div class="boss-internal-wrap">
+    </div>
 
-<div class="boss-internal-head">
+    <div
+    id="boss-internal-content"
+    ></div>
 
-<button
-id="boss-internal-back"
-class="boss-internal-back"
-type="button"
->
-RETURN TO HOME
-</button>
+    <button
+    id="boss-internal-back-bottom"
+    class="boss-return-home-bottom"
+    type="button"
+    >
+    RETURN TO HOME
+    </button>
 
-<div
-id="boss-internal-title"
-class="boss-internal-title"
->
-B.O.S.S CODE
-</div>
+    </div>
 
-</div>
+    `;
 
-<div
-id="boss-internal-content"
-></div>
 
-<button
-id="boss-internal-back-bottom"
-class="boss-return-home-bottom"
-type="button"
->
-RETURN TO HOME
-</button>
+    document.body.appendChild(
+    screen
+    );
 
-</div>
 
-`;
+    const back=
+    ()=>{
 
+    const frame=
+    $('boss-internal-frame');
 
-document.body.appendChild(
-screen
-);
 
+    if(frame){
 
-const back=
-()=>{
+    frame.src=
+    'about:blank';
 
-const frame=
-$('boss-internal-frame');
+    }
 
 
-if(frame){
+    showScreen(
+    home
+    );
 
-frame.src=
-'about:blank';
+    };
 
-}
 
+    on(
+    'boss-internal-back',
+    'click',
+    back
+    );
 
-showScreen(
-home
-);
 
-};
+    on(
+    'boss-internal-back-bottom',
+    'click',
+    back
+    );
 
 
-on(
-'boss-internal-back',
-'click',
-back
-);
+    return screen;
 
+    }
 
-on(
-'boss-internal-back-bottom',
-'click',
-back
-);
 
+    function openInternalWeb(
+    title,
+    url
+    ){
 
-return screen;
+    const screen=
+    ensureInternalScreen();
 
-}
 
+    if(
+    $('boss-internal-title')
+    ){
 
-function openInternalWeb(
-title,
-url
-){
+    $('boss-internal-title')
+    .textContent=
+    title;
 
-const screen=
-ensureInternalScreen();
+    }
 
 
-if(
-$('boss-internal-title')
-){
+    const content=
+    $('boss-internal-content');
 
-$('boss-internal-title')
-.textContent=
-title;
 
-}
+    if(!content)
+    return;
 
 
-const content=
-$('boss-internal-content');
+    if(!url){
 
+    content.innerHTML=`
 
-if(!content)
-return;
+    <div class="boss-internal-empty">
 
+    <div>
 
-if(!url){
+    <strong
+    style="
+    display:block;
+    color:#fff;
+    font-size:26px;
+    margin-bottom:8px;
+    "
+    >
+    NOT AVAILABLE YET
+    </strong>
 
-content.innerHTML=`
+    <p>
+    This content will appear when it is published from B.O.S.S CODE GO Admin.
+    </p>
 
-<div class="boss-internal-empty">
+    </div>
 
-<div>
+    </div>
 
-<strong
-style="
-display:block;
-color:#fff;
-font-size:26px;
-margin-bottom:8px;
-"
->
-NOT AVAILABLE YET
-</strong>
+    `;
 
-<p>
-This content will appear when it is published from B.O.S.S CODE GO Admin.
-</p>
 
-</div>
+    showScreen(
+    screen
+    );
 
-</div>
 
-`;
+    return;
 
+    }
 
-showScreen(
-screen
-);
 
+    content.innerHTML=`
 
-return;
+    <iframe
+    id="boss-internal-frame"
+    class="boss-internal-frame"
+    src="${esc(url)}"
+    title="${esc(title)}"
+    allow="fullscreen"
+    ></iframe>
 
-}
+    `;
 
 
-content.innerHTML=`
+    showScreen(
+    screen
+    );
 
-<iframe
-id="boss-internal-frame"
-class="boss-internal-frame"
-src="${esc(url)}"
-title="${esc(title)}"
-allow="fullscreen"
-></iframe>
+    }
 
-`;
 
+    /* =========================================================
+       MAGAZINE ISSUE READER
+    ========================================================= */
 
-showScreen(
-screen
-);
+    function openMagazineIssue(issue){
 
-}
+    if(
+    !issue?.magazineUrl
+    )
+    return;
 
 
-/* =========================================================
-   MAGAZINE ISSUE READER
-========================================================= */
+    trackAnalytics(
+    'magazine_open',
+    {
 
-function openMagazineIssue(issue){
+    section:
+    'magazine',
 
-if(
-!issue?.magazineUrl
-)
-return;
+    itemId:
+    issue.backendId||
+    issue.id||
+    '',
 
+    itemTitle:
+    issue.title||
+    'B.O.S.S CODE MAGAZINE',
 
-trackAnalytics(
-'magazine_open',
-{
+    detail:{
 
-section:
-'magazine',
+    issue_label:
+    issue.issueLabel||
+    '',
 
-itemId:
-issue.backendId||
-issue.id||
-'',
+    built_in:
+    Boolean(
+    issue.builtIn
+    )
 
-itemTitle:
-issue.title||
-'B.O.S.S CODE MAGAZINE',
+    }
 
-detail:{
+    }
+    );
 
-issue_label:
-issue.issueLabel||
-'',
 
-built_in:
-Boolean(
-issue.builtIn
-)
+    openInternalWeb(
 
-}
+    issue.title||
+    'B.O.S.S CODE MAGAZINE',
 
-}
-);
+    issue.magazineUrl
 
+    );
 
-openInternalWeb(
+    }
 
-issue.title||
-'B.O.S.S CODE MAGAZINE',
 
-issue.magazineUrl
+    function openMagazineHub(){
 
-);
+    const issues=
+    magazineIssues.length
+    ?
+    magazineIssues
+    :
+    [
+    BUILT_MAGAZINE
+    ];
 
-}
 
+    if(
+    issues.length===
+    1
+    ){
 
-function openMagazineHub(){
+    openMagazineIssue(
+    issues[0]
+    );
 
-const issues=
-magazineIssues.length
-?
-magazineIssues
-:
-[
-BUILT_MAGAZINE
-];
 
+    return;
 
-if(
-issues.length===
-1
-){
+    }
 
-openMagazineIssue(
-issues[0]
-);
 
+    const screen=
+    ensureInternalScreen();
 
-return;
 
-}
+    if(
+    $('boss-internal-title')
+    ){
 
+    $('boss-internal-title')
+    .textContent=
+    'B.O.S.S CODE MAGAZINE';
 
-const screen=
-ensureInternalScreen();
+    }
 
 
-if(
-$('boss-internal-title')
-){
+    const content=
+    $('boss-internal-content');
 
-$('boss-internal-title')
-.textContent=
-'B.O.S.S CODE MAGAZINE';
 
-}
+    if(!content)
+    return;
 
 
-const content=
-$('boss-internal-content');
+    content.innerHTML=`
 
+    <p class="magazine-library-copy">
+    Choose an issue to read inside B.O.S.S CODE GO.
+    </p>
 
-if(!content)
-return;
+    <div
+    id="boss-magazine-issue-grid"
+    class="magazine-issue-grid"
+    ></div>
 
+    `;
 
-content.innerHTML=`
 
-<p class="magazine-library-copy">
-Choose an issue to read inside B.O.S.S CODE GO.
-</p>
+    const grid=
+    $('boss-magazine-issue-grid');
 
-<div
-id="boss-magazine-issue-grid"
-class="magazine-issue-grid"
-></div>
 
-`;
+    issues.forEach(
+    issue=>{
 
+    const card=
+    document.createElement(
+    'button'
+    );
 
-const grid=
-$('boss-magazine-issue-grid');
 
+    card.type=
+    'button';
 
-issues.forEach(
-issue=>{
 
-const card=
-document.createElement(
-'button'
-);
+    card.className=
+    'magazine-issue-card';
 
 
-card.type=
-'button';
+    card.innerHTML=`
 
+    <img
+    src="${esc(
+    issue.coverImageUrl||
+    'images/magazine-logo.png'
+    )}"
+    alt="${esc(
+    issue.title||
+    'B.O.S.S CODE MAGAZINE'
+    )}"
+    >
 
-card.className=
-'magazine-issue-card';
+    <div>
 
+    <small>
+    ${esc(
+    issue.issueLabel||
+    'MAGAZINE ISSUE'
+    )}
+    </small>
 
-card.innerHTML=`
+    <strong>
+    ${esc(
+    issue.title||
+    'B.O.S.S CODE MAGAZINE'
+    )}
+    </strong>
 
-<img
-src="${esc(
-issue.coverImageUrl||
-'images/magazine-logo.png'
-)}"
-alt="${esc(
-issue.title||
-'B.O.S.S CODE MAGAZINE'
-)}"
->
+    ${issue.description
+    ?
+    `
+    <p>
+    ${esc(issue.description)}
+    </p>
+    `
+    :
+    ''
+    }
 
-<div>
+    </div>
 
-<small>
-${esc(
-issue.issueLabel||
-'MAGAZINE ISSUE'
-)}
-</small>
+    `;
 
-<strong>
-${esc(
-issue.title||
-'B.O.S.S CODE MAGAZINE'
-)}
-</strong>
 
-${issue.description
-?
-`
-<p>
-${esc(issue.description)}
-</p>
-`
-:
-''
-}
+    card.addEventListener(
+    'click',
+    ()=>openMagazineIssue(
+    issue
+    )
+    );
 
-</div>
 
-`;
+    grid.appendChild(
+    card
+    );
 
+    }
+    );
 
-card.addEventListener(
-'click',
-()=>openMagazineIssue(
-issue
-)
-);
 
+    trackPageOpen(
+    'magazine',
+    'B.O.S.S CODE MAGAZINE'
+    );
 
-grid.appendChild(
-card
-);
 
-}
-);
+    showScreen(
+    screen
+    );
 
+    }
 
-trackPageOpen(
-'magazine',
-'B.O.S.S CODE MAGAZINE'
-);
 
 
-showScreen(
-screen
-);
+    /* =========================================================
+       THE CODE CLOTHING
+       IN APP STOREFRONT
+    ========================================================= */
 
-}
+    const CLOTHING_CART_KEY =
+    'the-code-clothing-cart-v1';
 
 
+    const CLOTHING_CHECKOUT_CUSTOMER_KEY =
+    'the-code-clothing-checkout-customer-v1';
 
-/* =========================================================
-   THE CODE CLOTHING
-   IN APP STOREFRONT
-========================================================= */
 
-const CLOTHING_CART_KEY =
-'the-code-clothing-cart-v1';
+    const CLOTHING_PENDING_CHECKOUT_KEY =
+    'the-code-clothing-pending-checkout-v1';
 
 
-const CLOTHING_CHECKOUT_CUSTOMER_KEY =
-'the-code-clothing-checkout-customer-v1';
+    let clothingProducts = [];
 
+    let clothingCurrentProduct = null;
 
-const CLOTHING_PENDING_CHECKOUT_KEY =
-'the-code-clothing-pending-checkout-v1';
+    let clothingCart = [];
 
 
-let clothingProducts = [];
+    function moneyFromCents(
+    value
+    ){
 
-let clothingCurrentProduct = null;
+    const cents =
+    Number(
+    value ||
+    0
+    );
 
-let clothingCart = [];
 
+    return `$${(
+    cents /
+    100
+    ).toFixed(
+    2
+    )}`;
 
-function moneyFromCents(
-value
-){
+    }
 
-const cents =
-Number(
-value ||
-0
-);
 
+    function clothingLoadCart(){
 
-return `$${(
-cents /
-100
-).toFixed(
-2
-)}`;
+    try{
 
-}
+    const saved =
+    JSON.parse(
+    localStorage.getItem(
+    CLOTHING_CART_KEY
+    ) ||
+    '[]'
+    );
 
 
-function clothingLoadCart(){
+    clothingCart =
+    Array.isArray(
+    saved
+    )
+    ?
+    saved
+    :
+    [];
 
-try{
+    }catch{
 
-const saved =
-JSON.parse(
-localStorage.getItem(
-CLOTHING_CART_KEY
-) ||
-'[]'
-);
+    clothingCart = [];
 
+    }
 
-clothingCart =
-Array.isArray(
-saved
-)
-?
-saved
-:
-[];
+    }
 
-}catch{
 
-clothingCart = [];
+    function clothingSaveCart(){
 
-}
+    try{
 
-}
+    localStorage.setItem(
 
+    CLOTHING_CART_KEY,
 
-function clothingSaveCart(){
+    JSON.stringify(
+    clothingCart
+    )
 
-try{
+    );
 
-localStorage.setItem(
+    }catch{}
 
-CLOTHING_CART_KEY,
+    }
 
-JSON.stringify(
-clothingCart
-)
 
-);
+    function clothingCartCount(){
 
-}catch{}
+    return clothingCart
+    .reduce(
+    (
+    total,
+    item
+    )=>
+    total +
+    Number(
+    item.quantity ||
+    1
+    ),
+    0
+    );
 
-}
+    }
 
 
-function clothingCartCount(){
+    async function clothingFetchJSON(
+    path,
+    options={}
+    ){
 
-return clothingCart
-.reduce(
-(
-total,
-item
-)=>
-total +
-Number(
-item.quantity ||
-1
-),
-0
-);
+    const response =
+    await fetch(
+    API + path,
+    {
+    cache:
+    'no-store',
 
-}
+    ...options,
 
+    headers:{
+    Accept:
+    'application/json',
 
-async function clothingFetchJSON(
-path,
-options={}
-){
+    ...(
+    options.body
+    &&
+    !(options.body instanceof FormData)
+    ?
+    {
+    'Content-Type':
+    'application/json'
+    }
+    :
+    {}
+    ),
 
-const response =
-await fetch(
-API + path,
-{
-cache:
-'no-store',
+    ...(
+    options.headers ||
+    {}
+    )
+    }
+    }
+    );
 
-...options,
 
-headers:{
-Accept:
-'application/json',
+    let data = {};
 
-...(
-options.body
-&&
-!(options.body instanceof FormData)
-?
-{
-'Content-Type':
-'application/json'
-}
-:
-{}
-),
 
-...(
-options.headers ||
-{}
-)
-}
-}
-);
+    try{
 
+    data =
+    await response.json();
 
-let data = {};
+    }catch{}
 
 
-try{
+    if(
+    !response.ok
+    ){
 
-data =
-await response.json();
+    throw new Error(
+    data.error ||
+    `API ${response.status}`
+    );
 
-}catch{}
+    }
 
 
-if(
-!response.ok
-){
+    return data;
 
-throw new Error(
-data.error ||
-`API ${response.status}`
-);
+    }
 
-}
 
+    function installClothingStoreStyles(){
 
-return data;
+    if(
+    $('the-code-clothing-styles')
+    )
+    return;
 
-}
 
+    const style =
+    document.createElement(
+    'style'
+    );
 
-function installClothingStoreStyles(){
 
-if(
-$('the-code-clothing-styles')
-)
-return;
+    style.id =
+    'the-code-clothing-styles';
 
 
-const style =
-document.createElement(
-'style'
-);
+    style.textContent = `
 
+    #the-code-clothing-screen{
+    background:#fff;
+    color:#111;
+    min-height:100vh
+    }
 
-style.id =
-'the-code-clothing-styles';
+    #the-code-clothing-screen .muted{
+    color:#666 !important
+    }
 
+    .clothing-shell{
+    width:min(1120px,calc(100% - 28px));
+    margin:0 auto;
+    padding:20px 0 80px;
+    background:#fff
+    }
 
-style.textContent = `
+    .clothing-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:18px
+    }
 
-#the-code-clothing-screen{
-background:#fff;
-color:#111;
-min-height:100vh
-}
+    .clothing-back{
+    border:1px solid #d8d8d8;
+    background:#fff;
+    color:#111;
+    padding:10px 14px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:900
+    }
 
-#the-code-clothing-screen .muted{
-color:#666 !important
-}
+    .clothing-cart-button{
+    border:1px solid #f5c518;
+    background:#fff;
+    color:#111;
+    padding:10px 14px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:900
+    }
 
-.clothing-shell{
-width:min(1120px,calc(100% - 28px));
-margin:0 auto;
-padding:20px 0 80px;
-background:#fff
-}
+    .clothing-brand{
+    text-align:center;
+    padding:18px 0 24px
+    }
 
-.clothing-topbar{
-display:flex;
-align-items:center;
-justify-content:space-between;
-gap:12px;
-margin-bottom:18px
-}
+    .clothing-brand img{
+    width:min(310px,85%);
+    max-height:120px;
+    object-fit:contain
+    }
 
-.clothing-back{
-border:1px solid #d8d8d8;
-background:#fff;
-color:#111;
-padding:10px 14px;
-border-radius:999px;
-font-size:10px;
-font-weight:900
-}
+    .clothing-brand h2{
+    font-size:30px;
+    margin-top:8px
+    }
 
-.clothing-cart-button{
-border:1px solid #f5c518;
-background:#fff;
-color:#111;
-padding:10px 14px;
-border-radius:999px;
-font-size:10px;
-font-weight:900
-}
+    .clothing-brand p{
+    color:#666;
+    font-size:12px;
+    line-height:1.5;
+    margin-top:8px
+    }
 
-.clothing-brand{
-text-align:center;
-padding:18px 0 24px
-}
+    .clothing-section-head{
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:14px;
+    margin:18px 0 14px
+    }
 
-.clothing-brand img{
-width:min(310px,85%);
-max-height:120px;
-object-fit:contain
-}
+    .clothing-section-head span{
+    color:#f5c518;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:2px
+    }
 
-.clothing-brand h2{
-font-size:30px;
-margin-top:8px
-}
+    .clothing-section-head h3{
+    font-size:24px;
+    margin-top:4px
+    }
 
-.clothing-brand p{
-color:#666;
-font-size:12px;
-line-height:1.5;
-margin-top:8px
-}
+    .clothing-product-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px
+    }
 
-.clothing-section-head{
-display:flex;
-align-items:end;
-justify-content:space-between;
-gap:14px;
-margin:18px 0 14px
-}
+    .clothing-product-card{
+    border:1px solid #dedede;
+    background:#fff;
+    border-radius:20px;
+    overflow:hidden;
+    color:#111;
+    text-align:left;
+    padding:0;
+    width:100%
+    }
 
-.clothing-section-head span{
-color:#f5c518;
-font-size:9px;
-font-weight:900;
-letter-spacing:2px
-}
+    .clothing-product-image{
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f4f4f4;
+    overflow:hidden
+    }
 
-.clothing-section-head h3{
-font-size:24px;
-margin-top:4px
-}
+    .clothing-product-image img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block
+    }
 
-.clothing-product-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:16px
-}
+    .clothing-product-placeholder{
+    color:#666;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:1px
+    }
 
-.clothing-product-card{
-border:1px solid #dedede;
-background:#fff;
-border-radius:20px;
-overflow:hidden;
-color:#111;
-text-align:left;
-padding:0;
-width:100%
-}
+    .clothing-product-body{
+    padding:15px
+    }
 
-.clothing-product-image{
-aspect-ratio:1/1;
-display:flex;
-align-items:center;
-justify-content:center;
-background:#f4f4f4;
-overflow:hidden
-}
+    .clothing-product-kicker{
+    color:#f5c518;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:1.6px
+    }
 
-.clothing-product-image img{
-width:100%;
-height:100%;
-object-fit:contain;
-display:block
-}
+    .clothing-product-body h4{
+    font-size:19px;
+    margin:7px 0
+    }
 
-.clothing-product-placeholder{
-color:#666;
-font-size:11px;
-font-weight:900;
-letter-spacing:1px
-}
+    .clothing-product-price{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    font-weight:900
+    }
 
-.clothing-product-body{
-padding:15px
-}
+    .clothing-product-price .sale{
+    color:#f5c518;
+    font-size:18px
+    }
 
-.clothing-product-kicker{
-color:#f5c518;
-font-size:8px;
-font-weight:900;
-letter-spacing:1.6px
-}
+    .clothing-product-price .regular{
+    font-size:13px;
+    color:#777;
+    text-decoration:line-through
+    }
 
-.clothing-product-body h4{
-font-size:19px;
-margin:7px 0
-}
+    .clothing-product-price .single{
+    font-size:18px;
+    color:#111
+    }
 
-.clothing-product-price{
-display:flex;
-gap:8px;
-align-items:center;
-font-weight:900
-}
+    .clothing-product-body p{
+    color:#666;
+    font-size:11px;
+    line-height:1.45;
+    margin-top:8px
+    }
 
-.clothing-product-price .sale{
-color:#f5c518;
-font-size:18px
-}
+    .clothing-loading,
+    .clothing-empty,
+    .clothing-error{
+    border:1px dashed #cfcfcf;
+    border-radius:16px;
+    padding:24px;
+    text-align:center;
+    color:#666;
+    background:#fafafa;
+    font-size:11px;
+    font-weight:900
+    }
 
-.clothing-product-price .regular{
-font-size:13px;
-color:#777;
-text-decoration:line-through
-}
+    .clothing-detail{
+    display:none
+    }
 
-.clothing-product-price .single{
-font-size:18px;
-color:#111
-}
+    .clothing-detail.show{
+    display:block
+    }
 
-.clothing-product-body p{
-color:#666;
-font-size:11px;
-line-height:1.45;
-margin-top:8px
-}
+    .clothing-store-home.hide{
+    display:none
+    }
 
-.clothing-loading,
-.clothing-empty,
-.clothing-error{
-border:1px dashed #cfcfcf;
-border-radius:16px;
-padding:24px;
-text-align:center;
-color:#666;
-background:#fafafa;
-font-size:11px;
-font-weight:900
-}
+    .clothing-detail-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:22px;
+    align-items:start
+    }
 
-.clothing-detail{
-display:none
-}
+    .clothing-gallery-main{
+    border:1px solid #dedede;
+    border-radius:20px;
+    background:#f6f6f6;
+    overflow:hidden;
+    aspect-ratio:1/1;
+    display:flex;
+    align-items:center;
+    justify-content:center
+    }
 
-.clothing-detail.show{
-display:block
-}
+    .clothing-gallery-main img{
+    width:100%;
+    height:100%;
+    object-fit:contain
+    }
 
-.clothing-store-home.hide{
-display:none
-}
+    .clothing-thumbs{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    margin-top:10px;
+    padding-bottom:4px
+    }
 
-.clothing-detail-grid{
-display:grid;
-grid-template-columns:minmax(0,1fr) minmax(0,1fr);
-gap:22px;
-align-items:start
-}
+    .clothing-thumb{
+    width:72px;
+    height:72px;
+    flex:0 0 auto;
+    border:1px solid #d8d8d8;
+    border-radius:10px;
+    background:#fff;
+    padding:3px
+    }
 
-.clothing-gallery-main{
-border:1px solid #dedede;
-border-radius:20px;
-background:#f6f6f6;
-overflow:hidden;
-aspect-ratio:1/1;
-display:flex;
-align-items:center;
-justify-content:center
-}
+    .clothing-thumb.active{
+    border-color:#f5c518
+    }
 
-.clothing-gallery-main img{
-width:100%;
-height:100%;
-object-fit:contain
-}
+    .clothing-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    border-radius:7px
+    }
 
-.clothing-thumbs{
-display:flex;
-gap:8px;
-overflow-x:auto;
-margin-top:10px;
-padding-bottom:4px
-}
+    .clothing-detail-info{
+    border:1px solid #dedede;
+    border-radius:20px;
+    background:#fff;
+    padding:20px
+    }
 
-.clothing-thumb{
-width:72px;
-height:72px;
-flex:0 0 auto;
-border:1px solid #d8d8d8;
-border-radius:10px;
-background:#fff;
-padding:3px
-}
+    .clothing-detail-kicker{
+    color:#f5c518;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:1.8px
+    }
 
-.clothing-thumb.active{
-border-color:#f5c518
-}
+    .clothing-detail-info h2{
+    font-size:30px;
+    line-height:1.08;
+    margin:8px 0
+    }
 
-.clothing-thumb img{
-width:100%;
-height:100%;
-object-fit:contain;
-border-radius:7px
-}
+    .clothing-detail-copy{
+    color:#5f5f5f;
+    font-size:12px;
+    line-height:1.55;
+    margin:14px 0
+    }
 
-.clothing-detail-info{
-border:1px solid #dedede;
-border-radius:20px;
-background:#fff;
-padding:20px
-}
+    .clothing-price-large{
+    font-size:25px;
+    font-weight:900;
+    margin:12px 0
+    }
 
-.clothing-detail-kicker{
-color:#f5c518;
-font-size:9px;
-font-weight:900;
-letter-spacing:1.8px
-}
+    .clothing-sale-row{
+    display:flex;
+    gap:10px;
+    align-items:center
+    }
 
-.clothing-detail-info h2{
-font-size:30px;
-line-height:1.08;
-margin:8px 0
-}
+    .clothing-sale-row .old{
+    color:#777;
+    text-decoration:line-through;
+    font-size:15px
+    }
 
-.clothing-detail-copy{
-color:#5f5f5f;
-font-size:12px;
-line-height:1.55;
-margin:14px 0
-}
+    .clothing-option-block{
+    margin-top:16px
+    }
 
-.clothing-price-large{
-font-size:25px;
-font-weight:900;
-margin:12px 0
-}
+    .clothing-option-block label{
+    display:block;
+    font-size:10px;
+    font-weight:900;
+    margin-bottom:8px;
+    color:#111
+    }
 
-.clothing-sale-row{
-display:flex;
-gap:10px;
-align-items:center
-}
+    .clothing-option-grid{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap
+    }
 
-.clothing-sale-row .old{
-color:#777;
-text-decoration:line-through;
-font-size:15px
-}
+    .clothing-choice{
+    border:1px solid #cfcfcf;
+    background:#fff;
+    color:#111;
+    padding:9px 12px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:900
+    }
 
-.clothing-option-block{
-margin-top:16px
-}
+    .clothing-choice.active{
+    border-color:#f5c518;
+    color:#f5c518
+    }
 
-.clothing-option-block label{
-display:block;
-font-size:10px;
-font-weight:900;
-margin-bottom:8px;
-color:#111
-}
+    .clothing-choice.disabled{
+    opacity:.35;
+    pointer-events:none
+    }
 
-.clothing-option-grid{
-display:flex;
-gap:8px;
-flex-wrap:wrap
-}
+    .clothing-add-button{
+    width:100%;
+    border:0;
+    border-radius:999px;
+    background:#f5c518;
+    color:#000;
+    font-weight:900;
+    padding:15px 16px;
+    margin-top:18px
+    }
 
-.clothing-choice{
-border:1px solid #cfcfcf;
-background:#fff;
-color:#111;
-padding:9px 12px;
-border-radius:999px;
-font-size:10px;
-font-weight:900
-}
+    .clothing-add-button:disabled{
+    opacity:.45
+    }
 
-.clothing-choice.active{
-border-color:#f5c518;
-color:#f5c518
-}
+    .clothing-special-button{
+    width:100%;
+    border:1px solid #222;
+    border-radius:999px;
+    background:#fff;
+    color:#111;
+    font-weight:900;
+    padding:13px 16px;
+    margin-top:10px
+    }
 
-.clothing-choice.disabled{
-opacity:.35;
-pointer-events:none
-}
+    .clothing-standard-note{
+    border:1px solid #3c3208;
+    background:#120f02;
+    color:#f5c518;
+    border-radius:14px;
+    padding:12px;
+    font-size:10px;
+    line-height:1.5;
+    margin-top:15px
+    }
 
-.clothing-add-button{
-width:100%;
-border:0;
-border-radius:999px;
-background:#f5c518;
-color:#000;
-font-weight:900;
-padding:15px 16px;
-margin-top:18px
-}
+    .clothing-special-form{
+    display:none;
+    margin-top:14px;
+    border-top:1px solid #dedede;
+    padding-top:14px
+    }
 
-.clothing-add-button:disabled{
-opacity:.45
-}
+    .clothing-special-form.show{
+    display:block
+    }
 
-.clothing-special-button{
-width:100%;
-border:1px solid #222;
-border-radius:999px;
-background:#fff;
-color:#111;
-font-weight:900;
-padding:13px 16px;
-margin-top:10px
-}
+    .clothing-field{
+    margin-top:10px
+    }
 
-.clothing-standard-note{
-border:1px solid #3c3208;
-background:#120f02;
-color:#f5c518;
-border-radius:14px;
-padding:12px;
-font-size:10px;
-line-height:1.5;
-margin-top:15px
-}
+    .clothing-field label{
+    display:block;
+    font-size:9px;
+    font-weight:900;
+    margin-bottom:6px
+    }
 
-.clothing-special-form{
-display:none;
-margin-top:14px;
-border-top:1px solid #dedede;
-padding-top:14px
-}
+    .clothing-field input,
+    .clothing-field textarea,
+    .clothing-field select{
+    width:100%;
+    background:#fff;
+    color:#111;
+    border:1px solid #cfcfcf;
+    border-radius:12px;
+    padding:12px;
+    outline:none
+    }
 
-.clothing-special-form.show{
-display:block
-}
+    .clothing-field textarea{
+    min-height:86px;
+    resize:vertical
+    }
 
-.clothing-field{
-margin-top:10px
-}
+    .clothing-submit-request{
+    border:0;
+    background:#d40000;
+    color:#fff;
+    border-radius:999px;
+    font-weight:900;
+    padding:12px 16px;
+    margin-top:12px
+    }
 
-.clothing-field label{
-display:block;
-font-size:9px;
-font-weight:900;
-margin-bottom:6px
-}
+    .clothing-request-status{
+    min-height:18px;
+    color:#f5c518;
+    font-size:10px;
+    font-weight:900;
+    margin-top:8px
+    }
 
-.clothing-field input,
-.clothing-field textarea,
-.clothing-field select{
-width:100%;
-background:#fff;
-color:#111;
-border:1px solid #cfcfcf;
-border-radius:12px;
-padding:12px;
-outline:none
-}
+    .clothing-cart-panel{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:9999;
+    background:rgba(0,0,0,.88);
+    padding:18px;
+    overflow-y:auto
+    }
 
-.clothing-field textarea{
-min-height:86px;
-resize:vertical
-}
+    .clothing-cart-panel.show{
+    display:block
+    }
 
-.clothing-submit-request{
-border:0;
-background:#d40000;
-color:#fff;
-border-radius:999px;
-font-weight:900;
-padding:12px 16px;
-margin-top:12px
-}
+    .clothing-cart-shell{
+    width:min(560px,100%);
+    margin:28px auto;
+    background:#fff;
+    color:#111;
+    border:1px solid #d8d8d8;
+    border-radius:22px;
+    padding:20px
+    }
 
-.clothing-request-status{
-min-height:18px;
-color:#f5c518;
-font-size:10px;
-font-weight:900;
-margin-top:8px
-}
+    .clothing-cart-top{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center
+    }
 
-.clothing-cart-panel{
-display:none;
-position:fixed;
-inset:0;
-z-index:9999;
-background:rgba(0,0,0,.88);
-padding:18px;
-overflow-y:auto
-}
+    .clothing-cart-top button{
+    border:1px solid #d0d0d0;
+    background:#fff;
+    color:#111;
+    width:38px;
+    height:38px;
+    border-radius:50%
+    }
 
-.clothing-cart-panel.show{
-display:block
-}
+    .clothing-cart-items{
+    display:grid;
+    gap:10px;
+    margin-top:16px
+    }
 
-.clothing-cart-shell{
-width:min(560px,100%);
-margin:28px auto;
-background:#fff;
-color:#111;
-border:1px solid #d8d8d8;
-border-radius:22px;
-padding:20px
-}
+    .clothing-cart-item{
+    display:grid;
+    grid-template-columns:62px minmax(0,1fr) auto;
+    gap:10px;
+    align-items:center;
+    border:1px solid #dedede;
+    border-radius:14px;
+    padding:9px;
+    background:#fff
+    }
 
-.clothing-cart-top{
-display:flex;
-justify-content:space-between;
-gap:10px;
-align-items:center
-}
+    .clothing-cart-item img{
+    width:62px;
+    height:62px;
+    object-fit:contain;
+    background:#f4f4f4;
+    border-radius:10px
+    }
 
-.clothing-cart-top button{
-border:1px solid #d0d0d0;
-background:#fff;
-color:#111;
-width:38px;
-height:38px;
-border-radius:50%
-}
+    .clothing-cart-item strong{
+    font-size:11px
+    }
 
-.clothing-cart-items{
-display:grid;
-gap:10px;
-margin-top:16px
-}
+    .clothing-cart-item small{
+    display:block;
+    color:#666;
+    font-size:9px;
+    margin-top:4px
+    }
 
-.clothing-cart-item{
-display:grid;
-grid-template-columns:62px minmax(0,1fr) auto;
-gap:10px;
-align-items:center;
-border:1px solid #dedede;
-border-radius:14px;
-padding:9px;
-background:#fff
-}
+    .clothing-cart-remove{
+    border:1px solid #542323;
+    background:transparent;
+    color:#ff7b7b;
+    border-radius:999px;
+    padding:7px 9px;
+    font-size:8px;
+    font-weight:900
+    }
 
-.clothing-cart-item img{
-width:62px;
-height:62px;
-object-fit:contain;
-background:#f4f4f4;
-border-radius:10px
-}
+    .clothing-cart-total{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    border-top:1px solid #dedede;
+    margin-top:16px;
+    padding-top:14px;
+    font-weight:900
+    }
 
-.clothing-cart-item strong{
-font-size:11px
-}
+    .clothing-checkout-box{
+    border-top:1px solid #dedede;
+    margin-top:16px;
+    padding-top:16px
+    }
 
-.clothing-cart-item small{
-display:block;
-color:#666;
-font-size:9px;
-margin-top:4px
-}
+    .clothing-checkout-title{
+    font-size:15px;
+    font-weight:900;
+    color:#111
+    }
 
-.clothing-cart-remove{
-border:1px solid #542323;
-background:transparent;
-color:#ff7b7b;
-border-radius:999px;
-padding:7px 9px;
-font-size:8px;
-font-weight:900
-}
+    .clothing-checkout-copy{
+    color:#666;
+    font-size:10px;
+    line-height:1.5;
+    margin-top:5px
+    }
 
-.clothing-cart-total{
-display:flex;
-justify-content:space-between;
-gap:10px;
-border-top:1px solid #dedede;
-margin-top:16px;
-padding-top:14px;
-font-weight:900
-}
+    .clothing-checkout-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:12px
+    }
 
-.clothing-checkout-box{
-border-top:1px solid #dedede;
-margin-top:16px;
-padding-top:16px
-}
+    .clothing-checkout-field label{
+    display:block;
+    font-size:9px;
+    font-weight:900;
+    color:#111;
+    margin-bottom:6px
+    }
 
-.clothing-checkout-title{
-font-size:15px;
-font-weight:900;
-color:#111
-}
+    .clothing-checkout-field input{
+    width:100%;
+    background:#fff;
+    color:#111;
+    border:1px solid #cfcfcf;
+    border-radius:12px;
+    padding:12px;
+    outline:none
+    }
 
-.clothing-checkout-copy{
-color:#666;
-font-size:10px;
-line-height:1.5;
-margin-top:5px
-}
+    .clothing-checkout-field input:focus{
+    border-color:#f5c518
+    }
 
-.clothing-checkout-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-top:12px
-}
+    .clothing-secure-checkout{
+    width:100%;
+    border:0;
+    border-radius:999px;
+    background:#d40000;
+    color:#fff;
+    font-weight:900;
+    padding:15px 16px;
+    margin-top:12px
+    }
 
-.clothing-checkout-field label{
-display:block;
-font-size:9px;
-font-weight:900;
-color:#111;
-margin-bottom:6px
-}
+    .clothing-secure-checkout:disabled{
+    opacity:.45;
+    cursor:not-allowed
+    }
 
-.clothing-checkout-field input{
-width:100%;
-background:#fff;
-color:#111;
-border:1px solid #cfcfcf;
-border-radius:12px;
-padding:12px;
-outline:none
-}
+    .clothing-checkout-note{
+    border:1px solid #e3d8a0;
+    background:#fffbea;
+    color:#6a5810;
+    border-radius:13px;
+    padding:11px 12px;
+    font-size:9px;
+    line-height:1.5;
+    margin-top:10px
+    }
 
-.clothing-checkout-field input:focus{
-border-color:#f5c518
-}
+    .clothing-checkout-status{
+    min-height:18px;
+    font-size:10px;
+    font-weight:900;
+    margin-top:10px;
+    color:#b00000
+    }
 
-.clothing-secure-checkout{
-width:100%;
-border:0;
-border-radius:999px;
-background:#d40000;
-color:#fff;
-font-weight:900;
-padding:15px 16px;
-margin-top:12px
-}
+    .clothing-checkout-status.success{
+    color:#17743a
+    }
 
-.clothing-secure-checkout:disabled{
-opacity:.45;
-cursor:not-allowed
-}
+    .clothing-checkout-status.waiting{
+    color:#8a6b00
+    }
 
-.clothing-checkout-note{
-border:1px solid #e3d8a0;
-background:#fffbea;
-color:#6a5810;
-border-radius:13px;
-padding:11px 12px;
-font-size:9px;
-line-height:1.5;
-margin-top:10px
-}
+    @media(max-width:560px){
 
-.clothing-checkout-status{
-min-height:18px;
-font-size:10px;
-font-weight:900;
-margin-top:10px;
-color:#b00000
-}
+    .clothing-checkout-grid{
+    grid-template-columns:1fr
+    }
 
-.clothing-checkout-status.success{
-color:#17743a
-}
+    }
 
-.clothing-checkout-status.waiting{
-color:#8a6b00
-}
+    @media(max-width:720px){
 
-@media(max-width:560px){
+    .clothing-detail-grid{
+    grid-template-columns:1fr
+    }
 
-.clothing-checkout-grid{
-grid-template-columns:1fr
-}
+    .clothing-product-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px
+    }
 
-}
+    .clothing-product-body{
+    padding:12px
+    }
 
-@media(max-width:720px){
+    .clothing-product-body h4{
+    font-size:15px
+    }
 
-.clothing-detail-grid{
-grid-template-columns:1fr
-}
+    .clothing-brand h2{
+    font-size:25px
+    }
 
-.clothing-product-grid{
-grid-template-columns:repeat(2,minmax(0,1fr));
-gap:10px
-}
+    }
 
-.clothing-product-body{
-padding:12px
-}
+    @media(max-width:430px){
 
-.clothing-product-body h4{
-font-size:15px
-}
+    .clothing-product-grid{
+    grid-template-columns:1fr
+    }
 
-.clothing-brand h2{
-font-size:25px
-}
+    }
 
-}
+    `;
 
-@media(max-width:430px){
 
-.clothing-product-grid{
-grid-template-columns:1fr
-}
+    document.head.appendChild(
+    style
+    );
 
-}
+    }
 
-`;
 
+    function ensureClothingStore(){
 
-document.head.appendChild(
-style
-);
+    installClothingStoreStyles();
 
-}
+    clothingLoadCart();
 
 
-function ensureClothingStore(){
+    let screen =
+    $('the-code-clothing-screen');
 
-installClothingStoreStyles();
 
-clothingLoadCart();
+    if(screen)
+    return screen;
 
 
-let screen =
-$('the-code-clothing-screen');
+    screen =
+    document.createElement(
+    'div'
+    );
 
 
-if(screen)
-return screen;
+    screen.id =
+    'the-code-clothing-screen';
 
+    screen.className =
+    'screen';
 
-screen =
-document.createElement(
-'div'
-);
 
+    screen.innerHTML = `
 
-screen.id =
-'the-code-clothing-screen';
+    <div class="clothing-shell">
 
-screen.className =
-'screen';
+    <div class="clothing-topbar">
 
+    <button
+    id="the-code-clothing-back"
+    class="clothing-back"
+    type="button"
+    >
+    RETURN TO HOME
+    </button>
 
-screen.innerHTML = `
+    <button
+    id="the-code-clothing-cart"
+    class="clothing-cart-button"
+    type="button"
+    >
+    CART <span id="the-code-clothing-cart-count">0</span>
+    </button>
 
-<div class="clothing-shell">
+    </div>
 
-<div class="clothing-topbar">
+    <section
+    id="clothing-store-home"
+    class="clothing-store-home"
+    >
 
-<button
-id="the-code-clothing-back"
-class="clothing-back"
-type="button"
->
-RETURN TO HOME
-</button>
+    <header class="clothing-brand">
 
-<button
-id="the-code-clothing-cart"
-class="clothing-cart-button"
-type="button"
->
-CART <span id="the-code-clothing-cart-count">0</span>
-</button>
+    <img
+    src="images/code-clothing-logo.png"
+    alt="The Code Clothing"
+    >
 
-</div>
+    <h2>
+    THE CODE CLOTHING
+    </h2>
 
-<section
-id="clothing-store-home"
-class="clothing-store-home"
->
+    <p>
+    Wear the decision. Carry the code.
+    </p>
 
-<header class="clothing-brand">
+    </header>
 
-<img
-src="images/code-clothing-logo.png"
-alt="The Code Clothing"
->
 
-<h2>
-THE CODE CLOTHING
-</h2>
+    <div class="clothing-section-head">
 
-<p>
-Wear the decision. Carry the code.
-</p>
+    <div>
 
-</header>
+    <span>
+    THE CODE CLOTHING
+    </span>
 
+    <h3>
+    SHOP
+    </h3>
 
-<div class="clothing-section-head">
+    </div>
 
-<div>
+    </div>
 
-<span>
-THE CODE CLOTHING
-</span>
 
-<h3>
-SHOP
-</h3>
+    <div
+    id="clothing-product-grid"
+    class="clothing-product-grid"
+    >
 
-</div>
+    <div class="clothing-loading">
+    LOADING PRODUCTS...
+    </div>
 
-</div>
+    </div>
 
+    </section>
 
-<div
-id="clothing-product-grid"
-class="clothing-product-grid"
->
 
-<div class="clothing-loading">
-LOADING PRODUCTS...
-</div>
+    <section
+    id="clothing-detail"
+    class="clothing-detail"
+    ></section>
 
-</div>
+    </div>
 
-</section>
 
+    <div
+    id="clothing-cart-panel"
+    class="clothing-cart-panel"
+    >
 
-<section
-id="clothing-detail"
-class="clothing-detail"
-></section>
+    <div class="clothing-cart-shell">
 
-</div>
+    <div class="clothing-cart-top">
 
+    <div>
 
-<div
-id="clothing-cart-panel"
-class="clothing-cart-panel"
->
+    <div class="clothing-detail-kicker">
+    THE CODE CLOTHING
+    </div>
 
-<div class="clothing-cart-shell">
+    <h2>
+    YOUR CART
+    </h2>
 
-<div class="clothing-cart-top">
+    </div>
 
-<div>
+    <button
+    id="clothing-cart-close"
+    type="button"
+    >
+    ✕
+    </button>
 
-<div class="clothing-detail-kicker">
-THE CODE CLOTHING
-</div>
+    </div>
 
-<h2>
-YOUR CART
-</h2>
+    <div
+    id="clothing-cart-items"
+    class="clothing-cart-items"
+    ></div>
 
-</div>
+    <div
+    id="clothing-cart-total"
+    class="clothing-cart-total"
+    ></div>
 
-<button
-id="clothing-cart-close"
-type="button"
->
-✕
-</button>
+    <div class="clothing-checkout-box">
 
-</div>
+    <div class="clothing-checkout-title">
+    SECURE CHECKOUT
+    </div>
 
-<div
-id="clothing-cart-items"
-class="clothing-cart-items"
-></div>
+    <div class="clothing-checkout-copy">
+    Enter your name and email, then continue to Stripe to complete payment.
+    </div>
 
-<div
-id="clothing-cart-total"
-class="clothing-cart-total"
-></div>
+    <div class="clothing-checkout-grid">
 
-<div class="clothing-checkout-box">
+    <div class="clothing-checkout-field">
 
-<div class="clothing-checkout-title">
-SECURE CHECKOUT
-</div>
+    <label>
+    NAME
+    </label>
 
-<div class="clothing-checkout-copy">
-Enter your name and email, then continue to Stripe to complete payment.
-</div>
+    <input
+    id="clothing-checkout-name"
+    type="text"
+    autocomplete="name"
+    >
 
-<div class="clothing-checkout-grid">
+    </div>
 
-<div class="clothing-checkout-field">
+    <div class="clothing-checkout-field">
 
-<label>
-NAME
-</label>
+    <label>
+    EMAIL
+    </label>
 
-<input
-id="clothing-checkout-name"
-type="text"
-autocomplete="name"
->
+    <input
+    id="clothing-checkout-email"
+    type="email"
+    autocomplete="email"
+    >
 
-</div>
+    </div>
 
-<div class="clothing-checkout-field">
+    </div>
 
-<label>
-EMAIL
-</label>
+    <button
+    id="clothing-secure-checkout"
+    class="clothing-secure-checkout"
+    type="button"
+    >
+    SECURE CHECKOUT
+    </button>
 
-<input
-id="clothing-checkout-email"
-type="email"
-autocomplete="email"
->
+    <div class="clothing-checkout-note">
+    Stripe securely collects your payment, shipping address and phone number. B.O.S.S CODE GO never stores your card number.
+    </div>
 
-</div>
+    <div
+    id="clothing-checkout-status"
+    class="clothing-checkout-status"
+    ></div>
 
-</div>
+    </div>
 
-<button
-id="clothing-secure-checkout"
-class="clothing-secure-checkout"
-type="button"
->
-SECURE CHECKOUT
-</button>
+    </div>
 
-<div class="clothing-checkout-note">
-Stripe securely collects your payment, shipping address and phone number. B.O.S.S CODE GO never stores your card number.
-</div>
+    </div>
 
-<div
-id="clothing-checkout-status"
-class="clothing-checkout-status"
-></div>
+    `;
 
-</div>
 
-</div>
+    document.body.appendChild(
+    screen
+    );
 
-</div>
 
-`;
+    $('the-code-clothing-back')
+    ?.addEventListener(
+    'click',
+    ()=>{
 
+    showScreen(
+    home
+    );
 
-document.body.appendChild(
-screen
-);
+    }
+    );
 
 
-$('the-code-clothing-back')
-?.addEventListener(
-'click',
-()=>{
+    $('the-code-clothing-cart')
+    ?.addEventListener(
+    'click',
+    openClothingCart
+    );
 
-showScreen(
-home
-);
 
-}
-);
+    $('clothing-cart-close')
+    ?.addEventListener(
+    'click',
+    closeClothingCart
+    );
 
 
-$('the-code-clothing-cart')
-?.addEventListener(
-'click',
-openClothingCart
-);
+    $('clothing-secure-checkout')
+    ?.addEventListener(
+    'click',
+    startClothingStripeCheckout
+    );
 
 
-$('clothing-cart-close')
-?.addEventListener(
-'click',
-closeClothingCart
-);
+    restoreClothingCheckoutCustomer();
 
 
-$('clothing-secure-checkout')
-?.addEventListener(
-'click',
-startClothingStripeCheckout
-);
+    $('clothing-cart-panel')
+    ?.addEventListener(
+    'click',
+    event=>{
 
+    if(
+    event.target ===
+    $('clothing-cart-panel')
+    )
+    closeClothingCart();
 
-restoreClothingCheckoutCustomer();
+    }
+    );
 
 
-$('clothing-cart-panel')
-?.addEventListener(
-'click',
-event=>{
+    updateClothingCartCount();
 
-if(
-event.target ===
-$('clothing-cart-panel')
-)
-closeClothingCart();
 
-}
-);
+    return screen;
 
+    }
 
-updateClothingCartCount();
 
+    function updateClothingCartCount(){
 
-return screen;
+    const count =
+    $('the-code-clothing-cart-count');
 
-}
 
+    if(count)
+    count.textContent =
+    String(
+    clothingCartCount()
+    );
 
-function updateClothingCartCount(){
+    }
 
-const count =
-$('the-code-clothing-cart-count');
 
+    function clothingProductPriceHTML(
+    product
+    ){
 
-if(count)
-count.textContent =
-String(
-clothingCartCount()
-);
+    const price =
+    Number(
+    product?.price_cents ||
+    0
+    );
 
-}
+    const sale =
+    product?.sale_price_cents ===
+    null ||
+    product?.sale_price_cents ===
+    undefined
+    ?
+    null
+    :
+    Number(
+    product.sale_price_cents
+    );
 
 
-function clothingProductPriceHTML(
-product
-){
+    if(
+    sale !== null &&
+    sale >= 0 &&
+    sale < price
+    ){
 
-const price =
-Number(
-product?.price_cents ||
-0
-);
+    return `
+    <div class="clothing-product-price">
+    <span class="sale">
+    ${moneyFromCents(sale)}
+    </span>
+    <span class="regular">
+    ${moneyFromCents(price)}
+    </span>
+    </div>
+    `;
 
-const sale =
-product?.sale_price_cents ===
-null ||
-product?.sale_price_cents ===
-undefined
-?
-null
-:
-Number(
-product.sale_price_cents
-);
+    }
 
 
-if(
-sale !== null &&
-sale >= 0 &&
-sale < price
-){
+    return `
+    <div class="clothing-product-price">
+    <span class="single">
+    ${moneyFromCents(price)}
+    </span>
+    </div>
+    `;
 
-return `
-<div class="clothing-product-price">
-<span class="sale">
-${moneyFromCents(sale)}
-</span>
-<span class="regular">
-${moneyFromCents(price)}
-</span>
-</div>
-`;
+    }
 
-}
 
+    function renderClothingProducts(){
 
-return `
-<div class="clothing-product-price">
-<span class="single">
-${moneyFromCents(price)}
-</span>
-</div>
-`;
+    const grid =
+    $('clothing-product-grid');
 
-}
 
+    if(!grid)
+    return;
 
-function renderClothingProducts(){
 
-const grid =
-$('clothing-product-grid');
+    if(
+    !clothingProducts.length
+    ){
 
+    grid.innerHTML = `
+    <div class="clothing-empty">
+    NO PRODUCTS ARE PUBLISHED YET.
+    </div>
+    `;
 
-if(!grid)
-return;
+    return;
 
+    }
 
-if(
-!clothingProducts.length
-){
 
-grid.innerHTML = `
-<div class="clothing-empty">
-NO PRODUCTS ARE PUBLISHED YET.
-</div>
-`;
+    grid.innerHTML =
+    '';
 
-return;
 
-}
+    clothingProducts
+    .forEach(
+    product=>{
 
+    const card =
+    document.createElement(
+    'button'
+    );
 
-grid.innerHTML =
-'';
 
+    card.type =
+    'button';
 
-clothingProducts
-.forEach(
-product=>{
+    card.className =
+    'clothing-product-card';
 
-const card =
-document.createElement(
-'button'
-);
 
+    const cover =
+    String(
+    product.cover_image_url ||
+    ''
+    ).trim();
 
-card.type =
-'button';
 
-card.className =
-'clothing-product-card';
+    card.innerHTML = `
 
+    <div class="clothing-product-image">
 
-const cover =
-String(
-product.cover_image_url ||
-''
-).trim();
+    ${
+    cover
+    ?
+    `
+    <img
+    src="${esc(cover)}"
+    alt="${esc(product.name || 'The Code Clothing')}"
+    >
+    `
+    :
+    `
+    <div class="clothing-product-placeholder">
+    THE CODE CLOTHING
+    </div>
+    `
+    }
 
+    </div>
 
-card.innerHTML = `
+    <div class="clothing-product-body">
 
-<div class="clothing-product-image">
+    <div class="clothing-product-kicker">
+    ${
+    product.featured
+    ?
+    'FEATURED'
+    :
+    'THE CODE CLOTHING'
+    }
+    </div>
 
-${
-cover
-?
-`
-<img
-src="${esc(cover)}"
-alt="${esc(product.name || 'The Code Clothing')}"
->
-`
-:
-`
-<div class="clothing-product-placeholder">
-THE CODE CLOTHING
-</div>
-`
-}
+    <h4>
+    ${esc(product.name || 'PRODUCT')}
+    </h4>
 
-</div>
+    ${clothingProductPriceHTML(product)}
 
-<div class="clothing-product-body">
+    ${
+    product.description
+    ?
+    `
+    <p>
+    ${esc(product.description)}
+    </p>
+    `
+    :
+    ''
+    }
 
-<div class="clothing-product-kicker">
-${
-product.featured
-?
-'FEATURED'
-:
-'THE CODE CLOTHING'
-}
-</div>
+    </div>
 
-<h4>
-${esc(product.name || 'PRODUCT')}
-</h4>
+    `;
 
-${clothingProductPriceHTML(product)}
 
-${
-product.description
-?
-`
-<p>
-${esc(product.description)}
-</p>
-`
-:
-''
-}
+    card.addEventListener(
+    'click',
+    ()=>{
 
-</div>
+    openClothingProduct(
+    product.id
+    );
 
-`;
+    }
+    );
 
 
-card.addEventListener(
-'click',
-()=>{
+    grid.appendChild(
+    card
+    );
 
-openClothingProduct(
-product.id
-);
+    }
+    );
 
-}
-);
+    }
 
 
-grid.appendChild(
-card
-);
+    async function loadClothingProducts(){
 
-}
-);
+    const grid =
+    $('clothing-product-grid');
 
-}
 
+    if(grid)
+    grid.innerHTML = `
+    <div class="clothing-loading">
+    LOADING PRODUCTS...
+    </div>
+    `;
 
-async function loadClothingProducts(){
 
-const grid =
-$('clothing-product-grid');
+    try{
 
+    const result =
+    await clothingFetchJSON(
+    '/clothing/products'
+    );
 
-if(grid)
-grid.innerHTML = `
-<div class="clothing-loading">
-LOADING PRODUCTS...
-</div>
-`;
 
+    clothingProducts =
+    Array.isArray(
+    result.data
+    )
+    ?
+    result.data
+    :
+    [];
 
-try{
 
-const result =
-await clothingFetchJSON(
-'/clothing/products'
-);
+    renderClothingProducts();
 
+    }catch(error){
 
-clothingProducts =
-Array.isArray(
-result.data
-)
-?
-result.data
-:
-[];
+    if(grid)
+    grid.innerHTML = `
+    <div class="clothing-error">
+    ${esc(error.message || 'Could not load products.')}
+    </div>
+    `;
 
+    }
 
-renderClothingProducts();
+    }
 
-}catch(error){
 
-if(grid)
-grid.innerHTML = `
-<div class="clothing-error">
-${esc(error.message || 'Could not load products.')}
-</div>
-`;
+    async function openClothingStore(){
 
-}
+    const screen =
+    ensureClothingStore();
 
-}
 
+    $('clothing-detail')
+    ?.classList.remove(
+    'show'
+    );
 
-async function openClothingStore(){
 
-const screen =
-ensureClothingStore();
+    $('clothing-store-home')
+    ?.classList.remove(
+    'hide'
+    );
 
 
-$('clothing-detail')
-?.classList.remove(
-'show'
-);
+    showScreen(
+    screen
+    );
 
 
-$('clothing-store-home')
-?.classList.remove(
-'hide'
-);
+    trackPageOpen(
+    'the-code-clothing',
+    'THE CODE CLOTHING'
+    );
 
 
-showScreen(
-screen
-);
+    await loadClothingProducts();
 
+    }
 
-trackPageOpen(
-'the-code-clothing',
-'THE CODE CLOTHING'
-);
 
+    function clothingAvailableColors(
+    variants
+    ){
 
-await loadClothingProducts();
+    return [
+    ...new Set(
+    variants
+    .filter(
+    variant=>
+    variant.active !==
+    false
+    )
+    .map(
+    variant=>
+    String(
+    variant.color ||
+    ''
+    ).trim()
+    )
+    .filter(Boolean)
+    )
+    ];
 
-}
+    }
 
 
-function clothingAvailableColors(
-variants
-){
+    function clothingSizesForColor(
+    variants,
+    color
+    ){
 
-return [
-...new Set(
-variants
-.filter(
-variant=>
-variant.active !==
-false
-)
-.map(
-variant=>
-String(
-variant.color ||
-''
-).trim()
-)
-.filter(Boolean)
-)
-];
+    return [
+    ...new Set(
+    variants
+    .filter(
+    variant=>
+    variant.active !==
+    false
+    &&
+    String(
+    variant.color ||
+    ''
+    ).toLowerCase() ===
+    String(
+    color ||
+    ''
+    ).toLowerCase()
+    &&
+    variant.in_stock !==
+    false
+    )
+    .map(
+    variant=>
+    String(
+    variant.size ||
+    ''
+    ).trim()
+    )
+    .filter(Boolean)
+    )
+    ];
 
-}
+    }
 
 
-function clothingSizesForColor(
-variants,
-color
-){
+    function clothingSelectedVariant(
+    variants,
+    color,
+    size
+    ){
 
-return [
-...new Set(
-variants
-.filter(
-variant=>
-variant.active !==
-false
-&&
-String(
-variant.color ||
-''
-).toLowerCase() ===
-String(
-color ||
-''
-).toLowerCase()
-&&
-variant.in_stock !==
-false
-)
-.map(
-variant=>
-String(
-variant.size ||
-''
-).trim()
-)
-.filter(Boolean)
-)
-];
+    return variants.find(
+    variant=>
+    variant.active !==
+    false
+    &&
+    variant.in_stock !==
+    false
+    &&
+    String(
+    variant.color ||
+    ''
+    ).toLowerCase() ===
+    String(
+    color ||
+    ''
+    ).toLowerCase()
+    &&
+    String(
+    variant.size ||
+    ''
+    ).toUpperCase() ===
+    String(
+    size ||
+    ''
+    ).toUpperCase()
+    ) ||
+    null;
 
-}
+    }
 
 
-function clothingSelectedVariant(
-variants,
-color,
-size
-){
+    async function openClothingProduct(
+    productId
+    ){
 
-return variants.find(
-variant=>
-variant.active !==
-false
-&&
-variant.in_stock !==
-false
-&&
-String(
-variant.color ||
-''
-).toLowerCase() ===
-String(
-color ||
-''
-).toLowerCase()
-&&
-String(
-variant.size ||
-''
-).toUpperCase() ===
-String(
-size ||
-''
-).toUpperCase()
-) ||
-null;
+    const screen =
+    ensureClothingStore();
 
-}
+    const detail =
+    $('clothing-detail');
 
+    const storeHome =
+    $('clothing-store-home');
 
-async function openClothingProduct(
-productId
-){
 
-const screen =
-ensureClothingStore();
+    if(
+    !detail ||
+    !storeHome
+    )
+    return;
 
-const detail =
-$('clothing-detail');
 
-const storeHome =
-$('clothing-store-home');
+    storeHome.classList.add(
+    'hide'
+    );
 
+    detail.classList.add(
+    'show'
+    );
 
-if(
-!detail ||
-!storeHome
-)
-return;
 
+    detail.innerHTML = `
+    <div class="clothing-loading">
+    LOADING PRODUCT...
+    </div>
+    `;
 
-storeHome.classList.add(
-'hide'
-);
 
-detail.classList.add(
-'show'
-);
+    showScreen(
+    screen
+    );
 
 
-detail.innerHTML = `
-<div class="clothing-loading">
-LOADING PRODUCT...
-</div>
-`;
+    try{
 
+    const result =
+    await clothingFetchJSON(
 
-showScreen(
-screen
-);
+    `/clothing/products/${encodeURIComponent(
+    productId
+    )}/full`
 
+    );
 
-try{
 
-const result =
-await clothingFetchJSON(
+    const data =
+    result.data ||
+    {};
 
-`/clothing/products/${encodeURIComponent(
-productId
-)}/full`
 
-);
+    clothingCurrentProduct =
+    data;
 
 
-const data =
-result.data ||
-{};
+    renderClothingDetail(
+    data
+    );
 
 
-clothingCurrentProduct =
-data;
+    trackAnalytics(
+    'clothing_product_view',
+    {
+    section:
+    'the-code-clothing',
 
+    itemId:
+    data.product?.id ||
+    productId,
 
-renderClothingDetail(
-data
-);
+    itemTitle:
+    data.product?.name ||
+    'Clothing Product'
+    }
+    );
 
+    }catch(error){
 
-trackAnalytics(
-'clothing_product_view',
-{
-section:
-'the-code-clothing',
+    detail.innerHTML = `
+    <div class="clothing-error">
+    ${esc(error.message || 'Could not load product.')}
+    </div>
+    `;
 
-itemId:
-data.product?.id ||
-productId,
+    }
 
-itemTitle:
-data.product?.name ||
-'Clothing Product'
-}
-);
+    }
 
-}catch(error){
 
-detail.innerHTML = `
-<div class="clothing-error">
-${esc(error.message || 'Could not load product.')}
-</div>
-`;
+    function renderClothingDetail(
+    data
+    ){
 
-}
+    const detail =
+    $('clothing-detail');
 
-}
 
+    if(
+    !detail
+    )
+    return;
 
-function renderClothingDetail(
-data
-){
 
-const detail =
-$('clothing-detail');
+    const product =
+    data.product ||
+    {};
 
+    const variants =
+    Array.isArray(
+    data.variants
+    )
+    ?
+    data.variants
+    :
+    [];
 
-if(
-!detail
-)
-return;
+    const extraImages =
+    Array.isArray(
+    data.images
+    )
+    ?
+    data.images
+    :
+    [];
 
 
-const product =
-data.product ||
-{};
+    const imageUrls =
+    [
+    String(
+    product.cover_image_url ||
+    ''
+    ).trim(),
 
-const variants =
-Array.isArray(
-data.variants
-)
-?
-data.variants
-:
-[];
+    ...extraImages.map(
+    item=>
+    String(
+    item.image_url ||
+    ''
+    ).trim()
+    )
+    ]
+    .filter(Boolean);
 
-const extraImages =
-Array.isArray(
-data.images
-)
-?
-data.images
-:
-[];
 
+    const colors =
+    clothingAvailableColors(
+    variants
+    );
 
-const imageUrls =
-[
-String(
-product.cover_image_url ||
-''
-).trim(),
 
-...extraImages.map(
-item=>
-String(
-item.image_url ||
-''
-).trim()
-)
-]
-.filter(Boolean);
+    const selectedColor =
+    colors[0] ||
+    '';
 
 
-const colors =
-clothingAvailableColors(
-variants
-);
+    const sizes =
+    selectedColor
+    ?
+    clothingSizesForColor(
+    variants,
+    selectedColor
+    )
+    :
+    [];
 
 
-const selectedColor =
-colors[0] ||
-'';
+    const selectedSize =
+    sizes[0] ||
+    '';
 
 
-const sizes =
-selectedColor
-?
-clothingSizesForColor(
-variants,
-selectedColor
-)
-:
-[];
+    const mainImage =
+    imageUrls[0] ||
+    '';
 
 
-const selectedSize =
-sizes[0] ||
-'';
+    detail.innerHTML = `
 
+    <button
+    id="clothing-back-to-shop"
+    class="clothing-back"
+    type="button"
+    style="margin-bottom:14px"
+    >
+    ← BACK TO SHOP
+    </button>
 
-const mainImage =
-imageUrls[0] ||
-'';
 
+    <div class="clothing-detail-grid">
 
-detail.innerHTML = `
+    <div>
 
-<button
-id="clothing-back-to-shop"
-class="clothing-back"
-type="button"
-style="margin-bottom:14px"
->
-← BACK TO SHOP
-</button>
+    <div class="clothing-gallery-main">
 
+    ${
+    mainImage
+    ?
+    `
+    <img
+    id="clothing-main-image"
+    src="${esc(mainImage)}"
+    alt="${esc(product.name || 'The Code Clothing')}"
+    >
+    `
+    :
+    `
+    <div class="clothing-product-placeholder">
+    THE CODE CLOTHING
+    </div>
+    `
+    }
 
-<div class="clothing-detail-grid">
+    </div>
 
-<div>
 
-<div class="clothing-gallery-main">
+    ${
+    imageUrls.length > 1
+    ?
+    `
+    <div
+    id="clothing-thumbs"
+    class="clothing-thumbs"
+    >
 
-${
-mainImage
-?
-`
-<img
-id="clothing-main-image"
-src="${esc(mainImage)}"
-alt="${esc(product.name || 'The Code Clothing')}"
->
-`
-:
-`
-<div class="clothing-product-placeholder">
-THE CODE CLOTHING
-</div>
-`
-}
+    ${imageUrls.map(
+    (
+    url,
+    index
+    )=>`
+    <button
+    type="button"
+    class="clothing-thumb ${
+    index === 0
+    ?
+    'active'
+    :
+    ''
+    }"
+    data-image="${esc(url)}"
+    >
+    <img
+    src="${esc(url)}"
+    alt=""
+    >
+    </button>
+    `
+    ).join('')}
 
-</div>
+    </div>
+    `
+    :
+    ''
+    }
 
+    </div>
 
-${
-imageUrls.length > 1
-?
-`
-<div
-id="clothing-thumbs"
-class="clothing-thumbs"
->
 
-${imageUrls.map(
-(
-url,
-index
-)=>`
-<button
-type="button"
-class="clothing-thumb ${
-index === 0
-?
-'active'
-:
-''
-}"
-data-image="${esc(url)}"
->
-<img
-src="${esc(url)}"
-alt=""
->
-</button>
-`
-).join('')}
+    <div class="clothing-detail-info">
 
-</div>
-`
-:
-''
-}
+    <div class="clothing-detail-kicker">
+    ${
+    product.featured
+    ?
+    'FEATURED'
+    :
+    'THE CODE CLOTHING'
+    }
+    </div>
 
-</div>
+    <h2>
+    ${esc(product.name || 'PRODUCT')}
+    </h2>
 
+    <div class="clothing-price-large">
 
-<div class="clothing-detail-info">
+    ${
+    product.on_sale
+    ?
+    `
+    <div class="clothing-sale-row">
 
-<div class="clothing-detail-kicker">
-${
-product.featured
-?
-'FEATURED'
-:
-'THE CODE CLOTHING'
-}
-</div>
+    <span>
+    ${moneyFromCents(
+    product.effective_price_cents
+    )}
+    </span>
 
-<h2>
-${esc(product.name || 'PRODUCT')}
-</h2>
+    <span class="old">
+    ${moneyFromCents(
+    product.price_cents
+    )}
+    </span>
 
-<div class="clothing-price-large">
+    </div>
+    `
+    :
+    moneyFromCents(
+    product.effective_price_cents ??
+    product.price_cents
+    )
+    }
 
-${
-product.on_sale
-?
-`
-<div class="clothing-sale-row">
+    </div>
 
-<span>
-${moneyFromCents(
-product.effective_price_cents
-)}
-</span>
+    ${
+    product.description
+    ?
+    `
+    <div class="clothing-detail-copy">
+    ${esc(product.description)}
+    </div>
+    `
+    :
+    ''
+    }
 
-<span class="old">
-${moneyFromCents(
-product.price_cents
-)}
-</span>
 
-</div>
-`
-:
-moneyFromCents(
-product.effective_price_cents ??
-product.price_cents
-)
-}
+    ${
+    colors.length
+    ?
+    `
+    <div class="clothing-option-block">
 
-</div>
+    <label>
+    COLOR
+    </label>
 
-${
-product.description
-?
-`
-<div class="clothing-detail-copy">
-${esc(product.description)}
-</div>
-`
-:
-''
-}
+    <div
+    id="clothing-color-options"
+    class="clothing-option-grid"
+    >
 
+    ${colors.map(
+    color=>`
+    <button
+    type="button"
+    class="clothing-choice ${
+    color === selectedColor
+    ?
+    'active'
+    :
+    ''
+    }"
+    data-color="${esc(color)}"
+    >
+    ${esc(color)}
+    </button>
+    `
+    ).join('')}
 
-${
-colors.length
-?
-`
-<div class="clothing-option-block">
+    </div>
 
-<label>
-COLOR
-</label>
+    </div>
+    `
+    :
+    ''
+    }
 
-<div
-id="clothing-color-options"
-class="clothing-option-grid"
->
 
-${colors.map(
-color=>`
-<button
-type="button"
-class="clothing-choice ${
-color === selectedColor
-?
-'active'
-:
-''
-}"
-data-color="${esc(color)}"
->
-${esc(color)}
-</button>
-`
-).join('')}
+    <div class="clothing-option-block">
 
-</div>
+    <label>
+    SIZE
+    </label>
 
-</div>
-`
-:
-''
-}
+    <div
+    id="clothing-size-options"
+    class="clothing-option-grid"
+    >
 
+    ${
+    sizes.length
+    ?
+    sizes.map(
+    size=>`
+    <button
+    type="button"
+    class="clothing-choice ${
+    size === selectedSize
+    ?
+    'active'
+    :
+    ''
+    }"
+    data-size="${esc(size)}"
+    >
+    ${esc(size)}
+    </button>
+    `
+    ).join('')
+    :
+    `
+    <span class="muted">
+    SIZE OPTIONS WILL APPEAR HERE.
+    </span>
+    `
+    }
 
-<div class="clothing-option-block">
+    </div>
 
-<label>
-SIZE
-</label>
+    </div>
 
-<div
-id="clothing-size-options"
-class="clothing-option-grid"
->
 
-${
-sizes.length
-?
-sizes.map(
-size=>`
-<button
-type="button"
-class="clothing-choice ${
-size === selectedSize
-?
-'active'
-:
-''
-}"
-data-size="${esc(size)}"
->
-${esc(size)}
-</button>
-`
-).join('')
-:
-`
-<span class="muted">
-SIZE OPTIONS WILL APPEAR HERE.
-</span>
-`
-}
+    <div class="clothing-standard-note">
+    STANDARD SIZES AVAILABLE THROUGH 2XL<br>
+    Need another size? Send us a special size request and we will check availability.
+    </div>
 
-</div>
 
-</div>
+    <button
+    id="clothing-add-to-cart"
+    class="clothing-add-button"
+    type="button"
+    ${
+    !colors.length ||
+    !selectedSize
+    ?
+    'disabled'
+    :
+    ''
+    }
+    >
+    ADD TO CART
+    </button>
 
 
-<div class="clothing-standard-note">
-STANDARD SIZES AVAILABLE THROUGH 2XL<br>
-Need another size? Send us a special size request and we will check availability.
-</div>
+    ${
+    product.allow_special_size_request
+    ?
+    `
+    <button
+    id="clothing-special-size-toggle"
+    class="clothing-special-button"
+    type="button"
+    >
+    REQUEST A SPECIAL SIZE
+    </button>
 
 
-<button
-id="clothing-add-to-cart"
-class="clothing-add-button"
-type="button"
-${
-!colors.length ||
-!selectedSize
-?
-'disabled'
-:
-''
-}
->
-ADD TO CART
-</button>
+    <div
+    id="clothing-special-form"
+    class="clothing-special-form"
+    >
 
+    <div class="clothing-field">
 
-${
-product.allow_special_size_request
-?
-`
-<button
-id="clothing-special-size-toggle"
-class="clothing-special-button"
-type="button"
->
-REQUEST A SPECIAL SIZE
-</button>
+    <label>
+    NAME
+    </label>
 
+    <input
+    id="clothing-special-name"
+    type="text"
+    >
 
-<div
-id="clothing-special-form"
-class="clothing-special-form"
->
+    </div>
 
-<div class="clothing-field">
 
-<label>
-NAME
-</label>
+    <div class="clothing-field">
 
-<input
-id="clothing-special-name"
-type="text"
->
+    <label>
+    EMAIL
+    </label>
 
-</div>
+    <input
+    id="clothing-special-email"
+    type="email"
+    >
 
+    </div>
 
-<div class="clothing-field">
 
-<label>
-EMAIL
-</label>
+    <div class="clothing-field">
 
-<input
-id="clothing-special-email"
-type="email"
->
+    <label>
+    REQUESTED SIZE
+    </label>
 
-</div>
+    <input
+    id="clothing-special-size"
+    type="text"
+    placeholder="Example: 3XL"
+    >
 
+    </div>
 
-<div class="clothing-field">
 
-<label>
-REQUESTED SIZE
-</label>
+    <div class="clothing-field">
 
-<input
-id="clothing-special-size"
-type="text"
-placeholder="Example: 3XL"
->
+    <label>
+    COLOR
+    </label>
 
-</div>
+    <input
+    id="clothing-special-color"
+    type="text"
+    value="${esc(selectedColor)}"
+    >
 
+    </div>
 
-<div class="clothing-field">
 
-<label>
-COLOR
-</label>
+    <div class="clothing-field">
 
-<input
-id="clothing-special-color"
-type="text"
-value="${esc(selectedColor)}"
->
+    <label>
+    NOTES OPTIONAL
+    </label>
 
-</div>
+    <textarea
+    id="clothing-special-notes"
+    ></textarea>
 
+    </div>
 
-<div class="clothing-field">
 
-<label>
-NOTES OPTIONAL
-</label>
+    <button
+    id="clothing-submit-special-size"
+    class="clothing-submit-request"
+    type="button"
+    >
+    SEND SIZE REQUEST
+    </button>
 
-<textarea
-id="clothing-special-notes"
-></textarea>
 
-</div>
+    <div
+    id="clothing-request-status"
+    class="clothing-request-status"
+    ></div>
 
+    </div>
+    `
+    :
+    ''
+    }
 
-<button
-id="clothing-submit-special-size"
-class="clothing-submit-request"
-type="button"
->
-SEND SIZE REQUEST
-</button>
+    </div>
 
+    </div>
 
-<div
-id="clothing-request-status"
-class="clothing-request-status"
-></div>
+    `;
 
-</div>
-`
-:
-''
-}
 
-</div>
+    $('clothing-back-to-shop')
+    ?.addEventListener(
+    'click',
+    ()=>{
 
-</div>
+    detail.classList.remove(
+    'show'
+    );
 
-`;
+    $('clothing-store-home')
+    ?.classList.remove(
+    'hide'
+    );
 
+    window.scrollTo({
+    top:0,
+    behavior:
+    'smooth'
+    });
 
-$('clothing-back-to-shop')
-?.addEventListener(
-'click',
-()=>{
+    }
+    );
 
-detail.classList.remove(
-'show'
-);
 
-$('clothing-store-home')
-?.classList.remove(
-'hide'
-);
+    qa(
+    '#clothing-thumbs .clothing-thumb'
+    )
+    .forEach(
+    thumb=>{
 
-window.scrollTo({
-top:0,
-behavior:
-'smooth'
-});
+    thumb.addEventListener(
+    'click',
+    ()=>{
 
-}
-);
+    const main =
+    $('clothing-main-image');
 
 
-qa(
-'#clothing-thumbs .clothing-thumb'
-)
-.forEach(
-thumb=>{
+    if(main)
+    main.src =
+    thumb.dataset.image ||
+    main.src;
 
-thumb.addEventListener(
-'click',
-()=>{
 
-const main =
-$('clothing-main-image');
+    qa(
+    '#clothing-thumbs .clothing-thumb'
+    )
+    .forEach(
+    item=>
+    item.classList.remove(
+    'active'
+    )
+    );
 
 
-if(main)
-main.src =
-thumb.dataset.image ||
-main.src;
+    thumb.classList.add(
+    'active'
+    );
 
+    }
+    );
 
-qa(
-'#clothing-thumbs .clothing-thumb'
-)
-.forEach(
-item=>
-item.classList.remove(
-'active'
-)
-);
+    }
+    );
 
 
-thumb.classList.add(
-'active'
-);
+    wireClothingChoices(
+    data,
+    selectedColor,
+    selectedSize
+    );
 
-}
-);
 
-}
-);
+    $('clothing-special-size-toggle')
+    ?.addEventListener(
+    'click',
+    ()=>{
 
+    $('clothing-special-form')
+    ?.classList.toggle(
+    'show'
+    );
 
-wireClothingChoices(
-data,
-selectedColor,
-selectedSize
-);
+    }
+    );
 
 
-$('clothing-special-size-toggle')
-?.addEventListener(
-'click',
-()=>{
+    $('clothing-submit-special-size')
+    ?.addEventListener(
+    'click',
+    ()=>submitClothingSpecialSize(
+    product
+    )
+    );
 
-$('clothing-special-form')
-?.classList.toggle(
-'show'
-);
+    }
 
-}
-);
 
+    function wireClothingChoices(
+    data,
+    startingColor,
+    startingSize
+    ){
 
-$('clothing-submit-special-size')
-?.addEventListener(
-'click',
-()=>submitClothingSpecialSize(
-product
-)
-);
+    const variants =
+    Array.isArray(
+    data.variants
+    )
+    ?
+    data.variants
+    :
+    [];
 
-}
 
+    let selectedColor =
+    startingColor ||
+    '';
 
-function wireClothingChoices(
-data,
-startingColor,
-startingSize
-){
+    let selectedSize =
+    startingSize ||
+    '';
 
-const variants =
-Array.isArray(
-data.variants
-)
-?
-data.variants
-:
-[];
 
+    function renderSizes(){
 
-let selectedColor =
-startingColor ||
-'';
+    const container =
+    $('clothing-size-options');
 
-let selectedSize =
-startingSize ||
-'';
 
+    if(!container)
+    return;
 
-function renderSizes(){
 
-const container =
-$('clothing-size-options');
+    const sizes =
+    clothingSizesForColor(
+    variants,
+    selectedColor
+    );
 
 
-if(!container)
-return;
+    if(
+    !sizes.includes(
+    selectedSize
+    )
+    ){
 
+    selectedSize =
+    sizes[0] ||
+    '';
 
-const sizes =
-clothingSizesForColor(
-variants,
-selectedColor
-);
+    }
 
 
-if(
-!sizes.includes(
-selectedSize
-)
-){
+    container.innerHTML =
+    sizes.length
+    ?
+    sizes.map(
+    size=>`
+    <button
+    type="button"
+    class="clothing-choice ${
+    size === selectedSize
+    ?
+    'active'
+    :
+    ''
+    }"
+    data-size="${esc(size)}"
+    >
+    ${esc(size)}
+    </button>
+    `
+    ).join('')
+    :
+    `
+    <span class="muted">
+    NO AVAILABLE SIZES FOR THIS COLOR.
+    </span>
+    `;
 
-selectedSize =
-sizes[0] ||
-'';
 
-}
+    qa(
+    '#clothing-size-options .clothing-choice'
+    )
+    .forEach(
+    button=>{
 
+    button.addEventListener(
+    'click',
+    ()=>{
 
-container.innerHTML =
-sizes.length
-?
-sizes.map(
-size=>`
-<button
-type="button"
-class="clothing-choice ${
-size === selectedSize
-?
-'active'
-:
-''
-}"
-data-size="${esc(size)}"
->
-${esc(size)}
-</button>
-`
-).join('')
-:
-`
-<span class="muted">
-NO AVAILABLE SIZES FOR THIS COLOR.
-</span>
-`;
+    selectedSize =
+    button.dataset.size ||
+    '';
 
 
-qa(
-'#clothing-size-options .clothing-choice'
-)
-.forEach(
-button=>{
+    qa(
+    '#clothing-size-options .clothing-choice'
+    )
+    .forEach(
+    item=>
+    item.classList.remove(
+    'active'
+    )
+    );
 
-button.addEventListener(
-'click',
-()=>{
 
-selectedSize =
-button.dataset.size ||
-'';
+    button.classList.add(
+    'active'
+    );
 
 
-qa(
-'#clothing-size-options .clothing-choice'
-)
-.forEach(
-item=>
-item.classList.remove(
-'active'
-)
-);
+    updateAddState();
 
+    }
+    );
 
-button.classList.add(
-'active'
-);
+    }
+    );
 
 
-updateAddState();
+    updateAddState();
 
-}
-);
+    }
 
-}
-);
 
+    function updateAddState(){
 
-updateAddState();
+    const add =
+    $('clothing-add-to-cart');
 
-}
 
+    if(!add)
+    return;
 
-function updateAddState(){
 
-const add =
-$('clothing-add-to-cart');
+    const variant =
+    clothingSelectedVariant(
+    variants,
+    selectedColor,
+    selectedSize
+    );
 
 
-if(!add)
-return;
+    add.disabled =
+    !variant;
 
 
-const variant =
-clothingSelectedVariant(
-variants,
-selectedColor,
-selectedSize
-);
+    add.onclick =
+    variant
+    ?
+    ()=>addClothingToCart(
+    data,
+    variant
+    )
+    :
+    null;
 
 
-add.disabled =
-!variant;
+    const specialColor =
+    $('clothing-special-color');
 
 
-add.onclick =
-variant
-?
-()=>addClothingToCart(
-data,
-variant
-)
-:
-null;
+    if(
+    specialColor &&
+    !specialColor.value
+    )
+    specialColor.value =
+    selectedColor;
 
+    }
 
-const specialColor =
-$('clothing-special-color');
 
+    qa(
+    '#clothing-color-options .clothing-choice'
+    )
+    .forEach(
+    button=>{
 
-if(
-specialColor &&
-!specialColor.value
-)
-specialColor.value =
-selectedColor;
+    button.addEventListener(
+    'click',
+    ()=>{
 
-}
+    selectedColor =
+    button.dataset.color ||
+    '';
 
+    selectedSize =
+    '';
 
-qa(
-'#clothing-color-options .clothing-choice'
-)
-.forEach(
-button=>{
 
-button.addEventListener(
-'click',
-()=>{
+    qa(
+    '#clothing-color-options .clothing-choice'
+    )
+    .forEach(
+    item=>
+    item.classList.remove(
+    'active'
+    )
+    );
 
-selectedColor =
-button.dataset.color ||
-'';
 
-selectedSize =
-'';
+    button.classList.add(
+    'active'
+    );
 
 
-qa(
-'#clothing-color-options .clothing-choice'
-)
-.forEach(
-item=>
-item.classList.remove(
-'active'
-)
-);
+    const specialColor =
+    $('clothing-special-color');
 
 
-button.classList.add(
-'active'
-);
+    if(specialColor)
+    specialColor.value =
+    selectedColor;
 
 
-const specialColor =
-$('clothing-special-color');
+    renderSizes();
 
+    }
+    );
 
-if(specialColor)
-specialColor.value =
-selectedColor;
+    }
+    );
 
 
-renderSizes();
+    renderSizes();
 
-}
-);
+    }
 
-}
-);
 
+    function addClothingToCart(
+    data,
+    variant
+    ){
 
-renderSizes();
+    const product =
+    data.product ||
+    {};
 
-}
 
+    const existing =
+    clothingCart.find(
+    item=>
+    Number(
+    item.product_id
+    ) ===
+    Number(
+    product.id
+    )
+    &&
+    Number(
+    item.variant_id
+    ) ===
+    Number(
+    variant.id
+    )
+    );
 
-function addClothingToCart(
-data,
-variant
-){
 
-const product =
-data.product ||
-{};
+    if(existing){
 
+    existing.quantity =
+    Number(
+    existing.quantity ||
+    1
+    ) + 1;
 
-const existing =
-clothingCart.find(
-item=>
-Number(
-item.product_id
-) ===
-Number(
-product.id
-)
-&&
-Number(
-item.variant_id
-) ===
-Number(
-variant.id
-)
-);
+    }
+    else{
 
+    clothingCart.push({
+    product_id:
+    product.id,
 
-if(existing){
+    variant_id:
+    variant.id,
 
-existing.quantity =
-Number(
-existing.quantity ||
-1
-) + 1;
+    name:
+    product.name ||
+    'The Code Clothing',
 
-}
-else{
+    color:
+    variant.color ||
+    '',
 
-clothingCart.push({
-product_id:
-product.id,
+    size:
+    variant.size ||
+    '',
 
-variant_id:
-variant.id,
+    price_cents:
+    Number(
+    product.effective_price_cents ??
+    product.price_cents ??
+    0
+    ),
 
-name:
-product.name ||
-'The Code Clothing',
+    image_url:
+    product.cover_image_url ||
+    '',
 
-color:
-variant.color ||
-'',
+    quantity:
+    1
+    });
 
-size:
-variant.size ||
-'',
+    }
 
-price_cents:
-Number(
-product.effective_price_cents ??
-product.price_cents ??
-0
-),
 
-image_url:
-product.cover_image_url ||
-'',
+    clothingSaveCart();
 
-quantity:
-1
-});
+    updateClothingCartCount();
 
-}
 
+    const button =
+    $('clothing-add-to-cart');
 
-clothingSaveCart();
 
-updateClothingCartCount();
+    if(button){
 
+    const old =
+    button.textContent;
 
-const button =
-$('clothing-add-to-cart');
 
+    button.textContent =
+    'ADDED TO CART';
 
-if(button){
 
-const old =
-button.textContent;
+    setTimeout(
+    ()=>{
 
+    button.textContent =
+    old;
 
-button.textContent =
-'ADDED TO CART';
+    },
+    1200
+    );
 
+    }
 
-setTimeout(
-()=>{
 
-button.textContent =
-old;
+    trackAnalytics(
+    'clothing_add_to_cart',
+    {
+    section:
+    'the-code-clothing',
 
-},
-1200
-);
+    itemId:
+    product.id,
 
-}
+    itemTitle:
+    product.name ||
+    'Clothing Product',
 
+    detail:{
+    color:
+    variant.color ||
+    '',
 
-trackAnalytics(
-'clothing_add_to_cart',
-{
-section:
-'the-code-clothing',
+    size:
+    variant.size ||
+    ''
+    }
+    }
+    );
 
-itemId:
-product.id,
+    }
 
-itemTitle:
-product.name ||
-'Clothing Product',
 
-detail:{
-color:
-variant.color ||
-'',
 
-size:
-variant.size ||
-''
-}
-}
-);
+    function restoreClothingCheckoutCustomer(){
 
-}
+    let saved = {};
 
 
+    try{
 
-function restoreClothingCheckoutCustomer(){
+    saved =
+    JSON.parse(
+    localStorage.getItem(
+    CLOTHING_CHECKOUT_CUSTOMER_KEY
+    ) ||
+    '{}'
+    ) ||
+    {};
 
-let saved = {};
+    }catch{
 
+    saved = {};
 
-try{
+    }
 
-saved =
-JSON.parse(
-localStorage.getItem(
-CLOTHING_CHECKOUT_CUSTOMER_KEY
-) ||
-'{}'
-) ||
-{};
 
-}catch{
+    const name =
+    $('clothing-checkout-name');
 
-saved = {};
+    const email =
+    $('clothing-checkout-email');
 
-}
 
+    if(
+    name &&
+    !name.value
+    )
+    name.value =
+    String(
+    saved.name ||
+    ''
+    );
 
-const name =
-$('clothing-checkout-name');
 
-const email =
-$('clothing-checkout-email');
+    if(
+    email &&
+    !email.value
+    )
+    email.value =
+    String(
+    saved.email ||
+    ''
+    );
 
+    }
 
-if(
-name &&
-!name.value
-)
-name.value =
-String(
-saved.name ||
-''
-);
 
+    function saveClothingCheckoutCustomer(
+    name,
+    email
+    ){
 
-if(
-email &&
-!email.value
-)
-email.value =
-String(
-saved.email ||
-''
-);
+    try{
 
-}
+    localStorage.setItem(
+    CLOTHING_CHECKOUT_CUSTOMER_KEY,
+    JSON.stringify({
+    name,
+    email
+    })
+    );
 
+    }catch{}
 
-function saveClothingCheckoutCustomer(
-name,
-email
-){
+    }
 
-try{
 
-localStorage.setItem(
-CLOTHING_CHECKOUT_CUSTOMER_KEY,
-JSON.stringify({
-name,
-email
-})
-);
+    function setClothingCheckoutStatus(
+    message,
+    type=''
+    ){
 
-}catch{}
+    const status =
+    $('clothing-checkout-status');
 
-}
 
+    if(!status)
+    return;
 
-function setClothingCheckoutStatus(
-message,
-type=''
-){
 
-const status =
-$('clothing-checkout-status');
+    status.textContent =
+    String(
+    message ||
+    ''
+    );
 
 
-if(!status)
-return;
+    status.classList.remove(
+    'success',
+    'waiting'
+    );
 
 
-status.textContent =
-String(
-message ||
-''
-);
+    if(type)
+    status.classList.add(
+    type
+    );
 
+    }
 
-status.classList.remove(
-'success',
-'waiting'
-);
 
+    function setClothingCheckoutButtonState(
+    busy=false
+    ){
 
-if(type)
-status.classList.add(
-type
-);
+    const button =
+    $('clothing-secure-checkout');
 
-}
 
+    if(!button)
+    return;
 
-function setClothingCheckoutButtonState(
-busy=false
-){
 
-const button =
-$('clothing-secure-checkout');
+    button.disabled =
+    busy ||
+    !clothingCart.length;
 
 
-if(!button)
-return;
+    button.textContent =
+    busy
+    ?
+    'OPENING SECURE CHECKOUT...'
+    :
+    'SECURE CHECKOUT';
 
+    }
 
-button.disabled =
-busy ||
-!clothingCart.length;
 
+    function isClothingCheckoutEmail(
+    value
+    ){
 
-button.textContent =
-busy
-?
-'OPENING SECURE CHECKOUT...'
-:
-'SECURE CHECKOUT';
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    .test(
+    String(
+    value ||
+    ''
+    ).trim()
+    );
 
-}
+    }
 
 
-function isClothingCheckoutEmail(
-value
-){
+    async function startClothingStripeCheckout(){
 
-return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-.test(
-String(
-value ||
-''
-).trim()
-);
+    clothingLoadCart();
 
-}
 
+    if(
+    !clothingCart.length
+    ){
 
-async function startClothingStripeCheckout(){
+    setClothingCheckoutStatus(
+    'YOUR CART IS EMPTY.'
+    );
 
-clothingLoadCart();
+    setClothingCheckoutButtonState();
 
+    return;
 
-if(
-!clothingCart.length
-){
+    }
 
-setClothingCheckoutStatus(
-'YOUR CART IS EMPTY.'
-);
 
-setClothingCheckoutButtonState();
+    const name =
+    String(
+    $('clothing-checkout-name')
+    ?.value ||
+    ''
+    ).trim();
 
-return;
+    const email =
+    String(
+    $('clothing-checkout-email')
+    ?.value ||
+    ''
+    ).trim();
 
-}
 
+    if(!name){
 
-const name =
-String(
-$('clothing-checkout-name')
-?.value ||
-''
-).trim();
+    setClothingCheckoutStatus(
+    'ADD YOUR NAME TO CONTINUE.'
+    );
 
-const email =
-String(
-$('clothing-checkout-email')
-?.value ||
-''
-).trim();
+    return;
 
+    }
 
-if(!name){
 
-setClothingCheckoutStatus(
-'ADD YOUR NAME TO CONTINUE.'
-);
+    if(
+    !isClothingCheckoutEmail(
+    email
+    )
+    ){
 
-return;
+    setClothingCheckoutStatus(
+    'ADD A VALID EMAIL TO CONTINUE.'
+    );
 
-}
+    return;
 
+    }
 
-if(
-!isClothingCheckoutEmail(
-email
-)
-){
 
-setClothingCheckoutStatus(
-'ADD A VALID EMAIL TO CONTINUE.'
-);
+    saveClothingCheckoutCustomer(
+    name,
+    email
+    );
 
-return;
+    crmRememberIdentity(
+    email,
+    name,
+    'clothing_checkout'
+    );
 
-}
 
+    setClothingCheckoutStatus(
+    'CREATING YOUR SECURE STRIPE CHECKOUT...',
+    'waiting'
+    );
 
-saveClothingCheckoutCustomer(
-name,
-email
-);
 
-crmRememberIdentity(
-email,
-name,
-'clothing_checkout'
-);
+    setClothingCheckoutButtonState(
+    true
+    );
 
 
-setClothingCheckoutStatus(
-'CREATING YOUR SECURE STRIPE CHECKOUT...',
-'waiting'
-);
+    const items =
+    clothingCart.map(
+    item=>({
+    product_id:
+    Number(
+    item.product_id
+    ),
 
+    variant_id:
+    Number(
+    item.variant_id
+    ),
 
-setClothingCheckoutButtonState(
-true
-);
+    quantity:
+    Math.max(
+    1,
+    Number(
+    item.quantity ||
+    1
+    )
+    )
+    })
+    );
 
 
-const items =
-clothingCart.map(
-item=>({
-product_id:
-Number(
-item.product_id
-),
+    try{
 
-variant_id:
-Number(
-item.variant_id
-),
+    const result =
+    await clothingFetchJSON(
+    '/payments/checkout/clothing',
+    {
+    method:
+    'POST',
 
-quantity:
-Math.max(
-1,
-Number(
-item.quantity ||
-1
-)
-)
-})
-);
+    body:
+    JSON.stringify({
+    name,
+    email,
+    items,
+    visitor_id:
+    BOSS_VISITOR_ID
+    })
+    }
+    );
 
 
-try{
+    const checkoutUrl =
+    String(
+    result.checkout_url ||
+    ''
+    ).trim();
 
-const result =
-await clothingFetchJSON(
-'/payments/checkout/clothing',
-{
-method:
-'POST',
 
-body:
-JSON.stringify({
-name,
-email,
-items,
-visitor_id:
-BOSS_VISITOR_ID
-})
-}
-);
+    if(!checkoutUrl){
 
+    throw new Error(
+    'Stripe checkout did not return a checkout link.'
+    );
 
-const checkoutUrl =
-String(
-result.checkout_url ||
-''
-).trim();
+    }
 
 
-if(!checkoutUrl){
+    try{
 
-throw new Error(
-'Stripe checkout did not return a checkout link.'
-);
+    sessionStorage.setItem(
+    CLOTHING_PENDING_CHECKOUT_KEY,
+    JSON.stringify({
+    type:
+    'clothing',
 
-}
+    created_at:
+    Date.now()
+    })
+    );
 
+    }catch{}
 
-try{
 
-sessionStorage.setItem(
-CLOTHING_PENDING_CHECKOUT_KEY,
-JSON.stringify({
-type:
-'clothing',
+    trackAnalytics(
+    'clothing_checkout_started',
+    {
+    section:
+    'the-code-clothing',
 
-created_at:
-Date.now()
-})
-);
+    itemTitle:
+    'Clothing Checkout',
 
-}catch{}
+    detail:{
+    item_count:
+    items.length
+    }
+    }
+    );
 
 
-trackAnalytics(
-'clothing_checkout_started',
-{
-section:
-'the-code-clothing',
+    window.location.href =
+    checkoutUrl;
 
-itemTitle:
-'Clothing Checkout',
+    }catch(error){
 
-detail:{
-item_count:
-items.length
-}
-}
-);
+    setClothingCheckoutButtonState(
+    false
+    );
 
 
-window.location.href =
-checkoutUrl;
+    setClothingCheckoutStatus(
+    error.message ||
+    'COULD NOT START SECURE CHECKOUT.'
+    );
 
-}catch(error){
+    }
 
-setClothingCheckoutButtonState(
-false
-);
+    }
 
 
-setClothingCheckoutStatus(
-error.message ||
-'COULD NOT START SECURE CHECKOUT.'
-);
+    async function clothingPaymentSessionStatus(
+    sessionId
+    ){
 
-}
+    return await clothingFetchJSON(
+    `/payments/session/${encodeURIComponent(
+    sessionId
+    )}`
+    );
 
-}
+    }
 
 
-async function clothingPaymentSessionStatus(
-sessionId
-){
+    async function waitForClothingPaymentConfirmation(
+    sessionId
+    ){
 
-return await clothingFetchJSON(
-`/payments/session/${encodeURIComponent(
-sessionId
-)}`
-);
+    let latest = null;
 
-}
 
+    for(
+    let attempt = 0;
+    attempt < 8;
+    attempt += 1
+    ){
 
-async function waitForClothingPaymentConfirmation(
-sessionId
-){
+    try{
 
-let latest = null;
+    const result =
+    await clothingPaymentSessionStatus(
+    sessionId
+    );
 
 
-for(
-let attempt = 0;
-attempt < 8;
-attempt += 1
-){
+    latest =
+    result.data ||
+    null;
 
-try{
 
-const result =
-await clothingPaymentSessionStatus(
-sessionId
-);
+    if(
+    latest?.status ===
+    'paid'
+    )
+    return latest;
 
+    }catch(error){
 
-latest =
-result.data ||
-null;
+    if(
+    attempt === 7
+    )
+    throw error;
 
+    }
 
-if(
-latest?.status ===
-'paid'
-)
-return latest;
 
-}catch(error){
+    await new Promise(
+    resolve=>
+    setTimeout(
+    resolve,
+    1200
+    )
+    );
 
-if(
-attempt === 7
-)
-throw error;
+    }
 
-}
 
+    return latest;
 
-await new Promise(
-resolve=>
-setTimeout(
-resolve,
-1200
-)
-);
+    }
 
-}
 
+    function clearClothingCheckoutReturnFromUrl(){
 
-return latest;
+    try{
 
-}
+    const current =
+    new URL(
+    window.location.href
+    );
 
 
-function clearClothingCheckoutReturnFromUrl(){
+    current.searchParams.delete(
+    'checkout'
+    );
 
-try{
+    current.searchParams.delete(
+    'session_id'
+    );
 
-const current =
-new URL(
-window.location.href
-);
 
+    const next =
+    current.pathname +
+    (
+    current.search
+    ?
+    current.search
+    :
+    ''
+    ) +
+    current.hash;
 
-current.searchParams.delete(
-'checkout'
-);
 
-current.searchParams.delete(
-'session_id'
-);
+    window.history.replaceState(
+    {},
+    document.title,
+    next
+    );
 
+    }catch{}
 
-const next =
-current.pathname +
-(
-current.search
-?
-current.search
-:
-''
-) +
-current.hash;
+    }
 
 
-window.history.replaceState(
-{},
-document.title,
-next
-);
+    async function handleStripeCheckoutReturn(){
 
-}catch{}
+    let current;
 
-}
 
+    try{
 
-async function handleStripeCheckoutReturn(){
+    current =
+    new URL(
+    window.location.href
+    );
 
-let current;
+    }catch{
 
+    return;
 
-try{
+    }
 
-current =
-new URL(
-window.location.href
-);
 
-}catch{
+    const checkout =
+    String(
+    current.searchParams.get(
+    'checkout'
+    ) ||
+    ''
+    ).toLowerCase();
 
-return;
 
-}
+    if(
+    !checkout
+    )
+    return;
 
 
-const checkout =
-String(
-current.searchParams.get(
-'checkout'
-) ||
-''
-).toLowerCase();
+    let pendingClothing = null;
 
+    let pendingSupport = null;
 
-if(
-!checkout
-)
-return;
 
+    try{
 
-let pendingClothing = null;
+    pendingClothing =
+    JSON.parse(
+    sessionStorage.getItem(
+    CLOTHING_PENDING_CHECKOUT_KEY
+    ) ||
+    'null'
+    );
 
-let pendingSupport = null;
+    }catch{}
 
 
-try{
+    try{
 
-pendingClothing =
-JSON.parse(
-sessionStorage.getItem(
-CLOTHING_PENDING_CHECKOUT_KEY
-) ||
-'null'
-);
+    pendingSupport =
+    JSON.parse(
+    sessionStorage.getItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    ) ||
+    'null'
+    );
 
-}catch{}
+    }catch{}
 
 
-try{
+    if(
+    checkout ===
+    'cancel'
+    ){
 
-pendingSupport =
-JSON.parse(
-sessionStorage.getItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-) ||
-'null'
-);
+    if(
+    String(
+    pendingClothing?.type||
+    ''
+    )===
+    'clothing'
+    ){
 
-}catch{}
+    const screen =
+    ensureClothingStore();
 
 
-if(
-checkout ===
-'cancel'
-){
+    showScreen(
+    screen
+    );
 
-if(
-String(
-pendingClothing?.type||
-''
-)===
-'clothing'
-){
 
-const screen =
-ensureClothingStore();
+    openClothingCart();
 
 
-showScreen(
-screen
-);
+    setClothingCheckoutStatus(
+    'CHECKOUT CANCELED. YOUR CART IS STILL HERE.'
+    );
 
 
-openClothingCart();
+    try{
 
+    sessionStorage.removeItem(
+    CLOTHING_PENDING_CHECKOUT_KEY
+    );
 
-setClothingCheckoutStatus(
-'CHECKOUT CANCELED. YOUR CART IS STILL HERE.'
-);
+    }catch{}
 
 
-try{
+    clearClothingCheckoutReturnFromUrl();
 
-sessionStorage.removeItem(
-CLOTHING_PENDING_CHECKOUT_KEY
-);
+    return;
 
-}catch{}
+    }
 
 
-clearClothingCheckoutReturnFromUrl();
+    if(
+    String(
+    pendingSupport?.type||
+    ''
+    )===
+    'support'
+    ){
 
-return;
+    const screen =
+    ensureSupportScreen();
 
-}
 
+    showScreen(
+    screen
+    );
 
-if(
-String(
-pendingSupport?.type||
-''
-)===
-'support'
-){
 
-const screen =
-ensureSupportScreen();
+    const status =
+    $('support-status');
 
 
-showScreen(
-screen
-);
+    if(status){
 
+    status.className=
+    'support-status error';
 
-const status =
-$('support-status');
+    status.textContent=
+    'CHECKOUT CANCELED. NO SUPPORT PAYMENT WAS COMPLETED.';
 
+    }
 
-if(status){
 
-status.className=
-'support-status error';
+    const button =
+    $('support-submit');
 
-status.textContent=
-'CHECKOUT CANCELED. NO SUPPORT PAYMENT WAS COMPLETED.';
 
-}
+    if(button){
 
+    button.disabled=
+    false;
 
-const button =
-$('support-submit');
+    button.textContent=
+    'CONTINUE TO SUPPORT';
 
+    }
 
-if(button){
 
-button.disabled=
-false;
+    try{
 
-button.textContent=
-'CONTINUE TO SUPPORT';
+    sessionStorage.removeItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    );
 
-}
+    }catch{}
 
 
-try{
+    clearClothingCheckoutReturnFromUrl();
 
-sessionStorage.removeItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-);
+    return;
 
-}catch{}
+    }
 
 
-clearClothingCheckoutReturnFromUrl();
+    /*
+    A course checkout has its own return handler in
+    decision-makers-courses.js. Do not clear its URL here.
+    */
+    return;
 
-return;
+    }
 
-}
 
+    if(
+    checkout !==
+    'success'
+    )
+    return;
 
-/*
-A course checkout has its own return handler in
-decision-makers-courses.js. Do not clear its URL here.
-*/
-return;
 
-}
+    const sessionId =
+    String(
+    current.searchParams.get(
+    'session_id'
+    ) ||
+    ''
+    ).trim();
 
 
-if(
-checkout !==
-'success'
-)
-return;
+    if(!sessionId){
 
+    return;
 
-const sessionId =
-String(
-current.searchParams.get(
-'session_id'
-) ||
-''
-).trim();
+    }
 
 
-if(!sessionId){
+    let firstStatus = null;
 
-return;
 
-}
+    try{
 
+    firstStatus =
+    await clothingPaymentSessionStatus(
+    sessionId
+    );
 
-let firstStatus = null;
+    }catch{
 
+    return;
 
-try{
+    }
 
-firstStatus =
-await clothingPaymentSessionStatus(
-sessionId
-);
 
-}catch{
+    const payment =
+    firstStatus?.data ||
+    null;
 
-return;
 
-}
+    if(
+    payment?.order_type ===
+    'clothing'
+    ){
 
+    const screen =
+    ensureClothingStore();
 
-const payment =
-firstStatus?.data ||
-null;
 
+    showScreen(
+    screen
+    );
 
-if(
-payment?.order_type ===
-'clothing'
-){
 
-const screen =
-ensureClothingStore();
+    openClothingCart();
 
 
-showScreen(
-screen
-);
+    setClothingCheckoutStatus(
+    'PAYMENT RECEIVED. CONFIRMING YOUR ORDER...',
+    'waiting'
+    );
 
 
-openClothingCart();
+    try{
 
+    const confirmed =
+    await waitForClothingPaymentConfirmation(
+    sessionId
+    );
 
-setClothingCheckoutStatus(
-'PAYMENT RECEIVED. CONFIRMING YOUR ORDER...',
-'waiting'
-);
 
+    if(
+    confirmed?.status ===
+    'paid'
+    ){
 
-try{
+    clothingCart = [];
 
-const confirmed =
-await waitForClothingPaymentConfirmation(
-sessionId
-);
+    clothingSaveCart();
 
+    renderClothingCart();
 
-if(
-confirmed?.status ===
-'paid'
-){
+    updateClothingCartCount();
 
-clothingCart = [];
 
-clothingSaveCart();
+    setClothingCheckoutStatus(
+    'PAYMENT CONFIRMED. THANK YOU FOR YOUR ORDER.',
+    'success'
+    );
 
-renderClothingCart();
 
-updateClothingCartCount();
+    trackAnalytics(
+    'clothing_checkout_completed',
+    {
+    section:
+    'the-code-clothing',
 
+    itemId:
+    confirmed.id,
 
-setClothingCheckoutStatus(
-'PAYMENT CONFIRMED. THANK YOU FOR YOUR ORDER.',
-'success'
-);
+    itemTitle:
+    'Clothing Order',
 
+    detail:{
+    amount_cents:
+    confirmed.amount_cents ||
+    0
+    }
+    }
+    );
 
-trackAnalytics(
-'clothing_checkout_completed',
-{
-section:
-'the-code-clothing',
+    }
+    else{
 
-itemId:
-confirmed.id,
+    setClothingCheckoutStatus(
+    'YOUR PAYMENT WAS RECEIVED. STRIPE IS STILL CONFIRMING THE ORDER. YOU CAN CLOSE THIS MESSAGE AND CHECK BACK SHORTLY.',
+    'waiting'
+    );
 
-itemTitle:
-'Clothing Order',
+    }
 
-detail:{
-amount_cents:
-confirmed.amount_cents ||
-0
-}
-}
-);
+    }catch(error){
 
-}
-else{
+    setClothingCheckoutStatus(
+    'PAYMENT RETURNED SUCCESSFULLY. ORDER CONFIRMATION IS STILL PROCESSING.',
+    'waiting'
+    );
 
-setClothingCheckoutStatus(
-'YOUR PAYMENT WAS RECEIVED. STRIPE IS STILL CONFIRMING THE ORDER. YOU CAN CLOSE THIS MESSAGE AND CHECK BACK SHORTLY.',
-'waiting'
-);
+    }
 
-}
 
-}catch(error){
+    try{
 
-setClothingCheckoutStatus(
-'PAYMENT RETURNED SUCCESSFULLY. ORDER CONFIRMATION IS STILL PROCESSING.',
-'waiting'
-);
+    sessionStorage.removeItem(
+    CLOTHING_PENDING_CHECKOUT_KEY
+    );
 
-}
+    }catch{}
 
 
-try{
+    clearClothingCheckoutReturnFromUrl();
 
-sessionStorage.removeItem(
-CLOTHING_PENDING_CHECKOUT_KEY
-);
+    return;
 
-}catch{}
+    }
 
 
-clearClothingCheckoutReturnFromUrl();
+    if(
+    payment?.order_type ===
+    'support'
+    ){
 
-return;
+    const screen =
+    ensureSupportScreen();
 
-}
 
+    showScreen(
+    screen
+    );
 
-if(
-payment?.order_type ===
-'support'
-){
 
-const screen =
-ensureSupportScreen();
+    const status =
+    $('support-status');
 
 
-showScreen(
-screen
-);
+    if(status){
 
+    status.className=
+    'support-status';
 
-const status =
-$('support-status');
+    status.textContent=
+    'PAYMENT RECEIVED. CONFIRMING YOUR SUPPORT...';
 
+    }
 
-if(status){
 
-status.className=
-'support-status';
+    let confirmed =
+    payment;
 
-status.textContent=
-'PAYMENT RECEIVED. CONFIRMING YOUR SUPPORT...';
 
-}
+    for(
+    let attempt = 0;
+    attempt < 8;
+    attempt += 1
+    ){
 
+    if(
+    confirmed?.status ===
+    'paid'
+    )
+    break;
 
-let confirmed =
-payment;
 
+    try{
 
-for(
-let attempt = 0;
-attempt < 8;
-attempt += 1
-){
+    const check =
+    await clothingPaymentSessionStatus(
+    sessionId
+    );
 
-if(
-confirmed?.status ===
-'paid'
-)
-break;
 
+    confirmed =
+    check?.data ||
+    confirmed;
 
-try{
+    }catch{}
 
-const check =
-await clothingPaymentSessionStatus(
-sessionId
-);
 
+    if(
+    confirmed?.status ===
+    'paid'
+    )
+    break;
 
-confirmed =
-check?.data ||
-confirmed;
 
-}catch{}
+    await new Promise(
+    resolve=>
+    setTimeout(
+    resolve,
+    1200
+    )
+    );
 
+    }
 
-if(
-confirmed?.status ===
-'paid'
-)
-break;
 
+    if(
+    confirmed?.status ===
+    'paid'
+    ){
 
-await new Promise(
-resolve=>
-setTimeout(
-resolve,
-1200
-)
-);
+    const amountCents =
+    Number(
+    confirmed.amount_cents||
+    pendingSupport?.amount_cents||
+    0
+    );
 
-}
 
+    const shirtEligible =
+    amountCents>=5000||
+    Boolean(
+    pendingSupport?.shirt_reward_eligible
+    );
 
-if(
-confirmed?.status ===
-'paid'
-){
 
-const amountCents =
-Number(
-confirmed.amount_cents||
-pendingSupport?.amount_cents||
-0
-);
+    if(status){
 
+    status.className=
+    'support-status success';
 
-const shirtEligible =
-amountCents>=5000||
-Boolean(
-pendingSupport?.shirt_reward_eligible
-);
+    status.textContent=
+    shirtEligible
+    ?
+    'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA. CLAIM YOUR BLACK SUPPORTER SHIRT BELOW.'
+    :
+    'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA.';
 
+    }
 
-if(status){
 
-status.className=
-'support-status success';
+    if(
+    shirtEligible
+    ){
 
-status.textContent=
-shirtEligible
-?
-'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA. CLAIM YOUR BLACK SUPPORTER SHIRT BELOW.'
-:
-'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA.';
+    const shirtPending = {
+    ...(pendingSupport||{}),
+    type:'support',
+    amount_cents:
+    amountCents,
+    shirt_reward_eligible:true,
+    payment_confirmed:true,
+    stripe_session_id:
+    sessionId
+    };
 
-}
+    try{
 
+    sessionStorage.setItem(
+    SUPPORT_PENDING_CHECKOUT_KEY,
+    JSON.stringify(
+    shirtPending
+    )
+    );
 
-if(
-shirtEligible
-){
+    }catch{}
 
-const shirtPending = {
-...(pendingSupport||{}),
-type:'support',
-amount_cents:
-amountCents,
-shirt_reward_eligible:true,
-payment_confirmed:true,
-stripe_session_id:
-sessionId
-};
+    showSupportShirtClaim(
+    shirtPending
+    );
 
-try{
+    }
 
-sessionStorage.setItem(
-SUPPORT_PENDING_CHECKOUT_KEY,
-JSON.stringify(
-shirtPending
-)
-);
 
-}catch{}
+    trackAnalytics(
+    'support_checkout_completed',
+    {
 
-showSupportShirtClaim(
-shirtPending
-);
+    section:
+    'support',
 
-}
+    itemId:
+    confirmed.support_contribution_id||
+    '',
 
+    itemTitle:
+    'SUPPORT IS A DECISION',
 
-trackAnalytics(
-'support_checkout_completed',
-{
+    valueNumeric:
+    amountCents/
+    100,
 
-section:
-'support',
+    detail:{
 
-itemId:
-confirmed.support_contribution_id||
-'',
+    shirt_eligible:
+    shirtEligible
 
-itemTitle:
-'SUPPORT IS A DECISION',
+    }
 
-valueNumeric:
-amountCents/
-100,
+    }
+    );
 
-detail:{
 
-shirt_eligible:
-shirtEligible
+    selectedSupportAmountCents=
+    0;
 
-}
 
-}
-);
+    if(
+    $('support-custom-amount')
+    )
+    $('support-custom-amount')
+    .value=
+    '';
 
 
-selectedSupportAmountCents=
-0;
+    if(
+    $('support-message')
+    )
+    $('support-message')
+    .value=
+    '';
 
 
-if(
-$('support-custom-amount')
-)
-$('support-custom-amount')
-.value=
-'';
+    updateSupportSelection();
 
+    }
+    else{
 
-if(
-$('support-message')
-)
-$('support-message')
-.value=
-'';
+    if(status){
 
+    status.className=
+    'support-status success';
 
-updateSupportSelection();
+    status.textContent=
+    'YOUR PAYMENT RETURNED SUCCESSFULLY. STRIPE IS STILL CONFIRMING YOUR SUPPORT.';
 
-}
-else{
+    }
 
-if(status){
+    }
 
-status.className=
-'support-status success';
 
-status.textContent=
-'YOUR PAYMENT RETURNED SUCCESSFULLY. STRIPE IS STILL CONFIRMING YOUR SUPPORT.';
+    const button =
+    $('support-submit');
 
-}
 
-}
+    if(button){
 
+    button.disabled=
+    false;
 
-const button =
-$('support-submit');
+    button.textContent=
+    'CONTINUE TO SUPPORT';
 
+    }
 
-if(button){
 
-button.disabled=
-false;
+    if(
+    !(
+    confirmed?.status ===
+    'paid'&&
+    (
+    Number(
+    confirmed.amount_cents||
+    pendingSupport?.amount_cents||
+    0
+    )>=5000||
+    Boolean(
+    pendingSupport?.shirt_reward_eligible
+    )
+    )
+    )
+    ){
 
-button.textContent=
-'CONTINUE TO SUPPORT';
+    try{
 
-}
+    sessionStorage.removeItem(
+    SUPPORT_PENDING_CHECKOUT_KEY
+    );
 
+    }catch{}
 
-if(
-!(
-confirmed?.status ===
-'paid'&&
-(
-Number(
-confirmed.amount_cents||
-pendingSupport?.amount_cents||
-0
-)>=5000||
-Boolean(
-pendingSupport?.shirt_reward_eligible
-)
-)
-)
-){
+    }
 
-try{
 
-sessionStorage.removeItem(
-SUPPORT_PENDING_CHECKOUT_KEY
-);
+    clearClothingCheckoutReturnFromUrl();
 
-}catch{}
+    return;
 
-}
+    }
 
 
-clearClothingCheckoutReturnFromUrl();
+    /*
+    Decision Makers course checkout is intentionally handled by
+    decision-makers-courses.js so its payment success can route
+    the customer into My Courses.
+    */
+    return;
 
-return;
+    }
 
-}
 
+    function openClothingCart(){
 
-/*
-Decision Makers course checkout is intentionally handled by
-decision-makers-courses.js so its payment success can route
-the customer into My Courses.
-*/
-return;
+    clothingLoadCart();
 
-}
+    renderClothingCart();
 
+    restoreClothingCheckoutCustomer();
 
-function openClothingCart(){
+    setClothingCheckoutButtonState();
 
-clothingLoadCart();
 
-renderClothingCart();
+    $('clothing-cart-panel')
+    ?.classList.add(
+    'show'
+    );
 
-restoreClothingCheckoutCustomer();
 
-setClothingCheckoutButtonState();
+    document.body.style.overflow =
+    'hidden';
 
+    }
 
-$('clothing-cart-panel')
-?.classList.add(
-'show'
-);
 
+    function closeClothingCart(){
 
-document.body.style.overflow =
-'hidden';
+    $('clothing-cart-panel')
+    ?.classList.remove(
+    'show'
+    );
 
-}
 
+    document.body.style.overflow =
+    '';
 
-function closeClothingCart(){
+    }
 
-$('clothing-cart-panel')
-?.classList.remove(
-'show'
-);
 
+    function renderClothingCart(){
 
-document.body.style.overflow =
-'';
+    const items =
+    $('clothing-cart-items');
 
-}
+    const total =
+    $('clothing-cart-total');
 
 
-function renderClothingCart(){
+    if(
+    !items ||
+    !total
+    )
+    return;
 
-const items =
-$('clothing-cart-items');
 
-const total =
-$('clothing-cart-total');
+    if(
+    !clothingCart.length
+    ){
 
+    items.innerHTML = `
+    <div class="clothing-empty">
+    YOUR CART IS EMPTY.
+    </div>
+    `;
 
-if(
-!items ||
-!total
-)
-return;
 
+    total.innerHTML = `
+    <span>TOTAL</span>
+    <strong>$0.00</strong>
+    `;
 
-if(
-!clothingCart.length
-){
 
-items.innerHTML = `
-<div class="clothing-empty">
-YOUR CART IS EMPTY.
-</div>
-`;
+    updateClothingCartCount();
 
+    setClothingCheckoutButtonState();
 
-total.innerHTML = `
-<span>TOTAL</span>
-<strong>$0.00</strong>
-`;
+    return;
 
+    }
 
-updateClothingCartCount();
 
-setClothingCheckoutButtonState();
+    items.innerHTML =
+    clothingCart.map(
+    (
+    item,
+    index
+    )=>`
 
-return;
+    <div class="clothing-cart-item">
 
-}
+    ${
+    item.image_url
+    ?
+    `
+    <img
+    src="${esc(item.image_url)}"
+    alt=""
+    >
+    `
+    :
+    `
+    <div></div>
+    `
+    }
 
+    <div>
 
-items.innerHTML =
-clothingCart.map(
-(
-item,
-index
-)=>`
+    <strong>
+    ${esc(item.name)}
+    </strong>
 
-<div class="clothing-cart-item">
+    <small>
+    ${esc(item.color)} • ${esc(item.size)} • QTY ${esc(item.quantity)}
+    </small>
 
-${
-item.image_url
-?
-`
-<img
-src="${esc(item.image_url)}"
-alt=""
->
-`
-:
-`
-<div></div>
-`
-}
+    <small>
+    ${moneyFromCents(
+    Number(
+    item.price_cents ||
+    0
+    ) *
+    Number(
+    item.quantity ||
+    1
+    )
+    )}
+    </small>
 
-<div>
+    </div>
 
-<strong>
-${esc(item.name)}
-</strong>
 
-<small>
-${esc(item.color)} • ${esc(item.size)} • QTY ${esc(item.quantity)}
-</small>
+    <button
+    type="button"
+    class="clothing-cart-remove"
+    data-cart-index="${index}"
+    >
+    REMOVE
+    </button>
 
-<small>
-${moneyFromCents(
-Number(
-item.price_cents ||
-0
-) *
-Number(
-item.quantity ||
-1
-)
-)}
-</small>
+    </div>
 
-</div>
+    `
+    ).join('');
 
 
-<button
-type="button"
-class="clothing-cart-remove"
-data-cart-index="${index}"
->
-REMOVE
-</button>
+    qa(
+    '#clothing-cart-items .clothing-cart-remove'
+    )
+    .forEach(
+    button=>{
 
-</div>
+    button.addEventListener(
+    'click',
+    ()=>{
 
-`
-).join('');
+    const index =
+    Number(
+    button.dataset.cartIndex
+    );
 
 
-qa(
-'#clothing-cart-items .clothing-cart-remove'
-)
-.forEach(
-button=>{
+    if(
+    Number.isInteger(
+    index
+    )
+    )
+    clothingCart.splice(
+    index,
+    1
+    );
 
-button.addEventListener(
-'click',
-()=>{
 
-const index =
-Number(
-button.dataset.cartIndex
-);
+    clothingSaveCart();
 
+    renderClothingCart();
 
-if(
-Number.isInteger(
-index
-)
-)
-clothingCart.splice(
-index,
-1
-);
+    updateClothingCartCount();
 
+    }
+    );
 
-clothingSaveCart();
+    }
+    );
 
-renderClothingCart();
 
-updateClothingCartCount();
+    const totalCents =
+    clothingCart.reduce(
+    (
+    sum,
+    item
+    )=>
+    sum +
+    (
+    Number(
+    item.price_cents ||
+    0
+    ) *
+    Number(
+    item.quantity ||
+    1
+    )
+    ),
+    0
+    );
 
-}
-);
 
-}
-);
+    total.innerHTML = `
+    <span>
+    TOTAL
+    </span>
 
+    <strong>
+    ${moneyFromCents(
+    totalCents
+    )}
+    </strong>
+    `;
 
-const totalCents =
-clothingCart.reduce(
-(
-sum,
-item
-)=>
-sum +
-(
-Number(
-item.price_cents ||
-0
-) *
-Number(
-item.quantity ||
-1
-)
-),
-0
-);
 
+    updateClothingCartCount();
 
-total.innerHTML = `
-<span>
-TOTAL
-</span>
+    setClothingCheckoutButtonState();
 
-<strong>
-${moneyFromCents(
-totalCents
-)}
-</strong>
-`;
+    }
 
 
-updateClothingCartCount();
+    async function submitClothingSpecialSize(
+    product
+    ){
 
-setClothingCheckoutButtonState();
+    const status =
+    $('clothing-request-status');
 
-}
 
+    if(status)
+    status.textContent =
+    'SENDING...';
 
-async function submitClothingSpecialSize(
-product
-){
 
-const status =
-$('clothing-request-status');
+    const name =
+    String(
+    $('clothing-special-name')
+    ?.value ||
+    ''
+    ).trim();
 
+    const email =
+    String(
+    $('clothing-special-email')
+    ?.value ||
+    ''
+    ).trim();
 
-if(status)
-status.textContent =
-'SENDING...';
+    const requestedSize =
+    String(
+    $('clothing-special-size')
+    ?.value ||
+    ''
+    ).trim();
 
+    const color =
+    String(
+    $('clothing-special-color')
+    ?.value ||
+    ''
+    ).trim();
 
-const name =
-String(
-$('clothing-special-name')
-?.value ||
-''
-).trim();
+    const notes =
+    String(
+    $('clothing-special-notes')
+    ?.value ||
+    ''
+    ).trim();
 
-const email =
-String(
-$('clothing-special-email')
-?.value ||
-''
-).trim();
 
-const requestedSize =
-String(
-$('clothing-special-size')
-?.value ||
-''
-).trim();
+    if(
+    !name ||
+    !email ||
+    !requestedSize
+    ){
 
-const color =
-String(
-$('clothing-special-color')
-?.value ||
-''
-).trim();
+    if(status)
+    status.textContent =
+    'ADD YOUR NAME, EMAIL AND REQUESTED SIZE.';
 
-const notes =
-String(
-$('clothing-special-notes')
-?.value ||
-''
-).trim();
+    return;
 
+    }
 
-if(
-!name ||
-!email ||
-!requestedSize
-){
 
-if(status)
-status.textContent =
-'ADD YOUR NAME, EMAIL AND REQUESTED SIZE.';
+    try{
 
-return;
+    const result =
+    await clothingFetchJSON(
+    '/clothing/special-size-requests',
+    {
+    method:
+    'POST',
 
-}
+    body:
+    JSON.stringify({
+    product_id:
+    product.id,
 
+    product_name:
+    product.name ||
+    '',
 
-try{
+    name,
 
-const result =
-await clothingFetchJSON(
-'/clothing/special-size-requests',
-{
-method:
-'POST',
+    email,
 
-body:
-JSON.stringify({
-product_id:
-product.id,
+    requested_size:
+    requestedSize,
 
-product_name:
-product.name ||
-'',
+    color,
 
-name,
+    notes
+    })
+    }
+    );
 
-email,
 
-requested_size:
-requestedSize,
+    if(status)
+    status.textContent =
+    result.message ||
+    'YOUR SIZE REQUEST WAS SENT.';
 
-color,
 
-notes
-})
-}
-);
+    const sizeInput =
+    $('clothing-special-size');
 
 
-if(status)
-status.textContent =
-result.message ||
-'YOUR SIZE REQUEST WAS SENT.';
+    if(sizeInput)
+    sizeInput.value =
+    '';
 
 
-const sizeInput =
-$('clothing-special-size');
+    const notesInput =
+    $('clothing-special-notes');
 
 
-if(sizeInput)
-sizeInput.value =
-'';
+    if(notesInput)
+    notesInput.value =
+    '';
 
 
-const notesInput =
-$('clothing-special-notes');
+    trackAnalytics(
+    'clothing_special_size_request',
+    {
+    section:
+    'the-code-clothing',
 
+    itemId:
+    product.id,
 
-if(notesInput)
-notesInput.value =
-'';
+    itemTitle:
+    product.name ||
+    'Clothing Product',
 
+    detail:{
+    requested_size:
+    requestedSize,
 
-trackAnalytics(
-'clothing_special_size_request',
-{
-section:
-'the-code-clothing',
+    color
+    }
+    }
+    );
 
-itemId:
-product.id,
+    }catch(error){
 
-itemTitle:
-product.name ||
-'Clothing Product',
+    if(status)
+    status.textContent =
+    error.message ||
+    'COULD NOT SEND YOUR REQUEST.';
 
-detail:{
-requested_size:
-requestedSize,
+    }
 
-color
-}
-}
-);
+    }
 
-}catch(error){
 
-if(status)
-status.textContent =
-error.message ||
-'COULD NOT SEND YOUR REQUEST.';
+    /* =========================================================
+       MAGAZINE + CLOTHING HOME LINKS
+    ========================================================= */
 
-}
+    function setupInternalLinks(){
 
-}
+    const magazineButton=
+    q(
+    '.app-menu a[href*="magazine.bosscodemedia.com"]'
+    );
 
 
-/* =========================================================
-   MAGAZINE + CLOTHING HOME LINKS
-========================================================= */
+    if(
+    magazineButton
+    ){
 
-function setupInternalLinks(){
+    magazineButton.addEventListener(
+    'click',
+    e=>{
 
-const magazineButton=
-q(
-'.app-menu a[href*="magazine.bosscodemedia.com"]'
-);
+    e.preventDefault();
 
+    e.stopImmediatePropagation();
 
-if(
-magazineButton
-){
 
-magazineButton.addEventListener(
-'click',
-e=>{
+    openWithPromo(
 
-e.preventDefault();
+    'magazine',
 
-e.stopImmediatePropagation();
+    openMagazineHub
 
+    );
 
-openWithPromo(
+    },
+    true
+    );
 
-'magazine',
+    }
 
-openMagazineHub
 
-);
+    if(
+    clothingButton
+    ){
 
-},
-true
-);
+    clothingButton.addEventListener(
+    'click',
+    e=>{
 
-}
+    e.preventDefault();
 
+    e.stopImmediatePropagation();
 
-if(
-clothingButton
-){
 
-clothingButton.addEventListener(
-'click',
-e=>{
+    openWithPromo(
 
-e.preventDefault();
+    'the-code-clothing',
 
-e.stopImmediatePropagation();
+    openClothingStore
 
+    );
 
-openWithPromo(
+    },
+    true
+    );
 
-'the-code-clothing',
+    }
 
-openClothingStore
+    }
 
-);
 
-},
-true
-);
+    /* =========================================================
+       KEEP BOTTOM RETURN HOME
+       AT THE TRUE END OF EACH PAGE
+    ========================================================= */
 
-}
+    function repositionReturnHomeButtons(){
 
-}
+    for(
+    const screenId of[
 
+    'boss-bite-screen',
 
-/* =========================================================
-   KEEP BOTTOM RETURN HOME
-   AT THE TRUE END OF EACH PAGE
-========================================================= */
+    'boss-code-tv-screen',
 
-function repositionReturnHomeButtons(){
+    'decision-makers-screen',
 
-for(
-const screenId of[
+    'boss-checkin-screen',
 
-'boss-bite-screen',
+    'music-screen',
 
-'boss-code-tv-screen',
+    'contact-screen',
 
-'decision-makers-screen',
+    'support-screen'
 
-'boss-checkin-screen',
+    ]
+    ){
 
-'music-screen',
+    const screen=
+    $(screenId);
 
-'contact-screen',
 
-'support-screen'
+    if(!screen)
+    continue;
 
-]
-){
 
-const screen=
-$(screenId);
+    const button=
+    screen.querySelector(
+    '.boss-return-home-bottom'
+    );
 
 
-if(!screen)
-continue;
+    if(!button)
+    continue;
 
 
-const button=
-screen.querySelector(
-'.boss-return-home-bottom'
-);
+    const footer=
+    screen.querySelector(
+    '.boss-footer, .contact-footer'
+    );
 
 
-if(!button)
-continue;
+    if(footer){
 
+    if(
+    button.nextElementSibling!==
+    footer
+    ){
 
-const footer=
-screen.querySelector(
-'.boss-footer, .contact-footer'
-);
+    footer.insertAdjacentElement(
+    'beforebegin',
+    button
+    );
 
+    }
 
-if(footer){
+    }
+    else if(
+    screen.lastElementChild!==
+    button
+    ){
 
-if(
-button.nextElementSibling!==
-footer
-){
+    screen.appendChild(
+    button
+    );
 
-footer.insertAdjacentElement(
-'beforebegin',
-button
-);
+    }
 
-}
+    }
 
-}
-else if(
-screen.lastElementChild!==
-button
-){
+    }
 
-screen.appendChild(
-button
-);
 
-}
+    let returnHomeRepositionTimer=
+    0;
 
-}
 
-}
+    const returnHomeObserver=
+    new MutationObserver(
+    ()=>{
 
+    clearTimeout(
+    returnHomeRepositionTimer
+    );
 
-let returnHomeRepositionTimer=
-0;
 
+    returnHomeRepositionTimer=
+    setTimeout(
 
-const returnHomeObserver=
-new MutationObserver(
-()=>{
+    repositionReturnHomeButtons,
 
-clearTimeout(
-returnHomeRepositionTimer
-);
+    40
 
+    );
 
-returnHomeRepositionTimer=
-setTimeout(
+    }
+    );
 
-repositionReturnHomeButtons,
 
-40
+    for(
+    const screen of
+    qa(
+    '.screen'
+    )
+    ){
 
-);
+    returnHomeObserver.observe(
 
-}
-);
+    screen,
 
+    {
 
-for(
-const screen of
-qa(
-'.screen'
-)
-){
+    childList:
+    true,
 
-returnHomeObserver.observe(
+    subtree:
+    true
 
-screen,
+    }
 
-{
+    );
 
-childList:
-true,
+    }
 
-subtree:
-true
 
-}
+    /* =========================================================
+       HOME FEATURED CONTENT
+       BACKEND MANAGED
+    ========================================================= */
 
-);
+    let homeFeatures=[];
 
-}
 
+    function homeFeatureYoutubeId(url=''){
 
-/* =========================================================
-   CLOUD SYNC
-========================================================= */
+    const s=
+    String(
+    url||
+    ''
+    )
+    .trim();
 
-async function sync(){
 
-const results=
-await Promise.allSettled([
+    if(!s)
+    return'';
 
-api(
-'/videos?all=1'
-),
 
-api(
-'/magazines'
-),
+    const patterns=[
 
-api(
-'/artists'
-),
+    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
 
-api(
-'/artist-gallery'
-),
+    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{6,})/,
 
-api(
-'/artist-music-videos'
-),
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{6,})/,
 
-api(
-'/releases'
-),
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/,
 
-api(
-'/tracks'
-),
+    /youtube\.com\/live\/([a-zA-Z0-9_-]{6,})/
 
-api(
-'/boss-bite-gallery'
-),
+    ];
 
-api(
-'/boss-bite-locations'
-),
 
-api(
-'/daily-decisions'
-),
+    for(const pattern of patterns){
 
-api(
-'/checkin-questions'
-),
+    const match=
+    s.match(
+    pattern
+    );
 
-api(
-'/decision-maker-sessions'
-),
 
-api(
-'/decision-maker-challenges'
-),
+    if(
+    match?.[1]
+    )
+    return match[1];
 
-api(
-'/promo-ads'
-)
+    }
 
-]);
 
+    return'';
 
-const[
+    }
 
-videosResult,
 
-magazinesResult,
+    function normalizeHomeFeatureDestination(value=''){
 
-artistsResult,
+    return String(
+    value||
+    ''
+    )
 
-artistGalleryResult,
+    .trim()
 
-artistVideosResult,
+    .toLowerCase()
 
-releasesResult,
+    .replace(
+    /&/g,
+    'and'
+    )
 
-tracksResult,
+    .replace(
+    /[^a-z0-9]+/g,
+    '-'
+    )
 
-galleryResult,
+    .replace(
+    /^-+|-+$/g,
+    ''
+    );
 
-locationsResult,
+    }
 
-dailyResult,
 
-checkinResult,
+    function homeFeatureMediaMarkup(feature){
 
-sessionsResult,
+    const mediaUrl=
+    String(
+    feature.media_url||
+    feature.mediaUrl||
+    ''
+    )
+    .trim();
 
-challengesResult,
 
-promoResult
+    if(!mediaUrl)
+    return'';
 
-]=
-results;
 
+    const title=
+    feature.title||
+    'B.O.S.S CODE GO FEATURE';
 
-/* VIDEOS */
 
-if(
-videosResult.status===
-'fulfilled'
-){
+    const mediaType=
+    String(
+    feature.media_type||
+    feature.mediaType||
+    'image'
+    )
+    .toLowerCase();
 
-applyVideos(
-videosResult.value
-);
 
-}
-else{
+    if(
+    mediaType===
+    'video'
+    ){
 
-console.warn(
+    const youtubeId=
+    homeFeatureYoutubeId(
+    mediaUrl
+    );
 
-'Video sync failed',
 
-videosResult.reason
+    if(youtubeId){
 
-);
+    return`
 
-}
+    <div class="home-feature-media">
 
+    <img
+    src="https://img.youtube.com/vi/${esc(youtubeId)}/hqdefault.jpg"
+    alt="${esc(title)}"
+    loading="lazy"
+    >
 
-/* MAGAZINES */
+    </div>
 
-if(
-magazinesResult.status===
-'fulfilled'
-){
+    `;
 
-applyMagazines(
-magazinesResult.value
-);
+    }
 
-}
-else{
 
-magazineIssues=[
-BUILT_MAGAZINE
-];
+    const poster=
+    String(
+    feature.poster_url||
+    feature.posterUrl||
+    ''
+    )
+    .trim();
 
 
-currentMagazineUrl=
-BUILT_MAGAZINE.magazineUrl;
+    return`
 
-}
+    <div class="home-feature-media">
 
+    <video
+    src="${esc(mediaUrl)}"
+    ${poster?`poster="${esc(poster)}"`:''}
+    muted
+    playsinline
+    preload="metadata"
+    aria-label="${esc(title)}"
+    ></video>
 
-/* MUSIC */
+    </div>
 
-if(
+    `;
 
-artistsResult.status===
-'fulfilled'
+    }
 
-&&
 
-releasesResult.status===
-'fulfilled'
+    return`
 
-&&
+    <div class="home-feature-media">
 
-tracksResult.status===
-'fulfilled'
+    <img
+    src="${esc(mediaUrl)}"
+    alt="${esc(title)}"
+    loading="lazy"
+    >
 
-){
+    </div>
 
-applyMusic(
+    `;
 
-artistsResult.value,
+    }
 
-releasesResult.value,
 
-tracksResult.value
+    function openHomeFeatureDestination(feature){
 
-);
+    const destination=
+    normalizeHomeFeatureDestination(
+    feature.destination||
+    feature.destination_type||
+    feature.destinationType||
+    ''
+    );
 
-}
-else{
 
-artists=[];
+    const customUrl=
+    String(
+    feature.destination_url||
+    feature.destinationUrl||
+    feature.cta_url||
+    feature.ctaUrl||
+    feature.link_url||
+    ''
+    )
+    .trim();
 
-activeArtist=
-null;
 
+    trackAnalytics(
+    'home_feature_click',
+    {
 
-clearMusicArtistUI();
+    section:
+    'home',
 
-}
+    itemId:
+    feature.id||
+    feature.slot||
+    '',
 
+    itemTitle:
+    feature.title||
+    'HOME FEATURE',
 
-/* ARTIST GALLERY */
+    detail:{
 
-if(
-artistGalleryResult.status===
-'fulfilled'
-){
+    slot:
+    Number(
+    feature.slot||
+    0
+    ),
 
-applyArtistGallery(
-artistGalleryResult.value
-);
+    destination:
+    destination||
+    'custom'
 
-}
-else{
+    }
 
-artistGalleryRows=[];
+    }
+    );
 
-renderArtistGallery();
 
-}
+    if(
+    [
+    'boss-bite',
+    'the-boss-bite',
+    'bossbite'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
+    openWithPromo(
+    'boss-bite',
+    ()=>{
 
-/* ARTIST MUSIC VIDEOS */
+    showScreen(
+    bite
+    );
 
-if(
-artistVideosResult.status===
-'fulfilled'
-){
+    initMap();
 
-applyArtistMusicVideos(
-artistVideosResult.value
-);
+    }
+    );
 
-}
-else{
+    return;
 
-artistMusicVideoRows=[];
+    }
 
-renderArtistMusicVideos();
 
-}
+    if(
+    [
+    'boss-code-tv',
+    'boss-tv',
+    'tv'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
+    openWithPromo(
+    'boss-code-tv',
+    ()=>showScreen(
+    tv
+    )
+    );
 
-/* BOSS BITE GALLERY */
+    return;
 
-if(
-galleryResult.status===
-'fulfilled'
-){
+    }
 
-applyGallery(
-galleryResult.value
-);
 
-}
-else{
+    if(
+    [
+    'decision-makers',
+    'decision-maker',
+    'decisionmakers'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
-galleryPhotos=[];
+    renderDecisionMakers();
 
-buildGallery();
+    openWithPromo(
+    'decision-makers',
+    ()=>showScreen(
+    dm
+    )
+    );
 
-}
+    return;
 
+    }
 
-/* BOSS BITE LOCATIONS */
 
-if(
-locationsResult.status===
-'fulfilled'
-){
+    if(
+    [
+    'music',
+    'boss-code-music'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
-applyLocations(
-locationsResult.value
-);
+    openWithPromo(
+    'music',
+    ()=>{
 
-}
-else{
+    showScreen(
+    music
+    );
 
-restaurants.splice(
+    renderArtists();
 
-0,
+    }
+    );
 
-restaurants.length
+    return;
 
-);
+    }
 
 
-buildRestaurantList();
+    if(
+    [
+    'boss-check-in',
+    'boss-checkin',
+    'check-in',
+    'checkin'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
-}
+    openWithPromo(
+    'boss-checkin',
+    ()=>{
 
+    showScreen(
+    check
+    );
 
-/* DAILY DECISION */
+    showCheckIntro();
 
-if(
-dailyResult.status===
-'fulfilled'
-){
+    }
+    );
 
-applyDailyDecisions(
-dailyResult.value
-);
+    return;
 
-}
-else{
+    }
 
-daily=[
-...builtDaily
-];
 
+    if(
+    [
+    'magazine',
+    'boss-code-magazine'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
-renderDaily();
+    openWithPromo(
+    'magazine',
+    openMagazineHub
+    );
 
-}
+    return;
 
+    }
 
-/* CHECK IN */
 
-if(
-checkinResult.status===
-'fulfilled'
-){
+    if(
+    [
+    'the-code-clothing',
+    'code-clothing',
+    'clothing',
+    'shop'
+    ]
+    .includes(
+    destination
+    )
+    ){
 
-applyCheckinQuestions(
-checkinResult.value
-);
+    openWithPromo(
+    'the-code-clothing',
+    openClothingStore
+    );
 
-}
-else{
+    return;
 
-for(
-const category of[
+    }
 
-'APPROVAL',
 
-'COMPARISON',
+    if(
+    destination===
+    'support'||
+    destination===
+    'support-is-a-decision'
+    ){
 
-'CONFIDENCE',
+    showScreen(
+    support
+    );
 
-'ACTION'
+    return;
 
-]
-){
+    }
 
-bank[
-category
-]=
-[
-...builtBank[
-category
-]
-];
 
-}
+    if(
+    destination===
+    'contact'
+    ){
 
-}
+    showScreen(
+    contact
+    );
 
+    return;
 
-/* DECISION MAKER SESSIONS */
+    }
 
-if(
-sessionsResult.status===
-'fulfilled'
-){
 
-applyDMSessions(
-sessionsResult.value
-);
+    if(
+    destination===
+    'home'
+    ){
 
-}
-else{
+    showScreen(
+    home
+    );
 
-dmSessions=[];
+    return;
 
-buildDMSessions();
+    }
 
-}
 
+    if(customUrl){
 
-/* DECISION MAKER CHALLENGES */
+    openInternalWeb(
+    feature.title||
+    'B.O.S.S CODE GO FEATURE',
+    customUrl
+    );
 
-if(
-challengesResult.status===
-'fulfilled'
-){
+    }
 
-applyDMChallenges(
-challengesResult.value
-);
+    }
 
-}
-else{
 
-dmChallenges=[];
+    function clearHomeFeatures(){
 
-buildDMChallenges();
+    homeFeatures=[];
 
-}
 
+    for(
+    let slot=1;
+    slot<=4;
+    slot++
+    ){
 
-/* PROMOTIONAL ADS */
+    const card=
+    $(
+    `home-feature-slot-${slot}`
+    );
 
-if(
-promoResult.status===
-'fulfilled'
-){
 
-applyPromoAds(
-promoResult.value
-);
+    if(!card)
+    continue;
 
-}
-else{
 
-promoAds=[];
+    card.innerHTML='';
 
-promoAdsLoaded=
-true;
+    card.hidden=
+    true;
 
-}
+    }
 
 
-repositionReturnHomeButtons();
+    const top=
+    $('home-featured-top');
 
+    const bottom=
+    $('home-featured-bottom');
 
-const failed=
-results.filter(
-x=>
-x.status===
-'rejected'
-);
 
+    if(top)
+    top.hidden=
+    true;
 
-if(
-failed.length
-){
 
-console.warn(
+    if(bottom)
+    bottom.hidden=
+    true;
 
-`${failed.length} B.O.S.S CODE GO cloud request(s) failed.`
+    }
 
-);
 
-}
-else{
+    function renderHomeFeatures(){
 
-console.info(
-'B.O.S.S CODE GO synced from Admin.'
-);
+    for(
+    let slot=1;
+    slot<=4;
+    slot++
+    ){
 
-}
+    const card=
+    $(
+    `home-feature-slot-${slot}`
+    );
 
-}
 
+    if(!card)
+    continue;
 
-/* =========================================================
-   OPTIONAL DEMOGRAPHICS PROMPT
-========================================================= */
 
-function scheduleDemographicsPrompt(
-attempt=0
-){
+    const feature=
+    homeFeatures.find(
+    item=>
+    Number(
+    item.slot||
+    0
+    )===
+    slot
+    );
 
-setTimeout(
-()=>{
 
-let prompted=
-false;
+    if(!feature){
 
+    card.innerHTML='';
 
-try{
+    card.hidden=
+    true;
 
-prompted=
-localStorage.getItem(
-DEMOGRAPHICS_PROMPT_KEY
-)===
-'1';
+    continue;
 
-}catch{}
+    }
 
 
-if(prompted)
-return;
+    const title=
+    String(
+    feature.title||
+    ''
+    )
+    .trim();
 
 
-const dailyOpen=
-$('daily-decision-modal')
-?.classList
-.contains(
-'open'
-);
+    const supportingText=
+    String(
+    feature.supporting_text||
+    feature.supportingText||
+    feature.description||
+    ''
+    )
+    .trim();
 
 
-const adOpen=
-$('boss-promo-ad-overlay')
-?.classList
-.contains(
-'open'
-);
+    const kicker=
+    String(
+    feature.kicker||
+    feature.label||
+    'FEATURED'
+    )
+    .trim();
 
 
-if(
+    const ctaText=
+    String(
+    feature.cta_text||
+    feature.ctaText||
+    'EXPLORE'
+    )
+    .trim();
 
-dailyOpen
 
-||
+    card.innerHTML=`
 
-adOpen
+    ${homeFeatureMediaMarkup(
+    feature
+    )}
 
-||
+    <div class="home-feature-content">
 
-!home?.classList.contains(
-'active-screen'
-)
+    ${kicker?`
 
-){
+    <span class="home-feature-kicker">
+    ${esc(kicker)}
+    </span>
 
-if(
-attempt<
-12
-){
+    `:''}
 
-scheduleDemographicsPrompt(
-attempt+
-1
-);
+    ${title?`
 
-}
+    <h2 class="home-feature-title">
+    ${esc(title)}
+    </h2>
 
+    `:''}
 
-return;
+    ${supportingText?`
 
-}
+    <p class="home-feature-text">
+    ${esc(supportingText)}
+    </p>
 
+    `:''}
 
-showDemographicsPromptIfAppropriate();
+    <button
+    class="home-feature-cta"
+    type="button"
+    data-home-feature-cta="1"
+    >
+    ${esc(ctaText)}
+    </button>
 
-},
+    </div>
 
-attempt===
-0
-?
-5000
-:
-2000
+    `;
 
-);
 
-}
+    card.hidden=
+    false;
 
 
-/* =========================================================
-   START APP
-========================================================= */
+    const button=
+    q(
+    '[data-home-feature-cta="1"]',
+    card
+    );
 
-setupInternalLinks();
 
+    if(button){
 
-handleStripeCheckoutReturn();
+    button.addEventListener(
+    'click',
+    ()=>openHomeFeatureDestination(
+    feature
+    )
+    );
 
+    }
 
-renderDaily();
+    }
 
-renderArtists();
 
-renderTracks();
+    const top=
+    $('home-featured-top');
 
-renderReleases();
+    const bottom=
+    $('home-featured-bottom');
 
-renderDecisionMakers();
 
-buildEpisodes();
+    if(top){
 
-loadFirstEpisode();
+    top.hidden=
+    !(
+    !$('home-feature-slot-1')?.hidden
+    ||
+    !$('home-feature-slot-2')?.hidden
+    );
 
-buildTv();
+    }
 
-buildGallery();
 
-buildRestaurantList();
+    if(bottom){
 
-repositionReturnHomeButtons();
+    bottom.hidden=
+    !(
+    !$('home-feature-slot-3')?.hidden
+    ||
+    !$('home-feature-slot-4')?.hidden
+    );
 
+    }
 
-trackAnalytics(
-'app_visit',
-{
+    }
 
-section:
-'app',
 
-itemTitle:
-'B.O.S.S CODE GO APP OPEN'
+    function applyHomeFeatures(rows){
 
-}
-);
+    homeFeatures=
+    (
+    rows||
+    []
+    )
 
+    .filter(
+    row=>
+    Number(
+    row.published??
+    1
+    )===
+    1
+    )
 
-sync();
+    .filter(
+    row=>{
 
+    const slot=
+    Number(
+    row.slot||
+    0
+    );
 
-scheduleDemographicsPrompt();
+    return(
+    slot>=1
+    &&
+    slot<=4
+    );
+
+    }
+    )
+
+    .sort(
+    (a,b)=>
+
+    Number(
+    a.slot||
+    0
+    )
+    -
+    Number(
+    b.slot||
+    0
+    )
+
+    ||
+
+    Number(
+    a.sort_order||
+    0
+    )
+    -
+    Number(
+    b.sort_order||
+    0
+    )
+
+    ||
+
+    Number(
+    b.id||
+    0
+    )
+    -
+    Number(
+    a.id||
+    0
+    )
+    );
+
+
+    renderHomeFeatures();
+
+    }
+
+
+    /* =========================================================
+       CLOUD SYNC
+    ========================================================= */
+
+    async function sync(){
+
+    const results=
+    await Promise.allSettled([
+
+    api(
+    '/videos?all=1'
+    ),
+
+    api(
+    '/magazines'
+    ),
+
+    api(
+    '/artists'
+    ),
+
+    api(
+    '/artist-gallery'
+    ),
+
+    api(
+    '/artist-music-videos'
+    ),
+
+    api(
+    '/releases'
+    ),
+
+    api(
+    '/tracks'
+    ),
+
+    api(
+    '/boss-bite-gallery'
+    ),
+
+    api(
+    '/boss-bite-locations'
+    ),
+
+    api(
+    '/daily-decisions'
+    ),
+
+    api(
+    '/checkin-questions'
+    ),
+
+    api(
+    '/decision-maker-sessions'
+    ),
+
+    api(
+    '/decision-maker-challenges'
+    ),
+
+    api(
+    '/promo-ads'
+    ),
+
+    api(
+    '/home-features'
+    )
+
+    ]);
+
+
+    const[
+
+    videosResult,
+
+    magazinesResult,
+
+    artistsResult,
+
+    artistGalleryResult,
+
+    artistVideosResult,
+
+    releasesResult,
+
+    tracksResult,
+
+    galleryResult,
+
+    locationsResult,
+
+    dailyResult,
+
+    checkinResult,
+
+    sessionsResult,
+
+    challengesResult,
+
+    promoResult,
+
+    homeFeaturesResult
+
+    ]=
+    results;
+
+
+    /* VIDEOS */
+
+    if(
+    videosResult.status===
+    'fulfilled'
+    ){
+
+    applyVideos(
+    videosResult.value
+    );
+
+    }
+    else{
+
+    console.warn(
+
+    'Video sync failed',
+
+    videosResult.reason
+
+    );
+
+    }
+
+
+    /* MAGAZINES */
+
+    if(
+    magazinesResult.status===
+    'fulfilled'
+    ){
+
+    applyMagazines(
+    magazinesResult.value
+    );
+
+    }
+    else{
+
+    magazineIssues=[
+    BUILT_MAGAZINE
+    ];
+
+
+    currentMagazineUrl=
+    BUILT_MAGAZINE.magazineUrl;
+
+    }
+
+
+    /* MUSIC */
+
+    if(
+
+    artistsResult.status===
+    'fulfilled'
+
+    &&
+
+    releasesResult.status===
+    'fulfilled'
+
+    &&
+
+    tracksResult.status===
+    'fulfilled'
+
+    ){
+
+    applyMusic(
+
+    artistsResult.value,
+
+    releasesResult.value,
+
+    tracksResult.value
+
+    );
+
+    }
+    else{
+
+    artists=[];
+
+    activeArtist=
+    null;
+
+
+    clearMusicArtistUI();
+
+    }
+
+
+    /* ARTIST GALLERY */
+
+    if(
+    artistGalleryResult.status===
+    'fulfilled'
+    ){
+
+    applyArtistGallery(
+    artistGalleryResult.value
+    );
+
+    }
+    else{
+
+    artistGalleryRows=[];
+
+    renderArtistGallery();
+
+    }
+
+
+    /* ARTIST MUSIC VIDEOS */
+
+    if(
+    artistVideosResult.status===
+    'fulfilled'
+    ){
+
+    applyArtistMusicVideos(
+    artistVideosResult.value
+    );
+
+    }
+    else{
+
+    artistMusicVideoRows=[];
+
+    renderArtistMusicVideos();
+
+    }
+
+
+    /* BOSS BITE GALLERY */
+
+    if(
+    galleryResult.status===
+    'fulfilled'
+    ){
+
+    applyGallery(
+    galleryResult.value
+    );
+
+    }
+    else{
+
+    galleryPhotos=[];
+
+    buildGallery();
+
+    }
+
+
+    /* BOSS BITE LOCATIONS */
+
+    if(
+    locationsResult.status===
+    'fulfilled'
+    ){
+
+    applyLocations(
+    locationsResult.value
+    );
+
+    }
+    else{
+
+    restaurants.splice(
+
+    0,
+
+    restaurants.length
+
+    );
+
+
+    buildRestaurantList();
+
+    }
+
+
+    /* DAILY DECISION */
+
+    if(
+    dailyResult.status===
+    'fulfilled'
+    ){
+
+    applyDailyDecisions(
+    dailyResult.value
+    );
+
+    }
+    else{
+
+    daily=[
+    ...builtDaily
+    ];
+
+
+    renderDaily();
+
+    }
+
+
+    /* CHECK IN */
+
+    if(
+    checkinResult.status===
+    'fulfilled'
+    ){
+
+    applyCheckinQuestions(
+    checkinResult.value
+    );
+
+    }
+    else{
+
+    for(
+    const category of[
+
+    'APPROVAL',
+
+    'COMPARISON',
+
+    'CONFIDENCE',
+
+    'ACTION'
+
+    ]
+    ){
+
+    bank[
+    category
+    ]=
+    [
+    ...builtBank[
+    category
+    ]
+    ];
+
+    }
+
+    }
+
+
+    /* DECISION MAKER SESSIONS */
+
+    if(
+    sessionsResult.status===
+    'fulfilled'
+    ){
+
+    applyDMSessions(
+    sessionsResult.value
+    );
+
+    }
+    else{
+
+    dmSessions=[];
+
+    buildDMSessions();
+
+    }
+
+
+    /* DECISION MAKER CHALLENGES */
+
+    if(
+    challengesResult.status===
+    'fulfilled'
+    ){
+
+    applyDMChallenges(
+    challengesResult.value
+    );
+
+    }
+    else{
+
+    dmChallenges=[];
+
+    buildDMChallenges();
+
+    }
+
+
+    /* PROMOTIONAL ADS */
+
+    if(
+    promoResult.status===
+    'fulfilled'
+    ){
+
+    applyPromoAds(
+    promoResult.value
+    );
+
+    }
+    else{
+
+    promoAds=[];
+
+    promoAdsLoaded=
+    true;
+
+    }
+
+
+    /* HOME FEATURES */
+
+    if(
+    homeFeaturesResult.status===
+    'fulfilled'
+    ){
+
+    applyHomeFeatures(
+    homeFeaturesResult.value
+    );
+
+    }
+    else{
+
+    clearHomeFeatures();
+
+    }
+
+
+    repositionReturnHomeButtons();
+
+
+    const failed=
+    results.filter(
+    x=>
+    x.status===
+    'rejected'
+    );
+
+
+    if(
+    failed.length
+    ){
+
+    console.warn(
+
+    `${failed.length} B.O.S.S CODE GO cloud request(s) failed.`
+
+    );
+
+    }
+    else{
+
+    console.info(
+    'B.O.S.S CODE GO synced from Admin.'
+    );
+
+    }
+
+    }
+
+
+    /* =========================================================
+       OPTIONAL DEMOGRAPHICS PROMPT
+    ========================================================= */
+
+    function scheduleDemographicsPrompt(
+    attempt=0
+    ){
+
+    setTimeout(
+    ()=>{
+
+    let prompted=
+    false;
+
+
+    try{
+
+    prompted=
+    localStorage.getItem(
+    DEMOGRAPHICS_PROMPT_KEY
+    )===
+    '1';
+
+    }catch{}
+
+
+    if(prompted)
+    return;
+
+
+    const dailyOpen=
+    $('daily-decision-modal')
+    ?.classList
+    .contains(
+    'open'
+    );
+
+
+    const adOpen=
+    $('boss-promo-ad-overlay')
+    ?.classList
+    .contains(
+    'open'
+    );
+
+
+    if(
+
+    dailyOpen
+
+    ||
+
+    adOpen
+
+    ||
+
+    !home?.classList.contains(
+    'active-screen'
+    )
+
+    ){
+
+    if(
+    attempt<
+    12
+    ){
+
+    scheduleDemographicsPrompt(
+    attempt+
+    1
+    );
+
+    }
+
+
+    return;
+
+    }
+
+
+    showDemographicsPromptIfAppropriate();
+
+    },
+
+    attempt===
+    0
+    ?
+    5000
+    :
+    2000
+
+    );
+
+    }
+
+
+    /* =========================================================
+       START APP
+    ========================================================= */
+
+    setupInternalLinks();
+
+
+    clearHomeFeatures();
+
+
+    handleStripeCheckoutReturn();
+
+
+    renderDaily();
+
+    renderArtists();
+
+    renderTracks();
+
+    renderReleases();
+
+    renderDecisionMakers();
+
+    buildEpisodes();
+
+    loadFirstEpisode();
+
+    buildTv();
+
+    buildGallery();
+
+    buildRestaurantList();
+
+    repositionReturnHomeButtons();
+
+
+    trackAnalytics(
+    'app_visit',
+    {
+
+    section:
+    'app',
+
+    itemTitle:
+    'B.O.S.S CODE GO APP OPEN'
+
+    }
+    );
+
+
+    sync();
+
+
+    scheduleDemographicsPrompt();

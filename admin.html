@@ -453,6 +453,44 @@ grid-template-columns:1fr;
 
 
 /* =========================================================
+   HOME FEATURE MANAGER
+   ========================================================= */
+
+.home-feature-admin-note{
+background:#080808;
+border:1px solid #2b2b2b;
+border-radius:14px;
+padding:14px;
+margin-bottom:16px;
+color:#999;
+font-size:10px;
+line-height:1.55;
+}
+
+.home-feature-admin-note strong{
+color:#F5C518;
+}
+
+.home-feature-preview{
+width:100%;
+aspect-ratio:16/9;
+border-radius:11px;
+overflow:hidden;
+background:#111;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.home-feature-preview img,
+.home-feature-preview video{
+width:100%;
+height:100%;
+display:block;
+object-fit:cover;
+}
+
+/* =========================================================
    ANALYTICS + PROMOTIONAL ADS
    ========================================================= */
 
@@ -3544,6 +3582,143 @@ class="list"
 
 
 <!-- ===================================================== -->
+<!-- HOME FEATURES -->
+<!-- ===================================================== -->
+
+<section class="card">
+
+<div class="head">
+
+<div>
+<small>HOME SCREEN</small>
+<h2>HOME FEATURE MANAGER</h2>
+</div>
+
+<div
+id="homeFeatureCount"
+class="status"
+>
+0 PUBLISHED
+</div>
+
+</div>
+
+<div class="home-feature-admin-note">
+<strong>FOUR HOME FEATURE SLOTS.</strong> Slots 1 and 2 appear above the navigation. Slots 3 and 4 appear below the navigation. Unpublished or empty slots disappear completely. The media is a preview and the CTA routes the user into the selected app section.
+</div>
+
+<div class="grid">
+
+<div class="field">
+<label>FEATURE SLOT</label>
+<select id="homeFeatureSlot" class="select">
+<option value="1">SLOT 1 — TOP</option>
+<option value="2">SLOT 2 — TOP</option>
+<option value="3">SLOT 3 — LOWER</option>
+<option value="4">SLOT 4 — LOWER</option>
+</select>
+</div>
+
+<div class="field">
+<label>MEDIA TYPE</label>
+<select id="homeFeatureMediaType" class="select">
+<option value="image">IMAGE</option>
+<option value="video">VIDEO</option>
+</select>
+</div>
+
+<div class="field full">
+<label>FEATURE MEDIA</label>
+<div class="file-row">
+<input id="homeFeatureMediaUrl" class="input" type="url" placeholder="Upload below or paste an image / video URL">
+<button id="homeFeatureMediaUpload" class="btn outline" type="button">UPLOAD MEDIA</button>
+</div>
+<input id="homeFeatureMediaFile" type="file" accept="image/*,video/*" style="margin-top:8px;width:100%;">
+</div>
+
+<div class="field full">
+<label>OPTIONAL VIDEO POSTER IMAGE</label>
+<div class="file-row">
+<input id="homeFeaturePosterUrl" class="input" type="url" placeholder="Optional poster image for uploaded video">
+<button id="homeFeaturePosterUpload" class="btn outline" type="button">UPLOAD POSTER</button>
+</div>
+<input id="homeFeaturePosterFile" type="file" accept="image/*" style="margin-top:8px;width:100%;">
+</div>
+
+<div class="field">
+<label>SMALL LABEL / KICKER</label>
+<input id="homeFeatureKicker" class="input" value="FEATURED" placeholder="FEATURED">
+</div>
+
+<div class="field">
+<label>FEATURE TITLE</label>
+<input id="homeFeatureTitle" class="input" placeholder="New Boss Bite Episode">
+</div>
+
+<div class="field full">
+<label>SUPPORTING TEXT</label>
+<textarea id="homeFeatureText" class="textarea" placeholder="Short description shown on the home feature card."></textarea>
+</div>
+
+<div class="field">
+<label>CTA BUTTON TEXT</label>
+<input id="homeFeatureCta" class="input" value="EXPLORE" placeholder="WATCH NOW">
+</div>
+
+<div class="field">
+<label>CTA DESTINATION</label>
+<select id="homeFeatureDestination" class="select">
+<option value="boss-bite">THE BOSS BITE</option>
+<option value="music">MUSIC</option>
+<option value="boss-code-tv">B.O.S.S CODE TV</option>
+<option value="decision-makers">DECISION MAKERS</option>
+<option value="magazine">MAGAZINE</option>
+<option value="the-code-clothing">THE CODE CLOTHING</option>
+<option value="boss-checkin">B.O.S.S CHECK IN</option>
+<option value="support">SUPPORT IS A DECISION</option>
+<option value="contact">CONTACT</option>
+<option value="home">HOME</option>
+<option value="custom">CUSTOM LINK</option>
+</select>
+</div>
+
+<div class="field full">
+<label>CUSTOM LINK</label>
+<input id="homeFeatureDestinationUrl" class="input" type="url" placeholder="Only needed when CTA destination is Custom Link">
+</div>
+
+<div class="field">
+<label>SORT ORDER</label>
+<input id="homeFeatureSort" class="input" type="number" value="0">
+</div>
+
+</div>
+
+<div class="toggle-row">
+<div class="toggle">
+<div>
+<strong>PUBLISHED</strong>
+<em>Show this feature on the home screen.</em>
+</div>
+<label class="switch">
+<input id="homeFeaturePublished" type="checkbox" checked>
+<span class="slider"></span>
+</label>
+</div>
+</div>
+
+<div class="actions">
+<button id="homeFeatureSave" class="btn red">ADD HOME FEATURE</button>
+<button id="homeFeatureCancel" class="btn outline" hidden>CANCEL EDIT</button>
+</div>
+
+<div id="homeFeatureMsg" class="message"></div>
+<div id="homeFeatureList" class="list"></div>
+
+</section>
+
+
+<!-- ===================================================== -->
 <!-- PROMOTIONAL ADS -->
 <!-- ===================================================== -->
 
@@ -3972,6 +4147,7 @@ let dailyDecisions = [];
 let checkinQuestions = [];
 let contacts = [];
 let promoAds = [];
+let homeFeatures = [];
 let analyticsData = null;
 
 let dmSessions = [];
@@ -4000,7 +4176,8 @@ checkin:null,
 session:null,
 challenge:null,
 resource:null,
-promoAd:null
+promoAd:null,
+homeFeature:null
 
 };
 
@@ -4360,6 +4537,33 @@ contacts = results[14].data || [];
 promoAds = results[15].data || [];
 analyticsData = results[16].data || null;
 
+/*
+  HOME FEATURES are loaded separately so this Admin remains usable
+  while the Worker/backend endpoint is being added.
+*/
+try{
+
+const homeFeatureResult =
+await api(
+"/home-features?all=1"
+);
+
+homeFeatures =
+homeFeatureResult.data ||
+homeFeatureResult ||
+[];
+
+if(!Array.isArray(homeFeatures)){
+homeFeatures = [];
+}
+
+}
+catch(error){
+
+homeFeatures = [];
+
+}
+
 renderAll();
 
 }
@@ -4413,6 +4617,7 @@ renderChallenges();
 renderResources();
 
 renderContacts();
+renderHomeFeatures();
 renderPromoAds();
 renderAnalytics();
 
@@ -9363,6 +9568,587 @@ $("locationMsg").textContent =
 
 
 /* ===================================================== */
+/* HOME FEATURES */
+/* ===================================================== */
+
+function homeFeaturePreview(item){
+
+const url =
+esc(
+item.media_url ||
+item.mediaUrl ||
+""
+);
+
+if(!url){
+return '<div class="home-feature-preview"></div>';
+}
+
+if(
+String(
+item.media_type ||
+item.mediaType ||
+"image"
+)
+.toLowerCase() === "video"
+){
+
+const youtubeId =
+yid(url);
+
+if(youtubeId){
+return `
+<div class="home-feature-preview">
+<img src="https://img.youtube.com/vi/${esc(youtubeId)}/hqdefault.jpg" alt="">
+</div>
+`;
+}
+
+return `
+<div class="home-feature-preview">
+<video
+src="${url}"
+${item.poster_url ? `poster="${esc(item.poster_url)}"` : ""}
+muted
+playsinline
+preload="metadata"
+></video>
+</div>
+`;
+}
+
+return `
+<div class="home-feature-preview">
+<img src="${url}" alt="">
+</div>
+`;
+
+}
+
+
+function renderHomeFeatures(){
+
+const list =
+$("homeFeatureList");
+
+if(!list) return;
+
+const publishedCount =
+homeFeatures.filter(
+item => Number(item.published) === 1
+).length;
+
+$("homeFeatureCount").textContent =
+`${publishedCount} PUBLISHED`;
+
+$("homeFeatureCount")
+.classList
+.toggle(
+"ok",
+publishedCount > 0
+);
+
+if(!homeFeatures.length){
+
+list.innerHTML =
+'<div class="empty">NO HOME FEATURES ADDED YET.</div>';
+
+return;
+
+}
+
+list.innerHTML =
+homeFeatures
+.slice()
+.sort((a,b)=>
+Number(a.slot || 0) - Number(b.slot || 0)
+||
+Number(a.sort_order || 0) - Number(b.sort_order || 0)
+||
+Number(b.id || 0) - Number(a.id || 0)
+)
+.map(item=>`
+
+<div class="item">
+
+<div>
+${homeFeaturePreview(item)}
+</div>
+
+<div>
+
+<h3>
+SLOT ${Number(item.slot || 0)} — ${esc(item.title || "HOME FEATURE")}
+</h3>
+
+<div class="badges">
+
+<span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
+${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+</span>
+
+<span class="badge">
+${esc(String(item.media_type || "image").toUpperCase())}
+</span>
+
+<span class="badge">
+${esc(String(item.destination_type || item.destination || "custom").replaceAll("-"," ").toUpperCase())}
+</span>
+
+</div>
+
+<div class="meta">
+
+${item.kicker ? `${esc(item.kicker)}<br>` : ""}
+${item.supporting_text ? `${esc(item.supporting_text)}<br>` : ""}
+BUTTON: ${esc(item.cta_text || "EXPLORE")}
+
+</div>
+
+<div class="actions">
+
+<button
+class="btn gray"
+onclick="editHomeFeature(${Number(item.id)})"
+>
+EDIT
+</button>
+
+<button
+class="btn danger"
+onclick="deleteHomeFeature(${Number(item.id)})"
+>
+DELETE
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`)
+.join("");
+
+}
+
+
+function editHomeFeature(id){
+
+const item =
+homeFeatures.find(
+x => Number(x.id) === Number(id)
+);
+
+if(!item) return;
+
+edit.homeFeature =
+item.id;
+
+$("homeFeatureSlot").value =
+String(item.slot || 1);
+
+$("homeFeatureMediaType").value =
+item.media_type ||
+item.mediaType ||
+"image";
+
+$("homeFeatureMediaUrl").value =
+item.media_url ||
+item.mediaUrl ||
+"";
+
+$("homeFeaturePosterUrl").value =
+item.poster_url ||
+item.posterUrl ||
+"";
+
+$("homeFeatureKicker").value =
+item.kicker ||
+item.label ||
+"FEATURED";
+
+$("homeFeatureTitle").value =
+item.title ||
+"";
+
+$("homeFeatureText").value =
+item.supporting_text ||
+item.supportingText ||
+item.description ||
+"";
+
+$("homeFeatureCta").value =
+item.cta_text ||
+item.ctaText ||
+"EXPLORE";
+
+$("homeFeatureDestination").value =
+item.destination_type ||
+item.destinationType ||
+item.destination ||
+"custom";
+
+$("homeFeatureDestinationUrl").value =
+item.destination_url ||
+item.destinationUrl ||
+item.cta_url ||
+item.ctaUrl ||
+"";
+
+$("homeFeatureSort").value =
+item.sort_order ??
+0;
+
+$("homeFeaturePublished").checked =
+Number(item.published) === 1;
+
+$("homeFeatureSave").textContent =
+"UPDATE HOME FEATURE";
+
+$("homeFeatureCancel").hidden =
+false;
+
+$("homeFeatureMsg").textContent =
+`EDITING SLOT ${Number(item.slot || 0)}: ${item.title || "HOME FEATURE"}`;
+
+}
+
+
+function resetHomeFeature(){
+
+edit.homeFeature =
+null;
+
+$("homeFeatureSlot").value =
+"1";
+
+$("homeFeatureMediaType").value =
+"image";
+
+$("homeFeatureMediaUrl").value =
+"";
+
+$("homeFeatureMediaFile").value =
+"";
+
+$("homeFeaturePosterUrl").value =
+"";
+
+$("homeFeaturePosterFile").value =
+"";
+
+$("homeFeatureKicker").value =
+"FEATURED";
+
+$("homeFeatureTitle").value =
+"";
+
+$("homeFeatureText").value =
+"";
+
+$("homeFeatureCta").value =
+"EXPLORE";
+
+$("homeFeatureDestination").value =
+"boss-bite";
+
+$("homeFeatureDestinationUrl").value =
+"";
+
+$("homeFeatureSort").value =
+0;
+
+$("homeFeaturePublished").checked =
+true;
+
+$("homeFeatureSave").textContent =
+"ADD HOME FEATURE";
+
+$("homeFeatureCancel").hidden =
+true;
+
+$("homeFeatureMsg").textContent =
+"";
+
+}
+
+
+async function saveHomeFeature(){
+
+const slot =
+numberValue(
+"homeFeatureSlot",
+1
+);
+
+const mediaUrl =
+$("homeFeatureMediaUrl")
+.value
+.trim();
+
+const title =
+$("homeFeatureTitle")
+.value
+.trim();
+
+if(
+slot < 1 ||
+slot > 4
+){
+
+$("homeFeatureMsg").textContent =
+"CHOOSE A FEATURE SLOT FROM 1 TO 4.";
+
+return;
+
+}
+
+if(!mediaUrl){
+
+$("homeFeatureMsg").textContent =
+"UPLOAD OR ENTER FEATURE MEDIA.";
+
+return;
+
+}
+
+if(!title){
+
+$("homeFeatureMsg").textContent =
+"FEATURE TITLE IS REQUIRED.";
+
+return;
+
+}
+
+const existingSlot =
+homeFeatures.find(
+item =>
+Number(item.slot) === slot &&
+Number(item.id) !== Number(edit.homeFeature)
+);
+
+if(existingSlot){
+
+$("homeFeatureMsg").textContent =
+`SLOT ${slot} IS ALREADY IN USE. EDIT OR DELETE THAT FEATURE FIRST.`;
+
+return;
+
+}
+
+const payload = {
+
+slot,
+
+media_type:
+$("homeFeatureMediaType").value,
+
+media_url:
+mediaUrl,
+
+poster_url:
+$("homeFeaturePosterUrl")
+.value
+.trim(),
+
+kicker:
+$("homeFeatureKicker")
+.value
+.trim() ||
+"FEATURED",
+
+title,
+
+supporting_text:
+$("homeFeatureText")
+.value
+.trim(),
+
+cta_text:
+$("homeFeatureCta")
+.value
+.trim() ||
+"EXPLORE",
+
+destination_type:
+$("homeFeatureDestination").value,
+
+destination_url:
+$("homeFeatureDestinationUrl")
+.value
+.trim(),
+
+sort_order:
+numberValue(
+"homeFeatureSort",
+0
+),
+
+published:
+$("homeFeaturePublished").checked
+? 1
+: 0
+
+};
+
+try{
+
+if(edit.homeFeature){
+
+await api(
+`/home-features/${edit.homeFeature}`,
+{
+method:"PUT",
+body:JSON.stringify(payload)
+}
+);
+
+$("homeFeatureMsg").textContent =
+"HOME FEATURE UPDATED.";
+
+}
+else{
+
+await api(
+"/home-features",
+{
+method:"POST",
+body:JSON.stringify(payload)
+}
+);
+
+$("homeFeatureMsg").textContent =
+"HOME FEATURE ADDED.";
+
+}
+
+resetHomeFeature();
+
+await loadAll();
+
+}
+catch(error){
+
+$("homeFeatureMsg").textContent =
+error.message;
+
+}
+
+}
+
+
+async function deleteHomeFeature(id){
+
+if(
+!confirm(
+"DELETE THIS HOME FEATURE?"
+)
+){
+return;
+}
+
+try{
+
+await api(
+`/home-features/${id}`,
+{
+method:"DELETE"
+}
+);
+
+await loadAll();
+
+}
+catch(error){
+
+alert(error.message);
+
+}
+
+}
+
+
+async function uploadHomeFeatureMedia(){
+
+const file =
+$("homeFeatureMediaFile")
+.files[0];
+
+if(!file){
+
+$("homeFeatureMsg").textContent =
+"CHOOSE A PHOTO OR VIDEO FIRST.";
+
+return;
+
+}
+
+const mediaType =
+file.type.startsWith("video/")
+? "video"
+: "image";
+
+const url =
+await upload(
+file,
+"home-features",
+"homeFeatureMsg"
+);
+
+if(url){
+
+$("homeFeatureMediaUrl").value =
+url;
+
+$("homeFeatureMediaType").value =
+mediaType;
+
+$("homeFeatureMsg").textContent =
+"HOME FEATURE MEDIA UPLOADED. SAVE THE FEATURE.";
+
+}
+
+}
+
+
+async function uploadHomeFeaturePoster(){
+
+const file =
+$("homeFeaturePosterFile")
+.files[0];
+
+if(!file){
+
+$("homeFeatureMsg").textContent =
+"CHOOSE A POSTER IMAGE FIRST.";
+
+return;
+
+}
+
+const url =
+await upload(
+file,
+"home-feature-posters",
+"homeFeatureMsg"
+);
+
+if(url){
+
+$("homeFeaturePosterUrl").value =
+url;
+
+$("homeFeatureMsg").textContent =
+"POSTER IMAGE UPLOADED. SAVE THE FEATURE.";
+
+}
+
+}
+
+
+/* ===================================================== */
 /* PROMOTIONAL ADS */
 /* ===================================================== */
 
@@ -10934,6 +11720,35 @@ $("checkinCancel")
 .addEventListener(
 "click",
 resetCheckin
+);
+
+
+/* ===================================================== */
+/* HOME FEATURE EVENTS */
+/* ===================================================== */
+
+$("homeFeatureSave")
+.addEventListener(
+"click",
+saveHomeFeature
+);
+
+$("homeFeatureCancel")
+.addEventListener(
+"click",
+resetHomeFeature
+);
+
+$("homeFeatureMediaUpload")
+.addEventListener(
+"click",
+uploadHomeFeatureMedia
+);
+
+$("homeFeaturePosterUpload")
+.addEventListener(
+"click",
+uploadHomeFeaturePoster
 );
 
 
