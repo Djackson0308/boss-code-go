@@ -2494,6 +2494,10 @@ let selectedSupportAmountCents=
 0;
 
 
+const SUPPORT_PENDING_CHECKOUT_KEY=
+'boss-code-support-pending-checkout-v1';
+
+
 function ensureSupportScreen(){
 
 let screen=
@@ -3106,7 +3110,7 @@ aria-live="polite"
 
 
 <p class="support-payment-note">
-Secure payment checkout is the next connection. No card is charged from this screen yet. Support is separate from course purchases and does not unlock paid courses.
+Secure payment is completed through Stripe. Support is separate from course purchases and does not unlock paid courses.
 </p>
 
 </section>
@@ -3324,7 +3328,8 @@ status.textContent=
 
 
 if(
-selectedSupportAmountCents<=0
+selectedSupportAmountCents<
+100
 ){
 
 if(status){
@@ -3333,7 +3338,7 @@ status.className=
 'support-status error';
 
 status.textContent=
-'CHOOSE A SUPPORT AMOUNT.';
+'CHOOSE A SUPPORT AMOUNT OF AT LEAST $1.';
 
 }
 
@@ -3365,6 +3370,25 @@ $('support-message')
 
 
 if(
+!name
+){
+
+if(status){
+
+status.className=
+'support-status error';
+
+status.textContent=
+'ENTER YOUR NAME.';
+
+}
+
+return;
+
+}
+
+
+if(
 !email||
 !/^\S+@\S+\.\S+$/.test(
 email
@@ -3392,7 +3416,18 @@ button.disabled=
 true;
 
 button.textContent=
-'SAVING YOUR DECISION...';
+'OPENING SECURE CHECKOUT...';
+
+}
+
+
+if(status){
+
+status.className=
+'support-status';
+
+status.textContent=
+'CONNECTING TO STRIPE...';
 
 }
 
@@ -3401,7 +3436,7 @@ try{
 
 const response=
 await fetch(
-`${API}/support/contributions`,
+`${API}/payments/checkout/support`,
 {
 
 method:
@@ -3426,18 +3461,6 @@ email,
 
 amount_cents:
 selectedSupportAmountCents,
-
-currency:
-'usd',
-
-provider:
-'stripe',
-
-payment_method:
-'',
-
-transaction_id:
-'',
 
 message
 
@@ -3467,21 +3490,69 @@ false
 throw Error(
 data.error||
 data.message||
-'Unable to save your support decision.'
+'Unable to start secure support checkout.'
 );
 
 }
 
 
+const checkoutUrl=
+String(
+data.checkout_url||
+''
+).trim();
+
+
+if(
+!checkoutUrl
+){
+
+throw Error(
+'Stripe checkout did not return a checkout link.'
+);
+
+}
+
+
+try{
+
+sessionStorage.setItem(
+SUPPORT_PENDING_CHECKOUT_KEY,
+JSON.stringify({
+
+type:
+'support',
+
+amount_cents:
+selectedSupportAmountCents,
+
+shirt_reward_eligible:
+Boolean(
+data.shirt_reward_eligible
+),
+
+support_contribution_id:
+data.support_contribution_id||
+null,
+
+created_at:
+Date.now()
+
+})
+);
+
+}catch{}
+
+
 trackAnalytics(
-'support_intent',
+'support_checkout_started',
 {
 
 section:
 'support',
 
 itemId:
-data.data?.id||
+data.support_contribution_id||
 '',
 
 itemTitle:
@@ -3495,7 +3566,7 @@ detail:{
 
 shirt_eligible:
 Boolean(
-data.data?.shirt_reward_eligible
+data.shirt_reward_eligible
 )
 
 }
@@ -3504,30 +3575,14 @@ data.data?.shirt_reward_eligible
 );
 
 
-if(status){
-
-status.className=
-'support-status success';
-
-status.textContent=
-data.data?.shirt_reward_eligible
-?
-'SUPPORT DECISION SAVED. YOU ARE IN THE SHIRT ELIGIBLE LEVEL. NO CHARGE HAS BEEN MADE YET.'
-:
-'SUPPORT DECISION SAVED. NO CHARGE HAS BEEN MADE YET.';
-
-}
-
-
-if(button)
-button.textContent=
-'READY FOR SECURE CHECKOUT';
+window.location.href=
+checkoutUrl;
 
 
 }catch(error){
 
 console.warn(
-'Support submission error',
+'Support checkout error',
 error
 );
 
@@ -3539,21 +3594,20 @@ status.className=
 
 status.textContent=
 error.message||
-'YOUR SUPPORT DECISION COULD NOT BE SAVED. PLEASE TRY AGAIN.';
+'YOUR SECURE SUPPORT CHECKOUT COULD NOT START. PLEASE TRY AGAIN.';
 
 }
 
 
-if(button)
+if(button){
+
+button.disabled=
+false;
+
 button.textContent=
 'CONTINUE TO SUPPORT';
 
 }
-finally{
-
-if(button)
-button.disabled=
-false;
 
 }
 
@@ -16693,24 +16747,32 @@ if(
 return;
 
 
-let pendingType = '';
+let pendingClothing = null;
+
+let pendingSupport = null;
 
 
 try{
 
-const pending =
+pendingClothing =
 JSON.parse(
 sessionStorage.getItem(
 CLOTHING_PENDING_CHECKOUT_KEY
 ) ||
-'{}'
+'null'
 );
 
+}catch{}
 
-pendingType =
-String(
-pending.type ||
-''
+
+try{
+
+pendingSupport =
+JSON.parse(
+sessionStorage.getItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+) ||
+'null'
 );
 
 }catch{}
@@ -16722,7 +16784,10 @@ checkout ===
 ){
 
 if(
-pendingType ===
+String(
+pendingClothing?.type||
+''
+)===
 'clothing'
 ){
 
@@ -16742,8 +16807,6 @@ setClothingCheckoutStatus(
 'CHECKOUT CANCELED. YOUR CART IS STILL HERE.'
 );
 
-}
-
 
 try{
 
@@ -16756,6 +16819,78 @@ CLOTHING_PENDING_CHECKOUT_KEY
 
 clearClothingCheckoutReturnFromUrl();
 
+return;
+
+}
+
+
+if(
+String(
+pendingSupport?.type||
+''
+)===
+'support'
+){
+
+const screen =
+ensureSupportScreen();
+
+
+showScreen(
+screen
+);
+
+
+const status =
+$('support-status');
+
+
+if(status){
+
+status.className=
+'support-status error';
+
+status.textContent=
+'CHECKOUT CANCELED. NO SUPPORT PAYMENT WAS COMPLETED.';
+
+}
+
+
+const button =
+$('support-submit');
+
+
+if(button){
+
+button.disabled=
+false;
+
+button.textContent=
+'CONTINUE TO SUPPORT';
+
+}
+
+
+try{
+
+sessionStorage.removeItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+);
+
+}catch{}
+
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+/*
+A course checkout has its own return handler in
+decision-makers-courses.js. Do not clear its URL here.
+*/
 return;
 
 }
@@ -16779,8 +16914,6 @@ current.searchParams.get(
 
 if(!sessionId){
 
-clearClothingCheckoutReturnFromUrl();
-
 return;
 
 }
@@ -16798,8 +16931,6 @@ sessionId
 
 }catch{
 
-clearClothingCheckoutReturnFromUrl();
-
 return;
 
 }
@@ -16811,16 +16942,9 @@ null;
 
 
 if(
-payment?.order_type !==
+payment?.order_type ===
 'clothing'
 ){
-
-clearClothingCheckoutReturnFromUrl();
-
-return;
-
-}
-
 
 const screen =
 ensureClothingStore();
@@ -16918,6 +17042,230 @@ CLOTHING_PENDING_CHECKOUT_KEY
 
 
 clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+if(
+payment?.order_type ===
+'support'
+){
+
+const screen =
+ensureSupportScreen();
+
+
+showScreen(
+screen
+);
+
+
+const status =
+$('support-status');
+
+
+if(status){
+
+status.className=
+'support-status';
+
+status.textContent=
+'PAYMENT RECEIVED. CONFIRMING YOUR SUPPORT...';
+
+}
+
+
+let confirmed =
+payment;
+
+
+for(
+let attempt = 0;
+attempt < 8;
+attempt += 1
+){
+
+if(
+confirmed?.status ===
+'paid'
+)
+break;
+
+
+try{
+
+const check =
+await clothingPaymentSessionStatus(
+sessionId
+);
+
+
+confirmed =
+check?.data ||
+confirmed;
+
+}catch{}
+
+
+if(
+confirmed?.status ===
+'paid'
+)
+break;
+
+
+await new Promise(
+resolve=>
+setTimeout(
+resolve,
+1200
+)
+);
+
+}
+
+
+if(
+confirmed?.status ===
+'paid'
+){
+
+const amountCents =
+Number(
+confirmed.amount_cents||
+pendingSupport?.amount_cents||
+0
+);
+
+
+const shirtEligible =
+amountCents>=5000||
+Boolean(
+pendingSupport?.shirt_reward_eligible
+);
+
+
+if(status){
+
+status.className=
+'support-status success';
+
+status.textContent=
+shirtEligible
+?
+'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA. YOU QUALIFY FOR THE SUPPORTER SHIRT. FULFILLMENT DETAILS WILL BE COLLECTED SEPARATELY.'
+:
+'PAYMENT CONFIRMED. THANK YOU FOR SUPPORTING B.O.S.S CODE MEDIA.';
+
+}
+
+
+trackAnalytics(
+'support_checkout_completed',
+{
+
+section:
+'support',
+
+itemId:
+confirmed.support_contribution_id||
+'',
+
+itemTitle:
+'SUPPORT IS A DECISION',
+
+valueNumeric:
+amountCents/
+100,
+
+detail:{
+
+shirt_eligible:
+shirtEligible
+
+}
+
+}
+);
+
+
+selectedSupportAmountCents=
+0;
+
+
+if(
+$('support-custom-amount')
+)
+$('support-custom-amount')
+.value=
+'';
+
+
+if(
+$('support-message')
+)
+$('support-message')
+.value=
+'';
+
+
+updateSupportSelection();
+
+}
+else{
+
+if(status){
+
+status.className=
+'support-status success';
+
+status.textContent=
+'YOUR PAYMENT RETURNED SUCCESSFULLY. STRIPE IS STILL CONFIRMING YOUR SUPPORT.';
+
+}
+
+}
+
+
+const button =
+$('support-submit');
+
+
+if(button){
+
+button.disabled=
+false;
+
+button.textContent=
+'CONTINUE TO SUPPORT';
+
+}
+
+
+try{
+
+sessionStorage.removeItem(
+SUPPORT_PENDING_CHECKOUT_KEY
+);
+
+}catch{}
+
+
+clearClothingCheckoutReturnFromUrl();
+
+return;
+
+}
+
+
+/*
+Decision Makers course checkout is intentionally handled by
+decision-makers-courses.js so its payment success can route
+the customer into My Courses.
+*/
+return;
 
 }
 
