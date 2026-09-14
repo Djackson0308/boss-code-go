@@ -1949,6 +1949,8 @@
     if(!s)
     return;
 
+    syncHomeFeaturePlayback(s.id==='home-screen');
+
 
     qa(
     '.screen'
@@ -18738,53 +18740,22 @@
     let homeFeatures=[];
 
 
-    function homeFeatureYoutubeId(url=''){
-
-    const s=
-    String(
-    url||
-    ''
-    )
-    .trim();
-
-
-    if(!s)
-    return'';
-
-
-    const patterns=[
-
-    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
-
-    /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{6,})/,
-
-    /youtube\.com\/embed\/([a-zA-Z0-9_-]{6,})/,
-
-    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{6,})/,
-
-    /youtube\.com\/live\/([a-zA-Z0-9_-]{6,})/
-
-    ];
-
-
-    for(const pattern of patterns){
-
-    const match=
-    s.match(
-    pattern
-    );
-
-
-    if(
-    match?.[1]
-    )
-    return match[1];
-
-    }
-
-
-    return'';
-
+    function homeFeatureYoutubeId(value=''){
+      const raw=String(value||'').trim();
+      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+      try{
+        const url=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw}`);
+        if(!['https:','http:'].includes(url.protocol)) return '';
+        const host=url.hostname.toLowerCase().replace(/^www\./,'');
+        const parts=url.pathname.split('/').filter(Boolean);
+        let id='';
+        if(host==='youtu.be') id=parts[0]||'';
+        else if(['youtube.com','m.youtube.com','music.youtube.com','youtube-nocookie.com'].includes(host)){
+          if(parts[0]==='watch') id=url.searchParams.get('v')||'';
+          else if(['embed','shorts','live'].includes(parts[0])) id=parts[1]||'';
+        }
+        return /^[a-zA-Z0-9_-]{11}$/.test(id)?id:'';
+      }catch{return '';}
     }
 
 
@@ -18818,107 +18789,59 @@
 
 
     function homeFeatureMediaMarkup(feature){
-
-    const mediaUrl=
-    String(
-    feature.media_url||
-    feature.mediaUrl||
-    ''
-    )
-    .trim();
-
-
-    if(!mediaUrl)
-    return'';
-
-
-    const title=
-    feature.title||
-    'B.O.S.S CODE GO FEATURE';
-
-
-    const mediaType=
-    String(
-    feature.media_type||
-    feature.mediaType||
-    'image'
-    )
-    .toLowerCase();
-
-
-    if(
-    mediaType===
-    'video'
-    ){
-
-    const youtubeId=
-    homeFeatureYoutubeId(
-    mediaUrl
-    );
-
-
-    if(youtubeId){
-
-    return`
-
-    <div class="home-feature-media">
-
-    <img
-    src="https://img.youtube.com/vi/${esc(youtubeId)}/hqdefault.jpg"
-    alt="${esc(title)}"
-    loading="lazy"
-    >
-
-    </div>
-
-    `;
-
+      const mediaUrl=String(
+        feature.youtube_url||feature.youtubeUrl||
+        feature.media_url||feature.mediaUrl||
+        feature.youtube_id||feature.youtubeId||''
+      ).trim();
+      if(!mediaUrl) return '';
+      const title=feature.title||'B.O.S.S CODE GO FEATURE';
+      const mediaType=String(feature.media_type||feature.mediaType||'image').trim().toLowerCase();
+      // Detect YouTube links even in older records saved with the image type.
+      const youtubeId=homeFeatureYoutubeId(mediaUrl);
+      if(youtubeId){
+        const source=`https://www.youtube.com/embed/${youtubeId}?rel=0&playsinline=1&controls=1`;
+        return `
+          <div class="home-feature-media" style="position:relative;aspect-ratio:16/9;height:auto;min-height:200px;overflow:hidden;background:#000;">
+            <iframe data-home-feature-youtube="1"
+              data-home-feature-source="${esc(source)}" src="${esc(source)}"
+              title="${esc(title)}" loading="lazy"
+              style="position:absolute;inset:0;display:block;width:100%;height:100%;border:0;pointer-events:auto;"
+              allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>`;
+      }
+      const isVideo=mediaType==='video'||mediaType.startsWith('video/')||
+        /\.(mp4|webm|ogv|ogg|mov|m4v)(?:[?#]|$)/i.test(mediaUrl);
+      if(isVideo){
+        const poster=String(feature.poster_url||feature.posterUrl||'').trim();
+        return `
+          <div class="home-feature-media" style="position:relative;aspect-ratio:16/9;height:auto;overflow:hidden;background:#000;">
+            <video data-home-feature-video="1" src="${esc(mediaUrl)}"
+              ${poster?`poster="${esc(poster)}"`:''}
+              controls playsinline preload="metadata"
+              style="position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;pointer-events:auto;"
+              aria-label="${esc(title)}"></video>
+          </div>`;
+      }
+      return `
+        <div class="home-feature-media">
+          <img src="${esc(mediaUrl)}" alt="${esc(title)}" loading="lazy">
+        </div>`;
     }
 
-
-    const poster=
-    String(
-    feature.poster_url||
-    feature.posterUrl||
-    ''
-    )
-    .trim();
-
-
-    return`
-
-    <div class="home-feature-media">
-
-    <video
-    src="${esc(mediaUrl)}"
-    ${poster?`poster="${esc(poster)}"`:''}
-    muted
-    playsinline
-    preload="metadata"
-    aria-label="${esc(title)}"
-    ></video>
-
-    </div>
-
-    `;
-
-    }
-
-
-    return`
-
-    <div class="home-feature-media">
-
-    <img
-    src="${esc(mediaUrl)}"
-    alt="${esc(title)}"
-    loading="lazy"
-    >
-
-    </div>
-
-    `;
-
+    // Stop home media when navigating away; restore YouTube players on return.
+    function syncHomeFeaturePlayback(isHome){
+      document.querySelectorAll('[data-home-feature-video]').forEach(video=>{
+        if(!isHome) video.pause();
+      });
+      document.querySelectorAll('[data-home-feature-youtube]').forEach(frame=>{
+        if(!isHome){
+          if(frame.hasAttribute('src')) frame.removeAttribute('src');
+        }else if(!frame.hasAttribute('src')){
+          frame.setAttribute('src',frame.dataset.homeFeatureSource);
+        }
+      });
     }
 
 
@@ -19263,6 +19186,8 @@
 
     function renderHomeFeatures(){
 
+    syncHomeFeaturePlayback(false);
+
     for(
     let slot=1;
     slot<=4;
@@ -19437,6 +19362,8 @@
     );
 
     }
+
+    syncHomeFeaturePlayback(!!$('home-screen')?.classList.contains('active-screen'));
 
     }
 

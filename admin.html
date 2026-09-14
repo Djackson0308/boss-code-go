@@ -3623,20 +3623,22 @@ class="status"
 <label>MEDIA TYPE</label>
 <select id="homeFeatureMediaType" class="select">
 <option value="image">IMAGE</option>
-<option value="video">VIDEO</option>
+<option value="video">UPLOADED VIDEO / VIDEO LINK</option>
+<option value="youtube">YOUTUBE LINK</option>
 </select>
 </div>
 
 <div class="field full">
-<label>FEATURE MEDIA</label>
+<label id="homeFeatureMediaLabel" for="homeFeatureMediaUrl">FEATURE MEDIA</label>
 <div class="file-row">
 <input id="homeFeatureMediaUrl" class="input" type="url" placeholder="Upload below or paste an image / video URL">
 <button id="homeFeatureMediaUpload" class="btn outline" type="button">UPLOAD MEDIA</button>
 </div>
 <input id="homeFeatureMediaFile" type="file" accept="image/*,video/*" style="margin-top:8px;width:100%;">
+<p id="homeFeatureMediaHelp" aria-live="polite" style="margin-top:8px;">Upload an image or paste its link.</p>
 </div>
 
-<div class="field full">
+<div class="field full" id="homeFeaturePosterField">
 <label>OPTIONAL VIDEO POSTER IMAGE</label>
 <div class="file-row">
 <input id="homeFeaturePosterUrl" class="input" type="url" placeholder="Optional poster image for uploaded video">
@@ -9571,58 +9573,65 @@ $("locationMsg").textContent =
 /* HOME FEATURES */
 /* ===================================================== */
 
+    function homeFeatureYoutubeId(value=''){
+      const raw=String(value||'').trim();
+      if(/^[a-zA-Z0-9_-]{11}$/.test(raw)) return raw;
+      try{
+        const url=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw}`);
+        if(!['https:','http:'].includes(url.protocol)) return '';
+        const host=url.hostname.toLowerCase().replace(/^www\./,'');
+        const parts=url.pathname.split('/').filter(Boolean);
+        let id='';
+        if(host==='youtu.be') id=parts[0]||'';
+        else if(['youtube.com','m.youtube.com','music.youtube.com','youtube-nocookie.com'].includes(host)){
+          if(parts[0]==='watch') id=url.searchParams.get('v')||'';
+          else if(['embed','shorts','live'].includes(parts[0])) id=parts[1]||'';
+        }
+        return /^[a-zA-Z0-9_-]{11}$/.test(id)?id:'';
+      }catch{return '';}
+    }
+
+
+function homeFeatureSource(item){
+return String(item.youtube_url || item.youtubeUrl || item.media_url || item.mediaUrl || item.youtube_id || item.youtubeId || "").trim();
+}
+
+function homeFeatureEditorType(item){
+const source=homeFeatureSource(item);
+if(homeFeatureYoutubeId(source)) return "youtube";
+const type=String(item.media_type || item.mediaType || "image").trim().toLowerCase();
+if(type==="youtube") return "youtube";
+if(type==="video" || type.startsWith("video/") || /\.(mp4|webm|ogv|ogg|mov|m4v)(?:[?#]|$)/i.test(source)) return "video";
+return "image";
+}
+
+function updateHomeFeatureMediaFields(){
+const type=$("homeFeatureMediaType").value;
+const youtube=type==="youtube";
+const video=type==="video";
+$("homeFeatureMediaLabel").textContent=youtube?"YOUTUBE VIDEO LINK":video?"VIDEO FILE OR DIRECT VIDEO LINK":"IMAGE FILE OR IMAGE LINK";
+$("homeFeatureMediaUrl").placeholder=youtube?"Paste a YouTube watch, share, Shorts or Live video link":video?"Upload a video below or paste a direct video URL":"Upload an image below or paste an image URL";
+$("homeFeatureMediaHelp").textContent=youtube?"Paste the YouTube video link here. It plays in the home card. The destination button below opens your selected app section. No video upload is needed.":video?"Upload a video or paste a direct video file link. Viewers can use the play controls on the home card.":"Upload an image or paste its link.";
+$("homeFeatureMediaUpload").disabled=youtube;
+$("homeFeatureMediaUpload").style.display=youtube?"none":"";
+$("homeFeatureMediaFile").disabled=youtube;
+$("homeFeatureMediaFile").style.display=youtube?"none":"";
+$("homeFeatureMediaFile").accept=video?"video/*":"image/*";
+$("homeFeaturePosterField").style.display=video?"":"none";
+}
+
 function homeFeaturePreview(item){
-
-const url =
-esc(
-item.media_url ||
-item.mediaUrl ||
-""
-);
-
-if(!url){
-return '<div class="home-feature-preview"></div>';
-}
-
-if(
-String(
-item.media_type ||
-item.mediaType ||
-"image"
-)
-.toLowerCase() === "video"
-){
-
-const youtubeId =
-yid(url);
-
+const source=homeFeatureSource(item);
+if(!source) return '<div class="home-feature-preview"></div>';
+const youtubeId=homeFeatureYoutubeId(source);
 if(youtubeId){
-return `
-<div class="home-feature-preview">
-<img src="https://img.youtube.com/vi/${esc(youtubeId)}/hqdefault.jpg" alt="">
-</div>
-`;
+return `<div class="home-feature-preview"><img src="https://img.youtube.com/vi/${esc(youtubeId)}/hqdefault.jpg" alt="YouTube video thumbnail" loading="lazy"></div>`;
 }
-
-return `
-<div class="home-feature-preview">
-<video
-src="${url}"
-${item.poster_url ? `poster="${esc(item.poster_url)}"` : ""}
-muted
-playsinline
-preload="metadata"
-></video>
-</div>
-`;
+if(homeFeatureEditorType(item)==="video"){
+const poster=item.poster_url || item.posterUrl || "";
+return `<div class="home-feature-preview"><video src="${esc(source)}" ${poster?`poster="${esc(poster)}"`:""} controls playsinline preload="metadata" aria-label="Featured video preview"></video></div>`;
 }
-
-return `
-<div class="home-feature-preview">
-<img src="${url}" alt="">
-</div>
-`;
-
+return `<div class="home-feature-preview"><img src="${esc(source)}" alt="Featured image" loading="lazy"></div>`;
 }
 
 
@@ -9688,7 +9697,7 @@ ${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
 </span>
 
 <span class="badge">
-${esc(String(item.media_type || "image").toUpperCase())}
+${esc(homeFeatureEditorType(item).toUpperCase())}
 </span>
 
 <span class="badge">
@@ -9748,15 +9757,12 @@ item.id;
 $("homeFeatureSlot").value =
 String(item.slot || 1);
 
-$("homeFeatureMediaType").value =
-item.media_type ||
-item.mediaType ||
-"image";
+$("homeFeatureMediaType").value = homeFeatureEditorType(item);
 
-$("homeFeatureMediaUrl").value =
-item.media_url ||
-item.mediaUrl ||
-"";
+$("homeFeatureMediaUrl").value = homeFeatureSource(item);
+$("homeFeatureMediaFile").value = "";
+$("homeFeaturePosterFile").value = "";
+updateHomeFeatureMediaFields();
 
 $("homeFeaturePosterUrl").value =
 item.poster_url ||
@@ -9825,6 +9831,7 @@ $("homeFeatureSlot").value =
 
 $("homeFeatureMediaType").value =
 "image";
+updateHomeFeatureMediaFields();
 
 $("homeFeatureMediaUrl").value =
 "";
@@ -9922,6 +9929,22 @@ return;
 
 }
 
+const youtubeId=homeFeatureYoutubeId(mediaUrl);
+const selectedType=$("homeFeatureMediaType").value;
+if(selectedType==="youtube" && !youtubeId){
+$("homeFeatureMsg").textContent="ENTER A VALID YOUTUBE VIDEO LINK.";
+return;
+}
+try{
+const url=new URL(mediaUrl);
+if(!["https:","http:"].includes(url.protocol)) throw new Error();
+}catch{
+if(!youtubeId){
+$("homeFeatureMsg").textContent="ENTER A COMPLETE HTTP OR HTTPS MEDIA LINK.";
+return;
+}
+}
+
 const existingSlot =
 homeFeatures.find(
 item =>
@@ -9943,13 +9966,13 @@ const payload = {
 slot,
 
 media_type:
-$("homeFeatureMediaType").value,
+youtubeId ? "video" : selectedType,
 
 media_url:
-mediaUrl,
+youtubeId ? `https://www.youtube.com/watch?v=${youtubeId}` : mediaUrl,
 
 poster_url:
-$("homeFeaturePosterUrl")
+youtubeId ? "" : $("homeFeaturePosterUrl")
 .value
 .trim(),
 
@@ -10071,6 +10094,10 @@ alert(error.message);
 
 
 async function uploadHomeFeatureMedia(){
+if($("homeFeatureMediaType").value==="youtube"){
+$("homeFeatureMsg").textContent="PASTE YOUR YOUTUBE LINK, THEN SAVE THE FEATURE.";
+return;
+}
 
 const file =
 $("homeFeatureMediaFile")
@@ -10104,6 +10131,7 @@ url;
 
 $("homeFeatureMediaType").value =
 mediaType;
+updateHomeFeatureMediaFields();
 
 $("homeFeatureMsg").textContent =
 "HOME FEATURE MEDIA UPLOADED. SAVE THE FEATURE.";
@@ -11726,6 +11754,15 @@ resetCheckin
 /* ===================================================== */
 /* HOME FEATURE EVENTS */
 /* ===================================================== */
+
+$("homeFeatureMediaType").addEventListener("change", updateHomeFeatureMediaFields);
+$("homeFeatureMediaUrl").addEventListener("input", ()=>{
+if(homeFeatureYoutubeId($("homeFeatureMediaUrl").value)){
+$("homeFeatureMediaType").value="youtube";
+updateHomeFeatureMediaFields();
+}
+});
+updateHomeFeatureMediaFields();
 
 $("homeFeatureSave")
 .addEventListener(
