@@ -3581,6 +3581,39 @@ class="list"
 
 
 
+<section class="card" id="pageBannerManager">
+<div class="head"><div><small>PAGE HEADERS</small><h2>CHANGE YOUR BANNERS</h2></div></div>
+<p class="home-feature-admin-note">Each page has its own photo banner. Recommended size for every page: <strong>1920 × 640 pixels (3:1)</strong>. The whole image scales to the screen width without cropping. Use JPG, PNG or WebP. Keep lettering large enough to read on a phone.</p>
+<div class="grid">
+<div class="field full"><label for="pageBannerPage">CHOOSE PAGE</label><select id="pageBannerPage" class="select">
+<option value="boss-bite">THE BOSS BITE · 1920 × 640 PX</option>
+<option value="boss-code-tv">B.O.S.S CODE TV · 1920 × 640 PX</option>
+<option value="the-code-clothing">THE CODE CLOTHING · 1920 × 640 PX</option>
+<option value="support">SUPPORT IS A DECISION · 1920 × 640 PX</option>
+<option value="contact">CONTACT · 1920 × 640 PX</option>
+<option value="decision-makers">DECISION MAKERS · 1920 × 640 PX</option>
+</select></div>
+<div class="field full"><label for="pageBannerFile">UPLOAD BANNER · RECOMMENDED 1920 × 640 PIXELS</label><input id="pageBannerFile" type="file" accept="image/*"><button type="button" id="pageBannerUpload" class="btn outline">UPLOAD BANNER</button></div>
+<div class="field full"><label for="pageBannerUrl">BANNER IMAGE LINK</label><input id="pageBannerUrl" class="input" type="url" placeholder="Upload above or paste an image link"></div>
+<div class="field full"><label for="pageBannerAlt">IMAGE DESCRIPTION</label><input id="pageBannerAlt" class="input" placeholder="Briefly describe the photo for accessibility"></div>
+<div class="field full"><img id="pageBannerPreview" alt="Banner preview" style="width:100%;height:auto;" hidden></div>
+<div class="field full"><label><input id="pageBannerPublished" type="checkbox" checked> SHOW BANNER ON THIS PAGE</label></div>
+</div><div class="actions"><button type="button" id="pageBannerSave" class="btn red">SAVE BANNER</button><button type="button" id="pageBannerRemove" class="btn outline">REMOVE BANNER</button></div><div id="pageBannerMsg" class="message" aria-live="polite"></div>
+</section>
+
+<section class="card" id="tvGalleryManager">
+<div class="head"><div><small>B.O.S.S CODE TV</small><h2>PHOTO GALLERY</h2></div></div>
+<p class="home-feature-admin-note">Upload photos from interviews, events and behind the scenes. Lower sort numbers appear first within each group; featured photos come before other photos. Unpublished photos stay hidden.</p>
+<div class="grid">
+<div class="field full"><label for="tvGalleryFile">PHOTO UPLOAD</label><input id="tvGalleryFile" type="file" accept="image/*"><button type="button" id="tvGalleryUpload" class="btn outline">UPLOAD PHOTO</button></div>
+<div class="field full"><label for="tvGalleryUrl">IMAGE LINK</label><input id="tvGalleryUrl" class="input" type="url" placeholder="Upload above or paste an image link"></div>
+<div class="field full"><label for="tvGalleryCaption">CAPTION</label><input id="tvGalleryCaption" class="input" placeholder="Who or what is in this photo?"></div>
+<div class="field"><label for="tvGallerySort">SORT ORDER</label><input id="tvGallerySort" class="input" type="number" step="1" value="0"></div>
+<div class="field"><label><input id="tvGalleryPublished" type="checkbox" checked> PUBLISHED</label><label><input id="tvGalleryFeatured" type="checkbox"> FEATURED</label></div>
+</div><div class="actions"><button type="button" id="tvGallerySave" class="btn red">ADD PHOTO</button><button type="button" id="tvGalleryCancel" class="btn outline" hidden>CANCEL EDIT</button></div>
+<div id="tvGalleryMsg" class="message" aria-live="polite"></div><div id="tvGalleryList" class="list"></div>
+</section>
+
 <!-- ===================================================== -->
 <!-- HOME FEATURES -->
 <!-- ===================================================== -->
@@ -3604,7 +3637,7 @@ class="status"
 </div>
 
 <div class="home-feature-admin-note">
-<strong>FOUR HOME FEATURE SLOTS.</strong> Slots 1 and 2 appear above the navigation. Slots 3 and 4 appear below the navigation. Unpublished or empty slots disappear completely. The media is a preview and the CTA routes the user into the selected app section.
+<strong>SIX HOME FEATURE SLOTS.</strong> Slots 1, 2 and 5 appear above the navigation. Slots 3, 4 and 6 appear below the navigation. Unpublished or empty slots disappear completely. The media is a preview and the CTA routes the user into the selected app section.
 </div>
 
 <div class="grid">
@@ -3614,8 +3647,10 @@ class="status"
 <select id="homeFeatureSlot" class="select">
 <option value="1">SLOT 1 — TOP</option>
 <option value="2">SLOT 2 — TOP</option>
+<option value="5">SLOT 5 — TOP (THIRD CARD)</option>
 <option value="3">SLOT 3 — LOWER</option>
 <option value="4">SLOT 4 — LOWER</option>
+<option value="6">SLOT 6 — LOWER (THIRD CARD)</option>
 </select>
 </div>
 
@@ -4567,6 +4602,7 @@ homeFeatures = [];
 }
 
 renderAll();
+await loadPageMediaAdmin();
 
 }
 catch(error){
@@ -9901,11 +9937,11 @@ $("homeFeatureTitle")
 
 if(
 slot < 1 ||
-slot > 4
+slot > 6
 ){
 
 $("homeFeatureMsg").textContent =
-"CHOOSE A FEATURE SLOT FROM 1 TO 4.";
+"CHOOSE A FEATURE SLOT FROM 1 TO 6.";
 
 return;
 
@@ -11909,6 +11945,125 @@ $("login")
 
 
 health();
+
+/* PAGE BANNERS AND TV GALLERY MANAGER */
+let pageBannerItems=[];
+let tvGalleryItems=[];
+let tvGalleryEditId=null;
+
+async function loadPageMediaAdmin(){
+ const results=await Promise.allSettled([api('/page-banners?all=1'),api('/boss-code-tv-gallery?all=1')]);
+ if(results[0].status==='fulfilled'){
+   pageBannerItems=results[0].value.data||[];
+   showSelectedPageBanner();
+ }else{$('pageBannerMsg').textContent='Could not load banners. '+results[0].reason.message;}
+ if(results[1].status==='fulfilled'){
+   tvGalleryItems=results[1].value.data||[];renderTvGalleryAdmin();
+ }else{$('tvGalleryMsg').textContent='Could not load TV photos. '+results[1].reason.message;}
+}
+function showSelectedPageBanner(){
+ const item=pageBannerItems.find(row=>row.page_key===$('pageBannerPage').value);
+ $('pageBannerUrl').value=item?.image_url||'';
+ $('pageBannerAlt').value=item?.alt_text||'';
+ $('pageBannerPublished').checked=Number(item?.published??1)===1;
+ $('pageBannerFile').value='';
+ previewPageBanner();
+}
+function previewPageBanner(){
+ const url=$('pageBannerUrl').value.trim();
+ const image=$('pageBannerPreview');
+ image.hidden=!url;
+ if(url) image.src=url; else image.removeAttribute('src');
+ image.alt=$('pageBannerAlt').value||'Banner preview';
+}
+async function savePageBanner(){
+ const image_url=$('pageBannerUrl').value.trim();
+ if(!image_url){$('pageBannerMsg').textContent='Upload a banner or enter its image link first.';return;}
+ const key=$('pageBannerPage').value;
+ const button=$('pageBannerSave');button.disabled=true;
+ try{
+   await api('/page-banners/'+key,{method:'PUT',body:JSON.stringify({image_url,alt_text:$('pageBannerAlt').value.trim(),published:$('pageBannerPublished').checked?1:0})});
+   $('pageBannerMsg').textContent='Banner saved.';await loadPageMediaAdmin();
+ }catch(error){$('pageBannerMsg').textContent=error.message;}
+ finally{button.disabled=false;}
+}
+async function removePageBanner(){
+ const key=$('pageBannerPage').value;
+ if(!confirm('Remove this page banner and restore its default header?'))return;
+ try{await api('/page-banners/'+key,{method:'DELETE'});await loadPageMediaAdmin();$('pageBannerMsg').textContent='Banner removed.';}
+ catch(error){$('pageBannerMsg').textContent=error.message;}
+}
+async function uploadPageBanner(){
+ const file=$('pageBannerFile').files[0];
+ if(!file || !file.type.startsWith('image/')){$('pageBannerMsg').textContent='Choose an image file first.';return;}
+ const page=$('pageBannerPage').value;
+ $('pageBannerPage').disabled=true;$('pageBannerUpload').disabled=true;
+ try{
+   const url=await upload(file,'page-banners/'+page,'pageBannerMsg');
+   if(url){$('pageBannerUrl').value=url;previewPageBanner();$('pageBannerMsg').textContent='Banner uploaded. Click SAVE BANNER to apply it.';}
+ }catch(error){$('pageBannerMsg').textContent=error.message;}
+ finally{$('pageBannerPage').disabled=false;$('pageBannerUpload').disabled=false;}
+}
+function resetTvGalleryEditor(){
+ tvGalleryEditId=null;
+ $('tvGalleryUrl').value='';$('tvGalleryCaption').value='';$('tvGalleryFile').value='';
+ $('tvGallerySort').value='0';$('tvGalleryPublished').checked=true;$('tvGalleryFeatured').checked=false;
+ $('tvGallerySave').textContent='ADD PHOTO';$('tvGalleryCancel').hidden=true;
+}
+function editTvGalleryPhoto(id){
+ const item=tvGalleryItems.find(row=>Number(row.id)===Number(id));if(!item)return;
+ tvGalleryEditId=item.id;
+ $('tvGalleryUrl').value=item.image_url;$('tvGalleryCaption').value=item.caption||'';
+ $('tvGallerySort').value=item.sort_order||0;$('tvGalleryPublished').checked=Number(item.published)===1;
+ $('tvGalleryFeatured').checked=Number(item.featured)===1;$('tvGalleryFile').value='';
+ $('tvGallerySave').textContent='UPDATE PHOTO';$('tvGalleryCancel').hidden=false;
+ $('tvGalleryUrl').focus();
+}
+function renderTvGalleryAdmin(){
+ $('tvGalleryList').innerHTML=tvGalleryItems.length?tvGalleryItems.map(item=>`
+ <div class="item"><div><img src="${esc(item.image_url)}" alt="${esc(item.caption||'TV photo')}" style="width:100%;max-width:180px;aspect-ratio:4/3;object-fit:cover;" loading="lazy"></div><div>
+ <h3>${esc(item.caption||'TV PHOTO')}</h3><p class="meta">${Number(item.published)===1?'PUBLISHED':'DRAFT'} · ORDER ${Number(item.sort_order)||0}${Number(item.featured)===1?' · FEATURED':''}</p>
+ <div class="actions"><button class="btn gray" type="button" data-tv-edit="${Number(item.id)}">EDIT</button><button class="btn danger" type="button" data-tv-delete="${Number(item.id)}">DELETE</button></div></div></div>`).join(''):'<div class="empty">NO TV PHOTOS ADDED YET.</div>';
+}
+async function saveTvGalleryPhoto(){
+ const image_url=$('tvGalleryUrl').value.trim();
+ const sort_order=Number($('tvGallerySort').value);
+ if(!image_url){$('tvGalleryMsg').textContent='Upload a photo or enter its image link.';return;}
+ if(!Number.isSafeInteger(sort_order)){$('tvGalleryMsg').textContent='Sort order must be a whole number.';return;}
+ const button=$('tvGallerySave');button.disabled=true;
+ try{
+   await api('/boss-code-tv-gallery'+(tvGalleryEditId?'/'+tvGalleryEditId:''),{method:tvGalleryEditId?'PUT':'POST',body:JSON.stringify({image_url,caption:$('tvGalleryCaption').value.trim(),sort_order,published:$('tvGalleryPublished').checked?1:0,featured:$('tvGalleryFeatured').checked?1:0})});
+   resetTvGalleryEditor();await loadPageMediaAdmin();$('tvGalleryMsg').textContent='Photo saved.';
+ }catch(error){$('tvGalleryMsg').textContent=error.message;}
+ finally{button.disabled=false;}
+}
+async function deleteTvGalleryPhoto(id){
+ if(!confirm('Delete this TV gallery photo?'))return;
+ try{await api('/boss-code-tv-gallery/'+id,{method:'DELETE'});if(Number(tvGalleryEditId)===Number(id))resetTvGalleryEditor();await loadPageMediaAdmin();}
+ catch(error){$('tvGalleryMsg').textContent=error.message;}
+}
+async function uploadTvGalleryPhoto(){
+ const file=$('tvGalleryFile').files[0];
+ if(!file || !file.type.startsWith('image/')){$('tvGalleryMsg').textContent='Choose an image file first.';return;}
+ $('tvGalleryUpload').disabled=true;
+ try{const url=await upload(file,'boss-code-tv/gallery','tvGalleryMsg');if(url){$('tvGalleryUrl').value=url;$('tvGalleryMsg').textContent='Photo uploaded. Save the photo to add it to the gallery.';}}
+ catch(error){$('tvGalleryMsg').textContent=error.message;}
+ finally{$('tvGalleryUpload').disabled=false;}
+}
+$('pageBannerPage').addEventListener('change',showSelectedPageBanner);
+$('pageBannerUrl').addEventListener('change',previewPageBanner);
+$('pageBannerSave').addEventListener('click',savePageBanner);
+$('pageBannerRemove').addEventListener('click',removePageBanner);
+$('pageBannerUpload').addEventListener('click',uploadPageBanner);
+$('tvGallerySave').addEventListener('click',saveTvGalleryPhoto);
+$('tvGalleryCancel').addEventListener('click',resetTvGalleryEditor);
+$('tvGalleryUpload').addEventListener('click',uploadTvGalleryPhoto);
+$('tvGalleryList').addEventListener('click',event=>{
+ const editButton=event.target.closest('[data-tv-edit]');
+ const deleteButton=event.target.closest('[data-tv-delete]');
+ if(editButton)editTvGalleryPhoto(Number(editButton.dataset.tvEdit));
+ if(deleteButton)deleteTvGalleryPhoto(Number(deleteButton.dataset.tvDelete));
+});
 
 </script>
 

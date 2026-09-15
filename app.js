@@ -1,3 +1,6 @@
+    let pageBannerRows=[];
+    let tvPhotoRows=[];
+    let tvPhotoIndex=0;
     const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
 
     const $=id=>document.getElementById(id);
@@ -1950,6 +1953,7 @@
     return;
 
     syncHomeFeaturePlayback(s.id==='home-screen');
+    applyPageBanners();
 
 
     qa(
@@ -3154,7 +3158,7 @@
     </h1>
 
     <p>
-    Your support helps B.O.S.S CODE MEDIA continue creating independent media, music, education, stories and opportunities.
+    <strong>YOUR SUPPORT</strong> helps B.O.S.S CODE MEDIA continue creating independent media, music, education, stories and opportunities.
     </p>
 
     <div class="support-principle">
@@ -15456,7 +15460,7 @@
     </h2>
 
     <p>
-    Wear the decision. Carry the code.
+    WEAR THE DECISION. CARRY THE CODE.
     </p>
 
     </header>
@@ -18732,6 +18736,106 @@
     }
 
 
+    /* PAGE BANNERS AND TV PHOTO GALLERY */
+    function applyPageBanners(){
+      document.documentElement.style.setProperty('--page-banner-width',document.documentElement.clientWidth+'px');
+      const targets={
+        'boss-bite':'#boss-bite-screen .section-header',
+        'boss-code-tv':'#boss-code-tv-screen .boss-tv-live-section',
+        'the-code-clothing':'#the-code-clothing-screen .clothing-brand',
+        'support':'#support-screen .support-hero',
+        'contact':'#contact-screen .contact-hero',
+        'decision-makers':'#decision-makers-screen .decision-header'
+      };
+      for(const [key,selector] of Object.entries(targets)){
+        const host=q(selector);
+        if(!host) continue;
+        let banner=host.querySelector('[data-page-banner]');
+        const row=pageBannerRows.find(row=>row.page_key===key && Number(row.published??1)===1);
+        if(!row?.image_url){
+          if(banner) banner.remove();
+          host.classList.remove('page-banner-ready');
+          continue;
+        }
+        if(!banner){
+          banner=document.createElement('div');
+          banner.className='page-photo-banner';
+          banner.dataset.pageBanner=key;
+          banner.hidden=true;
+          const img=document.createElement('img');
+          img.decoding='async';
+          img.onload=()=>{banner.hidden=false;host.classList.add('page-banner-ready');};
+          img.onerror=()=>{banner.hidden=true;host.classList.remove('page-banner-ready');};
+          banner.append(img);
+          const anchor=host.querySelector(':scope > img, :scope > .boss-tv-live-heading');
+          if(anchor) host.insertBefore(banner,anchor); else host.prepend(banner);
+        }
+        const img=banner.querySelector('img');
+        img.alt=row.alt_text||key.replaceAll('-',' ')+' banner';
+        if(img.getAttribute('src')!==row.image_url){
+          banner.hidden=true;
+          host.classList.remove('page-banner-ready');
+          img.src=row.image_url;
+        }
+      }
+    }
+
+    function renderTvPhotoGallery(){
+      const host=q('#boss-code-tv-screen .boss-tv-page');
+      if(!host) return;
+      let section=$('boss-code-tv-photo-section');
+      if(!section){
+        section=document.createElement('section');
+        section.id='boss-code-tv-photo-section';
+        section.className='boss-tv-photo-section';
+        section.innerHTML='<div class="boss-tv-recorded-heading"><div><span>BEHIND THE CONVERSATIONS</span><h2>PHOTO GALLERY</h2></div><div class="boss-tv-heading-line"></div></div><div id="boss-code-tv-photo-grid" class="tv-photo-grid"></div>';
+        host.insertBefore(section,host.querySelector('.boss-footer'));
+      }
+      section.hidden=!tvPhotoRows.length;
+      const grid=$('boss-code-tv-photo-grid');
+      grid.replaceChildren();
+      tvPhotoRows.forEach((item,index)=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='tv-photo-button';
+        button.setAttribute('aria-label',item.caption||'Open TV photo '+(index+1));
+        const img=document.createElement('img');
+        img.src=item.image_url;img.alt=item.caption||'B.O.S.S CODE TV photo';img.loading='lazy';
+        button.append(img);
+        button.addEventListener('click',()=>openTvPhoto(index));
+        grid.append(button);
+      });
+    }
+
+    function openTvPhoto(index){
+      if(!tvPhotoRows.length) return;
+      let dialog=$('tv-photo-dialog');
+      if(!dialog){
+        dialog=document.createElement('dialog');
+        dialog.id='tv-photo-dialog';
+        dialog.className='tv-photo-dialog';
+        dialog.setAttribute('aria-label','B.O.S.S CODE TV photo gallery');
+        dialog.innerHTML='<button type="button" data-tv-close aria-label="Close photo">×</button><img data-tv-photo alt=""><p data-tv-caption></p><div class="tv-photo-nav"><button type="button" data-tv-prev aria-label="Previous photo">PREVIOUS</button><span data-tv-count></span><button type="button" data-tv-next aria-label="Next photo">NEXT</button></div>';
+        document.body.append(dialog);
+        dialog.querySelector('[data-tv-close]').onclick=()=>dialog.close();
+        dialog.querySelector('[data-tv-prev]').onclick=()=>openTvPhoto(tvPhotoIndex-1);
+        dialog.querySelector('[data-tv-next]').onclick=()=>openTvPhoto(tvPhotoIndex+1);
+        dialog.addEventListener('keydown',e=>{
+          if(e.key==='ArrowLeft'){e.preventDefault();openTvPhoto(tvPhotoIndex-1);}
+          if(e.key==='ArrowRight'){e.preventDefault();openTvPhoto(tvPhotoIndex+1);}
+        });
+      }
+      tvPhotoIndex=(index+tvPhotoRows.length)%tvPhotoRows.length;
+      const item=tvPhotoRows[tvPhotoIndex];
+      const img=dialog.querySelector('[data-tv-photo]');
+      img.src=item.image_url;img.alt=item.caption||'B.O.S.S CODE TV photo';
+      dialog.querySelector('[data-tv-caption]').textContent=item.caption||'';
+      dialog.querySelector('[data-tv-count]').textContent=`${tvPhotoIndex+1} / ${tvPhotoRows.length}`;
+      dialog.querySelector('[data-tv-prev]').disabled=tvPhotoRows.length<2;
+      dialog.querySelector('[data-tv-next]').disabled=tvPhotoRows.length<2;
+      if(!dialog.open) dialog.showModal();
+    }
+
     /* =========================================================
        HOME FEATURED CONTENT
        BACKEND MANAGED
@@ -19143,7 +19247,7 @@
 
     for(
     let slot=1;
-    slot<=4;
+    slot<=6;
     slot++
     ){
 
@@ -19190,7 +19294,7 @@
 
     for(
     let slot=1;
-    slot<=4;
+    slot<=6;
     slot++
     ){
 
@@ -19347,6 +19451,8 @@
     !$('home-feature-slot-1')?.hidden
     ||
     !$('home-feature-slot-2')?.hidden
+    ||
+    !$('home-feature-slot-5')?.hidden
     );
 
     }
@@ -19359,6 +19465,8 @@
     !$('home-feature-slot-3')?.hidden
     ||
     !$('home-feature-slot-4')?.hidden
+    ||
+    !$('home-feature-slot-6')?.hidden
     );
 
     }
@@ -19397,7 +19505,7 @@
     return(
     slot>=1
     &&
-    slot<=4
+    slot<=6
     );
 
     }
@@ -19514,7 +19622,9 @@
 
     api(
     '/home-features'
-    )
+    ),
+    api('/page-banners'),
+    api('/boss-code-tv-gallery')
 
     ]);
 
@@ -19549,7 +19659,9 @@
 
     promoResult,
 
-    homeFeaturesResult
+    homeFeaturesResult,
+    bannersResult,
+    tvGalleryResult
 
     ]=
     results;
@@ -19869,6 +19981,16 @@
     }
 
 
+    if(bannersResult.status==='fulfilled'){
+      pageBannerRows=Array.isArray(bannersResult.value)?bannersResult.value:[];
+      applyPageBanners();
+    }
+    if(tvGalleryResult.status==='fulfilled'){
+      tvPhotoRows=(Array.isArray(tvGalleryResult.value)?tvGalleryResult.value:[]).filter(row=>Number(row.published??1)===1);
+      $('tv-photo-dialog')?.close();
+      renderTvPhotoGallery();
+    }
+
     /* HOME FEATURES */
 
     if(
@@ -20071,3 +20193,5 @@
 
 
     scheduleDemographicsPrompt();
+
+window.addEventListener("resize",()=>{document.documentElement.style.setProperty("--page-banner-width",document.documentElement.clientWidth+"px");});
