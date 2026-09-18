@@ -4090,3 +4090,17 @@ body,
     }
 }
 
+/* ===================================================== */
+/* DECISION MAKERS LOGIN BUTTON TRUE B.O.S.S CODE RED    */
+/* ===================================================== */
+
+#decision-makers-screen .dm-course-auth-button,
+#decision-makers-screen .dm-auth-button,
+#decision-makers-screen button[data-action="send-code"],
+#decision-makers-screen button[id*="send"][id*="code"],
+#decision-makers-screen button[class*="send"][class*="code"]{
+    background:#d40000 !important;
+    border-color:#d40000 !important;
+    color:#fff !important;
+}
+
