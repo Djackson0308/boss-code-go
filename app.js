@@ -20139,11 +20139,238 @@
     }
 
 
+
+    /* =========================================================
+       B.O.S.S CODE GO 30 DAY CHALLENGES + COMMUNITY
+       Universal accounts, progress, history, achievements,
+       reports, inspiration, Encourage and mobile map lock.
+    ========================================================= */
+
+    const GO_AUTH_TOKEN_KEY='boss-code-go-auth-token-v1';
+    const GO_AUTH_EMAIL_KEY='boss-code-go-auth-email-v1';
+    let goToken='';
+    let goProfile=null;
+    let goChallenges=[];
+    let goActiveRun=null;
+    let goCurrentChallenge=null;
+
+    try{goToken=localStorage.getItem(GO_AUTH_TOKEN_KEY)||'';}catch{}
+
+    async function goFetch(path,options={}){
+      const headers={Accept:'application/json',...(options.headers||{})};
+      if(options.body && !headers['Content-Type'])headers['Content-Type']='application/json';
+      if(goToken)headers.Authorization=`Bearer ${goToken}`;
+      const response=await fetch(API+path,{...options,headers,cache:'no-store'});
+      const type=response.headers.get('content-type')||'';
+      const data=type.includes('application/json')?await response.json():await response.text();
+      if(!response.ok){
+        const error=new Error(data?.error||`API ${response.status}`);
+        error.status=response.status;
+        error.data=data;
+        throw error;
+      }
+      return data;
+    }
+
+    function goInjectStyles(){
+      if($('boss-go-challenge-styles'))return;
+      const style=document.createElement('style');
+      style.id='boss-go-challenge-styles';
+      style.textContent=`
+      .go-challenge-zone{margin:28px 0 34px;padding:22px;border:1px solid #292929;border-radius:24px;background:linear-gradient(180deg,#0d0d0d,#050505)}
+      .go-zone-head{display:flex;justify-content:space-between;gap:14px;align-items:end;margin-bottom:18px}.go-zone-head small{display:block;color:#f5c518;font-weight:900;letter-spacing:.15em;margin-bottom:5px}.go-zone-head h2{margin:0;font-size:clamp(25px,5vw,40px)}.go-zone-head p{margin:6px 0 0;color:#999;max-width:650px;line-height:1.5}
+      .go-account-button,.go-pill,.go-primary,.go-secondary,.go-danger,.go-encourage{appearance:none;border-radius:999px;font:inherit;font-weight:900;cursor:pointer}.go-account-button{border:2px solid #f5c518;background:#050505;color:#fff;padding:11px 16px;white-space:nowrap}.go-primary{border:0;background:#d40000;color:#fff;padding:13px 18px}.go-secondary{border:1px solid #f5c518;background:#080808;color:#f5c518;padding:12px 17px}.go-danger{border:1px solid #8a1b1b;background:#100;color:#ff8585;padding:11px 16px}
+      .go-challenge-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.go-challenge-card{border:1px solid #2c2c2c;border-radius:18px;background:#080808;overflow:hidden;display:flex;flex-direction:column}.go-challenge-cover{aspect-ratio:16/10;background:#111;display:flex;align-items:center;justify-content:center;color:#f5c518;font-weight:900;text-align:center;padding:15px;background-size:cover;background-position:center}.go-challenge-card-body{padding:15px;display:flex;flex-direction:column;flex:1}.go-challenge-card small{color:#f5c518;font-weight:900}.go-challenge-card h3{margin:5px 0 8px;font-size:19px}.go-challenge-card p{color:#999;line-height:1.45;font-size:13px;flex:1}.go-challenge-card button{width:100%;margin-top:10px}
+      .go-active-strip{margin:0 0 20px;border:2px solid #f5c518;border-radius:18px;padding:16px;background:#0b0b0b;display:none}.go-active-strip.show{display:block}.go-progress-track{height:10px;border-radius:999px;background:#222;overflow:hidden;margin:10px 0}.go-progress-fill{height:100%;background:#f5c518;width:0}.go-active-stats{display:flex;gap:14px;flex-wrap:wrap;color:#aaa;font-size:12px}.go-active-stats b{color:#fff}
+      .go-overlay{position:fixed;inset:0;z-index:35000;background:rgba(0,0,0,.96);display:none;overflow:auto;padding:18px}.go-overlay.open{display:block}.go-shell{width:min(980px,100%);margin:0 auto 50px}.go-topbar{position:sticky;top:0;z-index:2;background:rgba(0,0,0,.94);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0 15px}.go-topbar h2{margin:0;font-size:18px}.go-close{width:44px;height:44px;border-radius:50%;border:2px solid #d40000;background:#050505;color:#fff;font-size:22px;cursor:pointer}.go-panel{border:1px solid #2c2c2c;border-radius:22px;background:#090909;padding:20px;margin-bottom:16px}.go-panel h1,.go-panel h2,.go-panel h3{margin-top:0}.go-kicker{color:#f5c518;font-size:10px;font-weight:900;letter-spacing:.16em}.go-muted{color:#999;line-height:1.55}.go-tabs{display:flex;gap:8px;overflow:auto;padding-bottom:10px}.go-tab{border:1px solid #333;border-radius:999px;background:#0a0a0a;color:#fff;padding:10px 14px;font-weight:900;white-space:nowrap;cursor:pointer}.go-tab.active{border-color:#f5c518;color:#f5c518}.go-tab-page{display:none}.go-tab-page.active{display:block}
+      .go-auth-card{width:min(500px,100%);margin:10vh auto;border:2px solid #f5c518;border-radius:24px;background:#090909;padding:24px}.go-field{margin:14px 0}.go-field label{display:block;color:#f5c518;font-size:10px;font-weight:900;margin-bottom:7px}.go-field input,.go-field textarea{box-sizing:border-box;width:100%;border:1px solid #333;border-radius:13px;background:#000;color:#fff;padding:13px;font:inherit}.go-field textarea{min-height:100px;resize:vertical}.go-status{min-height:22px;margin-top:10px;color:#f5c518;font-weight:800}.go-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+      .go-day-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.go-day-number{color:#f5c518;font-size:12px;font-weight:900}.go-scripture{border-left:4px solid #f5c518;background:#111;padding:14px 16px;margin:14px 0}.go-scripture strong{color:#f5c518}.go-check{display:flex;gap:10px;align-items:center;border:1px solid #292929;border-radius:14px;padding:12px;margin:10px 0;background:#050505}.go-check input{width:20px;height:20px}.go-prompt{margin:15px 0}.go-prompt strong{display:block;margin-bottom:7px}.go-levels{display:flex;gap:8px;overflow:auto}.go-level{min-width:130px;border:1px solid #292929;border-radius:14px;padding:11px}.go-level.current{border-color:#f5c518}.go-level b{display:block}.go-level small{color:#999}
+      .go-stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.go-stat{border:1px solid #292929;border-radius:15px;padding:14px}.go-stat b{display:block;color:#f5c518;font-size:24px}.go-history-item,.go-achievement,.go-feed-item{border:1px solid #292929;border-radius:16px;padding:14px;margin:10px 0;background:#060606}.go-history-item{display:flex;justify-content:space-between;gap:12px;align-items:center}.go-history-item small,.go-feed-item small{color:#888}.go-achievement{display:flex;gap:12px;align-items:center}.go-badge{width:52px;height:52px;border-radius:50%;border:2px solid #f5c518;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 52px;font-size:22px}.go-badge img{width:100%;height:100%;object-fit:cover}.go-feed-head{display:flex;gap:10px;align-items:center}.go-avatar{width:42px;height:42px;border-radius:50%;background:#191919;object-fit:cover}.go-encourage{border:1px solid #333;background:#111;color:#fff;padding:9px 13px;margin-top:10px}.go-encourage.on{border-color:#f5c518;color:#f5c518}.go-empty{border:1px dashed #333;border-radius:15px;padding:20px;text-align:center;color:#888}
+      .boss-map-mobile-tools{display:none;position:relative;z-index:8;margin:10px 0}.boss-map-mobile-tools button{width:100%;border:2px solid #f5c518;border-radius:999px;background:#080808;color:#fff;padding:12px;font-weight:900}.boss-map-locked{position:relative}.boss-map-locked:after{content:'MAP LOCKED • TAP EXPLORE MAP TO MOVE IT';position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(0,0,0,.32);color:#fff;font-size:11px;font-weight:900;letter-spacing:.08em;pointer-events:none}
+      @media(max-width:850px){.go-challenge-grid{grid-template-columns:1fr 1fr}.go-stat-grid{grid-template-columns:1fr 1fr}.go-zone-head{align-items:start;flex-direction:column}.boss-map-mobile-tools{display:block}}
+      @media(max-width:520px){.go-challenge-grid{grid-template-columns:1fr}.go-overlay{padding:10px}.go-panel{padding:16px}.go-history-item{align-items:flex-start;flex-direction:column}}
+      `;
+      document.head.appendChild(style);
+    }
+
+    function goEnsureUI(){
+      goInjectStyles();
+      if(!$('go-challenge-overlay')){
+        const overlay=document.createElement('div');
+        overlay.id='go-challenge-overlay';overlay.className='go-overlay';overlay.innerHTML=`<div class="go-shell"><div class="go-topbar"><h2>B.O.S.S CODE GO • 30 DAY CHALLENGES</h2><button class="go-close" id="go-close" type="button">×</button></div><div id="go-main"></div></div>`;
+        document.body.appendChild(overlay);
+        on('go-close','click',()=>goClose());
+      }
+      if(!$('go-auth-overlay')){
+        const auth=document.createElement('div');auth.id='go-auth-overlay';auth.className='go-overlay';auth.innerHTML=`<div class="go-auth-card"><div class="go-kicker">B.O.S.S CODE GO ACCOUNT</div><h2 id="go-auth-title">SIGN IN</h2><p class="go-muted">Use your email. We will send you a secure 6 digit code.</p><div class="go-field"><label>EMAIL</label><input id="go-auth-email" type="email" autocomplete="email" placeholder="you@example.com"></div><div id="go-code-wrap" class="go-field" style="display:none"><label>6 DIGIT CODE</label><input id="go-auth-code" inputmode="numeric" maxlength="6" placeholder="000000"></div><div class="go-actions"><button id="go-auth-send" class="go-primary" type="button">SEND CODE</button><button id="go-auth-verify" class="go-primary" type="button" style="display:none">VERIFY & SIGN IN</button><button id="go-auth-cancel" class="go-secondary" type="button">CANCEL</button></div><div id="go-auth-status" class="go-status"></div></div>`;
+        document.body.appendChild(auth);
+        on('go-auth-send','click',goSendCode);on('go-auth-verify','click',goVerifyCode);on('go-auth-cancel','click',()=>auth.classList.remove('open'));
+        try{$('go-auth-email').value=localStorage.getItem(GO_AUTH_EMAIL_KEY)||crmSavedIdentity().email||'';}catch{}
+      }
+      goEnsureDecisionMakerZone();
+      goSetupMobileMapLock();
+    }
+
+    function goEnsureDecisionMakerZone(){
+      const screen=$('decision-makers-screen');if(!screen||$('go-challenge-zone'))return;
+      const zone=document.createElement('section');zone.id='go-challenge-zone';zone.className='go-challenge-zone';
+      zone.innerHTML=`<div class="go-zone-head"><div><small>FREE 30 DAY CHALLENGES</small><h2>MAKE THE NEXT 30 DAYS COUNT</h2><p>Choose one challenge at a time. Your progress, levels, achievements and history stay connected to your B.O.S.S CODE GO account.</p></div><button id="go-account-button" class="go-account-button" type="button">MY GO ACCOUNT</button></div><div id="go-active-strip" class="go-active-strip"></div><div id="go-challenge-grid" class="go-challenge-grid"><div class="go-empty" style="grid-column:1/-1">LOADING CHALLENGES...</div></div>`;
+      const anchor=q('.on-the-go-row',screen)?.parentElement||q('.session-grid',screen)?.parentElement||screen.firstElementChild;
+      if(anchor&&anchor!==screen)anchor.insertAdjacentElement('beforebegin',zone);else screen.prepend(zone);
+      on('go-account-button','click',()=>goOpenHub('progress'));
+    }
+
+    function goOpen(){const o=$('go-challenge-overlay');if(o){o.classList.add('open');document.body.style.overflow='hidden';}}
+    function goClose(){const o=$('go-challenge-overlay');if(o)o.classList.remove('open');document.body.style.overflow='';}
+    function goRequireAuth(next){if(goToken){next();return;}window.goAfterAuth=next;$('go-auth-overlay')?.classList.add('open');}
+
+    async function goSendCode(){
+      const email=String($('go-auth-email')?.value||'').trim().toLowerCase(),status=$('go-auth-status');
+      if(status)status.textContent='SENDING...';
+      try{await goFetch('/auth/send-code',{method:'POST',body:JSON.stringify({email})});try{localStorage.setItem(GO_AUTH_EMAIL_KEY,email);}catch{}$('go-code-wrap').style.display='block';$('go-auth-send').style.display='none';$('go-auth-verify').style.display='inline-block';if(status)status.textContent='CODE SENT. CHECK YOUR EMAIL.';}catch(e){if(status)status.textContent=e.message;}
+    }
+
+    async function goVerifyCode(){
+      const email=String($('go-auth-email')?.value||'').trim().toLowerCase(),code=String($('go-auth-code')?.value||'').trim(),status=$('go-auth-status');
+      if(status)status.textContent='VERIFYING...';
+      try{const data=await goFetch('/auth/verify-code',{method:'POST',body:JSON.stringify({email,code})});goToken=data.token||'';goProfile=data.profile||null;try{localStorage.setItem(GO_AUTH_TOKEN_KEY,goToken);localStorage.setItem(GO_AUTH_EMAIL_KEY,email);}catch{}crmRememberIdentity(email,goProfile?.display_name||data.customer?.name||'','go_account');$('go-auth-overlay').classList.remove('open');if(status)status.textContent='';await goLoadActiveRun();goRenderChallengeCards();const next=window.goAfterAuth;window.goAfterAuth=null;if(typeof next==='function')next();}catch(e){if(status)status.textContent=e.message;}
+    }
+
+    async function goRestoreSession(){
+      if(!goToken)return false;
+      try{const data=await goFetch('/go/profile');goProfile=data.profile||null;return true;}catch(e){if(e.status===401||e.status===403){goToken='';goProfile=null;try{localStorage.removeItem(GO_AUTH_TOKEN_KEY);}catch{}}return false;}
+    }
+
+    async function goLogout(){
+      try{await goFetch('/auth/logout',{method:'POST'});}catch{}
+      goToken='';goProfile=null;goActiveRun=null;try{localStorage.removeItem(GO_AUTH_TOKEN_KEY);}catch{}goRenderChallengeCards();goRenderActiveStrip();goClose();
+    }
+
+    async function goLoadChallenges(){
+      try{const data=await goFetch('/go/challenges');goChallenges=Array.isArray(data.challenges)?data.challenges:[];}catch{goChallenges=[];}
+      goRenderChallengeCards();
+    }
+
+    async function goLoadActiveRun(){
+      if(!goToken){goActiveRun=null;goRenderActiveStrip();return;}
+      try{const data=await goFetch('/go/challenge-runs/active');goActiveRun=data.active_run||null;}catch{goActiveRun=null;}
+      goRenderActiveStrip();
+    }
+
+    function goRenderChallengeCards(){
+      const grid=$('go-challenge-grid');if(!grid)return;
+      if(!goChallenges.length){grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">NO 30 DAY CHALLENGES ARE PUBLISHED RIGHT NOW.</div>';return;}
+      grid.innerHTML=goChallenges.map(c=>`<article class="go-challenge-card"><div class="go-challenge-cover" ${c.cover_image_url?`style="background-image:linear-gradient(rgba(0,0,0,.25),rgba(0,0,0,.65)),url('${esc(c.cover_image_url)}')"`:''}>${c.cover_image_url?'':esc(c.title)}</div><div class="go-challenge-card-body"><small>${esc(c.category||'30 DAY CHALLENGE')}</small><h3>${esc(c.title)}</h3><p>${esc(c.short_description||c.description||'Build meaningful progress one day at a time.')}</p><button class="go-primary" type="button" data-go-challenge="${c.id}">${goActiveRun&&Number(goActiveRun.challenge_id)===Number(c.id)?'CONTINUE CHALLENGE':'VIEW CHALLENGE'}</button></div></article>`).join('');
+      qa('[data-go-challenge]',grid).forEach(b=>b.addEventListener('click',()=>goRequireAuth(()=>goOpenChallenge(Number(b.dataset.goChallenge)))));
+    }
+
+    function goRenderActiveStrip(){
+      const box=$('go-active-strip');if(!box)return;
+      if(!goActiveRun){box.classList.remove('show');box.innerHTML='';return;}
+      const pct=Math.min(100,Math.round((Number(goActiveRun.days_completed||0)/Number(goActiveRun.duration_days||30))*100));
+      box.classList.add('show');box.innerHTML=`<div class="go-kicker">ACTIVE CHALLENGE</div><strong>${esc(goActiveRun.title||'30 DAY CHALLENGE')}</strong><div class="go-progress-track"><div class="go-progress-fill" style="width:${pct}%"></div></div><div class="go-active-stats"><span><b>${goActiveRun.days_completed||0}/${goActiveRun.duration_days||30}</b> DAYS</span><span><b>${goActiveRun.total_points||0}</b> POINTS</span><span><b>${goActiveRun.current_streak||0}</b> STREAK</span></div><div class="go-actions"><button class="go-primary" id="go-continue-active" type="button">CONTINUE DAY ${goActiveRun.current_day||1}</button><button class="go-secondary" id="go-view-progress" type="button">VIEW PROGRESS</button></div>`;
+      on('go-continue-active','click',()=>goOpenRun(goActiveRun.id));on('go-view-progress','click',()=>goOpenHub('progress'));
+      goRenderChallengeCards();
+    }
+
+    async function goOpenChallenge(id){
+      const c=goChallenges.find(x=>Number(x.id)===Number(id));if(!c)return;
+      if(goActiveRun&&Number(goActiveRun.challenge_id)===Number(id)){goOpenRun(goActiveRun.id);return;}
+      goCurrentChallenge=c;goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING CHALLENGE...</div>';
+      try{const data=await goFetch(`/go/challenges/${encodeURIComponent(c.slug)}`);const full=data.challenge||c;main.innerHTML=`<section class="go-panel">${full.banner_image_url?`<img src="${esc(full.banner_image_url)}" alt="" style="width:100%;max-height:300px;object-fit:cover;border-radius:15px;margin-bottom:16px">`:''}<div class="go-kicker">${esc(full.category||'FREE 30 DAY CHALLENGE')}</div><h1>${esc(full.title)}</h1><p class="go-muted">${esc(full.description||full.short_description||'')}</p><div class="go-levels">${(data.levels||[]).map(l=>`<div class="go-level"><b>${esc(l.level_name)}</b><small>${Number(l.minimum_points||0)} POINTS</small></div>`).join('')}</div><div class="go-actions">${goActiveRun?`<button class="go-secondary" type="button" id="go-active-other">YOU ALREADY HAVE AN ACTIVE CHALLENGE</button>`:`<button class="go-primary" type="button" id="go-start-challenge">START 30 DAY CHALLENGE</button>`}<button class="go-secondary" type="button" id="go-hub-from-detail">MY PROGRESS</button></div></section>`;on('go-start-challenge','click',()=>goStartChallenge(full.id));on('go-active-other','click',()=>goOpenRun(goActiveRun.id));on('go-hub-from-detail','click',()=>goOpenHub('progress'));}catch(e){main.innerHTML=`<div class="go-panel"><h2>CHALLENGE UNAVAILABLE</h2><p>${esc(e.message)}</p></div>`;}
+    }
+
+    async function goStartChallenge(challengeId){
+      const main=$('go-main');try{const data=await goFetch('/go/challenge-runs',{method:'POST',body:JSON.stringify({challenge_id:challengeId})});goActiveRun=data.run||data.active_run||data;await goLoadActiveRun();goOpenRun(goActiveRun?.id||data.run?.id);}catch(e){if(e.data?.active_run){goActiveRun=e.data.active_run;goOpenRun(goActiveRun.id);}else main.innerHTML=`<div class="go-panel"><h2>COULD NOT START</h2><p>${esc(e.message)}</p></div>`;}
+    }
+
+    function goEntryForDay(run,day){return (run.entries||[]).find(e=>Number(e.day_number)===Number(day))||{};}
+
+    async function goOpenRun(runId){
+      goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING YOUR CHALLENGE...</div>';
+      try{const data=await goFetch(`/go/challenge-runs/${runId}`);goActiveRun=data.run;goRenderRun(data.run);}catch(e){main.innerHTML=`<div class="go-panel"><h2>COULD NOT LOAD CHALLENGE</h2><p>${esc(e.message)}</p></div>`;}
+    }
+
+    function goRenderRun(run){
+      const main=$('go-main'),day=run.current_day_content||{},entry=goEntryForDay(run,run.current_day),duration=Number(run.duration_days||30),pct=Math.min(100,Math.round((Number(run.days_completed||0)/duration)*100));
+      const level=(run.levels||[]).filter(l=>Number(l.minimum_points||0)<=Number(run.total_points||0)).sort((a,b)=>Number(b.minimum_points)-Number(a.minimum_points))[0];
+      main.innerHTML=`<section class="go-panel"><div class="go-kicker">ACTIVE 30 DAY CHALLENGE</div><h1>${esc(run.title)}</h1><div class="go-progress-track"><div class="go-progress-fill" style="width:${pct}%"></div></div><div class="go-active-stats"><span><b>DAY ${run.current_day}</b> OF ${duration}</span><span><b>${run.total_points||0}</b> POINTS</span><span><b>${run.current_streak||0}</b> CURRENT STREAK</span><span><b>${esc(level?.level_name||'STARTER')}</b> LEVEL</span></div></section><section class="go-panel"><div class="go-day-head"><div><div class="go-day-number">DAY ${run.current_day} • ${esc(day.theme||'FOCUS')}</div><h2>${esc(day.title||'TODAY')}</h2></div></div>${day.introduction?`<p class="go-muted">${esc(day.introduction)}</p>`:''}${day.faith_focus?`<p><strong>FAITH FOCUS:</strong> ${esc(day.faith_focus)}</p>`:''}${day.scripture_reference||day.scripture_text?`<div class="go-scripture"><strong>${esc(day.scripture_reference||'SCRIPTURE')} ${esc(day.scripture_translation||'KJV')}</strong><div>${esc(day.scripture_text||'')}</div></div>`:''}<div class="go-prompt"><strong>MORNING</strong>${day.morning_message?`<p class="go-muted">${esc(day.morning_message)}</p>`:''}<label>${esc(day.morning_prompt||'What is your focus today?')}</label><textarea id="go-morning">${esc(entry.morning_response||'')}</textarea>${day.morning_secondary_prompt?`<label>${esc(day.morning_secondary_prompt)}</label><textarea id="go-morning-2">${esc(entry.morning_secondary_response||'')}</textarea>`:''}<label class="go-check"><input id="go-morning-done" type="checkbox" ${Number(entry.morning_completed)===1?'checked':''}> MORNING CHECK IN COMPLETE • +${day.points_morning||5} POINTS</label></div><div class="go-prompt"><strong>${esc(day.daily_action_title||'DAILY ACTION')}</strong><p class="go-muted">${esc(day.daily_action||'')}</p><textarea id="go-action-notes" placeholder="Notes from your action...">${esc(entry.action_notes||'')}</textarea><label class="go-check"><input id="go-action-done" type="checkbox" ${Number(entry.action_completed)===1?'checked':''}> DAILY ACTION COMPLETE • +${day.points_action||10} POINTS</label></div><div class="go-prompt"><strong>EVENING</strong>${day.evening_message?`<p class="go-muted">${esc(day.evening_message)}</p>`:''}<label>${esc(day.evening_prompt||'What did you learn today?')}</label><textarea id="go-evening">${esc(entry.evening_response||'')}</textarea>${day.evening_secondary_prompt?`<label>${esc(day.evening_secondary_prompt)}</label><textarea id="go-evening-2">${esc(entry.evening_secondary_response||'')}</textarea>`:''}${day.tomorrow_adjustment_prompt?`<label>${esc(day.tomorrow_adjustment_prompt)}</label><textarea id="go-tomorrow">${esc(entry.tomorrow_adjustment||'')}</textarea>`:''}<label class="go-check"><input id="go-evening-done" type="checkbox" ${Number(entry.evening_completed)===1?'checked':''}> EVENING REFLECTION COMPLETE • +${day.points_evening||5} POINTS</label></div><div class="go-actions"><button id="go-save-day" class="go-primary" type="button">SAVE TODAY'S PROGRESS</button><button id="go-run-hub" class="go-secondary" type="button">STATS & HISTORY</button><button id="go-abandon" class="go-danger" type="button">END THIS CHALLENGE</button></div><div id="go-day-status" class="go-status"></div></section>`;
+      on('go-save-day','click',()=>goSaveDay(run));on('go-run-hub','click',()=>goOpenHub('progress'));on('go-abandon','click',()=>goAbandonRun(run));
+    }
+
+    async function goSaveDay(run){
+      const status=$('go-day-status');if(status)status.textContent='SAVING...';
+      const body={morning_response:$('go-morning')?.value||'',morning_secondary_response:$('go-morning-2')?.value||'',morning_completed:Boolean($('go-morning-done')?.checked),action_notes:$('go-action-notes')?.value||'',action_completed:Boolean($('go-action-done')?.checked),evening_response:$('go-evening')?.value||'',evening_secondary_response:$('go-evening-2')?.value||'',tomorrow_adjustment:$('go-tomorrow')?.value||'',evening_completed:Boolean($('go-evening-done')?.checked)};
+      try{const data=await goFetch(`/go/challenge-runs/${run.id}/days/${run.current_day}`,{method:'PUT',body:JSON.stringify(body)});goActiveRun=data.run;const justCompleted=body.morning_completed&&body.action_completed&&body.evening_completed;if(justCompleted&&Number(data.run.days_completed)>=Number(data.run.duration_days||30)){try{const done=await goFetch(`/go/challenge-runs/${run.id}/complete`,{method:'POST'});goActiveRun=null;goRenderActiveStrip();goRenderCompletion(done.run||data.run);return;}catch{}}await goLoadActiveRun();goRenderRun(data.run);const s=$('go-day-status');if(s)s.textContent=justCompleted?'DAY SAVED. KEEP MOVING.':'PROGRESS SAVED.';}catch(e){if(status)status.textContent=e.message;}
+    }
+
+    function goRenderCompletion(run){
+      $('go-main').innerHTML=`<section class="go-panel" style="text-align:center"><div class="go-kicker">30 DAYS COMPLETE</div><h1>${esc(run.title||'CHALLENGE COMPLETE')}</h1><p class="go-muted">You finished the challenge. Your history, points and achievements are saved.</p><div class="go-actions" style="justify-content:center"><button class="go-primary" id="go-complete-report" type="button">30 DAY REPORT</button><button class="go-secondary" id="go-complete-achievements" type="button">VIEW ACHIEVEMENTS</button></div></section>`;on('go-complete-report','click',()=>goOpenReport(run.id));on('go-complete-achievements','click',()=>goOpenHub('achievements'));
+    }
+
+    async function goAbandonRun(run){
+      if(!confirm('END THIS ACTIVE CHALLENGE? Your saved history will remain, but this run will be marked ended.'))return;
+      try{await goFetch(`/go/challenge-runs/${run.id}/abandon`,{method:'POST'});goActiveRun=null;goRenderActiveStrip();goClose();}catch(e){alert(e.message);}
+    }
+
+    async function goOpenHub(tab='progress'){
+      goRequireAuth(async()=>{goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING YOUR B.O.S.S CODE GO ACCOUNT...</div>';try{const [profile,stats,history,achievements,community,mine]=await Promise.all([goFetch('/go/profile'),goFetch('/go/challenge-stats'),goFetch('/go/challenge-history'),goFetch('/go/achievements'),goFetch('/go/community?limit=30'),goFetch('/go/inspiration/mine')]);goProfile=profile.profile;goRenderHub({stats:stats.stats||{},history:history.history||[],achievements:achievements.achievements||[],community:community.activity||[],mine:mine.submissions||[]},tab);}catch(e){main.innerHTML=`<div class="go-panel"><h2>ACCOUNT COULD NOT LOAD</h2><p>${esc(e.message)}</p></div>`;}});
+    }
+
+    function goRenderHub(data,tab){
+      const main=$('go-main'),s=data.stats||{};
+      main.innerHTML=`<section class="go-panel"><div class="go-kicker">MY B.O.S.S CODE GO</div><h1>${esc(goProfile?.display_name||'MY ACCOUNT')}</h1><p class="go-muted">${esc(goProfile?.email||'')}</p><div class="go-tabs"><button class="go-tab" data-go-tab="progress">PROGRESS</button><button class="go-tab" data-go-tab="history">HISTORY</button><button class="go-tab" data-go-tab="achievements">ACHIEVEMENTS</button><button class="go-tab" data-go-tab="community">COMMUNITY</button><button class="go-tab" data-go-tab="profile">PROFILE</button></div></section><div id="go-tab-progress" class="go-tab-page"><section class="go-panel"><h2>MY PROGRESS</h2><div class="go-stat-grid"><div class="go-stat"><b>${Number(s.days_completed||0)}</b>DAYS</div><div class="go-stat"><b>${Number(s.total_points||0)}</b>POINTS</div><div class="go-stat"><b>${Number(s.completed_runs||0)}</b>FINISHED</div><div class="go-stat"><b>${Number(s.longest_streak||0)}</b>BEST STREAK</div><div class="go-stat"><b>${Number(s.achievement_count||0)}</b>BADGES</div></div>${goActiveRun?`<div class="go-actions"><button class="go-primary" id="go-hub-continue">CONTINUE ${esc(goActiveRun.title)}</button></div>`:'<p class="go-muted">Choose a published challenge from Decision Makers to begin your next 30 days.</p>'}</section></div><div id="go-tab-history" class="go-tab-page"><section class="go-panel"><h2>CHALLENGE HISTORY</h2>${data.history.length?data.history.map(h=>`<div class="go-history-item"><div><strong>${esc(h.title)}</strong><div><small>${esc(String(h.status||'').toUpperCase())} • ${Number(h.days_completed||0)}/${Number(h.duration_days||30)} DAYS • ${Number(h.total_points||0)} POINTS</small></div></div><div class="go-actions">${h.status==='active'?`<button class="go-primary" data-go-open-run="${h.id}">CONTINUE</button>`:`<button class="go-secondary" data-go-report="${h.id}">REPORT</button>`}</div></div>`).join(''):'<div class="go-empty">NO CHALLENGE HISTORY YET.</div>'}</section></div><div id="go-tab-achievements" class="go-tab-page"><section class="go-panel"><h2>ACHIEVEMENTS</h2>${data.achievements.length?data.achievements.map(a=>`<div class="go-achievement"><div class="go-badge">${a.badge_image_url?`<img src="${esc(a.badge_image_url)}" alt="">`:'★'}</div><div style="flex:1"><strong>${esc(a.title)}</strong><div class="go-muted">${esc(a.description||'')}</div><small>${esc(a.challenge_title||'ALL CHALLENGES')}</small></div><button class="go-secondary" data-go-share-achievement="${a.user_achievement_id}" data-shared="${Number(a.shared_to_community||0)}">${Number(a.shared_to_community||0)?'SHARED':'SHARE'}</button></div>`).join(''):'<div class="go-empty">YOUR ACHIEVEMENTS WILL APPEAR HERE.</div>'}</section></div><div id="go-tab-community" class="go-tab-page"><section class="go-panel"><h2>COMMUNITY</h2><p class="go-muted">Real B.O.S.S CODE GO activity and approved inspiration. No comments. Encourage somebody when their progress moves you.</p><div class="go-field"><label>SUBMIT INSPIRATION FOR REVIEW</label><input id="go-inspiration-title" placeholder="Optional title"><textarea id="go-inspiration-body" placeholder="Share something that could encourage another Decision Maker."></textarea></div><button class="go-primary" id="go-submit-inspiration" type="button">SUBMIT FOR REVIEW</button><div id="go-inspiration-status" class="go-status"></div><h3 style="margin-top:28px">ACTIVITY FEED</h3>${data.community.length?data.community.map(a=>`<article class="go-feed-item"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:`<div class="go-avatar"></div>`}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><div><small>${esc(a.activity_type||'PROGRESS')}</small></div></div></div><h3>${esc(a.title||'')}</h3><p class="go-muted">${esc(a.body||'')}</p><button class="go-encourage ${Number(a.encouraged_by_me)?'on':''}" data-go-encourage="${a.id}" data-on="${Number(a.encouraged_by_me)?1:0}">👏 ENCOURAGE • <span>${Number(a.encourage_count||0)}</span></button></article>`).join(''):'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE.</div>'}<h3 style="margin-top:28px">MY INSPIRATION SUBMISSIONS</h3>${data.mine.length?data.mine.slice(0,10).map(x=>`<div class="go-history-item"><div><strong>${esc(x.title||'INSPIRATION')}</strong><div class="go-muted">${esc(x.body||'')}</div></div><small>${esc(String(x.status||'pending').toUpperCase())}</small></div>`).join(''):'<div class="go-empty">NO SUBMISSIONS YET.</div>'}</section></div><div id="go-tab-profile" class="go-tab-page"><section class="go-panel"><h2>PROFILE</h2><div class="go-field"><label>DISPLAY NAME</label><input id="go-profile-name" value="${esc(goProfile?.display_name||'')}"></div><div class="go-field"><label>PROFILE PHOTO URL</label><input id="go-profile-photo" value="${esc(goProfile?.profile_photo_url||'')}"></div><label class="go-check"><input id="go-profile-public" type="checkbox" ${Number(goProfile?.public_profile_enabled)!==0?'checked':''}> SHOW MY PROFILE IN COMMUNITY ACTIVITY</label><label class="go-check"><input id="go-profile-achievements" type="checkbox" ${Number(goProfile?.share_achievements)!==0?'checked':''}> ALLOW ACHIEVEMENT SHARING</label><label class="go-check"><input id="go-profile-milestones" type="checkbox" ${Number(goProfile?.share_milestones)!==0?'checked':''}> ALLOW MILESTONE SHARING</label><div class="go-actions"><button class="go-primary" id="go-save-profile" type="button">SAVE PROFILE</button><button class="go-danger" id="go-logout" type="button">SIGN OUT</button></div><div id="go-profile-status" class="go-status"></div></section></div>`;
+      qa('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>goSetTab(b.dataset.goTab)));qa('[data-go-open-run]').forEach(b=>b.addEventListener('click',()=>goOpenRun(Number(b.dataset.goOpenRun))));qa('[data-go-report]').forEach(b=>b.addEventListener('click',()=>goOpenReport(Number(b.dataset.goReport))));qa('[data-go-share-achievement]').forEach(b=>b.addEventListener('click',()=>goShareAchievement(b)));qa('[data-go-encourage]').forEach(b=>b.addEventListener('click',()=>goToggleEncourage(b)));on('go-hub-continue','click',()=>goOpenRun(goActiveRun.id));on('go-submit-inspiration','click',goSubmitInspiration);on('go-save-profile','click',goSaveProfile);on('go-logout','click',goLogout);goSetTab(tab||'progress');
+    }
+
+    function goSetTab(name){qa('[data-go-tab]').forEach(b=>b.classList.toggle('active',b.dataset.goTab===name));qa('.go-tab-page').forEach(p=>p.classList.remove('active'));$(`go-tab-${name}`)?.classList.add('active');}
+
+    async function goShareAchievement(button){
+      const id=Number(button.dataset.goShareAchievement),next=button.dataset.shared!=='1';
+      try{await goFetch(`/go/user-achievements/${id}/share`,{method:'PUT',body:JSON.stringify({shared_to_community:next})});button.dataset.shared=next?'1':'0';button.textContent=next?'SHARED':'SHARE';}catch(e){alert(e.message);}
+    }
+
+    async function goToggleEncourage(button){
+      const id=Number(button.dataset.goEncourage),onNow=button.dataset.on==='1';
+      try{const data=await goFetch(`/go/community/${id}/encourage`,{method:onNow?'DELETE':'POST'});button.dataset.on=data.encouraged?'1':'0';button.classList.toggle('on',Boolean(data.encouraged));button.querySelector('span').textContent=Number(data.encourage_count||0);}catch(e){alert(e.message);}
+    }
+
+    async function goSubmitInspiration(){
+      const title=$('go-inspiration-title')?.value||'',body=$('go-inspiration-body')?.value||'',status=$('go-inspiration-status');if(status)status.textContent='SUBMITTING...';
+      try{await goFetch('/go/inspiration',{method:'POST',body:JSON.stringify({title,body,challenge_id:goActiveRun?.challenge_id||null,challenge_run_id:goActiveRun?.id||null})});if($('go-inspiration-title'))$('go-inspiration-title').value='';if($('go-inspiration-body'))$('go-inspiration-body').value='';if(status)status.textContent='SUBMITTED. IT WILL APPEAR AFTER ADMIN APPROVAL.';}catch(e){if(status)status.textContent=e.message;}
+    }
+
+    async function goSaveProfile(){
+      const status=$('go-profile-status');if(status)status.textContent='SAVING...';
+      try{const data=await goFetch('/go/profile',{method:'PUT',body:JSON.stringify({display_name:$('go-profile-name')?.value||'',profile_photo_url:$('go-profile-photo')?.value||'',public_profile_enabled:Boolean($('go-profile-public')?.checked),share_achievements:Boolean($('go-profile-achievements')?.checked),share_milestones:Boolean($('go-profile-milestones')?.checked)})});goProfile=data.profile;if(status)status.textContent='PROFILE SAVED.';}catch(e){if(status)status.textContent=e.message;}
+    }
+
+    async function goOpenReport(runId){
+      try{const response=await fetch(`${API}/go/challenge-runs/${runId}/report.html`,{headers:{Authorization:`Bearer ${goToken}`,'Accept':'text/html'},cache:'no-store'});if(!response.ok)throw Error(`Report ${response.status}`);const html=await response.text();const blob=new Blob([html],{type:'text/html'});const url=URL.createObjectURL(blob);window.open(url,'_blank','noopener');setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(e){alert(e.message);}
+    }
+
+    function goSetupMobileMapLock(){
+      const mapEl=$('boss-bite-map');if(!mapEl||$('boss-map-mobile-tools'))return;
+      const tools=document.createElement('div');tools.id='boss-map-mobile-tools';tools.className='boss-map-mobile-tools';tools.innerHTML='<button id="boss-map-toggle" type="button">EXPLORE MAP</button>';mapEl.insertAdjacentElement('beforebegin',tools);
+      const setLocked=locked=>{if(!bossBiteMap)return;const mobile=window.matchMedia('(max-width:850px)').matches;if(!mobile){mapEl.classList.remove('boss-map-locked');try{bossBiteMap.dragPan.enable();bossBiteMap.scrollZoom.enable();bossBiteMap.touchZoomRotate.enable();}catch{}return;}mapEl.classList.toggle('boss-map-locked',locked);try{if(locked){bossBiteMap.dragPan.disable();bossBiteMap.scrollZoom.disable();bossBiteMap.touchZoomRotate.disable();}else{bossBiteMap.dragPan.enable();bossBiteMap.scrollZoom.enable();bossBiteMap.touchZoomRotate.enable();}}catch{}const b=$('boss-map-toggle');if(b)b.textContent=locked?'EXPLORE MAP':'DONE / EXIT MAP';};
+      on('boss-map-toggle','click',()=>setLocked(!mapEl.classList.contains('boss-map-locked')));
+      const watcher=setInterval(()=>{if(bossBiteMap){clearInterval(watcher);setLocked(true);}},250);window.addEventListener('resize',()=>setLocked(true));
+    }
+
+    async function goBoot(){
+      goEnsureUI();
+      await Promise.all([goLoadChallenges(),goRestoreSession()]);
+      await goLoadActiveRun();
+    }
+
+
     /* =========================================================
        START APP
     ========================================================= */
 
     setupInternalLinks();
+
+    goBoot();
 
 
     clearHomeFeatures();

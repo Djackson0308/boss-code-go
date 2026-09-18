@@ -3444,3 +3444,557 @@ body,
 .tv-photo-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;}
 @media(max-width:600px){.tv-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}}
 @media(prefers-reduced-motion:reduce){.tv-photo-button img{transition:none;}}
+/* ===================================================== */
+/* B.O.S.S CODE GO 30 DAY CHALLENGES + ACCOUNT SYSTEM */
+/* ===================================================== */
+
+.go-challenge-zone{
+    width:100%;
+    max-width:1100px;
+    margin:0 auto 70px;
+}
+
+.go-zone-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:end;
+    gap:20px;
+    margin-bottom:22px;
+}
+
+.go-challenge-grid{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:16px;
+}
+
+.go-challenge-card{
+    overflow:hidden;
+    background:#090909;
+    border:1px solid #292929;
+    border-radius:20px;
+}
+
+.go-challenge-cover{
+    min-height:180px;
+    display:flex;
+    align-items:flex-end;
+    padding:20px;
+    background:#111;
+    background-size:cover;
+    background-position:center;
+    color:#fff;
+    font-size:24px;
+    font-weight:900;
+}
+
+.go-challenge-card-body{
+    padding:18px;
+}
+
+.go-challenge-card-body small,
+.go-kicker{
+    color:#F5C518;
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.16em;
+}
+
+.go-challenge-card-body h3{
+    margin:8px 0;
+}
+
+.go-challenge-card-body p,
+.go-muted{
+    color:#999;
+    line-height:1.55;
+}
+
+.go-account-button,
+.go-pill,
+.go-primary,
+.go-secondary,
+.go-danger,
+.go-encourage{
+    appearance:none;
+    border-radius:999px;
+    font:inherit;
+    font-weight:900;
+    cursor:pointer;
+}
+
+.go-account-button{
+    border:2px solid #F5C518;
+    background:#050505;
+    color:#fff;
+    padding:11px 16px;
+    white-space:nowrap;
+}
+
+.go-primary{
+    border:0;
+    background:#d40000;
+    color:#fff;
+    padding:13px 18px;
+}
+
+.go-secondary{
+    border:1px solid #F5C518;
+    background:#080808;
+    color:#F5C518;
+    padding:12px 17px;
+}
+
+.go-danger{
+    border:1px solid #8a1b1b;
+    background:#110000;
+    color:#ff8585;
+    padding:11px 16px;
+}
+
+.go-active-card{
+    display:none;
+    margin-top:18px;
+    padding:18px;
+    border:2px solid #F5C518;
+    border-radius:20px;
+    background:#080808;
+}
+
+.go-active-card.show{
+    display:block;
+}
+
+.go-progress-track{
+    height:9px;
+    overflow:hidden;
+    margin:14px 0;
+    border-radius:999px;
+    background:#222;
+}
+
+.go-progress-fill{
+    height:100%;
+    width:0;
+    background:linear-gradient(90deg,#d40000,#F5C518);
+}
+
+.go-active-stats{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px 18px;
+    color:#aaa;
+    font-size:12px;
+}
+
+.go-active-stats b{
+    color:#fff;
+}
+
+.go-overlay{
+    position:fixed;
+    inset:0;
+    z-index:35000;
+    display:none;
+    overflow:auto;
+    padding:18px;
+    background:rgba(0,0,0,.96);
+}
+
+.go-overlay.open{
+    display:block;
+}
+
+.go-shell{
+    width:min(980px,100%);
+    margin:0 auto 50px;
+}
+
+.go-topbar{
+    position:sticky;
+    top:0;
+    z-index:2;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:8px 0 15px;
+    background:rgba(0,0,0,.94);
+}
+
+.go-topbar h2{
+    margin:0;
+    font-size:18px;
+}
+
+.go-close{
+    width:44px;
+    height:44px;
+    border:2px solid #d40000;
+    border-radius:50%;
+    background:#050505;
+    color:#fff;
+    font-size:22px;
+    cursor:pointer;
+}
+
+.go-panel{
+    margin-bottom:16px;
+    padding:20px;
+    border:1px solid #2c2c2c;
+    border-radius:22px;
+    background:#090909;
+}
+
+.go-panel h1,
+.go-panel h2,
+.go-panel h3{
+    margin-top:0;
+}
+
+.go-tabs{
+    display:flex;
+    gap:8px;
+    overflow:auto;
+    padding-bottom:10px;
+}
+
+.go-tab{
+    border:1px solid #333;
+    border-radius:999px;
+    background:#0a0a0a;
+    color:#fff;
+    padding:10px 14px;
+    font-weight:900;
+    white-space:nowrap;
+    cursor:pointer;
+}
+
+.go-tab.active{
+    border-color:#F5C518;
+    color:#F5C518;
+}
+
+.go-tab-page{
+    display:none;
+}
+
+.go-tab-page.active{
+    display:block;
+}
+
+.go-auth-card{
+    width:min(500px,100%);
+    margin:10vh auto;
+    padding:24px;
+    border:2px solid #F5C518;
+    border-radius:24px;
+    background:#090909;
+}
+
+.go-field{
+    margin:14px 0;
+}
+
+.go-field label{
+    display:block;
+    margin-bottom:7px;
+    color:#F5C518;
+    font-size:10px;
+    font-weight:900;
+}
+
+.go-field input,
+.go-field textarea{
+    box-sizing:border-box;
+    width:100%;
+    padding:13px;
+    border:1px solid #333;
+    border-radius:13px;
+    background:#000;
+    color:#fff;
+    font:inherit;
+}
+
+.go-field textarea{
+    min-height:100px;
+    resize:vertical;
+}
+
+.go-status{
+    min-height:22px;
+    margin-top:10px;
+    color:#F5C518;
+    font-weight:800;
+}
+
+.go-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+}
+
+.go-levels{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:8px;
+    margin:18px 0;
+}
+
+.go-level{
+    padding:12px;
+    border:1px solid #292929;
+    border-radius:14px;
+    background:#050505;
+    text-align:center;
+}
+
+.go-level b,
+.go-level small{
+    display:block;
+}
+
+.go-level small{
+    margin-top:5px;
+    color:#777;
+}
+
+.go-day-head{
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+}
+
+.go-day-number{
+    color:#F5C518;
+    font-size:11px;
+    font-weight:900;
+}
+
+.go-scripture{
+    margin:16px 0;
+    padding:16px;
+    border-left:4px solid #F5C518;
+    background:#050505;
+    line-height:1.6;
+}
+
+.go-prompt{
+    margin-top:16px;
+    padding:15px;
+    border:1px solid #242424;
+    border-radius:15px;
+    background:#050505;
+}
+
+.go-check{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    margin:12px 0;
+    color:#ddd;
+}
+
+.go-check input{
+    margin-top:3px;
+    accent-color:#F5C518;
+}
+
+.go-stat-grid{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:10px;
+}
+
+.go-stat{
+    padding:16px;
+    border:1px solid #292929;
+    border-radius:15px;
+    background:#050505;
+    text-align:center;
+    color:#888;
+    font-size:10px;
+    font-weight:900;
+}
+
+.go-stat b{
+    display:block;
+    margin-bottom:4px;
+    color:#fff;
+    font-size:23px;
+}
+
+.go-history-item,
+.go-achievement,
+.go-feed-item{
+    margin-bottom:10px;
+    padding:14px;
+    border:1px solid #292929;
+    border-radius:15px;
+    background:#050505;
+}
+
+.go-history-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:14px;
+}
+
+.go-achievement{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.go-badge{
+    width:56px;
+    height:56px;
+    flex:0 0 56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    border:2px solid #F5C518;
+    border-radius:50%;
+    color:#F5C518;
+    font-size:25px;
+}
+
+.go-badge img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.go-feed-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.go-avatar{
+    width:42px;
+    height:42px;
+    flex:0 0 42px;
+    object-fit:cover;
+    border:1px solid #333;
+    border-radius:50%;
+    background:#151515;
+}
+
+.go-encourage{
+    border:1px solid #333;
+    background:#111;
+    color:#fff;
+    padding:9px 13px;
+}
+
+.go-encourage.on{
+    border-color:#F5C518;
+    color:#F5C518;
+}
+
+.go-empty{
+    padding:18px;
+    border:1px dashed #333;
+    border-radius:14px;
+    color:#777;
+    text-align:center;
+}
+
+
+/* ===================================================== */
+/* BOSS BITE MOBILE MAP CONTROL */
+/* ===================================================== */
+
+.boss-map-mobile-tools{
+    display:none;
+    position:relative;
+    z-index:8;
+    margin:10px 0;
+}
+
+.boss-map-mobile-tools button{
+    width:100%;
+    padding:12px;
+    border:2px solid #F5C518;
+    border-radius:999px;
+    background:#080808;
+    color:#fff;
+    font-weight:900;
+}
+
+.boss-map-locked{
+    position:relative;
+}
+
+.boss-map-locked:after{
+    content:"MAP LOCKED • TAP EXPLORE MAP TO MOVE IT";
+    position:absolute;
+    inset:0;
+    z-index:5;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.32);
+    color:#fff;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:.08em;
+    text-align:center;
+    pointer-events:none;
+}
+
+
+/* ===================================================== */
+/* RESPONSIVE GO SYSTEM */
+/* ===================================================== */
+
+@media(max-width:850px){
+
+    .go-challenge-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .go-stat-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .go-zone-head{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .boss-map-mobile-tools{
+        display:block;
+    }
+
+}
+
+@media(max-width:560px){
+
+    .go-challenge-grid{
+        grid-template-columns:1fr;
+    }
+
+    .go-levels{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .go-history-item{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .go-overlay{
+        padding:10px;
+    }
+
+    .go-panel{
+        padding:16px;
+    }
+
+}

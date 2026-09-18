@@ -30,6 +30,13 @@
     "boss-code-dm-auth-customer-v1";
 
 
+  const GO_AUTH_TOKEN_KEY =
+    "boss-code-go-auth-token-v1";
+
+  const GO_AUTH_EMAIL_KEY =
+    "boss-code-go-auth-email-v1";
+
+
   let sessions = [];
 
   let challenges = [];
@@ -402,8 +409,12 @@
 
       return String(
         localStorage.getItem(
+          GO_AUTH_TOKEN_KEY
+        ) ||
+        localStorage.getItem(
           COURSE_AUTH_TOKEN_KEY
-        ) || ""
+        ) ||
+        ""
       ).trim();
 
     }
@@ -472,6 +483,12 @@
 
 
       localStorage.setItem(
+        GO_AUTH_TOKEN_KEY,
+        activeAuthToken
+      );
+
+
+      localStorage.setItem(
         COURSE_AUTH_CUSTOMER_KEY,
         JSON.stringify(
           activeCustomer || {}
@@ -485,6 +502,12 @@
 
         localStorage.setItem(
           COURSE_EMAIL_KEY,
+          activeEmail
+        );
+
+
+        localStorage.setItem(
+          GO_AUTH_EMAIL_KEY,
           activeEmail
         );
 
@@ -518,6 +541,11 @@
 
       localStorage.removeItem(
         COURSE_AUTH_TOKEN_KEY
+      );
+
+
+      localStorage.removeItem(
+        GO_AUTH_TOKEN_KEY
       );
 
 
@@ -7577,6 +7605,103 @@
 
 
   /* =========================================================
+     UNIVERSAL B.O.S.S CODE GO ACCOUNT BRIDGE
+  ========================================================= */
+
+  function watchGoAccountSession() {
+
+    const syncFromGoAccount =
+      async () => {
+
+        const token =
+          savedAuthToken();
+
+
+        if (
+          !token ||
+          token === activeAuthToken
+        ) {
+
+          return;
+
+        }
+
+
+        activeAuthToken =
+          token;
+
+
+        await restoreSecureSession();
+
+      };
+
+
+    const authOverlay =
+      document.getElementById(
+        "go-auth-overlay"
+      );
+
+
+    if (
+      authOverlay
+    ) {
+
+      const observer =
+        new MutationObserver(
+          () => {
+
+            if (
+              !authOverlay.classList.contains(
+                "open"
+              )
+            ) {
+
+              syncFromGoAccount();
+
+            }
+
+          }
+        );
+
+
+      observer.observe(
+        authOverlay,
+        {
+          attributes:
+            true,
+
+          attributeFilter:
+            [
+              "class"
+            ]
+        }
+      );
+
+    }
+
+
+    window.addEventListener(
+      "storage",
+      (event) => {
+
+        if (
+          event.key ===
+            GO_AUTH_TOKEN_KEY ||
+          event.key ===
+            COURSE_AUTH_TOKEN_KEY
+        ) {
+
+          syncFromGoAccount();
+
+        }
+
+      }
+    );
+
+  }
+
+
+  /* =========================================================
      LOAD BACKEND CONTENT
   ========================================================= */
 
@@ -7587,6 +7712,9 @@
 
 
     ensureMyCourses();
+
+
+    watchGoAccountSession();
 
 
     const authRestore =

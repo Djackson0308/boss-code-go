@@ -605,6 +605,165 @@ grid-template-columns:1fr;
 
 }
 
+
+/* =========================================================
+   ORGANIZED ADMIN NAVIGATION
+   Keeps every existing manager intact and makes the long
+   control panel easy to jump through.
+   ========================================================= */
+
+html{
+scroll-behavior:smooth;
+scroll-padding-top:92px;
+}
+
+.admin-organizer{
+position:sticky;
+top:0;
+z-index:50;
+margin-bottom:22px;
+padding:16px;
+background:rgba(5,5,5,.96);
+border:1px solid #2a2a2a;
+border-radius:18px;
+box-shadow:0 14px 40px rgba(0,0,0,.38);
+backdrop-filter:blur(12px);
+}
+
+.admin-organizer-title{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:12px;
+margin-bottom:12px;
+}
+
+.admin-organizer-title small{
+display:block;
+color:#F5C518;
+font-size:9px;
+font-weight:900;
+letter-spacing:2px;
+}
+
+.admin-organizer-title h2{
+margin-top:4px;
+font-size:18px;
+}
+
+.admin-top-button,
+.admin-jump-tabs button,
+.admin-section-map button{
+font:inherit;
+cursor:pointer;
+}
+
+.admin-top-button{
+min-height:36px;
+padding:0 13px;
+border:1px solid #3a3a3a;
+border-radius:999px;
+background:#111;
+color:#fff;
+font-size:9px;
+font-weight:900;
+}
+
+.admin-jump-tabs{
+display:flex;
+gap:7px;
+overflow-x:auto;
+padding-bottom:5px;
+scrollbar-width:thin;
+}
+
+.admin-jump-tabs button{
+flex:0 0 auto;
+min-height:38px;
+padding:0 13px;
+border:1px solid #343434;
+border-radius:999px;
+background:#0b0b0b;
+color:#bbb;
+font-size:9px;
+font-weight:900;
+letter-spacing:.7px;
+}
+
+.admin-jump-tabs button:hover,
+.admin-jump-tabs button.active{
+border-color:#d40000;
+background:#d40000;
+color:#fff;
+}
+
+.admin-section-map{
+display:grid;
+grid-template-columns:repeat(4,minmax(0,1fr));
+gap:8px;
+margin-top:12px;
+padding-top:12px;
+border-top:1px solid #202020;
+}
+
+.admin-section-map button{
+min-width:0;
+padding:11px 12px;
+border:1px solid #252525;
+border-radius:12px;
+background:#0a0a0a;
+color:#fff;
+text-align:left;
+}
+
+.admin-section-map button:hover{
+border-color:#F5C518;
+}
+
+.admin-section-map strong{
+display:block;
+font-size:10px;
+font-weight:900;
+}
+
+.admin-section-map span{
+display:block;
+margin-top:4px;
+color:#777;
+font-size:8px;
+line-height:1.35;
+}
+
+.card[id]{
+scroll-margin-top:100px;
+}
+
+.card[id] > .head{
+padding-bottom:12px;
+border-bottom:1px solid #1f1f1f;
+}
+
+@media(max-width:800px){
+.admin-organizer{
+position:relative;
+top:auto;
+}
+
+.admin-section-map{
+grid-template-columns:repeat(2,minmax(0,1fr));
+}
+}
+
+@media(max-width:480px){
+.admin-section-map{
+grid-template-columns:1fr 1fr;
+}
+
+.admin-section-map span{
+display:none;
+}
+}
+
 </style>
 
 </head>
@@ -692,8 +851,41 @@ Manage B.O.S.S CODE GO content without editing the main app.
 
 </header>
 
+<section class="admin-organizer" id="admin-organizer">
+  <div class="admin-organizer-title">
+    <div>
+      <small>QUICK NAVIGATION</small>
+      <h2>ADMIN SECTIONS</h2>
+    </div>
+    <button type="button" class="admin-top-button" id="adminBackTop">TOP</button>
+  </div>
 
-<section class="card">
+  <div class="admin-jump-tabs">
+    <button type="button" data-admin-target="admin-home-features">CONTENT</button>
+    <button type="button" data-admin-target="admin-music">MUSIC</button>
+    <button type="button" data-admin-target="admin-boss-bite-gallery">BOSS BITE</button>
+    <button type="button" data-admin-target="admin-tv-live">BOSS CODE TV</button>
+    <button type="button" data-admin-target="admin-decision-makers">DECISION MAKERS</button>
+    <button type="button" data-admin-link="challenge-admin.html">CHALLENGES</button>
+    <button type="button" data-admin-link="challenge-admin.html#community">COMMUNITY</button>
+    <button type="button" data-admin-target="admin-analytics">ANALYTICS</button>
+    <button type="button" data-admin-target="admin-inquiries">MORE</button>
+  </div>
+
+  <div class="admin-section-map">
+    <button type="button" data-admin-target="admin-connection"><strong>System</strong><span>Connection and refresh</span></button>
+    <button type="button" data-admin-target="admin-video-manager"><strong>Video</strong><span>Decision Makers, Boss Bite and TV</span></button>
+    <button type="button" data-admin-target="admin-magazine"><strong>Magazine</strong><span>Issues and covers</span></button>
+    <button type="button" data-admin-target="pageBannerManager"><strong>Page Banners</strong><span>Headers across the app</span></button>
+    <button type="button" data-admin-target="admin-daily-decision"><strong>Daily Decision</strong><span>Home message rotation</span></button>
+    <button type="button" data-admin-target="admin-check-in"><strong>Check In</strong><span>Question manager</span></button>
+    <button type="button" data-admin-target="admin-promotions"><strong>Promotions</strong><span>Advertising manager</span></button>
+    <button type="button" data-admin-target="admin-inquiries"><strong>Inquiries</strong><span>Contact messages</span></button>
+  </div>
+</section>
+
+
+<section class="card" id="admin-connection">
 
 <div class="head">
 
@@ -749,7 +941,7 @@ LOCK ADMIN
 </section>
 
 
-<section class="card">
+<section class="card" id="admin-tv-live">
 
 <div class="head">
 
@@ -890,7 +1082,7 @@ class="message"
 </section>
 
 
-<section class="card">
+<section class="card" id="admin-video-manager">
 
 <div class="head">
 
@@ -1454,7 +1646,7 @@ class="list"
 <!-- DECISION MAKERS PROGRAM MANAGER -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-decision-makers">
 
 <div class="head">
 
@@ -2166,7 +2358,7 @@ class="list"
 <!-- MUSIC MANAGER -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-music">
 
 <div class="head">
 <div>
@@ -2828,7 +3020,7 @@ Add YouTube music videos to each artist. The app will only show videos that are 
 <!-- MAGAZINE MANAGER -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-magazine">
 
 <div class="head">
 <div>
@@ -2990,7 +3182,7 @@ class="list"
 <!-- BOSS BITE GALLERY -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-boss-bite-gallery">
 
 <div class="head">
 <div>
@@ -3133,7 +3325,7 @@ class="list"
 <!-- BOSS BITE MAP -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-boss-bite-map">
 
 <div class="head">
 <div>
@@ -3330,7 +3522,7 @@ class="list"
 <!-- DAILY DECISION -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-daily-decision">
 
 <div class="head">
 <div>
@@ -3457,7 +3649,7 @@ class="list"
 <!-- CHECK IN QUESTIONS -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-check-in">
 
 <div class="head">
 <div>
@@ -3618,7 +3810,7 @@ class="list"
 <!-- HOME FEATURES -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-home-features">
 
 <div class="head">
 
@@ -3759,7 +3951,7 @@ class="status"
 <!-- PROMOTIONAL ADS -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-promotions">
 
 <div class="head">
 
@@ -3992,7 +4184,7 @@ class="list"
 <!-- ANALYTICS -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-analytics">
 
 <div class="head">
 
@@ -4116,7 +4308,7 @@ class="message"
 <!-- CONTACT INQUIRIES -->
 <!-- ===================================================== -->
 
-<section class="card">
+<section class="card" id="admin-inquiries">
 
 <div class="head">
 
@@ -12064,6 +12256,68 @@ $('tvGalleryList').addEventListener('click',event=>{
  if(editButton)editTvGalleryPhoto(Number(editButton.dataset.tvEdit));
  if(deleteButton)deleteTvGalleryPhoto(Number(deleteButton.dataset.tvDelete));
 });
+
+
+/* =========================================================
+   ORGANIZED ADMIN NAVIGATION
+   ========================================================= */
+
+document
+.querySelectorAll("[data-admin-target]")
+.forEach((button)=>{
+
+button.addEventListener("click",()=>{
+
+const target=
+document.getElementById(
+button.dataset.adminTarget
+);
+
+if(!target){
+return;
+}
+
+document
+.querySelectorAll(".admin-jump-tabs button")
+.forEach((item)=>{
+item.classList.remove("active");
+});
+
+button.classList.add("active");
+
+target.scrollIntoView({
+behavior:"smooth",
+block:"start"
+});
+
+});
+
+});
+
+document
+.querySelectorAll("[data-admin-link]")
+.forEach((button)=>{
+
+button.addEventListener("click",()=>{
+
+window.location.href=
+button.dataset.adminLink;
+
+});
+
+});
+
+document
+.getElementById("adminBackTop")
+?.addEventListener("click",()=>{
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+});
+
 
 </script>
 
