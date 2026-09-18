@@ -3998,3 +3998,95 @@ body,
     }
 
 }
+
+/* ===================================================== */
+/* CHALLENGE CARD COMPACT 2-UP LAYOUT + TRUE RED BUTTONS */
+/* ===================================================== */
+
+#decision-makers-screen .go-challenge-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:16px !important;
+}
+
+#decision-makers-screen .go-challenge-card{
+    min-width:0;
+    border-radius:16px;
+}
+
+#decision-makers-screen .go-challenge-cover{
+    min-height:135px;
+    padding:15px;
+    font-size:20px;
+}
+
+#decision-makers-screen .go-challenge-card-body{
+    padding:14px;
+}
+
+#decision-makers-screen .go-challenge-card-body h3{
+    margin:6px 0;
+    font-size:18px;
+}
+
+#decision-makers-screen .go-challenge-card-body p{
+    font-size:12px;
+    line-height:1.4;
+}
+
+#decision-makers-screen .go-challenge-card-body .go-primary{
+    padding:10px 14px;
+    font-size:11px;
+}
+
+/* Paid course START / CONTINUE COURSE button */
+#decision-makers-screen .dm-course-primary{
+    background:#d40000 !important;
+    border-color:#d40000 !important;
+    color:#fff !important;
+}
+
+/* Resource DOWNLOAD FREE SAMPLE button */
+#decision-makers-screen .dm-resource-download{
+    background:#d40000 !important;
+    border-color:#d40000 !important;
+    color:#fff !important;
+}
+
+@media(max-width:560px){
+    #decision-makers-screen .go-challenge-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:9px !important;
+    }
+
+    #decision-makers-screen .go-challenge-cover{
+        min-height:95px;
+        padding:10px;
+        font-size:15px;
+    }
+
+    #decision-makers-screen .go-challenge-card-body{
+        padding:10px;
+    }
+
+    #decision-makers-screen .go-challenge-card-body small{
+        font-size:7px;
+        letter-spacing:.09em;
+    }
+
+    #decision-makers-screen .go-challenge-card-body h3{
+        font-size:14px;
+        line-height:1.15;
+    }
+
+    #decision-makers-screen .go-challenge-card-body p{
+        font-size:10px;
+        line-height:1.35;
+    }
+
+    #decision-makers-screen .go-challenge-card-body .go-primary{
+        width:100%;
+        padding:9px 7px;
+        font-size:9px;
+    }
+}
+

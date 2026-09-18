@@ -28,6 +28,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}.stat{background:#080808;border:1px solid #252525;border-radius:14px;padding:13px}.stat strong{display:block;color:var(--gold);font-size:20px}.stat span{display:block;color:#777;font-size:8px;font-weight:900;margin-top:4px}
 .login{position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}.login.hide{display:none}.loginbox{width:min(460px,100%);background:#0b0b0b;border:1px solid #292929;border-radius:22px;padding:24px}.loginbox h2{font-size:26px;margin:7px 0}.loginbox p{color:#888;font-size:11px;line-height:1.5;margin-bottom:18px}
 .scripture-box{border:1px solid rgba(245,197,24,.4);background:#0c0b05}.hidden{display:none!important}.note{font-size:10px;line-height:1.5;color:#999;margin-top:7px}
+.upload-box{background:#080808;border:1px dashed #3a3a3a;border-radius:14px;padding:12px}
+.upload-preview{width:100%;height:150px;object-fit:cover;border-radius:12px;border:1px solid #252525;background:#050505;margin-top:10px;display:none}
+.upload-preview.show{display:block}
+.upload-state{font-size:9px;font-weight:900;color:#888;margin-top:8px;min-height:12px}
+.file-input{width:100%;margin-top:8px;color:#aaa;font-size:10px}
+.file-input::file-selector-button{background:var(--red);color:#fff;border:0;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer;margin-right:10px}
 @media(max-width:1050px){.layout,.split{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid,.grid3,.summary{grid-template-columns:1fr}.wrap{width:min(100% - 14px,1420px)}}
 </style>
 </head>
@@ -74,8 +80,24 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="field" style="margin-top:12px"><label>SHORT DESCRIPTION</label><textarea id="cShort" class="textarea" style="min-height:80px"></textarea></div>
 <div class="field" style="margin-top:12px"><label>FULL DESCRIPTION</label><textarea id="cDescription" class="textarea"></textarea></div>
 <div class="grid" style="margin-top:12px">
-<div class="field"><label>COVER IMAGE URL</label><input id="cCover" class="input" placeholder="Image URL"></div>
-<div class="field"><label>BANNER IMAGE URL</label><input id="cBanner" class="input" placeholder="Image URL"></div>
+<div class="field">
+<label>CHALLENGE COVER IMAGE</label>
+<div class="upload-box">
+<input id="cCover" type="hidden">
+<input id="cCoverFile" class="file-input" type="file" accept="image/*">
+<div id="cCoverState" class="upload-state">CHOOSE AN IMAGE TO UPLOAD.</div>
+<img id="cCoverPreview" class="upload-preview" alt="Challenge cover preview">
+</div>
+</div>
+<div class="field">
+<label>CHALLENGE BANNER IMAGE</label>
+<div class="upload-box">
+<input id="cBanner" type="hidden">
+<input id="cBannerFile" class="file-input" type="file" accept="image/*">
+<div id="cBannerState" class="upload-state">CHOOSE AN IMAGE TO UPLOAD.</div>
+<img id="cBannerPreview" class="upload-preview" alt="Challenge banner preview">
+</div>
+</div>
 </div>
 <div class="actions" style="margin-top:14px">
 <label class="checkline"><input id="cPublished" type="checkbox"> PUBLISHED</label>
@@ -191,8 +213,34 @@ async function api(path,options={}){
  const r=await fetch(API+path,{...options,headers}); const d=await r.json().catch(()=>({success:false,error:"Bad response"}));
  if(!r.ok||d.success===false)throw Error(d.error||"Request failed"); return d;
 }
+
+function setImagePreview(inputId,previewId){
+ const url=$(inputId).value.trim(),img=$(previewId);
+ if(url){img.src=url;img.classList.add("show")}else{img.removeAttribute("src");img.classList.remove("show")}
+}
+async function uploadChallengeImage(file,inputId,previewId,stateId){
+ if(!file)return;
+ const state=$(stateId);state.textContent="UPLOADING...";
+ try{
+  const form=new FormData();
+  form.append("file",file);
+  form.append("folder","challenges");
+  form.append("type","image");
+  const headers=new Headers();if(KEY)headers.set("X-Admin-Key",KEY);
+  const r=await fetch(API+"/media/upload",{method:"POST",headers,body:form});
+  const d=await r.json().catch(()=>({success:false,error:"Bad upload response"}));
+  if(!r.ok||d.success===false)throw Error(d.error||"UPLOAD FAILED");
+  const url=d.url||d.file_url||d.media_url||d.public_url||d.location||d.data?.url||d.data?.file_url||"";
+  if(!url)throw Error("UPLOAD FINISHED BUT NO IMAGE URL WAS RETURNED");
+  $(inputId).value=url;
+  setImagePreview(inputId,previewId);
+  state.textContent="IMAGE UPLOADED.";
+ }catch(e){state.textContent="UPLOAD ERROR: "+e.message}
+}
 function activateView(name){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("view-"+name).classList.add("active");if(name==="overview")loadGoStats();if(name==="inspiration")loadInspiration();if(name==="community")loadCommunity();if(name==="users")loadGoUsers()}
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>activateView(b.dataset.view));
+$("cCoverFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cCover","cCoverPreview","cCoverState");
+$("cBannerFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cBanner","cBannerPreview","cBannerState");
 
 async function unlock(){
  KEY=val("adminKey"); if(!KEY){$("loginMsg").textContent="ENTER YOUR ADMIN KEY.";return}
@@ -214,7 +262,7 @@ async function selectChallenge(c){
  await Promise.all([loadDays(),loadLevels(),loadAchievements()]);updateStats();activateView("challenge");
 }
 function fillChallenge(c){
- $("cTitle").value=c.title||"";$("cSlug").value=c.slug||"";$("cCategory").value=c.category||"";$("cSort").value=c.sort_order??0;$("cShort").value=c.short_description||"";$("cDescription").value=c.description||"";$("cCover").value=c.cover_image_url||"";$("cBanner").value=c.banner_image_url||"";$("cPublished").checked=Number(c.published)===1;$("cFeatured").checked=Number(c.featured)===1;$("cScripture").checked=Number(c.scripture_enabled)===1;toggleScripture();
+ $("cTitle").value=c.title||"";$("cSlug").value=c.slug||"";$("cCategory").value=c.category||"";$("cSort").value=c.sort_order??0;$("cShort").value=c.short_description||"";$("cDescription").value=c.description||"";$("cCover").value=c.cover_image_url||"";$("cBanner").value=c.banner_image_url||"";setImagePreview("cCover","cCoverPreview");setImagePreview("cBanner","cBannerPreview");$("cCoverState").textContent=c.cover_image_url?"CURRENT COVER LOADED.":"CHOOSE AN IMAGE TO UPLOAD.";$("cBannerState").textContent=c.banner_image_url?"CURRENT BANNER LOADED.":"CHOOSE AN IMAGE TO UPLOAD.";$("cCoverFile").value="";$("cBannerFile").value="";$("cPublished").checked=Number(c.published)===1;$("cFeatured").checked=Number(c.featured)===1;$("cScripture").checked=Number(c.scripture_enabled)===1;toggleScripture();
 }
 function challengeBody(){return{title:val("cTitle"),slug:val("cSlug"),category:val("cCategory"),sort_order:num("cSort"),short_description:val("cShort"),description:val("cDescription"),cover_image_url:val("cCover"),banner_image_url:val("cBanner"),published:bool("cPublished"),featured:bool("cFeatured"),scripture_enabled:bool("cScripture")}}
 async function saveChallenge(){if(!currentChallenge)return;await api(`/admin/go/challenges/${currentChallenge.id}`,{method:"PUT",body:JSON.stringify(challengeBody())});showMsg("CHALLENGE SAVED.");await loadChallenges()}
