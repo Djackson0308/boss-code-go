@@ -4848,9 +4848,9 @@
                 overflow: hidden;
                 border: 1px solid rgba(245, 197, 24, .45);
                 border-radius: 18px;
-                background: #ffffff;
-                color: #111111;
-                box-shadow: 0 16px 34px rgba(0, 0, 0, .28);
+                background: #080808;
+                color: #ffffff;
+                box-shadow: 0 16px 34px rgba(0, 0, 0, .42);
             }
 
             #decision-makers-screen .dm-course-card::before {
@@ -4872,16 +4872,17 @@
                 aspect-ratio: 1 / 1;
                 overflow: hidden;
                 border: 0;
-                border-right: 1px solid #dedede;
-                background: #080808;
+                border-right: 1px solid #262626;
+                background: #050505;
             }
 
             #decision-makers-screen .dm-course-cover img {
                 display: block;
                 width: 100%;
                 height: 100%;
-                object-fit: cover;
+                object-fit: contain;
                 object-position: center;
+                background: #050505;
             }
 
             #decision-makers-screen .dm-course-cover-placeholder {
@@ -4917,8 +4918,8 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
-                background: #ffffff;
-                color: #111111;
+                background: #0a0a0a;
+                color: #ffffff;
             }
 
             #decision-makers-screen .dm-course-card-topline {
@@ -4929,7 +4930,7 @@
 
             #decision-makers-screen .dm-course-card-topline span {
                 min-width: 0;
-                color: #b28600;
+                color: #f5c518;
                 font-size: 7px;
                 line-height: 1.15;
                 font-weight: 950;
@@ -4949,7 +4950,7 @@
 
             #decision-makers-screen .dm-course-card-body h3 {
                 margin: 0;
-                color: #111111;
+                color: #ffffff;
                 font-size: clamp(17px, 2vw, 24px);
                 line-height: 1.02;
                 font-weight: 950;
@@ -4958,7 +4959,7 @@
 
             #decision-makers-screen .dm-course-card-body h4 {
                 margin: 6px 0 0;
-                color: #b28600;
+                color: #f5c518;
                 font-size: clamp(10px, 1.2vw, 13px);
                 line-height: 1.18;
                 font-weight: 900;
@@ -4975,11 +4976,11 @@
                 margin-top: auto;
                 padding-top: 9px;
                 gap: 8px;
-                border-top: 1px solid #e5e5e5;
+                border-top: 1px solid #2a2a2a;
             }
 
             #decision-makers-screen .dm-course-card-meta span {
-                color: #686868;
+                color: #b8b8b8;
                 font-size: 8px;
                 line-height: 1.1;
                 font-weight: 950;
@@ -4987,7 +4988,7 @@
             }
 
             #decision-makers-screen .dm-course-card-meta strong {
-                color: #111111;
+                color: #f5c518;
                 font-size: clamp(14px, 1.8vw, 19px);
                 line-height: 1;
                 font-weight: 950;
