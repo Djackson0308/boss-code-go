@@ -4106,385 +4106,555 @@ body,
 
 
 /* =========================================================
-   DECISION MAKERS VISUAL RESET V2
-   WHITE CANVAS + BLACK FEATURE SECTIONS
+   DECISION MAKERS VISUAL SYSTEM V4
+   CINEMATIC DARK FOUNDATION
+   White is used as contrast inside selected content cards.
    ========================================================= */
 
 #decision-makers-screen{
-    background:#fff !important;
-    color:#111 !important;
-    padding-bottom:36px !important;
+    --dm-black:#050505;
+    --dm-panel:#0b0b0c;
+    --dm-panel-2:#111113;
+    --dm-panel-3:#171719;
+    --dm-white:#ffffff;
+    --dm-soft:#b9b9bd;
+    --dm-muted:#83838a;
+    --dm-gold:#f5c518;
+    --dm-gold-deep:#a77e00;
+    --dm-red:#d40000;
+    --dm-line:#27272a;
+    --dm-radius:24px;
+
+    background:
+        radial-gradient(circle at 15% 12%, rgba(212,0,0,.10), transparent 26%),
+        radial-gradient(circle at 88% 32%, rgba(245,197,24,.055), transparent 24%),
+        linear-gradient(180deg,#050505 0%,#080808 42%,#050505 100%) !important;
+    color:var(--dm-white) !important;
+    padding-bottom:48px !important;
 }
 
+/* ---------- HEADER / HERO ---------- */
 #decision-makers-screen .decision-header{
-    background:#fff !important;
-    color:#111 !important;
-    border-bottom:0 !important;
+    width:100% !important;
+    max-width:none !important;
+    margin:0 0 26px !important;
+    padding:0 0 30px !important;
+    background:
+        linear-gradient(180deg,#060606 0%,#0b0b0b 100%) !important;
+    color:var(--dm-white) !important;
+    border-bottom:1px solid #1c1c1f !important;
+    text-align:center !important;
+    overflow:hidden !important;
 }
 
-#decision-makers-screen .decision-header h2,
-#decision-makers-screen .decision-intro{
-    color:#111 !important;
+#decision-makers-screen .decision-logo{
+    display:block !important;
+    width:100% !important;
+    max-width:none !important;
+    max-height:none !important;
+    margin:0 auto 26px !important;
+    object-fit:cover !important;
+    border-radius:0 !important;
+}
+
+#decision-makers-screen .decision-header h2{
+    max-width:1100px !important;
+    margin:0 auto 8px !important;
+    padding:0 20px !important;
+    color:#fff !important;
+    font-size:clamp(34px,6vw,58px) !important;
+    line-height:.98 !important;
+    font-weight:950 !important;
+    letter-spacing:-.045em !important;
 }
 
 #decision-makers-screen .decision-tagline{
-    color:#a67f00 !important;
+    margin:14px auto 12px !important;
+    padding:0 20px !important;
+    color:var(--dm-gold) !important;
+    font-size:clamp(13px,2.4vw,19px) !important;
+    font-weight:950 !important;
+    letter-spacing:.035em !important;
 }
 
-#decision-makers-screen .boss-return-home-bottom,
-#decision-makers-screen .back-button{
-    color:#111 !important;
-    background:#fff !important;
+#decision-makers-screen .decision-intro{
+    width:min(760px,calc(100% - 40px)) !important;
+    margin:0 auto !important;
+    color:#d8d8db !important;
+    font-size:clamp(15px,2.2vw,19px) !important;
+    line-height:1.55 !important;
+    font-weight:650 !important;
 }
 
+#decision-makers-screen .back-button,
 #decision-makers-screen .boss-return-home-bottom{
-    border-color:#d40000 !important;
+    display:block !important;
+    width:max-content !important;
+    max-width:calc(100% - 32px) !important;
+    margin:18px 16px !important;
+    padding:12px 22px !important;
+    border:2px solid var(--dm-red) !important;
+    border-radius:999px !important;
+    background:#0a0a0b !important;
+    color:#fff !important;
+    box-shadow:0 7px 20px rgba(0,0,0,.28) !important;
+    font-weight:950 !important;
+    letter-spacing:.04em !important;
 }
 
-/* Hide the older plain navigation row. The premium navigation stays. */
+#decision-makers-screen .back-button:hover,
+#decision-makers-screen .back-button:focus-visible,
+#decision-makers-screen .boss-return-home-bottom:hover,
+#decision-makers-screen .boss-return-home-bottom:focus-visible{
+    background:var(--dm-red) !important;
+    color:#fff !important;
+}
+
+/* Old quick-nav from index is intentionally hidden. */
 #decision-makers-screen .decision-quick-nav{
     display:none !important;
 }
 
-/* Shared page width. White stays visible at the sides. */
-#decision-makers-screen .decision-section,
-#decision-makers-screen .dm-courses-section,
-#decision-makers-screen .dm-resource-section,
-#decision-makers-screen .go-challenge-zone{
-    width:min(1120px,calc(100% - 28px)) !important;
-    margin:18px auto !important;
-    box-sizing:border-box !important;
-}
-
-/* Feature sections are black. White only shows between them and at the sides. */
-#decision-makers-screen .decision-section,
-#decision-makers-screen .dm-courses-section,
-#decision-makers-screen .dm-resource-section,
-#decision-makers-screen #dm-month-home,
-#decision-makers-screen #dm-community-home{
-    background:#080808 !important;
-    color:#fff !important;
-    border:1px solid #1d1d1d !important;
-    border-radius:22px !important;
-    padding:22px !important;
-    box-shadow:0 14px 34px rgba(0,0,0,.10) !important;
-}
-
-#decision-makers-screen .decision-heading h2,
-#decision-makers-screen .dm-courses-section .decision-heading h2,
-#decision-makers-screen .dm-resource-section .decision-heading h2,
-#decision-makers-screen #dm-month-home .decision-heading h2,
-#decision-makers-screen #dm-community-home .decision-heading h2{
-    color:#fff !important;
-}
-
-#decision-makers-screen .decision-kicker,
-#decision-makers-screen .dm-courses-section .decision-kicker,
-#decision-makers-screen .dm-resource-section .decision-kicker,
-#decision-makers-screen #dm-month-home .decision-kicker,
-#decision-makers-screen #dm-community-home .decision-kicker{
-    color:#f5c518 !important;
-}
-
-#decision-makers-screen .decision-section-copy,
-#decision-makers-screen .dm-courses-section .decision-section-copy,
-#decision-makers-screen .dm-resource-section .decision-section-copy,
-#decision-makers-screen #dm-month-home .decision-section-copy,
-#decision-makers-screen #dm-community-home .decision-section-copy{
-    color:#c7c7c7 !important;
-}
-
-#decision-makers-screen .red-line{
-    background:#d40000 !important;
-}
-
-/* Premium text-only navigation */
+/* ---------- PRIMARY NAV ---------- */
 #decision-makers-screen .dm-premium-nav{
+    width:min(1100px,calc(100% - 28px)) !important;
+    margin:0 auto 24px !important;
+    padding:0 !important;
     display:grid !important;
     grid-template-columns:repeat(3,minmax(0,1fr)) !important;
     gap:10px !important;
-    margin:0 0 18px !important;
-    padding:14px !important;
-    background:#080808 !important;
-    border:1px solid #1d1d1d !important;
-    border-radius:22px !important;
-    box-shadow:0 14px 34px rgba(0,0,0,.10) !important;
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
 }
 
 #decision-makers-screen .dm-premium-nav button{
-    min-width:0 !important;
-    min-height:56px !important;
-    padding:10px 8px !important;
-    border:1px solid #5f4c09 !important;
-    border-radius:14px !important;
-    background:linear-gradient(180deg,#171717,#0d0d0d) !important;
+    position:relative !important;
+    min-height:68px !important;
+    padding:12px 10px !important;
+    overflow:hidden !important;
+    border:1px solid #343438 !important;
+    border-radius:17px !important;
+    background:
+        linear-gradient(180deg,#1b1b1e 0%,#0d0d0f 100%) !important;
     color:#fff !important;
-    box-shadow:inset 0 0 0 1px rgba(245,197,24,.08) !important;
-    font-size:11px !important;
-    line-height:1.15 !important;
+    box-shadow:
+        0 9px 22px rgba(0,0,0,.30),
+        inset 0 1px 0 rgba(255,255,255,.035) !important;
+    font-size:12px !important;
     font-weight:950 !important;
-    letter-spacing:.06em !important;
-    text-align:center !important;
-    white-space:normal !important;
-    overflow:visible !important;
+    letter-spacing:.055em !important;
+    cursor:pointer !important;
+}
+
+#decision-makers-screen .dm-premium-nav button::after{
+    content:"" !important;
+    position:absolute !important;
+    left:18% !important;
+    right:18% !important;
+    bottom:0 !important;
+    height:2px !important;
+    border-radius:999px !important;
+    background:linear-gradient(90deg,transparent,var(--dm-gold),transparent) !important;
+    opacity:.72 !important;
 }
 
 #decision-makers-screen .dm-premium-nav button:hover,
-#decision-makers-screen .dm-premium-nav button:focus-visible{
-    border-color:#f5c518 !important;
-    color:#f5c518 !important;
-    outline:none !important;
+#decision-makers-screen .dm-premium-nav button:focus-visible,
+#decision-makers-screen .dm-premium-nav button.active{
+    border-color:rgba(245,197,24,.75) !important;
+    background:
+        linear-gradient(180deg,#2a0909 0%,#140606 100%) !important;
+    color:#fff !important;
+    transform:translateY(-1px) !important;
 }
 
-/* The challenge system is split into dark feature blocks on the white canvas. */
+/* ---------- SECTION SHELLS ---------- */
+#decision-makers-screen .decision-section,
+#decision-makers-screen .dm-courses-section,
+#decision-makers-screen .dm-resource-section,
 #decision-makers-screen .go-challenge-zone{
-    padding:0 !important;
-    background:transparent !important;
-    border:0 !important;
-    border-radius:0 !important;
-    box-shadow:none !important;
+    position:relative !important;
+    width:min(1100px,calc(100% - 28px)) !important;
+    max-width:1100px !important;
+    margin:18px auto 28px !important;
+    padding:26px !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
+    border:1px solid var(--dm-line) !important;
+    border-radius:var(--dm-radius) !important;
+    background:
+        radial-gradient(circle at 95% 0%,rgba(245,197,24,.055),transparent 28%),
+        linear-gradient(145deg,#111113 0%,#09090a 56%,#070708 100%) !important;
+    color:#fff !important;
+    box-shadow:0 16px 38px rgba(0,0,0,.30) !important;
+}
+
+#decision-makers-screen .decision-section::before,
+#decision-makers-screen .dm-courses-section::before,
+#decision-makers-screen .dm-resource-section::before,
+#decision-makers-screen .go-challenge-zone::before{
+    content:"" !important;
+    position:absolute !important;
+    top:0 !important;
+    left:0 !important;
+    width:88px !important;
+    height:4px !important;
+    background:linear-gradient(90deg,var(--dm-red),#ff2424) !important;
+    border-radius:0 0 999px 0 !important;
+}
+
+#decision-makers-screen .decision-heading{
+    position:relative !important;
+    z-index:1 !important;
+    align-items:flex-end !important;
+    margin-bottom:12px !important;
+}
+
+#decision-makers-screen .decision-heading h2,
+#decision-makers-screen .go-zone-head h2,
+#decision-makers-screen .dm-courses-section h2,
+#decision-makers-screen .dm-resource-section h2,
+#decision-makers-screen .dm-tracker-heading h2{
+    margin:4px 0 0 !important;
+    color:#fff !important;
+    font-size:clamp(26px,4.6vw,42px) !important;
+    line-height:1.02 !important;
+    font-weight:950 !important;
+    letter-spacing:-.03em !important;
+}
+
+#decision-makers-screen .decision-kicker,
+#decision-makers-screen .go-zone-head small,
+#decision-makers-screen .dm-tracker-heading small{
+    color:var(--dm-gold) !important;
+    font-size:10px !important;
+    font-weight:950 !important;
+    letter-spacing:.19em !important;
+}
+
+#decision-makers-screen .decision-section-copy,
+#decision-makers-screen .go-zone-head p{
+    max-width:760px !important;
+    margin:10px 0 22px !important;
+    color:var(--dm-soft) !important;
+    line-height:1.55 !important;
+}
+
+#decision-makers-screen .red-line{
+    width:72px !important;
+    height:4px !important;
+    flex:0 0 72px !important;
+    border-radius:999px !important;
+    background:linear-gradient(90deg,var(--dm-red),#ff2525) !important;
+    box-shadow:0 0 18px rgba(212,0,0,.22) !important;
+}
+
+/* ---------- CHALLENGES + TRACKER ---------- */
+#decision-makers-screen .go-challenge-zone{
+    padding-top:22px !important;
 }
 
 #decision-makers-screen .go-zone-head{
-    margin:0 !important;
-    padding:22px 22px 16px !important;
-    background:#080808 !important;
-    color:#fff !important;
-    border:1px solid #1d1d1d !important;
-    border-bottom:0 !important;
-    border-radius:22px 22px 0 0 !important;
-    box-shadow:none !important;
-}
-
-#decision-makers-screen .go-zone-head small{
-    color:#f5c518 !important;
-}
-
-#decision-makers-screen .go-zone-head h2{
-    color:#fff !important;
-}
-
-#decision-makers-screen .go-zone-head p{
-    color:#c7c7c7 !important;
+    position:relative !important;
+    z-index:1 !important;
+    display:flex !important;
+    justify-content:space-between !important;
+    gap:18px !important;
+    align-items:flex-end !important;
+    padding:2px 2px 6px !important;
+    margin:0 0 18px !important;
 }
 
 #decision-makers-screen .go-account-button{
-    border:1px solid #f5c518 !important;
-    background:#f5c518 !important;
-    color:#000 !important;
-    border-radius:12px !important;
-    padding:13px 18px !important;
+    flex:0 0 auto !important;
+    border:1px solid rgba(245,197,24,.72) !important;
+    background:#121214 !important;
+    color:#fff !important;
+    padding:12px 16px !important;
+    box-shadow:inset 0 0 0 1px rgba(245,197,24,.08) !important;
 }
 
 #decision-makers-screen .go-challenge-grid{
     display:grid !important;
     grid-template-columns:repeat(4,minmax(0,1fr)) !important;
-    gap:14px !important;
-    margin:0 !important;
-    padding:4px 22px 22px !important;
-    background:#080808 !important;
-    border:1px solid #1d1d1d !important;
-    border-top:0 !important;
-    border-radius:0 0 22px 22px !important;
+    gap:12px !important;
 }
 
 #decision-makers-screen .go-challenge-card{
     overflow:hidden !important;
-    background:#141414 !important;
+    border:1px solid #303034 !important;
+    border-radius:18px !important;
+    background:#0b0b0c !important;
     color:#fff !important;
-    border:1px solid #2b2b2b !important;
-    border-radius:16px !important;
-    box-shadow:none !important;
+    box-shadow:0 9px 22px rgba(0,0,0,.22) !important;
 }
 
 #decision-makers-screen .go-challenge-cover{
     aspect-ratio:1/1 !important;
-    background-color:#1a1a1a !important;
+    padding:0 !important;
+    background-color:#111 !important;
     background-size:cover !important;
     background-position:center !important;
+    border-bottom:1px solid #262629 !important;
 }
 
 #decision-makers-screen .go-challenge-card-body{
-    padding:14px !important;
+    padding:13px !important;
 }
 
-#decision-makers-screen .go-challenge-card small{
-    color:#f5c518 !important;
-}
-
-#decision-makers-screen .go-challenge-card h3{
+#decision-makers-screen .go-challenge-card-body h3{
     color:#fff !important;
+    margin:5px 0 6px !important;
+    font-size:16px !important;
+    line-height:1.1 !important;
 }
 
-#decision-makers-screen .go-challenge-card p{
-    color:#bdbdbd !important;
+#decision-makers-screen .go-challenge-card-body p{
+    color:#9d9da3 !important;
+    font-size:12px !important;
+    line-height:1.42 !important;
 }
 
-#decision-makers-screen .go-primary{
-    background:#d40000 !important;
+#decision-makers-screen .go-challenge-card-body small{
+    color:var(--dm-gold) !important;
+}
+
+#decision-makers-screen .go-challenge-card-body .go-primary{
+    min-height:42px !important;
+    background:var(--dm-red) !important;
     color:#fff !important;
-    border-color:#d40000 !important;
-    border-radius:10px !important;
+    border-radius:999px !important;
 }
 
-#decision-makers-screen .go-secondary{
-    background:#111 !important;
-    color:#fff !important;
-    border:1px solid #f5c518 !important;
-    border-radius:10px !important;
-}
-
-/* Active Tracker is its own dark feature on the white canvas. */
 #decision-makers-screen .dm-tracker-heading{
-    margin:18px 0 0 !important;
-    padding:20px 22px 12px !important;
-    background:#080808 !important;
-    border:1px solid #1d1d1d !important;
-    border-radius:22px !important;
-    color:#fff !important;
-}
-
-#decision-makers-screen .dm-tracker-heading small{
-    display:block !important;
-    color:#f5c518 !important;
-    margin-bottom:5px !important;
-    font-size:10px !important;
-    font-weight:950 !important;
-    letter-spacing:.14em !important;
-}
-
-#decision-makers-screen .dm-tracker-heading h2{
-    margin:0 !important;
-    color:#fff !important;
+    margin:24px 0 12px !important;
+    padding:18px 20px !important;
+    border:1px solid #2f2f33 !important;
+    border-radius:18px !important;
+    background:
+        linear-gradient(135deg,rgba(245,197,24,.09),transparent 42%),
+        #0d0d0f !important;
 }
 
 #decision-makers-screen .go-active-strip{
-    margin:8px 0 0 !important;
-    padding:18px !important;
-    background:#080808 !important;
-    color:#fff !important;
-    border:1px solid #1d1d1d !important;
-    border-left:4px solid #f5c518 !important;
+    margin:0 !important;
+    border:1px solid rgba(245,197,24,.62) !important;
     border-radius:18px !important;
-    box-shadow:none !important;
+    background:#09090a !important;
+    box-shadow:inset 0 0 0 1px rgba(245,197,24,.05) !important;
 }
 
-#decision-makers-screen .go-active-stats{
-    color:#bdbdbd !important;
-}
-
-#decision-makers-screen .go-active-stats b{
-    color:#fff !important;
-}
-
-#decision-makers-screen .go-progress-track{
-    background:#242424 !important;
-}
-
-#decision-makers-screen .go-progress-fill{
-    background:#d40000 !important;
-}
-
-/* Existing On The Go, Sessions and Resource cards stay dark inside the black sections. */
-#decision-makers-screen .on-the-go-card,
-#decision-makers-screen .session-card,
-#decision-makers-screen .dm-resource-card{
-    background:#121212 !important;
-    color:#fff !important;
-    border-color:#2b2b2b !important;
-    box-shadow:none !important;
-}
-
-#decision-makers-screen .on-the-go-card h3,
-#decision-makers-screen .session-card h3,
-#decision-makers-screen .dm-resource-card h3{
-    color:#fff !important;
-}
-
-#decision-makers-screen .on-the-go-card p,
-#decision-makers-screen .session-card p,
-#decision-makers-screen .dm-resource-card p,
-#decision-makers-screen .session-content p{
-    color:#bdbdbd !important;
-}
-
-#decision-makers-screen .session-content > span,
-#decision-makers-screen .on-the-go-card span,
-#decision-makers-screen .dm-resource-card span{
-    color:#f5c518 !important;
-}
-
-/* Courses are a black feature section. The final card layout is handled in the course file next. */
-#decision-makers-screen .dm-course-message{
-    background:#121212 !important;
-    color:#bdbdbd !important;
-    border-color:#2b2b2b !important;
-}
-
+/* ---------- COURSES ---------- */
 #decision-makers-screen .dm-course-grid{
-    margin-top:18px !important;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:16px !important;
+    margin-top:20px !important;
 }
 
 #decision-makers-screen .dm-course-card{
-    background:#121212 !important;
-    color:#fff !important;
-    border-color:#2b2b2b !important;
-    box-shadow:none !important;
+    display:grid !important;
+    grid-template-columns:minmax(145px,42%) minmax(0,1fr) !important;
+    min-height:250px !important;
+    overflow:hidden !important;
+    border:1px solid #dedede !important;
+    border-radius:20px !important;
+    background:#fff !important;
+    color:#111 !important;
+    box-shadow:0 13px 28px rgba(0,0,0,.32) !important;
 }
 
-#decision-makers-screen .dm-course-card-body h3,
-#decision-makers-screen .dm-course-card-body h4,
-#decision-makers-screen .dm-course-card-meta strong{
-    color:#fff !important;
+#decision-makers-screen .dm-course-card::before{
+    height:4px !important;
+    background:var(--dm-red) !important;
 }
 
-#decision-makers-screen .dm-course-card-body p,
-#decision-makers-screen .dm-course-card-meta,
-#decision-makers-screen .dm-course-card-meta span{
-    color:#bdbdbd !important;
+#decision-makers-screen .dm-course-cover{
+    width:100% !important;
+    height:100% !important;
+    min-height:250px !important;
+    aspect-ratio:auto !important;
+    border:0 !important;
+    border-right:1px solid #e1e1e1 !important;
+    background:#090909 !important;
+}
+
+#decision-makers-screen .dm-course-cover img{
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
+    object-position:center !important;
+}
+
+#decision-makers-screen .dm-course-card-body{
+    min-width:0 !important;
+    padding:18px !important;
+    display:flex !important;
+    flex-direction:column !important;
+    color:#111 !important;
+}
+
+#decision-makers-screen .dm-course-card-topline{
+    gap:8px !important;
+    margin-bottom:9px !important;
 }
 
 #decision-makers-screen .dm-course-card-topline span{
-    color:#f5c518 !important;
+    color:#9f7900 !important;
+    font-size:8px !important;
+    line-height:1.2 !important;
+    letter-spacing:.14em !important;
 }
 
-#decision-makers-screen .dm-course-view-button{
-    background:#d40000 !important;
+#decision-makers-screen .dm-course-card-body h3{
+    margin:0 !important;
+    color:#0b0b0b !important;
+    font-size:clamp(18px,2.2vw,25px) !important;
+    line-height:1.05 !important;
+    overflow-wrap:anywhere !important;
+}
+
+#decision-makers-screen .dm-course-card-body h4{
+    margin:7px 0 0 !important;
+    color:#9c7200 !important;
+    font-size:13px !important;
+    line-height:1.25 !important;
+}
+
+#decision-makers-screen .dm-course-card-body p{
+    margin:10px 0 0 !important;
+    color:#616168 !important;
+    font-size:12px !important;
+    line-height:1.45 !important;
+    display:-webkit-box !important;
+    -webkit-line-clamp:3 !important;
+    -webkit-box-orient:vertical !important;
+    overflow:hidden !important;
+}
+
+#decision-makers-screen .dm-course-card-meta{
+    margin-top:auto !important;
+    padding-top:13px !important;
+    border-top:1px solid #e3e3e3 !important;
+}
+
+#decision-makers-screen .dm-course-card-meta span{
+    color:#73737a !important;
+}
+
+#decision-makers-screen .dm-course-card-meta strong{
+    color:#111 !important;
+    font-size:18px !important;
+}
+
+#decision-makers-screen .dm-course-view-button,
+#decision-makers-screen .dm-course-primary{
+    width:100% !important;
+    min-height:44px !important;
+    margin-top:12px !important;
+    border:0 !important;
+    border-radius:999px !important;
+    background:var(--dm-red) !important;
     color:#fff !important;
-    border-color:#d40000 !important;
+    font-weight:950 !important;
+    letter-spacing:.05em !important;
 }
 
-/* Decision Maker Spotlights / Month */
+/* ---------- ON THE GO ---------- */
+#decision-makers-screen .on-the-go-row{
+    gap:14px !important;
+}
+
+#decision-makers-screen .on-the-go-card{
+    border:1px solid #2b2b2f !important;
+    border-radius:19px !important;
+    background:#09090a !important;
+    box-shadow:0 10px 24px rgba(0,0,0,.24) !important;
+}
+
+#decision-makers-screen .decision-card-body{
+    padding:15px !important;
+}
+
+#decision-makers-screen .decision-card-body h3{
+    color:#fff !important;
+}
+
+#decision-makers-screen .decision-card-body p{
+    color:#9e9ea4 !important;
+}
+
+/* ---------- SESSIONS ---------- */
+#decision-makers-screen .session-section{
+    padding:26px !important;
+}
+
+#decision-makers-screen .session-grid{
+    gap:12px !important;
+}
+
+#decision-makers-screen .session-card{
+    min-height:150px !important;
+    border:1px solid #2b2b2f !important;
+    border-radius:18px !important;
+    background:
+        linear-gradient(135deg,#171719 0%,#0d0d0f 100%) !important;
+    box-shadow:0 9px 20px rgba(0,0,0,.20) !important;
+}
+
+#decision-makers-screen .session-content h3,
+#decision-makers-screen .session-content strong{
+    color:#fff !important;
+}
+
+#decision-makers-screen .session-content p{
+    color:#aaaab0 !important;
+}
+
+#decision-makers-screen .session-content > span,
+#decision-makers-screen .session-status{
+    color:var(--dm-gold) !important;
+}
+
+/* ---------- DECISION MAKER SPOTLIGHT / COMMUNITY ---------- */
+#decision-makers-screen #dm-month-home,
+#decision-makers-screen #dm-community-home{
+    background:
+        radial-gradient(circle at 100% 0%,rgba(212,0,0,.09),transparent 30%),
+        linear-gradient(145deg,#111113,#080809) !important;
+}
+
 #decision-makers-screen .dm-month-grid{
     display:grid !important;
     grid-template-columns:repeat(5,minmax(0,1fr)) !important;
-    gap:12px !important;
-    margin-top:18px !important;
+    gap:10px !important;
 }
 
 #decision-makers-screen .dm-month-card{
     overflow:hidden !important;
-    background:#121212 !important;
-    border:1px solid #2b2b2b !important;
-    border-radius:16px !important;
-    box-shadow:none !important;
+    border:1px solid #303034 !important;
+    border-radius:17px !important;
+    background:#0b0b0c !important;
+    color:#fff !important;
+    box-shadow:0 8px 20px rgba(0,0,0,.20) !important;
 }
 
 #decision-makers-screen .dm-month-card > img,
 #decision-makers-screen .dm-month-placeholder{
+    display:block !important;
     width:100% !important;
     aspect-ratio:1/1 !important;
     object-fit:cover !important;
-    background:#1a1a1a !important;
-    color:#777 !important;
+    background:#18181a !important;
 }
 
 #decision-makers-screen .dm-month-copy{
-    padding:13px !important;
+    padding:12px !important;
 }
 
 #decision-makers-screen .dm-month-copy small{
-    color:#f5c518 !important;
+    color:var(--dm-gold) !important;
 }
 
 #decision-makers-screen .dm-month-copy h3,
@@ -4493,23 +4663,22 @@ body,
 }
 
 #decision-makers-screen .dm-month-copy p{
-    color:#bdbdbd !important;
+    color:#aaaab0 !important;
 }
 
-/* Community */
 #decision-makers-screen .dm-community-preview{
     display:grid !important;
     grid-template-columns:repeat(2,minmax(0,1fr)) !important;
     gap:12px !important;
-    margin:18px 0 !important;
 }
 
 #decision-makers-screen .dm-community-card{
-    background:#121212 !important;
-    border:1px solid #2b2b2b !important;
-    border-radius:16px !important;
-    padding:16px !important;
-    box-shadow:none !important;
+    border:1px solid #303034 !important;
+    border-radius:17px !important;
+    background:#0b0b0c !important;
+    color:#fff !important;
+    padding:15px !important;
+    box-shadow:0 8px 20px rgba(0,0,0,.18) !important;
 }
 
 #decision-makers-screen .dm-community-card h3,
@@ -4517,143 +4686,234 @@ body,
     color:#fff !important;
 }
 
-#decision-makers-screen .dm-community-card p{
-    color:#bdbdbd !important;
+#decision-makers-screen .dm-community-card p,
+#decision-makers-screen .dm-community-card small{
+    color:#a9a9af !important;
 }
 
-#decision-makers-screen .dm-community-card .go-feed-head small{
-    color:#f5c518 !important;
+#decision-makers-screen .go-avatar{
+    border:2px solid rgba(245,197,24,.65) !important;
+    background:#151517 !important;
 }
 
 #decision-makers-screen .dm-community-open{
-    min-height:46px !important;
-    border:1px solid #f5c518 !important;
-    border-radius:12px !important;
-    background:#f5c518 !important;
-    color:#000 !important;
+    min-height:48px !important;
+    margin-top:15px !important;
+    padding:12px 20px !important;
+    border:1px solid rgba(245,197,24,.72) !important;
+    border-radius:999px !important;
+    background:#121214 !important;
+    color:#fff !important;
     font-weight:950 !important;
-    padding:0 20px !important;
+    letter-spacing:.04em !important;
 }
 
-#decision-makers-screen .go-empty{
-    background:#121212 !important;
-    border:1px dashed #444 !important;
-    color:#9d9d9d !important;
+#decision-makers-screen .dm-community-open:hover,
+#decision-makers-screen .dm-community-open:focus-visible{
+    background:var(--dm-red) !important;
+    border-color:var(--dm-red) !important;
 }
 
-/* Keep the separate account overlays readable. */
-.go-profile-photo-editor{
-    display:grid;
-    grid-template-columns:110px 1fr;
-    gap:16px;
-    align-items:center;
+#decision-makers-screen .go-empty,
+#decision-makers-screen .dm-month-empty,
+#decision-makers-screen .dm-community-empty{
+    padding:20px !important;
+    border:1px dashed #404046 !important;
+    border-radius:16px !important;
+    background:#0a0a0b !important;
+    color:#929298 !important;
+    text-align:center !important;
 }
 
-.go-profile-photo-preview{
-    width:110px;
-    height:110px;
-    border-radius:50%;
-    overflow:hidden;
-    background:#151515;
-    border:3px solid #f5c518;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#888;
-    font-size:10px;
-    font-weight:900;
+/* ---------- RESOURCES / FOOTER ---------- */
+#decision-makers-screen .dm-resource-card{
+    border:1px solid #2e2e32 !important;
+    background:#0b0b0c !important;
+    color:#fff !important;
 }
 
-.go-profile-photo-preview img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+#decision-makers-screen .dm-resource-card h3{
+    color:#fff !important;
 }
 
-.go-profile-photo-editor input[type=file]{
-    display:none;
+#decision-makers-screen .dm-resource-card p{
+    color:#a8a8ae !important;
 }
 
-/* Mobile */
-@media(max-width:760px){
-    #decision-makers-screen .decision-section,
-    #decision-makers-screen .dm-courses-section,
-    #decision-makers-screen .dm-resource-section,
-    #decision-makers-screen .go-challenge-zone{
-        width:calc(100% - 20px) !important;
-    }
+#decision-makers-screen .boss-footer{
+    background:#050505 !important;
+    color:#8d8d93 !important;
+}
 
+/* ---------- RESPONSIVE ---------- */
+@media (max-width:900px){
     #decision-makers-screen .go-challenge-grid{
         grid-template-columns:repeat(2,minmax(0,1fr)) !important;
     }
 
     #decision-makers-screen .dm-month-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+
+    #decision-makers-screen .dm-course-grid{
+        grid-template-columns:1fr !important;
+    }
+}
+
+@media (max-width:620px){
+    #decision-makers-screen{
+        padding-bottom:30px !important;
+    }
+
+    #decision-makers-screen .decision-header{
+        margin-bottom:18px !important;
+        padding-bottom:25px !important;
+    }
+
+    #decision-makers-screen .decision-logo{
+        margin-bottom:22px !important;
+    }
+
+    #decision-makers-screen .decision-header h2{
+        font-size:36px !important;
+    }
+
+    #decision-makers-screen .decision-tagline{
+        font-size:14px !important;
+    }
+
+    #decision-makers-screen .decision-intro{
+        font-size:15px !important;
+    }
+
+    #decision-makers-screen .dm-premium-nav{
+        width:calc(100% - 24px) !important;
+        gap:8px !important;
+        margin-bottom:18px !important;
+    }
+
+    #decision-makers-screen .dm-premium-nav button{
+        min-height:58px !important;
+        padding:10px 5px !important;
+        border-radius:14px !important;
+        font-size:10.5px !important;
+        letter-spacing:.035em !important;
+    }
+
+    #decision-makers-screen .decision-section,
+    #decision-makers-screen .dm-courses-section,
+    #decision-makers-screen .dm-resource-section,
+    #decision-makers-screen .go-challenge-zone{
+        width:calc(100% - 24px) !important;
+        margin:14px auto 20px !important;
+        padding:19px !important;
+        border-radius:20px !important;
+    }
+
+    #decision-makers-screen .go-zone-head{
+        align-items:flex-start !important;
+        flex-direction:column !important;
+    }
+
+    #decision-makers-screen .go-account-button{
+        width:100% !important;
+    }
+
+    #decision-makers-screen .go-challenge-grid{
         grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:9px !important;
+    }
+
+    #decision-makers-screen .go-challenge-card-body{
+        padding:10px !important;
+    }
+
+    #decision-makers-screen .go-challenge-card-body h3{
+        font-size:14px !important;
+    }
+
+    #decision-makers-screen .go-challenge-card-body p{
+        font-size:10.5px !important;
+        line-height:1.35 !important;
+    }
+
+    /* A readable phone course card beats a clipped two-up card. */
+    #decision-makers-screen .dm-course-grid{
+        grid-template-columns:1fr !important;
+        gap:13px !important;
+    }
+
+    #decision-makers-screen .dm-course-card{
+        grid-template-columns:42% minmax(0,1fr) !important;
+        min-height:220px !important;
+        border-radius:18px !important;
+    }
+
+    #decision-makers-screen .dm-course-cover{
+        min-height:220px !important;
+    }
+
+    #decision-makers-screen .dm-course-card-body{
+        padding:14px !important;
+    }
+
+    #decision-makers-screen .dm-course-card-body h3{
+        font-size:20px !important;
+    }
+
+    #decision-makers-screen .dm-course-card-body h4{
+        font-size:12px !important;
+    }
+
+    #decision-makers-screen .dm-course-card-body p{
+        font-size:11px !important;
+        -webkit-line-clamp:2 !important;
+    }
+
+    #decision-makers-screen .dm-course-card-meta strong{
+        font-size:16px !important;
+    }
+
+    #decision-makers-screen .dm-course-view-button{
+        min-height:42px !important;
+        padding:10px 12px !important;
+        font-size:10px !important;
+    }
+
+    #decision-makers-screen .on-the-go-row,
+    #decision-makers-screen .session-grid{
+        grid-template-columns:1fr !important;
+    }
+
+    #decision-makers-screen .dm-month-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:9px !important;
     }
 
     #decision-makers-screen .dm-community-preview{
         grid-template-columns:1fr !important;
     }
+
+    #decision-makers-screen .red-line{
+        width:46px !important;
+        flex-basis:46px !important;
+    }
 }
 
-@media(max-width:520px){
-    #decision-makers-screen .decision-section,
-    #decision-makers-screen .dm-courses-section,
-    #decision-makers-screen .dm-resource-section{
-        padding:18px !important;
-        border-radius:18px !important;
-    }
-
-    #decision-makers-screen .dm-premium-nav{
-        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
-        gap:8px !important;
-        padding:10px !important;
-        border-radius:18px !important;
-    }
-
+@media (max-width:390px){
     #decision-makers-screen .dm-premium-nav button{
-        min-height:50px !important;
-        padding:8px 4px !important;
-        font-size:9px !important;
-        letter-spacing:.035em !important;
+        font-size:9.5px !important;
     }
 
-    #decision-makers-screen .go-zone-head{
-        padding:18px 18px 12px !important;
-        border-radius:18px 18px 0 0 !important;
+    #decision-makers-screen .dm-course-card{
+        grid-template-columns:40% minmax(0,1fr) !important;
     }
 
-    #decision-makers-screen .go-challenge-grid{
-        padding:4px 18px 18px !important;
-        gap:10px !important;
-        border-radius:0 0 18px 18px !important;
+    #decision-makers-screen .dm-course-card-body{
+        padding:12px !important;
     }
 
-    #decision-makers-screen .go-challenge-card-body{
-        padding:11px !important;
-    }
-
-    #decision-makers-screen .go-challenge-card h3{
-        font-size:14px !important;
-        line-height:1.15 !important;
-    }
-
-    #decision-makers-screen .go-challenge-card p{
-        font-size:11px !important;
-        line-height:1.35 !important;
-    }
-
-    #decision-makers-screen .dm-tracker-heading{
-        padding:18px !important;
-        border-radius:18px !important;
-    }
-
-    .go-profile-photo-editor{
-        grid-template-columns:90px 1fr;
-    }
-
-    .go-profile-photo-preview{
-        width:90px;
-        height:90px;
+    #decision-makers-screen .dm-course-card-body h3{
+        font-size:18px !important;
     }
 }
