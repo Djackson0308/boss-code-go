@@ -4125,10 +4125,7 @@ body,
     --dm-line:#27272a;
     --dm-radius:24px;
 
-    background:
-        radial-gradient(circle at 15% 12%, rgba(212,0,0,.10), transparent 26%),
-        radial-gradient(circle at 88% 32%, rgba(245,197,24,.055), transparent 24%),
-        linear-gradient(180deg,#050505 0%,#080808 42%,#050505 100%) !important;
+    background:#000 !important;
     color:var(--dm-white) !important;
     padding-bottom:48px !important;
 }
@@ -4139,8 +4136,7 @@ body,
     max-width:none !important;
     margin:0 0 26px !important;
     padding:0 0 30px !important;
-    background:
-        linear-gradient(180deg,#060606 0%,#0b0b0b 100%) !important;
+    background:#000 !important;
     color:var(--dm-white) !important;
     border-bottom:1px solid #1c1c1f !important;
     text-align:center !important;
@@ -4916,4 +4912,33 @@ body,
     #decision-makers-screen .dm-course-card-body h3{
         font-size:18px !important;
     }
+}
+
+
+/* =========================================================
+   DECISION MAKERS VISUAL SYSTEM V5
+   PURE BLACK FOUNDATION + BACKEND BANNER PRIORITY
+   ========================================================= */
+
+/* Pure black page foundation. No red/wine ambient wash. */
+#decision-makers-screen{
+    background:#000 !important;
+}
+
+#decision-makers-screen .decision-header{
+    background:#000 !important;
+}
+
+/*
+   The backend-managed banner is inserted into .decision-header and adds
+   .page-banner-ready. When that banner is active, hide the old static
+   decision-makers-logo.png so only the current backend banner is shown.
+*/
+#decision-makers-screen .decision-header.page-banner-ready > .decision-logo{
+    display:none !important;
+}
+
+/* Keep the original logo available only as a fallback when no backend banner exists. */
+#decision-makers-screen .decision-header:not(.page-banner-ready) > .decision-logo{
+    display:block !important;
 }
