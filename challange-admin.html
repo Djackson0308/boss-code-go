@@ -195,6 +195,11 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </section></div>
 </section>
 </div>
+
+<section class="panel" id="dmMonthAdmin" style="margin-top:16px">
+<div class="section-head"><div><div class="kicker">DECISION MAKERS</div><h2>DECISION MAKERS OF THE MONTH</h2><p class="muted" style="font-size:10px;margin-top:6px">Manage the five featured people shown inside Decision Makers. Every photo uses an upload button.</p></div><button id="refreshDmMonth" class="btn outline" type="button">REFRESH</button></div>
+<div id="dmMonthAdminGrid" class="grid"></div><div id="dmMonthAdminMsg" class="message"></div>
+</section>
 </main>
 
 <script>
@@ -245,7 +250,7 @@ $("cBannerFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cBanner",
 async function unlock(){
  KEY=val("adminKey"); if(!KEY){$("loginMsg").textContent="ENTER YOUR ADMIN KEY.";return}
  sessionStorage.setItem("boss-code-admin-key",KEY);
- try{await api("/admin/go/challenges");$("login").classList.add("hide");await loadChallenges()}
+ try{await api("/admin/go/challenges");$("login").classList.add("hide");await loadChallenges();await loadDecisionMakersMonthAdmin()}
  catch(e){KEY="";sessionStorage.removeItem("boss-code-admin-key");$("loginMsg").textContent="COULD NOT CONNECT."}
 }
 function lock(){KEY="";sessionStorage.removeItem("boss-code-admin-key");$("login").classList.remove("hide")}
@@ -434,6 +439,19 @@ $("saveAchievement").onclick=saveAchievement;
 $("deleteAchievement").onclick=deleteAchievement;
 
 $("refreshGoStats").onclick=loadGoStats;$("refreshInspiration").onclick=loadInspiration;$("inspirationFilter").onchange=loadInspiration;$("refreshCommunity").onclick=loadCommunity;$("searchUsers").onclick=loadGoUsers;$("userSearch").onkeydown=e=>{if(e.key==="Enter")loadGoUsers()};
+
+
+
+async function loadDecisionMakersMonthAdmin(){
+ const grid=$("dmMonthAdminGrid");if(!grid)return;grid.innerHTML='<div class="empty">LOADING FIVE SPOTS...</div>';
+ try{const d=await api('/admin/go/decision-makers-month');const rows=d.people||[];grid.innerHTML=rows.map(p=>`<div class="subpanel" data-dm-month-slot="${p.slot}"><div class="kicker">SPOT ${p.slot}</div><div class="field"><label>NAME</label><input class="input dmMonthName" value="${esc(p.name||'')}"></div><div class="field" style="margin-top:10px"><label>SMALL LABEL</label><input class="input dmMonthEyebrow" value="${esc(p.eyebrow||'DECISION MAKER')}"></div><div class="field" style="margin-top:10px"><label>HEADLINE / ACCOMPLISHMENT</label><input class="input dmMonthHeadline" value="${esc(p.headline||'')}"></div><div class="field" style="margin-top:10px"><label>SHORT STORY / INFORMATION</label><textarea class="textarea dmMonthStory">${esc(p.story||'')}</textarea></div><div class="upload-box" style="margin-top:10px"><label>PHOTO</label><input class="dmMonthPhotoUrl" type="hidden" value="${esc(p.photo_url||'')}"><input class="file-input dmMonthPhotoFile" type="file" accept="image/*"><img class="upload-preview dmMonthPreview ${p.photo_url?'show':''}" ${p.photo_url?`src="${esc(p.photo_url)}"`:''} alt=""><div class="upload-state dmMonthUploadState">${p.photo_url?'PHOTO READY.':'CHOOSE A PHOTO.'}</div></div><label class="checkline" style="margin-top:10px"><input class="dmMonthPublished" type="checkbox" ${Number(p.published)!==0?'checked':''}> PUBLISHED</label><button class="btn red dmMonthSave" type="button" style="margin-top:12px">SAVE SPOT ${p.slot}</button></div>`).join('');
+ grid.querySelectorAll('.dmMonthPhotoFile').forEach(input=>input.onchange=()=>uploadDmMonthPhoto(input));grid.querySelectorAll('.dmMonthSave').forEach(btn=>btn.onclick=()=>saveDmMonthSpot(btn.closest('[data-dm-month-slot]')));
+ }catch(e){grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>';}
+}
+async function uploadDmMonthPhoto(input){const card=input.closest('[data-dm-month-slot]'),file=input.files?.[0];if(!file)return;const state=card.querySelector('.dmMonthUploadState');state.textContent='UPLOADING...';try{const form=new FormData();form.append('file',file);form.append('folder','decision-makers-of-the-month');const headers=new Headers();if(KEY)headers.set('X-Admin-Key',KEY);const r=await fetch(API+'/media/upload',{method:'POST',headers,body:form});const d=await r.json();if(!r.ok||d.success===false)throw Error(d.error||'UPLOAD FAILED');card.querySelector('.dmMonthPhotoUrl').value=d.url||'';const img=card.querySelector('.dmMonthPreview');img.src=d.url;img.classList.add('show');state.textContent='PHOTO UPLOADED.';}catch(e){state.textContent='UPLOAD ERROR: '+e.message}}
+async function saveDmMonthSpot(card){const slot=Number(card.dataset.dmMonthSlot),msg=$("dmMonthAdminMsg");msg.textContent='SAVING SPOT '+slot+'...';try{await api('/admin/go/decision-makers-month/'+slot,{method:'PUT',body:JSON.stringify({name:card.querySelector('.dmMonthName').value.trim(),eyebrow:card.querySelector('.dmMonthEyebrow').value.trim(),headline:card.querySelector('.dmMonthHeadline').value.trim(),story:card.querySelector('.dmMonthStory').value.trim(),photo_url:card.querySelector('.dmMonthPhotoUrl').value.trim(),published:card.querySelector('.dmMonthPublished').checked})});msg.textContent='SPOT '+slot+' SAVED.';}catch(e){msg.textContent=e.message}}
+if($("refreshDmMonth"))$("refreshDmMonth").onclick=loadDecisionMakersMonthAdmin;
+setTimeout(()=>{if(KEY)loadDecisionMakersMonthAdmin()},600);
 
 </script>
 </body>
