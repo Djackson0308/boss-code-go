@@ -1192,52 +1192,34 @@
 
 
         /*
-           If the free Decision Maker resource section exists,
-           paid courses stay AFTER the free resources.
+           Courses are the first working area in Decision Makers.
+           Keep them directly below the quick navigation.
         */
 
-        const resourceSection =
-            document.getElementById(
-                "decision-makers-resources-section"
+        const quickNav =
+            screen.querySelector(
+                ".decision-quick-nav"
             );
 
-
-        if (resourceSection) {
-
-            if (
-                resourceSection.nextElementSibling !==
-                section
-            ) {
-
-                resourceSection.insertAdjacentElement(
+        if (quickNav) {
+            if (quickNav.nextElementSibling !== section) {
+                quickNav.insertAdjacentElement(
                     "afterend",
                     section
                 );
             }
-
             return;
         }
 
-
-        /*
-           Until resources finish loading, keep courses
-           immediately above the footer.
-        */
-
-        const footer =
+        const header =
             screen.querySelector(
-                ".boss-footer"
+                ".decision-header"
             );
 
-
-        if (
-            footer &&
-            section.nextElementSibling !== footer
-        ) {
-
-            screen.insertBefore(
-                section,
-                footer
+        if (header && header.nextElementSibling !== section) {
+            header.insertAdjacentElement(
+                "afterend",
+                section
             );
         }
     }
@@ -1462,17 +1444,6 @@
                                                 <h4>
                                                     ${escapeHTML(subtitle)}
                                                 </h4>
-                                            `
-                                            : ""
-                                    }
-
-
-                                    ${
-                                        description
-                                            ? `
-                                                <p>
-                                                    ${escapeHTML(description)}
-                                                </p>
                                             `
                                             : ""
                                     }
@@ -3281,12 +3252,8 @@
 
             .dm-course-grid {
                 display: grid;
-                grid-template-columns:
-                    repeat(
-                        auto-fit,
-                        minmax(270px, 1fr)
-                    );
-                gap: 24px;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
                 margin-top: 26px;
             }
 
@@ -3333,7 +3300,7 @@
 
             .dm-course-cover {
                 width: 100%;
-                aspect-ratio: 4 / 5;
+                aspect-ratio: 1 / 1;
                 overflow: hidden;
                 background: #050505;
                 border-bottom: 1px solid #282828;
@@ -3344,7 +3311,7 @@
                 display: block;
                 width: 100%;
                 height: 100%;
-                object-fit: cover;
+                object-fit: contain;
             }
 
 
@@ -3403,7 +3370,7 @@
 
 
             .dm-course-card-body {
-                padding: 22px;
+                padding: 14px;
             }
 
 
@@ -3449,7 +3416,7 @@
 
                 color: #fff;
 
-                font-size: 24px;
+                font-size: 18px;
                 line-height: 1.1;
                 font-weight: 950;
             }
@@ -3509,7 +3476,7 @@
             .dm-course-view-button {
                 display: block;
                 width: 100%;
-                min-height: 50px;
+                min-height: 42px;
 
                 margin-top: 18px;
                 padding: 13px 20px;
@@ -4695,8 +4662,54 @@
             @media (max-width: 760px) {
 
                 .dm-course-grid {
-                    grid-template-columns: 1fr;
-                    gap: 19px;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 10px;
+                }
+
+                .dm-course-card {
+                    border-radius: 16px;
+                }
+
+                .dm-course-card-body {
+                    padding: 10px;
+                }
+
+                .dm-course-card-topline span {
+                    font-size: 7px;
+                    letter-spacing: .8px;
+                }
+
+                .dm-course-card-topline strong {
+                    display: none;
+                }
+
+                .dm-course-card-body h3 {
+                    font-size: 14px;
+                }
+
+                .dm-course-card-body h4 {
+                    font-size: 10px;
+                }
+
+                .dm-course-card-meta {
+                    margin-top: 10px;
+                    padding-top: 9px;
+                    gap: 6px;
+                }
+
+                .dm-course-card-meta span {
+                    font-size: 7px;
+                }
+
+                .dm-course-card-meta strong {
+                    font-size: 13px;
+                }
+
+                .dm-course-view-button {
+                    min-height: 36px;
+                    margin-top: 10px;
+                    padding: 8px;
+                    font-size: 9px;
                 }
 
 
