@@ -20398,7 +20398,7 @@
       const screen=$('decision-makers-screen');if(!screen)return;
       if(!$('dm-month-home')){
         const month=document.createElement('section');month.id='dm-month-home';month.className='decision-section dm-feature-section';
-        month.innerHTML='<div class="decision-heading"><div><span class="decision-kicker">PEOPLE MAKING THE DECISION</span><h2>DECISION MAKERS OF THE MONTH</h2></div><span class="red-line"></span></div><p class="decision-section-copy">Five people. Five stories. Real movement.</p><div id="dm-month-grid" class="dm-month-grid"><div class="go-empty">LOADING...</div></div>';
+        month.innerHTML='<div class="decision-heading"><div><span class="decision-kicker">PEOPLE MAKING THE DECISION</span><h2>DECISION MAKER SPOTLIGHTS</h2></div><span class="red-line"></span></div><p class="decision-section-copy">Spotlighting active Decision Makers who are making moves, creating progress, and living the decision.</p><div id="dm-month-grid" class="dm-month-grid"><div class="go-empty">LOADING...</div></div>';
         const sessions=q('.session-grid',screen)?.parentElement; if(sessions)sessions.insertAdjacentElement('afterend',month); else screen.appendChild(month);
       }
       if(!$('dm-community-home')){
@@ -20413,8 +20413,8 @@
     async function goLoadDecisionMakersMonth(){
       const grid=$('dm-month-grid');if(!grid)return;
       try{const data=await goFetch('/go/decision-makers-month');const people=Array.isArray(data.people)?data.people:[];
-        grid.innerHTML=people.length?people.slice(0,5).map(p=>`<article class="dm-month-card">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="${esc(p.name||'Decision Maker')}">`:`<div class="dm-month-placeholder">PHOTO</div>`}<div class="dm-month-copy"><small>${esc(p.eyebrow||'DECISION MAKER')}</small><h3>${esc(p.name||'Decision Maker')}</h3>${p.headline?`<strong>${esc(p.headline)}</strong>`:''}${p.story?`<p>${esc(p.story)}</p>`:''}</div></article>`).join(''):'<div class="go-empty" style="grid-column:1/-1">DECISION MAKERS OF THE MONTH WILL APPEAR HERE.</div>';
-      }catch(e){grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">DECISION MAKERS OF THE MONTH WILL APPEAR HERE.</div>';}
+        grid.innerHTML=people.length?people.slice(0,5).map(p=>`<article class="dm-month-card">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="${esc(p.name||'Decision Maker')}">`:`<div class="dm-month-placeholder">PHOTO</div>`}<div class="dm-month-copy"><small>${esc(p.eyebrow||'DECISION MAKER')}</small><h3>${esc(p.name||'Decision Maker')}</h3>${p.headline?`<strong>${esc(p.headline)}</strong>`:''}${p.story?`<p>${esc(p.story)}</p>`:''}</div></article>`).join(''):'<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';
+      }catch(e){grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';}
     }
 
     async function goLoadCommunityPreview(){
