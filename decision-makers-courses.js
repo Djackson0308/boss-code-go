@@ -1383,72 +1383,39 @@
                                 data-course-id="${Number(course.id)}"
                             >
 
-                                ${
-                                    cover
-                                        ? `
-                                            <div class="dm-course-cover">
+                                <div class="dm-course-cover">
 
+                                    ${
+                                        cover
+                                            ? `
                                                 <img
                                                     src="${escapeHTML(cover)}"
                                                     alt="${escapeHTML(title)}"
                                                 >
+                                            `
+                                            : `
+                                                <div class="dm-course-cover-fallback">
 
-                                            </div>
-                                        `
-                                        : `
-                                            <div
-                                                class="
-                                                    dm-course-cover
-                                                    dm-course-cover-placeholder
-                                                "
-                                            >
+                                                    <span>
+                                                        DECISION MAKERS
+                                                    </span>
 
-                                                <span>
-                                                    DECISION MAKERS
-                                                </span>
+                                                    <strong>
+                                                        GREATNESS IS A DECISION
+                                                    </strong>
 
-                                                <strong>
-                                                    ${escapeHTML(title)}
-                                                </strong>
+                                                </div>
+                                            `
+                                    }
 
-                                                ${
-                                                    subtitle
-                                                        ? `
-                                                            <small>
-                                                                ${escapeHTML(subtitle)}
-                                                            </small>
-                                                        `
-                                                        : `
-                                                            <small>
-                                                                GREATNESS IS A DECISION
-                                                            </small>
-                                                        `
-                                                }
-
-                                            </div>
-                                        `
-                                }
+                                </div>
 
 
                                 <div class="dm-course-card-body">
 
-                                    <div class="dm-course-card-topline">
-
-                                        <span>
-                                            DECISION MAKERS COURSE
-                                        </span>
-
-                                        ${
-                                            Number(course.featured) === 1
-                                                ? `
-                                                    <strong>
-                                                        FEATURED
-                                                    </strong>
-                                                `
-                                                : ""
-                                        }
-
-                                    </div>
+                                    <span class="dm-course-kicker">
+                                        DECISION MAKERS COURSE
+                                    </span>
 
 
                                     <h3>
@@ -1456,47 +1423,25 @@
                                     </h3>
 
 
-                                    ${
-                                        subtitle
-                                            ? `
-                                                <h4>
-                                                    ${escapeHTML(subtitle)}
-                                                </h4>
-                                            `
-                                            : ""
-                                    }
+                                    <div class="dm-progress-copy">
 
-
-                                    ${
-                                        description
-                                            ? `
-                                                <p>
-                                                    ${escapeHTML(description)}
-                                                </p>
-                                            `
-                                            : ""
-                                    }
-
-
-                                    <div class="dm-course-card-meta">
-
-                                        <span>
+                                        <strong>
                                             ${
                                                 totalDays
                                                     ? `${totalDays} DAYS`
-                                                    : "INTERACTIVE COURSE"
+                                                    : "READY TO BEGIN"
                                             }
-                                        </span>
-
-                                        <strong>
-                                            ${escapeHTML(price)}
                                         </strong>
+
+                                        <span>
+                                            ${escapeHTML(price)}
+                                        </span>
 
                                     </div>
 
 
                                     <button
-                                        class="dm-course-view-button"
+                                        class="dm-course-primary dm-course-view-button"
                                         type="button"
                                         data-course-id="${Number(course.id)}"
                                     >
