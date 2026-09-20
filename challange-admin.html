@@ -35,24 +35,91 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 .file-input{width:100%;margin-top:8px;color:#aaa;font-size:10px}
 .file-input::file-selector-button{background:var(--red);color:#fff;border:0;border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer;margin-right:10px}
 @media(max-width:1050px){.layout,.split{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.grid,.grid3,.summary{grid-template-columns:1fr}.wrap{width:min(100% - 14px,1420px)}}
+
+
+/* =========================================================
+   COMMUNITY ADMIN - SYSTEM WIDE
+   ========================================================= */
+.community-admin{border-color:rgba(245,197,24,.42);box-shadow:0 0 0 1px rgba(245,197,24,.08) inset}
+.community-admin-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:14px}
+.community-admin-head h2{font-size:28px;line-height:1.05;margin-top:2px}
+.community-admin-copy{max-width:760px;color:#999;font-size:11px;line-height:1.55;margin-top:7px}
+.community-tabs{margin-top:14px;margin-bottom:16px}
+.community-tab.active{color:#000;background:var(--gold);border-color:var(--gold)}
+.community-pane{display:none}
+.community-pane.active{display:block}
+.community-pane .section-head{padding-top:2px}
+.community-note{padding:12px 14px;border:1px solid #252525;border-radius:14px;background:#070707;color:#999;font-size:10px;line-height:1.55;margin-bottom:14px}
+.admin-section-label{display:flex;align-items:center;gap:12px;margin:18px 0 12px;color:var(--gold);font-size:9px;font-weight:900;letter-spacing:2px}
+.admin-section-label:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,rgba(245,197,24,.45),transparent)}
+@media(max-width:700px){.community-admin-head h2{font-size:23px}.community-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.community-tab{width:100%}}
+
 </style>
 </head>
 <body>
 <div id="login" class="login"><div class="loginbox">
-<div class="gold">PRIVATE CHALLENGE SYSTEM</div><h2>30 DAY CHALLENGE ADMIN</h2>
+<div class="gold">PRIVATE DECISION MAKERS SYSTEM</div><h2>DECISION MAKERS ADMIN</h2>
 <p>Enter the same ADMIN_KEY used by your other B.O.S.S CODE GO backend pages.</p>
 <div class="field"><label>ADMIN KEY</label><input id="adminKey" class="input" type="password" autocomplete="off"></div>
-<div class="actions" style="margin-top:12px"><button id="unlock" class="btn red">UNLOCK CHALLENGE ADMIN</button></div>
+<div class="actions" style="margin-top:12px"><button id="unlock" class="btn red">UNLOCK ADMIN</button></div>
 <div id="loginMsg" class="message"></div>
 </div></div>
 
 <main class="wrap">
 <header class="header"><img class="logo" src="images/boss-code-go-logo.png" alt="B.O.S.S CODE GO">
-<div class="gold">DECISION MAKERS</div><h1>30 DAY CHALLENGE BUILDER</h1>
-<p class="muted" style="font-size:11px;margin-top:6px">Build free challenges, all 30 days, progress levels and Faith & Prayer Scripture without touching app code.</p></header>
+<div class="gold">DECISION MAKERS</div><h1>ADMIN CONTROL CENTER</h1>
+<p class="muted" style="font-size:11px;margin-top:6px">Manage the Decision Makers community and build the free 30 day challenge system without touching app code.</p></header>
 
 <section class="topbar"><div class="left"><div id="status" class="status">READY</div><span id="currentLabel" class="muted" style="font-size:10px">No challenge selected</span></div>
 <div class="actions"><button id="refreshAll" class="btn outline">REFRESH</button><button id="lock" class="btn gray">LOCK</button></div></section>
+
+
+<section class="panel community-admin" id="communityAdmin">
+<div class="community-admin-head">
+<div>
+<div class="kicker">SYSTEM WIDE</div>
+<h2>COMMUNITY ADMIN</h2>
+<p class="community-admin-copy">Moderate member posts, control what appears in the Activity Feed, manage Decision Makers accounts and review community activity. This area works without selecting a challenge.</p>
+</div>
+<button id="refreshCommunityAdmin" class="btn outline" type="button">REFRESH COMMUNITY</button>
+</div>
+
+<div class="tabs community-tabs">
+<button class="tab community-tab active" data-community-view="overview" type="button">OVERVIEW</button>
+<button class="tab community-tab" data-community-view="inspiration" type="button">PENDING POSTS</button>
+<button class="tab community-tab" data-community-view="community" type="button">ACTIVITY FEED</button>
+<button class="tab community-tab" data-community-view="users" type="button">USERS</button>
+</div>
+
+<div id="community-view-overview" class="community-pane active">
+<div class="section-head"><div><div class="kicker">COMMUNITY HEALTH</div><h3>OVERVIEW</h3></div><button id="refreshGoStats" class="btn outline" type="button">REFRESH STATS</button></div>
+<div class="summary" style="margin-top:14px"><div class="stat"><strong id="goStatUsers">0</strong><span>ACTIVE USERS</span></div><div class="stat"><strong id="goStatRuns">0</strong><span>TOTAL RUNS</span></div><div class="stat"><strong id="goStatActive">0</strong><span>ACTIVE RUNS</span></div><div class="stat"><strong id="goStatCompleted">0</strong><span>COMPLETED</span></div></div>
+<div class="summary" style="margin-top:12px"><div class="stat"><strong id="goStatPending">0</strong><span>PENDING POSTS</span></div><div class="stat"><strong id="goStatEncourage">0</strong><span>ENCOURAGEMENTS</span></div></div>
+<div class="community-note">Challenge history and 30 day reports remain tied to each member account. Community Admin gives you the system wide moderation and member controls.</div>
+</div>
+
+<div id="community-view-inspiration" class="community-pane">
+<div class="section-head"><div><div class="kicker">100% MODERATED</div><h3>COMMUNITY POST SUBMISSIONS</h3></div><div class="actions"><select id="inspirationFilter" class="select" style="width:auto"><option value="pending">PENDING</option><option value="approved">APPROVED</option><option value="rejected">REJECTED</option><option value="">ALL</option></select><button id="refreshInspiration" class="btn outline" type="button">REFRESH</button></div></div>
+<div class="community-note">Nothing submitted by a member appears publicly until you approve it here.</div>
+<div id="inspirationList" class="level-list" style="margin-top:14px"></div>
+</div>
+
+<div id="community-view-community" class="community-pane">
+<div class="section-head"><div><div class="kicker">LIVE ACTIVITY FEED</div><h3>ACTIVITY FEED CONTROL</h3></div><button id="refreshCommunity" class="btn outline" type="button">REFRESH FEED</button></div>
+<div class="community-note">Edit feed text, hide activity from the app or republish hidden activity. Members can use ENCOURAGE. There are no direct messages.</div>
+<div id="communityList" class="level-list" style="margin-top:14px"></div>
+</div>
+
+<div id="community-view-users" class="community-pane">
+<div class="section-head"><div><div class="kicker">DECISION MAKERS ACCOUNTS</div><h3>USER PROFILES</h3></div><div class="actions"><input id="userSearch" class="input" style="width:220px" placeholder="Name or email"><button id="searchUsers" class="btn outline" type="button">SEARCH</button></div></div>
+<div class="community-note">Search members, edit their display name and disable or re enable an account when needed.</div>
+<div id="userList" class="level-list" style="margin-top:14px"></div>
+</div>
+
+<div id="communityMsg" class="message"></div>
+</section>
+
+<div class="admin-section-label">30 DAY CHALLENGE BUILDER</div>
 
 <div class="layout">
 <aside>
@@ -68,9 +135,9 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="section-head"><div><div class="kicker">CHALLENGE CONTROL</div><h2 id="challengeHeading">CHALLENGE</h2></div><div class="actions"><button id="saveChallenge" class="btn red">SAVE CHALLENGE</button></div></div>
 <div class="summary"><div class="stat"><strong id="statDays">0</strong><span>DAYS BUILT</span></div><div class="stat"><strong id="statPublishedDays">0</strong><span>PUBLISHED DAYS</span></div><div class="stat"><strong id="statLevels">0</strong><span>PROGRESS LEVELS</span></div><div class="stat"><strong id="statScripture">OFF</strong><span>SCRIPTURE</span></div></div>
 
-<div class="tabs"><button class="tab active" data-view="challenge">CHALLENGE</button><button class="tab" data-view="days">30 DAYS</button><button class="tab" data-view="levels">PROGRESS LEVELS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="overview">STATS</button><button class="tab" data-view="inspiration">MODERATION</button><button class="tab" data-view="community">COMMUNITY</button><button class="tab" data-view="users">USERS</button></div>
+<div class="tabs"><button class="tab challenge-tab active" data-view="challenge" type="button">CHALLENGE</button><button class="tab challenge-tab" data-view="days" type="button">30 DAYS</button><button class="tab challenge-tab" data-view="levels" type="button">PROGRESS LEVELS</button><button class="tab challenge-tab" data-view="achievements" type="button">ACHIEVEMENTS</button></div>
 
-<div id="view-challenge" class="view active">
+<div id="view-challenge" class="view challenge-view active">
 <div class="grid">
 <div class="field"><label>CHALLENGE TITLE</label><input id="cTitle" class="input"></div>
 <div class="field"><label>SLUG</label><input id="cSlug" class="input"></div>
@@ -107,7 +174,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <p class="note">Scripture fields only appear in the Day Editor when this setting is enabled. For launch, this should only be enabled for Faith & Prayer.</p>
 </div>
 
-<div id="view-days" class="view">
+<div id="view-days" class="view challenge-view">
 <div class="split">
 <div class="subpanel"><div class="section-head"><div><div class="kicker">30 DAYS</div><h3>CHALLENGE DAYS</h3></div><div class="actions"><button id="loadLaunch30" class="btn outline">LOAD SELECTED 30 DAYS</button><button id="newDay" class="btn red">+ DAY</button></div></div><div id="dayList" class="day-list"></div></div>
 <div class="subpanel"><div class="section-head"><div><div class="kicker">DAY EDITOR</div><h3 id="dayHeading">SELECT A DAY</h3></div><button id="saveDay" class="btn red" style="display:none">SAVE DAY</button></div>
@@ -142,7 +209,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </div></div></div>
 </div>
 
-<div id="view-levels" class="view">
+<div id="view-levels" class="view challenge-view">
 <div class="split">
 <div class="subpanel"><div class="section-head"><div><div class="kicker">PROGRESS</div><h3>LEVELS</h3></div><div class="actions"><button id="loadLaunchLevels" class="btn outline">LOAD LEVELS</button><button id="newLevel" class="btn red">+ LEVEL</button></div></div><div id="levelList" class="level-list"></div></div>
 <div class="subpanel"><div class="kicker">LEVEL EDITOR</div><h3 id="levelHeading">SELECT A LEVEL</h3>
@@ -154,7 +221,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </div></div></div>
 </div>
 
-<div id="view-achievements" class="view">
+<div id="view-achievements" class="view challenge-view">
 <div class="split">
 <div class="subpanel"><div class="section-head"><div><div class="kicker">BADGES</div><h3>ACHIEVEMENTS</h3></div><button id="newAchievement" class="btn red">+ ACHIEVEMENT</button></div><div id="achievementList" class="level-list"></div></div>
 <div class="subpanel"><div class="kicker">ACHIEVEMENT EDITOR</div><h3 id="achievementHeading">SELECT AN ACHIEVEMENT</h3>
@@ -167,29 +234,6 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </div></div></div>
 </div>
 
-
-<div id="view-overview" class="view">
-<div class="section-head"><div><div class="kicker">CHALLENGE SYSTEM</div><h3>STATS & ACTIVITY</h3></div><button id="refreshGoStats" class="btn outline">REFRESH</button></div>
-<div class="summary" style="margin-top:14px"><div class="stat"><strong id="goStatUsers">0</strong><span>ACTIVE USERS</span></div><div class="stat"><strong id="goStatRuns">0</strong><span>TOTAL RUNS</span></div><div class="stat"><strong id="goStatActive">0</strong><span>ACTIVE RUNS</span></div><div class="stat"><strong id="goStatCompleted">0</strong><span>COMPLETED</span></div></div>
-<div class="summary" style="margin-top:12px"><div class="stat"><strong id="goStatPending">0</strong><span>PENDING INSPIRATION</span></div><div class="stat"><strong id="goStatEncourage">0</strong><span>ENCOURAGEMENTS</span></div></div>
-<p class="note">Challenge history and 30 day reports are generated from each member's account. This dashboard gives you the system totals.</p>
-</div>
-
-<div id="view-inspiration" class="view">
-<div class="section-head"><div><div class="kicker">100% MODERATED</div><h3>INSPIRATION SUBMISSIONS</h3></div><div class="actions"><select id="inspirationFilter" class="select" style="width:auto"><option value="pending">PENDING</option><option value="approved">APPROVED</option><option value="rejected">REJECTED</option><option value="">ALL</option></select><button id="refreshInspiration" class="btn outline">REFRESH</button></div></div>
-<div id="inspirationList" class="level-list" style="margin-top:14px"></div>
-</div>
-
-<div id="view-community" class="view">
-<div class="section-head"><div><div class="kicker">ACTIVITY FEED</div><h3>COMMUNITY CONTROL</h3></div><button id="refreshCommunity" class="btn outline">REFRESH</button></div>
-<p class="note">Members can only use ENCOURAGE. There are no comments or direct messages. You can edit or hide any activity here.</p>
-<div id="communityList" class="level-list" style="margin-top:14px"></div>
-</div>
-
-<div id="view-users" class="view">
-<div class="section-head"><div><div class="kicker">GO ACCOUNTS</div><h3>USER PROFILES</h3></div><div class="actions"><input id="userSearch" class="input" style="width:220px" placeholder="Name or email"><button id="searchUsers" class="btn outline">SEARCH</button></div></div>
-<div id="userList" class="level-list" style="margin-top:14px"></div>
-</div>
 
 <div id="msg" class="message"></div>
 </section></div>
@@ -212,6 +256,7 @@ const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>
 const val=id=>$(id).value.trim(), num=id=>Number($(id).value||0), bool=id=>$(id).checked?1:0;
 function setStatus(t,ok=false){$("status").textContent=t;$("status").classList.toggle("ok",ok)}
 function showMsg(t){$("msg").textContent=t;setTimeout(()=>{if($("msg").textContent===t)$("msg").textContent=""},2200)}
+function showCommunityMsg(t){const box=$("communityMsg");if(!box)return;box.textContent=t;setTimeout(()=>{if(box.textContent===t)box.textContent=""},2600)}
 async function api(path,options={}){
  const headers=new Headers(options.headers||{}); if(KEY)headers.set("X-Admin-Key",KEY);
  if(options.body && !(options.body instanceof FormData))headers.set("Content-Type","application/json");
@@ -242,15 +287,17 @@ async function uploadChallengeImage(file,inputId,previewId,stateId){
   state.textContent="IMAGE UPLOADED.";
  }catch(e){state.textContent="UPLOAD ERROR: "+e.message}
 }
-function activateView(name){document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("view-"+name).classList.add("active");if(name==="overview")loadGoStats();if(name==="inspiration")loadInspiration();if(name==="community")loadCommunity();if(name==="users")loadGoUsers()}
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>activateView(b.dataset.view));
+function activateView(name){document.querySelectorAll(".challenge-tab").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.querySelectorAll(".challenge-view").forEach(v=>v.classList.remove("active"));const pane=$("view-"+name);if(pane)pane.classList.add("active")}
+function activateCommunityView(name){document.querySelectorAll(".community-tab").forEach(b=>b.classList.toggle("active",b.dataset.communityView===name));document.querySelectorAll(".community-pane").forEach(v=>v.classList.remove("active"));const pane=$("community-view-"+name);if(pane)pane.classList.add("active");if(name==="overview")loadGoStats();if(name==="inspiration")loadInspiration();if(name==="community")loadCommunity();if(name==="users")loadGoUsers()}
+document.querySelectorAll(".challenge-tab").forEach(b=>b.onclick=()=>activateView(b.dataset.view));
+document.querySelectorAll(".community-tab").forEach(b=>b.onclick=()=>activateCommunityView(b.dataset.communityView));
 $("cCoverFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cCover","cCoverPreview","cCoverState");
 $("cBannerFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cBanner","cBannerPreview","cBannerState");
 
 async function unlock(){
  KEY=val("adminKey"); if(!KEY){$("loginMsg").textContent="ENTER YOUR ADMIN KEY.";return}
  sessionStorage.setItem("boss-code-admin-key",KEY);
- try{await api("/admin/go/challenges");$("login").classList.add("hide");await loadChallenges();await loadDecisionMakersMonthAdmin()}
+ try{await api("/admin/go/challenges");$("login").classList.add("hide");await Promise.all([loadChallenges(),loadGoSystemAdmin(),loadDecisionMakersMonthAdmin()]);activateCommunityView("overview")}
  catch(e){KEY="";sessionStorage.removeItem("boss-code-admin-key");$("loginMsg").textContent="COULD NOT CONNECT."}
 }
 function lock(){KEY="";sessionStorage.removeItem("boss-code-admin-key");$("login").classList.remove("hide")}
@@ -412,20 +459,20 @@ function renderInspiration(){
 }
 async function moderateInspiration(id,status){
  const item=inspirationSubmissions.find(x=>Number(x.id)===Number(id));let note=item?.admin_note||'';if(status==='rejected'){const entered=prompt('Optional admin note:',note);if(entered===null)return;note=entered}
- await api(`/admin/go/inspiration/${id}`,{method:'PUT',body:JSON.stringify({status,admin_note:note})});showMsg(`INSPIRATION ${status.toUpperCase()}.`);await Promise.all([loadInspiration(),loadGoStats(),loadCommunity()]);
+ await api(`/admin/go/inspiration/${id}`,{method:'PUT',body:JSON.stringify({status,admin_note:note})});showCommunityMsg(`POST ${status.toUpperCase()}.`);await Promise.all([loadInspiration(),loadGoStats(),loadCommunity()]);
 }
 async function loadCommunity(){const r=await api('/admin/go/community');communityActivity=r.activity||[];renderCommunity()}
 function renderCommunity(){
  $('communityList').innerHTML=communityActivity.length?communityActivity.map(x=>`<div class="item"><strong>${esc(x.title||x.activity_type||'ACTIVITY')}</strong><small>${esc(x.display_name||'MEMBER')} · ${esc(String(x.activity_type||'activity').toUpperCase())} · ${Number(x.encourage_count||0)} ENCOURAGE</small><div style="font-size:12px;line-height:1.55;margin:9px 0;color:#ddd">${esc(x.body||'')}</div><span class="pill ${Number(x.published)?'live':''}">${Number(x.published)?'VISIBLE':'HIDDEN'}</span><div class="actions" style="margin-top:10px"><button class="btn outline" onclick="editCommunity(${Number(x.id)})">EDIT</button><button class="btn ${Number(x.published)?'danger':'red'}" onclick="toggleCommunity(${Number(x.id)},${Number(x.published)?0:1})">${Number(x.published)?'HIDE':'PUBLISH'}</button></div></div>`).join(''):'<div class="empty">NO COMMUNITY ACTIVITY YET.</div>';
 }
-async function editCommunity(id){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;const title=prompt('Activity title:',x.title||'');if(title===null)return;const body=prompt('Activity text:',x.body||'');if(body===null)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title,body,published:Number(x.published)!==0})});showMsg('COMMUNITY ACTIVITY UPDATED.');await loadCommunity()}
-async function toggleCommunity(id,published){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title:x.title||'',body:x.body||'',published:!!published})});showMsg(published?'ACTIVITY PUBLISHED.':'ACTIVITY HIDDEN.');await loadCommunity()}
+async function editCommunity(id){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;const title=prompt('Activity title:',x.title||'');if(title===null)return;const body=prompt('Activity text:',x.body||'');if(body===null)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title,body,published:Number(x.published)!==0})});showCommunityMsg('COMMUNITY ACTIVITY UPDATED.');await loadCommunity()}
+async function toggleCommunity(id,published){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title:x.title||'',body:x.body||'',published:!!published})});showCommunityMsg(published?'ACTIVITY PUBLISHED.':'ACTIVITY HIDDEN.');await loadCommunity()}
 async function loadGoUsers(){const q=val('userSearch');const r=await api('/admin/go/users'+(q?`?q=${encodeURIComponent(q)}`:''));goUsers=r.users||[];renderGoUsers()}
 function renderGoUsers(){
  $('userList').innerHTML=goUsers.length?goUsers.map(x=>`<div class="item"><strong>${esc(x.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(x.email||'')} · ${Number(x.challenge_runs||0)} RUNS · ${Number(x.achievements||0)} ACHIEVEMENTS</small><span class="pill ${String(x.account_status||'active')==='active'?'live':''}">${esc(String(x.account_status||'active').toUpperCase())}</span><div class="actions" style="margin-top:10px"><button class="btn outline" onclick="renameGoUser(${Number(x.id)})">EDIT NAME</button><button class="btn ${String(x.account_status||'active')==='active'?'danger':'red'}" onclick="toggleGoUser(${Number(x.id)})">${String(x.account_status||'active')==='active'?'DISABLE':'ENABLE'}</button></div></div>`).join(''):'<div class="empty">NO USERS FOUND.</div>';
 }
-async function renameGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const name=prompt('Display name:',x.display_name||'');if(name===null)return;await updateGoUserRecord(x,{display_name:name});showMsg('USER UPDATED.');await loadGoUsers()}
-async function toggleGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const next=String(x.account_status||'active')==='active'?'disabled':'active';if(!confirm(`${next==='disabled'?'Disable':'Enable'} ${x.display_name||x.email||'this user'}?`))return;await updateGoUserRecord(x,{account_status:next});showMsg(`USER ${next.toUpperCase()}.`);await loadGoUsers()}
+async function renameGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const name=prompt('Display name:',x.display_name||'');if(name===null)return;await updateGoUserRecord(x,{display_name:name});showCommunityMsg('USER UPDATED.');await loadGoUsers()}
+async function toggleGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const next=String(x.account_status||'active')==='active'?'disabled':'active';if(!confirm(`${next==='disabled'?'Disable':'Enable'} ${x.display_name||x.email||'this user'}?`))return;await updateGoUserRecord(x,{account_status:next});showCommunityMsg(`USER ${next.toUpperCase()}.`);await loadGoUsers()}
 async function updateGoUserRecord(x,changes){const body={display_name:x.display_name||'',public_profile_enabled:Number(x.public_profile_enabled)!==0,share_achievements:Number(x.share_achievements)!==0,share_milestones:Number(x.share_milestones)!==0,account_status:x.account_status||'active',...changes};return api(`/admin/go/users/${x.id}`,{method:'PUT',body:JSON.stringify(body)})}
 async function loadGoSystemAdmin(){await Promise.all([loadGoStats(),loadInspiration(),loadCommunity(),loadGoUsers()])}
 
@@ -439,6 +486,7 @@ $("saveAchievement").onclick=saveAchievement;
 $("deleteAchievement").onclick=deleteAchievement;
 
 $("refreshGoStats").onclick=loadGoStats;$("refreshInspiration").onclick=loadInspiration;$("inspirationFilter").onchange=loadInspiration;$("refreshCommunity").onclick=loadCommunity;$("searchUsers").onclick=loadGoUsers;$("userSearch").onkeydown=e=>{if(e.key==="Enter")loadGoUsers()};
+if($("refreshCommunityAdmin"))$("refreshCommunityAdmin").onclick=async()=>{showCommunityMsg("REFRESHING COMMUNITY ADMIN...");await loadGoSystemAdmin();showCommunityMsg("COMMUNITY ADMIN UPDATED.")};
 
 
 
