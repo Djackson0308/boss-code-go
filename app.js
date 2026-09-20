@@ -1676,6 +1676,129 @@
     cursor:pointer
     }
 
+    /* =========================================================
+       DECISION MAKER SESSIONS - STACKED FULL WIDTH
+       All session information sits above the video.
+    ========================================================= */
+
+    #decision-makers-screen .session-grid{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:26px!important
+    }
+
+    #decision-makers-screen .session-card{
+    display:flex!important;
+    flex-direction:column!important;
+    width:100%!important;
+    min-height:0!important;
+    background:#0b0b0b!important;
+    border:1px solid #2b2b2b!important;
+    border-radius:20px!important;
+    overflow:hidden!important
+    }
+
+    #decision-makers-screen .session-content{
+    order:1!important;
+    width:100%!important;
+    padding:24px 24px 20px!important;
+    min-width:0!important
+    }
+
+    #decision-makers-screen .session-content>span{
+    display:block!important;
+    color:#F5C518!important;
+    font-size:10px!important;
+    font-weight:900!important;
+    letter-spacing:.14em!important;
+    margin:0 0 8px!important
+    }
+
+    #decision-makers-screen .session-content h3{
+    margin:0 0 10px!important;
+    color:#fff!important;
+    font-size:clamp(26px,4vw,40px)!important;
+    line-height:1.05!important
+    }
+
+    #decision-makers-screen .session-content p{
+    margin:0!important;
+    color:#aaa!important;
+    font-size:16px!important;
+    line-height:1.55!important;
+    max-width:900px!important
+    }
+
+    #decision-makers-screen .session-status{
+    margin-top:14px!important;
+    color:#F5C518!important;
+    font-size:11px!important;
+    font-weight:900!important;
+    letter-spacing:.08em!important
+    }
+
+    #decision-makers-screen .session-number{
+    display:none!important
+    }
+
+    #decision-makers-screen .dm-session-media{
+    order:2!important;
+    position:relative!important;
+    width:100%!important;
+    flex:0 0 auto!important;
+    aspect-ratio:16/9!important;
+    min-height:0!important;
+    background:#000!important;
+    overflow:hidden!important
+    }
+
+    #decision-makers-screen .dm-session-media img,
+    #decision-makers-screen .dm-session-media iframe{
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    aspect-ratio:16/9!important;
+    object-fit:cover!important;
+    display:block!important;
+    border:0!important
+    }
+
+    #decision-makers-screen .dm-session-play{
+    position:absolute!important;
+    inset:0!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    border:0!important;
+    background:rgba(0,0,0,.18)!important;
+    color:#fff!important;
+    font-size:54px!important;
+    cursor:pointer!important
+    }
+
+    @media(max-width:750px){
+    #decision-makers-screen .session-section{
+    padding:24px 18px!important
+    }
+
+    #decision-makers-screen .session-content{
+    padding:20px 18px 17px!important
+    }
+
+    #decision-makers-screen .session-content h3{
+    font-size:28px!important
+    }
+
+    #decision-makers-screen .session-content p{
+    font-size:15px!important
+    }
+
+    #decision-makers-screen .dm-session-media{
+    width:100%!important;
+    flex-basis:auto!important
+    }
+    }
+
     .action-card-thumb{
     width:100%;
     aspect-ratio:16/9;
@@ -8629,16 +8752,10 @@
 
     card.innerHTML=`
 
-    ${media}
-
-    <div class="session-number">
-    ${number}
-    </div>
-
     <div class="session-content">
 
     <span>
-    FOCUSED SESSION
+    FOCUSED SESSION • ${number}
     </span>
 
     <h3>
@@ -8653,7 +8770,7 @@
 
     ${id
     ?
-    '▶ WATCH SESSION'
+    'WATCH SESSION BELOW'
     :
     'SESSION COMING SOON'
     }
@@ -8661,6 +8778,8 @@
     </div>
 
     </div>
+
+    ${media}
 
     `;
 
@@ -20186,15 +20305,10 @@
       .go-auth-card{width:min(500px,100%);margin:10vh auto;border:2px solid #f5c518;border-radius:24px;background:#090909;padding:24px}.go-field{margin:14px 0}.go-field label{display:block;color:#f5c518;font-size:10px;font-weight:900;margin-bottom:7px}.go-field input,.go-field textarea{box-sizing:border-box;width:100%;border:1px solid #333;border-radius:13px;background:#000;color:#fff;padding:13px;font:inherit}.go-field textarea{min-height:100px;resize:vertical}.go-status{min-height:22px;margin-top:10px;color:#f5c518;font-weight:800}.go-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
       .go-day-head{display:flex;justify-content:space-between;gap:15px;align-items:start}.go-day-number{color:#f5c518;font-size:12px;font-weight:900}.go-scripture{border-left:4px solid #f5c518;background:#111;padding:14px 16px;margin:14px 0}.go-scripture strong{color:#f5c518}.go-check{display:flex;gap:10px;align-items:center;border:1px solid #292929;border-radius:14px;padding:12px;margin:10px 0;background:#050505}.go-check input{width:20px;height:20px}.go-prompt{margin:15px 0}.go-prompt strong{display:block;margin-bottom:7px}.go-levels{display:flex;gap:8px;overflow:auto}.go-level{min-width:130px;border:1px solid #292929;border-radius:14px;padding:11px}.go-level.current{border-color:#f5c518}.go-level b{display:block}.go-level small{color:#999}
       .go-stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.go-stat{border:1px solid #292929;border-radius:15px;padding:14px}.go-stat b{display:block;color:#f5c518;font-size:24px}.go-history-item,.go-achievement,.go-feed-item{border:1px solid #292929;border-radius:16px;padding:14px;margin:10px 0;background:#060606}.go-history-item{display:flex;justify-content:space-between;gap:12px;align-items:center}.go-history-item small,.go-feed-item small{color:#888}.go-achievement{display:flex;gap:12px;align-items:center}.go-badge{width:52px;height:52px;border-radius:50%;border:2px solid #f5c518;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:0 0 52px;font-size:22px}.go-badge img{width:100%;height:100%;object-fit:cover}.go-feed-head{display:flex;gap:10px;align-items:center}.go-avatar{width:42px;height:42px;border-radius:50%;background:#191919;object-fit:cover}.go-encourage{border:1px solid #333;background:#111;color:#fff;padding:9px 13px;margin-top:10px}.go-encourage.on{border-color:#f5c518;color:#f5c518}.go-empty{border:1px dashed #333;border-radius:15px;padding:20px;text-align:center;color:#888}
-      .go-profile-photo-editor{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-top:10px}
-      .go-profile-photo-preview{width:118px;height:118px;min-width:118px;flex:0 0 118px;border-radius:50%;overflow:hidden;border:2px solid #f5c518;background:#111;display:flex;align-items:center;justify-content:center;color:#888;font-size:11px;font-weight:900;letter-spacing:.08em;text-align:center}
-      .go-profile-photo-preview img,#go-profile-photo-preview{width:100%!important;height:100%!important;max-width:118px!important;max-height:118px!important;display:block;object-fit:cover!important;border-radius:50%}
-      #go-profile-photo-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:10px}
-
       #dm-community-home .decision-section-copy{max-width:760px}.dm-community-preview{max-height:500px;overflow-y:auto;overscroll-behavior:contain;display:grid;gap:12px;padding:2px 8px 2px 0;margin-top:16px;scrollbar-width:thin;scrollbar-color:#f5c518 #111}.dm-community-preview::-webkit-scrollbar{width:8px}.dm-community-preview::-webkit-scrollbar-track{background:#111;border-radius:999px}.dm-community-preview::-webkit-scrollbar-thumb{background:#f5c518;border-radius:999px}.dm-community-card{border:1px solid #2b2b2b;border-radius:16px;background:#050505;padding:15px}.dm-community-card .go-feed-head{margin-bottom:10px}.dm-community-card .go-feed-head strong{display:block;color:#fff;font-size:13px}.dm-community-card .go-feed-head small{display:block;color:#f5c518;font-size:9px;font-weight:900;letter-spacing:.08em;margin-top:3px}.dm-community-card h3{margin:0 0 7px;color:#fff;font-size:17px;line-height:1.2}.dm-community-card p{margin:0;color:#bbb;font-size:13px;line-height:1.55}.dm-community-card .dm-community-meta{display:flex;justify-content:flex-end;margin-top:10px;color:#777;font-size:9px;font-weight:900;letter-spacing:.04em}.dm-community-open{display:block;width:100%;margin-top:14px;border:1px solid #f5c518;border-radius:999px;background:#080808;color:#f5c518;padding:12px 16px;font-weight:900;cursor:pointer}.dm-community-open:hover{background:#f5c518;color:#000}
       .boss-map-mobile-tools{display:none;position:relative;z-index:8;margin:10px 0}.boss-map-mobile-tools button{width:100%;border:2px solid #f5c518;border-radius:999px;background:#080808;color:#fff;padding:12px;font-weight:900}.boss-map-locked{position:relative}.boss-map-locked:after{content:'MAP LOCKED • TAP EXPLORE MAP TO MOVE IT';position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;background:rgba(0,0,0,.32);color:#fff;font-size:11px;font-weight:900;letter-spacing:.08em;pointer-events:none}
       @media(max-width:850px){.go-challenge-grid{grid-template-columns:1fr 1fr}.go-stat-grid{grid-template-columns:1fr 1fr}.go-zone-head{align-items:start;flex-direction:column}.boss-map-mobile-tools{display:block}}
-      @media(max-width:520px){.go-challenge-grid{grid-template-columns:1fr}.go-overlay{padding:10px}.go-panel{padding:16px}.go-history-item{align-items:flex-start;flex-direction:column}.go-profile-photo-editor{align-items:flex-start}.go-profile-photo-preview{width:104px;height:104px;min-width:104px;flex-basis:104px}.go-profile-photo-preview img,#go-profile-photo-preview{max-width:104px!important;max-height:104px!important}}
+      @media(max-width:520px){.go-challenge-grid{grid-template-columns:1fr}.go-overlay{padding:10px}.go-panel{padding:16px}.go-history-item{align-items:flex-start;flex-direction:column}}
       `;
       document.head.appendChild(style);
     }
