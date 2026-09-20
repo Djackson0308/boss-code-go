@@ -5085,6 +5085,287 @@
                 }
             }
 
+
+            /* =================================================
+               FINAL COURSE LAYOUT OWNERSHIP V4
+               One clean source of truth for course cards and the
+               course detail hero. This block intentionally comes
+               last so earlier experimental card rules cannot fight it.
+            ================================================= */
+
+            #decision-makers-screen .dm-course-grid {
+                grid-template-columns: 1fr !important;
+                gap: 18px !important;
+            }
+
+            #decision-makers-screen .dm-course-card {
+                display: grid !important;
+                grid-template-columns: 42% 58% !important;
+                grid-template-rows: 1fr !important;
+                width: 100% !important;
+                max-width: 920px !important;
+                aspect-ratio: 2.38 / 1 !important;
+                min-height: 0 !important;
+                height: auto !important;
+                margin: 0 auto !important;
+                overflow: hidden !important;
+                align-items: stretch !important;
+                border: 1px solid rgba(245, 197, 24, .55) !important;
+                border-radius: 20px !important;
+                background: #080808 !important;
+                color: #fff !important;
+                box-shadow: 0 18px 42px rgba(0, 0, 0, .45) !important;
+            }
+
+            #decision-makers-screen .dm-course-card::before {
+                height: 4px !important;
+                background: #e00000 !important;
+            }
+
+            #decision-makers-screen .dm-course-cover {
+                width: 100% !important;
+                height: 100% !important;
+                min-width: 0 !important;
+                min-height: 0 !important;
+                aspect-ratio: auto !important;
+                align-self: stretch !important;
+                overflow: hidden !important;
+                border: 0 !important;
+                border-right: 1px solid #252525 !important;
+                background: #050505 !important;
+            }
+
+            #decision-makers-screen .dm-course-cover img {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                min-height: 0 !important;
+                object-fit: cover !important;
+                object-position: center center !important;
+                background: #050505 !important;
+            }
+
+            #decision-makers-screen .dm-course-card-body {
+                min-width: 0 !important;
+                min-height: 0 !important;
+                height: 100% !important;
+                padding: clamp(12px, 1.8vw, 22px) !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: flex-start !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+                background: #080808 !important;
+                color: #fff !important;
+            }
+
+            #decision-makers-screen .dm-course-card-topline {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                margin: 0 0 8px !important;
+            }
+
+            #decision-makers-screen .dm-course-card-topline span {
+                color: #f5c518 !important;
+                font-size: clamp(7px, 1vw, 10px) !important;
+                line-height: 1.1 !important;
+                font-weight: 950 !important;
+                letter-spacing: .13em !important;
+            }
+
+            #decision-makers-screen .dm-course-card-body h3 {
+                margin: 0 !important;
+                color: #fff !important;
+                font-size: clamp(18px, 2.8vw, 34px) !important;
+                line-height: 1.02 !important;
+                font-weight: 950 !important;
+                overflow-wrap: normal !important;
+                word-break: normal !important;
+            }
+
+            #decision-makers-screen .dm-course-card-body h4 {
+                margin: 8px 0 0 !important;
+                color: #f5c518 !important;
+                font-size: clamp(11px, 1.6vw, 18px) !important;
+                line-height: 1.15 !important;
+                font-weight: 900 !important;
+            }
+
+            #decision-makers-screen .dm-course-card-body > p {
+                display: none !important;
+            }
+
+            #decision-makers-screen .dm-course-card-meta {
+                margin-top: auto !important;
+                padding-top: 9px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 10px !important;
+                border-top: 1px solid #2d2d2d !important;
+            }
+
+            #decision-makers-screen .dm-course-card-meta span {
+                color: #d7d7d7 !important;
+                font-size: clamp(8px, .95vw, 11px) !important;
+                line-height: 1.1 !important;
+                font-weight: 950 !important;
+                letter-spacing: .09em !important;
+            }
+
+            #decision-makers-screen .dm-course-card-meta strong {
+                color: #f5c518 !important;
+                font-size: clamp(16px, 2vw, 24px) !important;
+                line-height: 1 !important;
+                font-weight: 950 !important;
+            }
+
+            #decision-makers-screen .dm-course-view-button,
+            #decision-makers-screen .dm-course-primary {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                min-height: 40px !important;
+                margin: 9px 0 0 !important;
+                padding: 9px 12px !important;
+                flex: 0 0 auto !important;
+                border: 0 !important;
+                border-radius: 999px !important;
+                background: #e00000 !important;
+                color: #fff !important;
+                font-size: clamp(9px, 1.05vw, 12px) !important;
+                line-height: 1 !important;
+                font-weight: 950 !important;
+                letter-spacing: .06em !important;
+                white-space: nowrap !important;
+                box-sizing: border-box !important;
+            }
+
+            /* Course detail page: show the uploaded artwork as artwork,
+               not as a portrait crop. */
+            .dm-course-hero {
+                grid-template-columns: minmax(260px, 420px) minmax(0, 1fr) !important;
+                align-items: start !important;
+            }
+
+            .dm-course-hero-cover {
+                width: 100% !important;
+                max-width: 420px !important;
+                aspect-ratio: 1 / 1 !important;
+                margin: 0 !important;
+                overflow: hidden !important;
+                border: 2px solid #f5c518 !important;
+                border-radius: 20px !important;
+                background: #050505 !important;
+            }
+
+            .dm-course-hero-cover img {
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: contain !important;
+                object-position: center center !important;
+                background: #050505 !important;
+            }
+
+            @media (max-width: 700px) {
+                #decision-makers-screen .dm-course-card {
+                    grid-template-columns: 42% 58% !important;
+                    aspect-ratio: 2.38 / 1 !important;
+                    border-radius: 16px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body {
+                    padding: 10px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-topline {
+                    margin-bottom: 5px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-topline span {
+                    font-size: 6.2px !important;
+                    letter-spacing: .08em !important;
+                }
+
+                #decision-makers-screen .dm-course-card-topline strong {
+                    display: none !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body h3 {
+                    font-size: clamp(14px, 4.5vw, 20px) !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body h4 {
+                    margin-top: 4px !important;
+                    font-size: clamp(8px, 2.7vw, 11px) !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta {
+                    padding-top: 6px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta span {
+                    font-size: 6.7px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta strong {
+                    font-size: 13px !important;
+                }
+
+                #decision-makers-screen .dm-course-view-button,
+                #decision-makers-screen .dm-course-primary {
+                    min-height: 31px !important;
+                    margin-top: 6px !important;
+                    padding: 6px 8px !important;
+                    font-size: 7.8px !important;
+                }
+
+                .dm-course-hero {
+                    grid-template-columns: 1fr !important;
+                    gap: 22px !important;
+                }
+
+                .dm-course-hero-cover {
+                    width: min(100%, 420px) !important;
+                    max-width: 420px !important;
+                    aspect-ratio: 1 / 1 !important;
+                    margin: 0 auto !important;
+                }
+            }
+
+            @media (max-width: 390px) {
+                #decision-makers-screen .dm-course-card {
+                    grid-template-columns: 40% 60% !important;
+                    aspect-ratio: 2.5 / 1 !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body {
+                    padding: 8px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body h3 {
+                    font-size: 13px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body h4 {
+                    font-size: 8px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta strong {
+                    font-size: 12px !important;
+                }
+
+                #decision-makers-screen .dm-course-view-button,
+                #decision-makers-screen .dm-course-primary {
+                    min-height: 28px !important;
+                    font-size: 7px !important;
+                }
+            }
+
         `;
 
 
