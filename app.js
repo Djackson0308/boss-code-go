@@ -20280,15 +20280,45 @@
       goRenderChallengeCards();
     }
 
+    function goShowActiveChallengeNotice(requestedChallenge=null){
+      const main=$('go-main');
+      if(!main||!goActiveRun)return;
+
+      const activeTitle=goActiveRun.title||'YOUR ACTIVE CHALLENGE';
+      const requestedTitle=requestedChallenge?.title||goCurrentChallenge?.title||'';
+
+      main.innerHTML=`
+        <section class="go-panel" style="text-align:center">
+          <div class="go-kicker">ONE DECISION AT A TIME</div>
+          <h1>STAY FOCUSED ON THE CHALLENGE YOU STARTED</h1>
+          <p class="go-muted">
+            To help you stay focused and get the most out of your 30 days, we recommend completing one challenge before starting another.
+          </p>
+          <div style="margin:22px 0;padding:18px;border:1px solid #2c2c2c;border-radius:16px;background:#0b0b0b">
+            <small style="display:block;color:#f5c518;font-weight:900;letter-spacing:.12em;margin-bottom:7px">YOUR ACTIVE CHALLENGE</small>
+            <strong style="display:block;font-size:20px">${esc(activeTitle)}</strong>
+            ${requestedTitle?`<p class="go-muted" style="margin:8px 0 0">Finish this challenge before beginning ${esc(requestedTitle)}.</p>`:''}
+          </div>
+          <div class="go-actions" style="justify-content:center">
+            <button class="go-primary" type="button" id="go-continue-current-challenge">CONTINUE MY CHALLENGE</button>
+            <button class="go-secondary" type="button" id="go-back-to-challenges">BACK TO CHALLENGES</button>
+          </div>
+        </section>
+      `;
+
+      on('go-continue-current-challenge','click',()=>goOpenRun(goActiveRun.id));
+      on('go-back-to-challenges','click',goClose);
+    }
+
     async function goOpenChallenge(id){
       const c=goChallenges.find(x=>Number(x.id)===Number(id));if(!c)return;
       if(goActiveRun&&Number(goActiveRun.challenge_id)===Number(id)){goOpenRun(goActiveRun.id);return;}
       goCurrentChallenge=c;goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING CHALLENGE...</div>';
-      try{const data=await goFetch(`/go/challenges/${encodeURIComponent(c.slug)}`);const full=data.challenge||c;main.innerHTML=`<section class="go-panel">${full.banner_image_url?`<img src="${esc(full.banner_image_url)}" alt="" style="width:100%;max-height:300px;object-fit:cover;border-radius:15px;margin-bottom:16px">`:''}<div class="go-kicker">${esc(full.category||'FREE 30 DAY CHALLENGE')}</div><h1>${esc(full.title)}</h1><p class="go-muted">${esc(full.description||full.short_description||'')}</p><div class="go-levels">${(data.levels||[]).map(l=>`<div class="go-level"><b>${esc(l.level_name)}</b><small>${Number(l.minimum_points||0)} POINTS</small></div>`).join('')}</div><div class="go-actions">${goActiveRun?`<button class="go-secondary" type="button" id="go-active-other">YOU ALREADY HAVE AN ACTIVE CHALLENGE</button>`:`<button class="go-primary" type="button" id="go-start-challenge">START 30 DAY CHALLENGE</button>`}<button class="go-secondary" type="button" id="go-hub-from-detail">MY PROGRESS</button></div></section>`;on('go-start-challenge','click',()=>goStartChallenge(full.id));on('go-active-other','click',()=>goOpenRun(goActiveRun.id));on('go-hub-from-detail','click',()=>goOpenHub('progress'));}catch(e){main.innerHTML=`<div class="go-panel"><h2>CHALLENGE UNAVAILABLE</h2><p>${esc(e.message)}</p></div>`;}
+      try{const data=await goFetch(`/go/challenges/${encodeURIComponent(c.slug)}`);const full=data.challenge||c;main.innerHTML=`<section class="go-panel">${full.banner_image_url?`<img src="${esc(full.banner_image_url)}" alt="" style="width:100%;max-height:300px;object-fit:cover;border-radius:15px;margin-bottom:16px">`:''}<div class="go-kicker">${esc(full.category||'FREE 30 DAY CHALLENGE')}</div><h1>${esc(full.title)}</h1><p class="go-muted">${esc(full.description||full.short_description||'')}</p><div class="go-levels">${(data.levels||[]).map(l=>`<div class="go-level"><b>${esc(l.level_name)}</b><small>${Number(l.minimum_points||0)} POINTS</small></div>`).join('')}</div><div class="go-actions">${goActiveRun?`<button class="go-secondary" type="button" id="go-active-other">WHY CAN'T I START THIS YET?</button>`:`<button class="go-primary" type="button" id="go-start-challenge">START 30 DAY CHALLENGE</button>`}<button class="go-secondary" type="button" id="go-hub-from-detail">MY PROGRESS</button></div></section>`;on('go-start-challenge','click',()=>goStartChallenge(full.id));on('go-active-other','click',()=>goShowActiveChallengeNotice(full));on('go-hub-from-detail','click',()=>goOpenHub('progress'));}catch(e){main.innerHTML=`<div class="go-panel"><h2>CHALLENGE UNAVAILABLE</h2><p>${esc(e.message)}</p></div>`;}
     }
 
     async function goStartChallenge(challengeId){
-      const main=$('go-main');try{const data=await goFetch('/go/challenge-runs',{method:'POST',body:JSON.stringify({challenge_id:challengeId})});goActiveRun=data.run||data.active_run||data;await goLoadActiveRun();goOpenRun(goActiveRun?.id||data.run?.id);}catch(e){if(e.data?.active_run){goActiveRun=e.data.active_run;goOpenRun(goActiveRun.id);}else main.innerHTML=`<div class="go-panel"><h2>COULD NOT START</h2><p>${esc(e.message)}</p></div>`;}
+      const main=$('go-main');try{const data=await goFetch('/go/challenge-runs',{method:'POST',body:JSON.stringify({challenge_id:challengeId})});goActiveRun=data.run||data.active_run||data;await goLoadActiveRun();goOpenRun(goActiveRun?.id||data.run?.id);}catch(e){if(e.data?.active_run){goActiveRun=e.data.active_run;goShowActiveChallengeNotice(goCurrentChallenge);}else main.innerHTML=`<div class="go-panel"><h2>COULD NOT START</h2><p>${esc(e.message)}</p></div>`;}
     }
 
     function goEntryForDay(run,day){return (run.entries||[]).find(e=>Number(e.day_number)===Number(day))||{};}
