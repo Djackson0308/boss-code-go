@@ -5366,6 +5366,124 @@
                 }
             }
 
+
+            /* =================================================
+               MAIN COURSE CARD FINAL FIT V5
+               Let the right-side content determine the card height.
+               The artwork fills the complete left panel and the CTA
+               always remains inside the card.
+            ================================================= */
+
+            #decision-makers-screen .dm-course-card {
+                display: grid !important;
+                grid-template-columns: 42% 58% !important;
+                grid-template-rows: auto !important;
+                width: 100% !important;
+                max-width: 920px !important;
+                height: auto !important;
+                min-height: 0 !important;
+                aspect-ratio: auto !important;
+                align-items: stretch !important;
+                overflow: hidden !important;
+            }
+
+            #decision-makers-screen .dm-course-cover {
+                position: relative !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 100% !important;
+                aspect-ratio: auto !important;
+                align-self: stretch !important;
+                overflow: hidden !important;
+                background: #050505 !important;
+            }
+
+            #decision-makers-screen .dm-course-cover img {
+                position: absolute !important;
+                inset: 0 !important;
+                display: block !important;
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+                object-position: center center !important;
+            }
+
+            #decision-makers-screen .dm-course-card-body {
+                height: auto !important;
+                min-height: 0 !important;
+                overflow: visible !important;
+                box-sizing: border-box !important;
+                padding: clamp(14px, 2vw, 24px) !important;
+            }
+
+            #decision-makers-screen .dm-course-card-meta {
+                margin-top: clamp(18px, 2.4vw, 28px) !important;
+            }
+
+            #decision-makers-screen .dm-course-view-button,
+            #decision-makers-screen .dm-course-primary {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                width: 100% !important;
+                min-height: 44px !important;
+                margin: 14px 0 0 !important;
+                padding: 11px 14px !important;
+                flex: 0 0 auto !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+                z-index: 2 !important;
+            }
+
+            @media (max-width: 700px) {
+                #decision-makers-screen .dm-course-card {
+                    grid-template-columns: 42% 58% !important;
+                    aspect-ratio: auto !important;
+                    height: auto !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body {
+                    height: auto !important;
+                    padding: 11px !important;
+                    overflow: visible !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta {
+                    margin-top: 10px !important;
+                    padding-top: 6px !important;
+                }
+
+                #decision-makers-screen .dm-course-view-button,
+                #decision-makers-screen .dm-course-primary {
+                    min-height: 34px !important;
+                    margin-top: 8px !important;
+                    padding: 8px 9px !important;
+                    font-size: 8px !important;
+                }
+            }
+
+            @media (max-width: 390px) {
+                #decision-makers-screen .dm-course-card {
+                    grid-template-columns: 40% 60% !important;
+                    aspect-ratio: auto !important;
+                }
+
+                #decision-makers-screen .dm-course-card-body {
+                    padding: 9px !important;
+                }
+
+                #decision-makers-screen .dm-course-card-meta {
+                    margin-top: 8px !important;
+                }
+
+                #decision-makers-screen .dm-course-view-button,
+                #decision-makers-screen .dm-course-primary {
+                    min-height: 32px !important;
+                    margin-top: 7px !important;
+                    padding: 7px 8px !important;
+                }
+            }
+
         `;
 
 
