@@ -241,7 +241,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </div>
 
 <section class="panel" id="dmMonthAdmin" style="margin-top:16px">
-<div class="section-head"><div><div class="kicker">DECISION MAKERS</div><h2>DECISION MAKERS OF THE MONTH</h2><p class="muted" style="font-size:10px;margin-top:6px">Manage the five featured people shown inside Decision Makers. Every photo uses an upload button.</p></div><button id="refreshDmMonth" class="btn outline" type="button">REFRESH</button></div>
+<div class="section-head"><div><div class="kicker">DECISION MAKERS</div><h2>DECISION MAKER SPOTLIGHTS</h2><p class="muted" style="font-size:10px;margin-top:6px">Manage the featured Decision Makers shown in the app. Each published Spotlight opens its own full profile page with a photo, write up, what they do and optional social or website links.</p></div><button id="refreshDmMonth" class="btn outline" type="button">REFRESH</button></div>
 <div id="dmMonthAdminGrid" class="grid"></div><div id="dmMonthAdminMsg" class="message"></div>
 </section>
 </main>
@@ -491,13 +491,186 @@ if($("refreshCommunityAdmin"))$("refreshCommunityAdmin").onclick=async()=>{showC
 
 
 async function loadDecisionMakersMonthAdmin(){
- const grid=$("dmMonthAdminGrid");if(!grid)return;grid.innerHTML='<div class="empty">LOADING FIVE SPOTS...</div>';
- try{const d=await api('/admin/go/decision-makers-month');const rows=d.people||[];grid.innerHTML=rows.map(p=>`<div class="subpanel" data-dm-month-slot="${p.slot}"><div class="kicker">SPOT ${p.slot}</div><div class="field"><label>NAME</label><input class="input dmMonthName" value="${esc(p.name||'')}"></div><div class="field" style="margin-top:10px"><label>SMALL LABEL</label><input class="input dmMonthEyebrow" value="${esc(p.eyebrow||'DECISION MAKER')}"></div><div class="field" style="margin-top:10px"><label>HEADLINE / ACCOMPLISHMENT</label><input class="input dmMonthHeadline" value="${esc(p.headline||'')}"></div><div class="field" style="margin-top:10px"><label>SHORT STORY / INFORMATION</label><textarea class="textarea dmMonthStory">${esc(p.story||'')}</textarea></div><div class="upload-box" style="margin-top:10px"><label>PHOTO</label><input class="dmMonthPhotoUrl" type="hidden" value="${esc(p.photo_url||'')}"><input class="file-input dmMonthPhotoFile" type="file" accept="image/*"><img class="upload-preview dmMonthPreview ${p.photo_url?'show':''}" ${p.photo_url?`src="${esc(p.photo_url)}"`:''} alt=""><div class="upload-state dmMonthUploadState">${p.photo_url?'PHOTO READY.':'CHOOSE A PHOTO.'}</div></div><label class="checkline" style="margin-top:10px"><input class="dmMonthPublished" type="checkbox" ${Number(p.published)!==0?'checked':''}> PUBLISHED</label><button class="btn red dmMonthSave" type="button" style="margin-top:12px">SAVE SPOT ${p.slot}</button></div>`).join('');
- grid.querySelectorAll('.dmMonthPhotoFile').forEach(input=>input.onchange=()=>uploadDmMonthPhoto(input));grid.querySelectorAll('.dmMonthSave').forEach(btn=>btn.onclick=()=>saveDmMonthSpot(btn.closest('[data-dm-month-slot]')));
- }catch(e){grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>';}
+ const grid=$("dmMonthAdminGrid");
+ if(!grid)return;
+ grid.innerHTML='<div class="empty">LOADING DECISION MAKER SPOTLIGHTS...</div>';
+
+ try{
+  const d=await api('/admin/go/decision-maker-spotlights');
+  const rows=d.people||[];
+
+  grid.innerHTML=rows.map(p=>`
+   <div class="subpanel" data-dm-month-slot="${p.slot}">
+    <div class="section-head">
+     <div>
+      <div class="kicker">SPOTLIGHT ${p.slot}</div>
+      <h3>${esc(p.name||'NEW DECISION MAKER')}</h3>
+     </div>
+     <span class="pill ${Number(p.published)!==0?'live':''}">
+      ${Number(p.published)!==0?'PUBLISHED':'DRAFT'}
+     </span>
+    </div>
+
+    <div class="field">
+     <label>NAME</label>
+     <input class="input dmMonthName" value="${esc(p.name||'')}" placeholder="Person or brand name">
+    </div>
+
+    <div class="field" style="margin-top:10px">
+     <label>WHAT THEY DO</label>
+     <input class="input dmMonthWhatTheyDo" value="${esc(p.what_they_do||'')}" placeholder="Example: Entrepreneur • Artist • Community Leader">
+    </div>
+
+    <div class="field" style="margin-top:10px">
+     <label>SMALL LABEL</label>
+     <input class="input dmMonthEyebrow" value="${esc(p.eyebrow||'DECISION MAKER')}" placeholder="DECISION MAKER">
+    </div>
+
+    <div class="field" style="margin-top:10px">
+     <label>HEADLINE / ACCOMPLISHMENT</label>
+     <input class="input dmMonthHeadline" value="${esc(p.headline||'')}" placeholder="Short headline shown on the Spotlight card and page">
+    </div>
+
+    <div class="field" style="margin-top:10px">
+     <label>FULL SPOTLIGHT WRITE UP</label>
+     <textarea class="textarea dmMonthStory" style="min-height:220px" placeholder="Tell their story, what they are building, what they have overcome, why they are being spotlighted and anything else you want readers to know.">${esc(p.story||'')}</textarea>
+    </div>
+
+    <div class="upload-box" style="margin-top:10px">
+     <label>SPOTLIGHT PHOTO</label>
+     <input class="dmMonthPhotoUrl" type="hidden" value="${esc(p.photo_url||'')}">
+     <input class="file-input dmMonthPhotoFile" type="file" accept="image/*">
+     <img class="upload-preview dmMonthPreview ${p.photo_url?'show':''}" ${p.photo_url?`src="${esc(p.photo_url)}"`:''} alt="">
+     <div class="upload-state dmMonthUploadState">${p.photo_url?'PHOTO READY.':'CHOOSE A PHOTO.'}</div>
+    </div>
+
+    <div class="subpanel" style="margin-top:14px">
+     <div class="kicker">SOCIAL + SHOWCASE LINKS</div>
+     <h3>OPTIONAL LINKS</h3>
+
+     <div class="field" style="margin-top:10px">
+      <label>INSTAGRAM LINK</label>
+      <input class="input dmMonthInstagram" value="${esc(p.instagram_url||'')}" placeholder="https://instagram.com/...">
+     </div>
+
+     <div class="field" style="margin-top:10px">
+      <label>FACEBOOK LINK</label>
+      <input class="input dmMonthFacebook" value="${esc(p.facebook_url||'')}" placeholder="https://facebook.com/...">
+     </div>
+
+     <div class="field" style="margin-top:10px">
+      <label>TIKTOK LINK</label>
+      <input class="input dmMonthTikTok" value="${esc(p.tiktok_url||'')}" placeholder="https://tiktok.com/@...">
+     </div>
+
+     <div class="field" style="margin-top:10px">
+      <label>WEBSITE / SHOWCASE LINK</label>
+      <input class="input dmMonthWebsite" value="${esc(p.website_url||'')}" placeholder="Any website, store, project or page they want people to visit">
+     </div>
+
+     <div class="field" style="margin-top:10px">
+      <label>WEBSITE BUTTON LABEL</label>
+      <input class="input dmMonthWebsiteLabel" value="${esc(p.website_label||'VISIT WEBSITE')}" placeholder="VISIT WEBSITE">
+     </div>
+    </div>
+
+    <label class="checkline" style="margin-top:14px">
+     <input class="dmMonthPublished" type="checkbox" ${Number(p.published)!==0?'checked':''}>
+     PUBLISHED IN DECISION MAKER SPOTLIGHTS
+    </label>
+
+    <button class="btn red dmMonthSave" type="button" style="margin-top:12px">
+     SAVE SPOTLIGHT ${p.slot}
+    </button>
+   </div>
+  `).join('');
+
+  grid.querySelectorAll('.dmMonthPhotoFile').forEach(
+   input=>input.onchange=()=>uploadDmMonthPhoto(input)
+  );
+
+  grid.querySelectorAll('.dmMonthSave').forEach(
+   btn=>btn.onclick=()=>saveDmMonthSpot(btn.closest('[data-dm-month-slot]'))
+  );
+
+ }catch(e){
+  grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>';
+ }
 }
-async function uploadDmMonthPhoto(input){const card=input.closest('[data-dm-month-slot]'),file=input.files?.[0];if(!file)return;const state=card.querySelector('.dmMonthUploadState');state.textContent='UPLOADING...';try{const form=new FormData();form.append('file',file);form.append('folder','decision-makers-of-the-month');const headers=new Headers();if(KEY)headers.set('X-Admin-Key',KEY);const r=await fetch(API+'/media/upload',{method:'POST',headers,body:form});const d=await r.json();if(!r.ok||d.success===false)throw Error(d.error||'UPLOAD FAILED');card.querySelector('.dmMonthPhotoUrl').value=d.url||'';const img=card.querySelector('.dmMonthPreview');img.src=d.url;img.classList.add('show');state.textContent='PHOTO UPLOADED.';}catch(e){state.textContent='UPLOAD ERROR: '+e.message}}
-async function saveDmMonthSpot(card){const slot=Number(card.dataset.dmMonthSlot),msg=$("dmMonthAdminMsg");msg.textContent='SAVING SPOT '+slot+'...';try{await api('/admin/go/decision-makers-month/'+slot,{method:'PUT',body:JSON.stringify({name:card.querySelector('.dmMonthName').value.trim(),eyebrow:card.querySelector('.dmMonthEyebrow').value.trim(),headline:card.querySelector('.dmMonthHeadline').value.trim(),story:card.querySelector('.dmMonthStory').value.trim(),photo_url:card.querySelector('.dmMonthPhotoUrl').value.trim(),published:card.querySelector('.dmMonthPublished').checked})});msg.textContent='SPOT '+slot+' SAVED.';}catch(e){msg.textContent=e.message}}
+
+async function uploadDmMonthPhoto(input){
+ const card=input.closest('[data-dm-month-slot]');
+ const file=input.files?.[0];
+ if(!file)return;
+
+ const state=card.querySelector('.dmMonthUploadState');
+ state.textContent='UPLOADING...';
+
+ try{
+  const form=new FormData();
+  form.append('file',file);
+  form.append('folder','decision-maker-spotlights');
+
+  const headers=new Headers();
+  if(KEY)headers.set('X-Admin-Key',KEY);
+
+  const r=await fetch(
+   API+'/media/upload',
+   {method:'POST',headers,body:form}
+  );
+
+  const d=await r.json();
+
+  if(!r.ok||d.success===false)
+   throw Error(d.error||'UPLOAD FAILED');
+
+  card.querySelector('.dmMonthPhotoUrl').value=d.url||'';
+
+  const img=card.querySelector('.dmMonthPreview');
+  img.src=d.url;
+  img.classList.add('show');
+
+  state.textContent='PHOTO UPLOADED.';
+ }catch(e){
+  state.textContent='UPLOAD ERROR: '+e.message;
+ }
+}
+
+async function saveDmMonthSpot(card){
+ const slot=Number(card.dataset.dmMonthSlot);
+ const msg=$("dmMonthAdminMsg");
+
+ msg.textContent='SAVING SPOTLIGHT '+slot+'...';
+
+ try{
+  await api(
+   '/admin/go/decision-maker-spotlights/'+slot,
+   {
+    method:'PUT',
+    body:JSON.stringify({
+     name:card.querySelector('.dmMonthName').value.trim(),
+     what_they_do:card.querySelector('.dmMonthWhatTheyDo').value.trim(),
+     eyebrow:card.querySelector('.dmMonthEyebrow').value.trim(),
+     headline:card.querySelector('.dmMonthHeadline').value.trim(),
+     story:card.querySelector('.dmMonthStory').value.trim(),
+     photo_url:card.querySelector('.dmMonthPhotoUrl').value.trim(),
+     instagram_url:card.querySelector('.dmMonthInstagram').value.trim(),
+     facebook_url:card.querySelector('.dmMonthFacebook').value.trim(),
+     tiktok_url:card.querySelector('.dmMonthTikTok').value.trim(),
+     website_url:card.querySelector('.dmMonthWebsite').value.trim(),
+     website_label:card.querySelector('.dmMonthWebsiteLabel').value.trim()||'VISIT WEBSITE',
+     published:card.querySelector('.dmMonthPublished').checked
+    })
+   }
+  );
+
+  msg.textContent='SPOTLIGHT '+slot+' SAVED.';
+  await loadDecisionMakersMonthAdmin();
+
+ }catch(e){
+  msg.textContent=e.message;
+ }
+}
 if($("refreshDmMonth"))$("refreshDmMonth").onclick=loadDecisionMakersMonthAdmin;
 setTimeout(()=>{if(KEY)loadDecisionMakersMonthAdmin()},600);
 
