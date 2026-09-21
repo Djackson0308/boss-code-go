@@ -965,6 +965,36 @@ OFF AIR
 
 </div>
 
+<div
+style="
+margin:0 0 18px;
+padding:14px 16px;
+border:1px solid #333;
+border-left:4px solid #F5C518;
+border-radius:14px;
+background:#0a0a0a;
+"
+>
+<strong
+style="
+display:block;
+color:#F5C518;
+font-size:12px;
+letter-spacing:.08em;
+margin-bottom:6px;
+"
+>
+HOW LIVE CONTROL WORKS
+</strong>
+
+<p
+class="section-note"
+style="margin:0;line-height:1.55"
+>
+You can save the YouTube live link ahead of time without showing the YouTube player in the app. Keep LIVE NOW turned off while the event is scheduled or waiting. Turn LIVE NOW on only after the broadcast has actually started on YouTube.
+</p>
+</div>
+
 <div class="field">
 
 <label>
@@ -978,12 +1008,19 @@ type="url"
 placeholder="https://youtube.com/live/..."
 >
 
+<p
+class="section-note"
+style="margin-top:8px;margin-bottom:0"
+>
+This link can stay saved while LIVE NOW is turned off.
+</p>
+
 </div>
 
 <div class="field">
 
 <label>
-OFFLINE / LIVE THUMBNAIL
+OFFLINE DISPLAY IMAGE
 </label>
 
 <div class="file-row">
@@ -1000,7 +1037,7 @@ id="liveThumbUpload"
 class="btn outline"
 type="button"
 >
-UPLOAD THUMBNAIL
+UPLOAD IMAGE
 </button>
 
 </div>
@@ -1009,7 +1046,7 @@ UPLOAD THUMBNAIL
 id="liveThumbUrl"
 class="input"
 type="url"
-placeholder="Thumbnail shown when the live broadcast is off air"
+placeholder="Image shown before and between live broadcasts"
 style="margin-top:8px"
 >
 
@@ -1017,7 +1054,7 @@ style="margin-top:8px"
 class="section-note"
 style="margin-top:8px;margin-bottom:0"
 >
-This image remains visible when the live stream is turned off, so viewers never see YouTube's Video Unavailable screen.
+This is what viewers see while LIVE NOW is off. The YouTube player does not load, so they will not see YouTube's scheduled stream waiting screen.
 </p>
 
 </div>
@@ -1030,11 +1067,11 @@ This image remains visible when the live stream is turned off, so viewers never 
 <div>
 
 <strong>
-SHOW LIVE BROADCAST
+LIVE NOW — SHOW YOUTUBE PLAYER
 </strong>
 
 <em>
-Publish or take the live player off air.
+Only turn this on after YouTube confirms the broadcast is actually live.
 </em>
 
 </div>
@@ -1061,14 +1098,14 @@ type="checkbox"
 id="saveLive"
 class="btn red"
 >
-SAVE LIVE SETTINGS
+SAVE LIVE CONTROL
 </button>
 
 <button
 id="clearLive"
 class="btn outline"
 >
-CLEAR LIVE
+REMOVE STREAM LINK
 </button>
 
 </div>
@@ -4877,7 +4914,9 @@ Number(video.published) === 1 &&
 video.youtube_id
 );
 
-$("liveStatus").textContent = on ? "LIVE" : "OFF AIR";
+$("liveStatus").textContent = on
+? "LIVE NOW"
+: (video?.youtube_id || video?.youtube_url ? "READY / OFF AIR" : "OFF AIR");
 $("liveStatus").classList.toggle("ok",on);
 
 }
@@ -4895,7 +4934,17 @@ item => item.section === "boss-code-tv-live"
 );
 
 if(on && !id){
-$("liveMsg").textContent = "ADD A VALID YOUTUBE LIVE LINK BEFORE TURNING LIVE ON.";
+$("liveMsg").textContent = "ADD A VALID YOUTUBE LIVE LINK BEFORE TURNING LIVE NOW ON.";
+return;
+}
+
+if(
+on &&
+!window.confirm(
+"TURN LIVE NOW ON?\n\nOnly continue if the broadcast has actually started on YouTube. If the stream is still scheduled or waiting, viewers can see YouTube's waiting screen."
+)
+){
+$("liveMsg").textContent = "LIVE NOW WAS NOT TURNED ON.";
 return;
 }
 
@@ -4920,8 +4969,8 @@ await api("/videos",{method:"POST",body:JSON.stringify(payload)});
 }
 
 $("liveMsg").textContent = on
-? "LIVE SETTINGS SAVED."
-: "OFF AIR THUMBNAIL / LIVE SETTINGS SAVED.";
+? "LIVE NOW IS ON. THE YOUTUBE PLAYER IS SHOWING IN THE APP."
+: "SAVED. LIVE NOW IS OFF. VIEWERS WILL SEE YOUR OFFLINE DISPLAY IMAGE INSTEAD OF THE YOUTUBE PLAYER.";
 
 await loadAll();
 
@@ -4951,7 +5000,7 @@ published:0
 
 $("liveUrl").value = "";
 $("liveEnabled").checked = false;
-$("liveMsg").textContent = "LIVE BROADCAST CLEARED. OFFLINE THUMBNAIL KEPT.";
+$("liveMsg").textContent = "STREAM LINK REMOVED. LIVE NOW IS OFF. OFFLINE DISPLAY IMAGE KEPT.";
 await loadAll();
 
 }
@@ -9591,7 +9640,7 @@ $("liveThumbUrl").value =
 url;
 
 $("liveMsg").textContent =
-"LIVE / OFFLINE THUMBNAIL UPLOADED. SAVE LIVE SETTINGS.";
+"OFFLINE DISPLAY IMAGE UPLOADED. SAVE LIVE CONTROL.";
 
 }
 
