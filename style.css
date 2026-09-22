@@ -5475,3 +5475,38 @@ body,
     #decision-makers-screen .go-how-step p{font-size:10px !important;}
 }
 
+
+/* =========================================================
+   CHALLENGE COVER CROP — HIDE B.O.S.S CODE GO LOGO AREA
+   ========================================================= */
+
+/*
+   The source cover art stays unchanged.
+   The card simply shows a shorter viewport and crops the top logo area,
+   giving the challenge title more visual priority and shortening the card.
+*/
+#decision-makers-screen .go-challenge-cover{
+    aspect-ratio:auto !important;
+    height:150px !important;
+    min-height:150px !important;
+    background-size:cover !important;
+    background-position:center 58% !important;
+    overflow:hidden !important;
+}
+
+@media(max-width:700px){
+    #decision-makers-screen .go-challenge-cover{
+        height:132px !important;
+        min-height:132px !important;
+        background-position:center 60% !important;
+    }
+}
+
+@media(max-width:560px){
+    #decision-makers-screen .go-challenge-cover{
+        height:118px !important;
+        min-height:118px !important;
+        background-position:center 61% !important;
+    }
+}
+
