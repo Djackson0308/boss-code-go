@@ -5299,3 +5299,179 @@ body,
         margin-top:7px !important;
     }
 }
+
+
+/* =========================================================
+   DECISION MAKERS PREMIUM POLISH — REVIEW FIXES
+   ========================================================= */
+
+/* PREMIUM DARK QUICK NAV */
+#decision-makers-screen .dm-premium-nav{gap:12px !important;}
+#decision-makers-screen .dm-premium-nav button{
+    min-height:72px !important;
+    padding:12px 9px !important;
+    border:1px solid rgba(212,0,0,.78) !important;
+    border-radius:15px !important;
+    background:
+        radial-gradient(circle at 50% -35%,rgba(255,255,255,.10),transparent 44%),
+        linear-gradient(180deg,#1b1b1e 0%,#101012 48%,#080809 100%) !important;
+    color:#fff !important;
+    box-shadow:
+        0 12px 28px rgba(0,0,0,.44),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 0 0 1px rgba(255,255,255,.02),
+        0 0 16px rgba(212,0,0,.08) !important;
+    font-size:12px !important;
+    font-weight:950 !important;
+    letter-spacing:.075em !important;
+    text-shadow:0 1px 2px rgba(0,0,0,.7) !important;
+    transition:.18s ease !important;
+}
+#decision-makers-screen .dm-premium-nav button::before{
+    content:"" !important;
+    position:absolute !important;
+    inset:0 !important;
+    border-radius:inherit !important;
+    pointer-events:none !important;
+    background:linear-gradient(115deg,rgba(255,255,255,.055),transparent 30%,transparent 72%,rgba(212,0,0,.05)) !important;
+}
+#decision-makers-screen .dm-premium-nav button::after{
+    content:"" !important;
+    position:absolute !important;
+    left:13% !important;
+    right:13% !important;
+    bottom:-1px !important;
+    height:2px !important;
+    border-radius:999px !important;
+    background:linear-gradient(90deg,transparent,#d40000 22%,#ff2a2a 50%,#d40000 78%,transparent) !important;
+    box-shadow:0 0 10px rgba(212,0,0,.42) !important;
+    opacity:.92 !important;
+}
+#decision-makers-screen .dm-premium-nav button:hover,
+#decision-makers-screen .dm-premium-nav button:focus-visible,
+#decision-makers-screen .dm-premium-nav button.active{
+    border-color:#ef1a1a !important;
+    background:
+        radial-gradient(circle at 50% -35%,rgba(255,255,255,.12),transparent 44%),
+        linear-gradient(180deg,#241416 0%,#130b0c 50%,#090909 100%) !important;
+    box-shadow:
+        0 14px 30px rgba(0,0,0,.5),
+        inset 0 1px 0 rgba(255,255,255,.09),
+        0 0 18px rgba(212,0,0,.17) !important;
+    transform:translateY(-2px) !important;
+}
+#decision-makers-screen .dm-premium-nav button:active{transform:translateY(0) scale(.985) !important;}
+
+/* COMPACT DAILY RHYTHM */
+#decision-makers-screen .go-how-it-works{padding:18px !important;margin:18px 0 22px !important;}
+#decision-makers-screen .go-how-it-works-head{margin-bottom:13px !important;}
+#decision-makers-screen .go-how-it-works-head h3{margin:4px 0 5px !important;}
+#decision-makers-screen .go-how-it-works-head p{max-width:680px !important;margin:0 !important;line-height:1.4 !important;}
+#decision-makers-screen .go-how-steps{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:10px !important;}
+#decision-makers-screen .go-how-step{min-height:0 !important;padding:14px !important;}
+#decision-makers-screen .go-how-step b{margin-bottom:8px !important;}
+#decision-makers-screen .go-how-step strong{display:block !important;line-height:1.15 !important;}
+#decision-makers-screen .go-how-step p{margin-top:6px !important;font-size:11px !important;line-height:1.35 !important;}
+#decision-makers-screen .go-how-it-works-line{margin-top:12px !important;padding-top:12px !important;}
+
+/* SPOTLIGHT CARDS */
+#decision-makers-screen .dm-month-grid{align-items:stretch !important;}
+#decision-makers-screen .dm-month-card{display:flex !important;flex-direction:column !important;height:100% !important;overflow:hidden !important;}
+#decision-makers-screen .dm-month-copy{display:flex !important;flex:1 1 auto !important;flex-direction:column !important;}
+#decision-makers-screen .dm-month-copy p{
+    display:-webkit-box !important;
+    overflow:hidden !important;
+    -webkit-box-orient:vertical !important;
+    -webkit-line-clamp:3 !important;
+    margin:10px 0 14px !important;
+}
+#decision-makers-screen .dm-view-spotlight{
+    width:100% !important;
+    min-height:42px !important;
+    margin-top:auto !important;
+    padding:11px 14px !important;
+    border:1px solid #d40000 !important;
+    border-radius:999px !important;
+    background:#d40000 !important;
+    color:#fff !important;
+    font:inherit !important;
+    font-size:10px !important;
+    font-weight:950 !important;
+    letter-spacing:.075em !important;
+    cursor:pointer !important;
+}
+#decision-makers-screen .dm-view-spotlight:hover{background:#ef1818 !important;border-color:#ef1818 !important;}
+
+/* SPOTLIGHT FULL READOUT */
+.dm-spotlight-detail{
+    position:fixed;inset:0;z-index:42000;display:none;overflow-y:auto;padding:24px;
+    background:rgba(0,0,0,.94);backdrop-filter:blur(8px);
+}
+.dm-spotlight-detail.open{display:block;}
+.dm-spotlight-detail-shell{
+    position:relative;width:min(900px,100%);margin:30px auto;overflow:hidden;
+    border:1px solid #303034;border-radius:24px;background:linear-gradient(145deg,#121214,#070708);
+    box-shadow:0 30px 80px rgba(0,0,0,.65);
+}
+.dm-spotlight-close{
+    position:absolute;z-index:2;top:14px;right:14px;width:44px;height:44px;border:1px solid rgba(255,255,255,.18);
+    border-radius:50%;background:rgba(0,0,0,.78);color:#fff;font-size:28px;line-height:1;cursor:pointer;
+}
+.dm-spotlight-full{display:grid;grid-template-columns:minmax(260px,38%) minmax(0,1fr);}
+.dm-spotlight-full-photo{width:100%;height:100%;min-height:520px;object-fit:cover;background:#111;}
+.dm-spotlight-full-copy{padding:48px 36px 36px;}
+.dm-spotlight-full-copy small{color:#f5c518;font-size:10px;font-weight:950;letter-spacing:.16em;}
+.dm-spotlight-full-copy h2{margin:8px 0;color:#fff;font-size:clamp(30px,5vw,48px);line-height:1;}
+.dm-spotlight-full-copy strong{display:block;margin-bottom:22px;color:#fff;}
+.dm-spotlight-full-copy p{color:#b8b8bd;line-height:1.7;white-space:pre-line;}
+.dm-spotlight-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:26px;}
+.dm-spotlight-links a{padding:10px 14px;border:1px solid #d40000;border-radius:999px;background:#d40000;color:#fff;font-size:10px;font-weight:950;text-decoration:none;}
+
+/* COMMUNITY FEED: NO NESTED SCROLL */
+#decision-makers-screen .dm-community-preview,
+#decision-makers-screen #dm-community-preview{
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+    overflow-y:visible !important;
+    overscroll-behavior:auto !important;
+}
+
+/* SHORTER TWO-UP CHALLENGE CARDS */
+#decision-makers-screen .go-challenge-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px !important;}
+#decision-makers-screen .go-challenge-card{display:flex !important;flex-direction:column !important;height:100% !important;border-radius:18px !important;}
+#decision-makers-screen .go-challenge-cover{
+    aspect-ratio:1.38/1 !important;min-height:0 !important;background-size:cover !important;background-position:center !important;
+}
+#decision-makers-screen .go-challenge-card-body{display:flex !important;flex:1 1 auto !important;flex-direction:column !important;padding:12px !important;}
+#decision-makers-screen .go-challenge-card-body h3{margin:4px 0 5px !important;font-size:15px !important;}
+#decision-makers-screen .go-challenge-card-body p{
+    display:-webkit-box !important;overflow:hidden !important;-webkit-box-orient:vertical !important;-webkit-line-clamp:3 !important;
+    margin-bottom:10px !important;font-size:11px !important;line-height:1.35 !important;
+}
+#decision-makers-screen .go-challenge-card-body .go-primary{
+    width:100% !important;min-height:38px !important;margin-top:auto !important;padding:9px 8px !important;
+    font-size:9px !important;line-height:1.1 !important;white-space:normal !important;
+}
+
+@media(max-width:700px){
+    #decision-makers-screen .go-how-steps{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+    #decision-makers-screen .dm-premium-nav{gap:9px !important;}
+    #decision-makers-screen .dm-premium-nav button{min-height:66px !important;padding:10px 6px !important;font-size:10px !important;letter-spacing:.045em !important;}
+    .dm-spotlight-detail{padding:12px;}
+    .dm-spotlight-full{grid-template-columns:1fr;}
+    .dm-spotlight-full-photo{min-height:0;aspect-ratio:16/11;}
+    .dm-spotlight-full-copy{padding:25px 20px 24px;}
+}
+@media(max-width:560px){
+    #decision-makers-screen .go-challenge-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:9px !important;}
+    #decision-makers-screen .go-challenge-cover{aspect-ratio:1.28/1 !important;}
+    #decision-makers-screen .go-challenge-card-body{padding:9px !important;}
+    #decision-makers-screen .go-challenge-card-body h3{font-size:13px !important;}
+    #decision-makers-screen .go-challenge-card-body p{-webkit-line-clamp:3 !important;font-size:9.5px !important;line-height:1.3 !important;}
+    #decision-makers-screen .go-challenge-card-body .go-primary{min-height:36px !important;padding:8px 5px !important;font-size:8px !important;}
+    #decision-makers-screen .go-how-it-works{padding:14px !important;}
+    #decision-makers-screen .go-how-step{padding:11px !important;}
+    #decision-makers-screen .go-how-step p{font-size:10px !important;}
+}
+

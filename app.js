@@ -20359,7 +20359,7 @@
     function goEnsureDecisionMakerZone(){
       const screen=$('decision-makers-screen');if(!screen||$('go-challenge-zone'))return;
       const zone=document.createElement('section');zone.id='go-challenge-zone';zone.className='go-challenge-zone';
-      zone.innerHTML=`<div class="dm-premium-nav" id="dm-premium-nav"><button type="button" data-dm-jump="courses">COURSES</button><button type="button" data-dm-jump="challenges">CHALLENGES</button><button type="button" data-dm-jump="tracker">TRACKER</button><button type="button" data-dm-jump="onthego">ON THE GO</button><button type="button" data-dm-jump="sessions">SESSIONS</button><button type="button" data-dm-jump="community">COMMUNITY</button><button type="button" id="dm-profile-nav-button">PROFILE</button></div><div class="go-zone-head"><div><small>FREE 30 DAY CHALLENGES</small><h2>MAKE THE NEXT 30 DAYS COUNT</h2><p>Choose one challenge at a time. Your progress, levels, achievements and history stay connected to your B.O.S.S CODE GO account.</p></div><button id="go-account-button" class="go-account-button" type="button">${goProfile?'OPEN MY PROFILE':'SIGN IN / CREATE PROFILE'}</button></div><div class="go-how-it-works"><div class="go-how-it-works-head"><small>HOW IT WORKS</small><h3>A SIMPLE DAILY RHYTHM</h3><p>Each 30 day challenge is built around a morning check in, one intentional move during the day, and an evening check in so you can reflect, adjust and keep moving.</p></div><div class="go-how-steps"><div class="go-how-step"><b>01</b><strong>MORNING CHECK IN</strong><p>Set your focus and answer a few short questions about how you plan to move today.</p></div><div class="go-how-step"><b>02</b><strong>TODAY'S MOVE</strong><p>Put the decision into action with one clear move designed for that day.</p></div><div class="go-how-step"><b>03</b><strong>EVENING CHECK IN</strong><p>Reflect on what happened, what you learned and what needs to change tomorrow.</p></div><div class="go-how-step"><b>04</b><strong>TRACK YOUR GROWTH</strong><p>Your progress, points, levels, achievements and reflections stay connected to your account.</p></div></div><div class="go-how-it-works-line">SHOW UP IN THE MORNING. MAKE THE MOVE. CHECK BACK IN AT NIGHT.</div></div><div class="go-choose-challenge"><small>YOUR NEXT 30 DAYS</small><h3>CHOOSE YOUR CHALLENGE</h3></div><div id="go-challenge-grid" class="go-challenge-grid"><div class="go-empty" style="grid-column:1/-1">LOADING CHALLENGES...</div></div><div class="dm-tracker-heading" id="dm-tracker-anchor"><small>YOUR CURRENT MOVE</small><h2>ACTIVE TRACKER</h2></div><div id="go-active-strip" class="go-active-strip"></div>`;
+      zone.innerHTML=`<div class="dm-premium-nav" id="dm-premium-nav"><button type="button" data-dm-jump="courses">COURSES</button><button type="button" data-dm-jump="challenges">CHALLENGES</button><button type="button" data-dm-jump="tracker">TRACKER</button><button type="button" data-dm-jump="onthego">ON THE GO</button><button type="button" data-dm-jump="sessions">SESSIONS</button><button type="button" data-dm-jump="community">COMMUNITY</button><button type="button" id="dm-profile-nav-button">PROFILE</button></div><div class="go-zone-head"><div><small>FREE 30 DAY CHALLENGES</small><h2>MAKE THE NEXT 30 DAYS COUNT</h2><p>Choose one challenge at a time. Your progress, levels, achievements and history stay connected to your B.O.S.S CODE GO account.</p></div><button id="go-account-button" class="go-account-button" type="button">${goProfile?'OPEN MY PROFILE':'SIGN IN / CREATE PROFILE'}</button></div><div class="go-how-it-works"><div class="go-how-it-works-head"><small>HOW IT WORKS</small><h3>A SIMPLE DAILY RHYTHM</h3><p>Check in, make the move, reflect and keep building.</p></div><div class="go-how-steps"><div class="go-how-step"><b>01</b><strong>MORNING CHECK IN</strong><p>Set your focus for the day.</p></div><div class="go-how-step"><b>02</b><strong>TODAY'S MOVE</strong><p>Turn today's decision into action.</p></div><div class="go-how-step"><b>03</b><strong>EVENING CHECK IN</strong><p>Reflect, learn and adjust.</p></div><div class="go-how-step"><b>04</b><strong>TRACK YOUR GROWTH</strong><p>Build points, levels and achievements.</p></div></div><div class="go-how-it-works-line">SHOW UP. MAKE THE MOVE. KEEP GROWING.</div></div><div class="go-choose-challenge"><small>YOUR NEXT 30 DAYS</small><h3>CHOOSE YOUR CHALLENGE</h3></div><div id="go-challenge-grid" class="go-challenge-grid"><div class="go-empty" style="grid-column:1/-1">LOADING CHALLENGES...</div></div><div class="dm-tracker-heading" id="dm-tracker-anchor"><small>YOUR CURRENT MOVE</small><h2>ACTIVE TRACKER</h2></div><div id="go-active-strip" class="go-active-strip"></div>`;
       const anchor=q('.on-the-go-row',screen)?.parentElement||q('.session-grid',screen)?.parentElement||screen.firstElementChild;
       if(anchor&&anchor!==screen)anchor.insertAdjacentElement('beforebegin',zone);else screen.prepend(zone);
       on('go-account-button','click',()=>goOpenHub('profile'));
@@ -20555,11 +20555,75 @@
       goLoadDecisionMakersMonth();goLoadCommunityPreview();
     }
 
+    function goSpotlightExcerpt(text=''){
+      const clean=String(text||'').replace(/\s+/g,' ').trim();
+      if(!clean)return '';
+      const sentence=clean.match(/^.*?[.!?](?:\s|$)/);
+      const first=(sentence?.[0]||clean).trim();
+      return first.length>150?first.slice(0,147).trimEnd()+'...':first;
+    }
+
+    function goEnsureSpotlightDetail(){
+      let overlay=$('dm-spotlight-detail');
+      if(overlay)return overlay;
+      overlay=document.createElement('div');
+      overlay.id='dm-spotlight-detail';
+      overlay.className='dm-spotlight-detail';
+      overlay.setAttribute('aria-hidden','true');
+      overlay.innerHTML=`<div class="dm-spotlight-detail-shell"><button id="dm-spotlight-close" class="dm-spotlight-close" type="button" aria-label="Close spotlight">×</button><div id="dm-spotlight-detail-content"></div></div>`;
+      document.body.appendChild(overlay);
+      on('dm-spotlight-close','click',goCloseSpotlight);
+      overlay.addEventListener('click',e=>{if(e.target===overlay)goCloseSpotlight();});
+      return overlay;
+    }
+
+    function goCloseSpotlight(){
+      const overlay=$('dm-spotlight-detail');
+      if(!overlay)return;
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden','true');
+      document.body.style.overflow='';
+    }
+
+    function goOpenSpotlight(person){
+      const overlay=goEnsureSpotlightDetail();
+      const content=$('dm-spotlight-detail-content');
+      if(!content)return;
+      const links=[
+        ['WEBSITE',person.website_url||person.website],
+        ['INSTAGRAM',person.instagram_url||person.instagram],
+        ['FACEBOOK',person.facebook_url||person.facebook],
+        ['TIKTOK',person.tiktok_url||person.tiktok],
+        ['YOUTUBE',person.youtube_url||person.youtube],
+        ['LEARN MORE',person.link_url||person.destination_url||person.url]
+      ].filter(([,url])=>String(url||'').trim());
+      content.innerHTML=`<article class="dm-spotlight-full">${person.photo_url?`<img class="dm-spotlight-full-photo" src="${esc(person.photo_url)}" alt="${esc(person.name||'Decision Maker')}">`:`<div class="dm-spotlight-full-photo dm-month-placeholder">PHOTO</div>`}<div class="dm-spotlight-full-copy"><small>${esc(person.eyebrow||'DECISION MAKER')}</small><h2>${esc(person.name||'Decision Maker')}</h2>${person.headline?`<strong>${esc(person.headline)}</strong>`:''}${person.story?`<p>${esc(person.story)}</p>`:''}${links.length?`<div class="dm-spotlight-links">${links.map(([label,url])=>`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`).join('')}</div>`:''}</div></article>`;
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+    }
+
     async function goLoadDecisionMakersMonth(){
       const grid=$('dm-month-grid');if(!grid)return;
-      try{const data=await goFetch('/go/decision-makers-month');const people=Array.isArray(data.people)?data.people:[];
-        grid.innerHTML=people.length?people.slice(0,5).map(p=>`<article class="dm-month-card">${p.photo_url?`<img src="${esc(p.photo_url)}" alt="${esc(p.name||'Decision Maker')}">`:`<div class="dm-month-placeholder">PHOTO</div>`}<div class="dm-month-copy"><small>${esc(p.eyebrow||'DECISION MAKER')}</small><h3>${esc(p.name||'Decision Maker')}</h3>${p.headline?`<strong>${esc(p.headline)}</strong>`:''}${p.story?`<p>${esc(p.story)}</p>`:''}</div></article>`).join(''):'<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';
-      }catch(e){grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';}
+      try{
+        const data=await goFetch('/go/decision-makers-month');
+        const people=Array.isArray(data.people)?data.people:[];
+        if(!people.length){
+          grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';
+          return;
+        }
+        grid.innerHTML='';
+        people.slice(0,5).forEach(p=>{
+          const card=document.createElement('article');
+          card.className='dm-month-card';
+          const excerpt=goSpotlightExcerpt(p.story||'');
+          card.innerHTML=`${p.photo_url?`<img src="${esc(p.photo_url)}" alt="${esc(p.name||'Decision Maker')}">`:`<div class="dm-month-placeholder">PHOTO</div>`}<div class="dm-month-copy"><small>${esc(p.eyebrow||'DECISION MAKER')}</small><h3>${esc(p.name||'Decision Maker')}</h3>${p.headline?`<strong>${esc(p.headline)}</strong>`:''}${excerpt?`<p>${esc(excerpt)}</p>`:''}<button class="dm-view-spotlight" type="button">VIEW SPOTLIGHT</button></div>`;
+          q('.dm-view-spotlight',card)?.addEventListener('click',()=>goOpenSpotlight(p));
+          grid.appendChild(card);
+        });
+      }catch(e){
+        grid.innerHTML='<div class="go-empty" style="grid-column:1/-1">DECISION MAKER SPOTLIGHTS WILL APPEAR HERE.</div>';
+      }
     }
 
     async function goLoadCommunityPreview(){
