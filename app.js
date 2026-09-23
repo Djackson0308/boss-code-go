@@ -20626,6 +20626,33 @@
       }
     }
 
+    function goSetupCommunityFeed(){
+      const feed=$('dm-feed-scroll');
+      const toggle=$('dm-feed-toggle');
+      if(!feed||!toggle)return;
+
+      const mobileQuery=window.matchMedia('(max-width:850px)');
+      let unlocked=false;
+
+      const apply=()=>{
+        const mobile=mobileQuery.matches;
+        feed.classList.toggle('feed-unlocked',!mobile||unlocked);
+        toggle.hidden=!mobile;
+        toggle.textContent=unlocked?'DONE / EXIT FEED':'EXPLORE FEED';
+        toggle.setAttribute('aria-pressed',unlocked?'true':'false');
+      };
+
+      toggle.addEventListener('click',()=>{
+        unlocked=!unlocked;
+        apply();
+      });
+
+      if(mobileQuery.addEventListener)mobileQuery.addEventListener('change',apply);
+      else if(mobileQuery.addListener)mobileQuery.addListener(apply);
+
+      apply();
+    }
+
     async function goLoadCommunityPreview(){
       const box=$('dm-community-preview');if(!box)return;
       const action=$('dm-open-community');
@@ -20634,7 +20661,8 @@
       try{
         const data=await goFetch('/go/community/public?limit=30');
         const items=Array.isArray(data.activity)?data.activity:[];
-        box.innerHTML=items.length?items.map(a=>`<article class="dm-community-card"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:'<div class="go-avatar"></div>'}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(String(a.activity_type||'PROGRESS').replace(/_/g,' ').toUpperCase())}</small></div></div><h3>${esc(a.title||'')}</h3><p>${esc(a.body||'')}</p><div class="dm-community-meta">${Number(a.encourage_count||0)} ENCOURAGEMENT${Number(a.encourage_count||0)===1?'':'S'}</div></article>`).join(''):'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE AS POSTS ARE APPROVED.</div>';
+        box.innerHTML=items.length?`<div class="dm-feed-control"><span>ACTIVITY FEED</span><button id="dm-feed-toggle" type="button" aria-pressed="false">EXPLORE FEED</button></div><div id="dm-feed-scroll" class="dm-feed-scroll">${items.map(a=>`<article class="dm-community-card"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:'<div class="go-avatar"></div>'}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(String(a.activity_type||'PROGRESS').replace(/_/g,' ').toUpperCase())}</small></div></div><h3>${esc(a.title||'')}</h3><p>${esc(a.body||'')}</p><div class="dm-community-meta">${Number(a.encourage_count||0)} ENCOURAGEMENT${Number(a.encourage_count||0)===1?'':'S'}</div></article>`).join('')}</div>`:'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE AS POSTS ARE APPROVED.</div>';
+        if(items.length)goSetupCommunityFeed();
       }catch(e){
         box.innerHTML='<div class="go-empty">COMMUNITY ACTIVITY COULD NOT LOAD. TRY AGAIN IN A MOMENT.</div>';
       }

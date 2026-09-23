@@ -5510,3 +5510,98 @@ body,
     }
 }
 
+
+/* =========================================================
+   COMMUNITY FEED — 3 POST VIEW + GOLD SCROLL + MOBILE LOCK
+   ========================================================= */
+#decision-makers-screen .dm-community-preview,
+#decision-makers-screen #dm-community-preview{
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+    display:block !important;
+    padding:0 !important;
+}
+
+#decision-makers-screen .dm-feed-control{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:14px 0 10px;
+}
+
+#decision-makers-screen .dm-feed-control > span{
+    color:#f5c518;
+    font-size:10px;
+    font-weight:950;
+    letter-spacing:.14em;
+}
+
+#decision-makers-screen #dm-feed-toggle{
+    min-height:36px;
+    padding:8px 14px;
+    border:1px solid #d4af37;
+    border-radius:999px;
+    background:#101012;
+    color:#f5c518;
+    font:inherit;
+    font-size:9px;
+    font-weight:950;
+    letter-spacing:.075em;
+    cursor:pointer;
+}
+
+#decision-makers-screen .dm-feed-scroll{
+    height:590px;
+    max-height:62vh;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    display:grid;
+    gap:12px;
+    padding:2px 9px 2px 0;
+    overscroll-behavior:contain;
+    scrollbar-width:thin;
+    scrollbar-color:#f5c518 #161616;
+    -webkit-overflow-scrolling:touch;
+}
+
+#decision-makers-screen .dm-feed-scroll::-webkit-scrollbar{width:8px;}
+#decision-makers-screen .dm-feed-scroll::-webkit-scrollbar-track{
+    background:#161616;
+    border-radius:999px;
+}
+#decision-makers-screen .dm-feed-scroll::-webkit-scrollbar-thumb{
+    background:linear-gradient(180deg,#ffd83d,#d4af37);
+    border-radius:999px;
+    border:1px solid #342c08;
+}
+#decision-makers-screen .dm-feed-scroll .dm-community-card{margin:0 !important;}
+
+@media(max-width:850px){
+    #decision-makers-screen .dm-feed-scroll{
+        height:560px;
+        max-height:62vh;
+        overflow-y:hidden !important;
+        pointer-events:none;
+        overscroll-behavior:auto;
+    }
+
+    #decision-makers-screen .dm-feed-scroll.feed-unlocked{
+        overflow-y:auto !important;
+        pointer-events:auto;
+        overscroll-behavior:contain;
+    }
+
+    #decision-makers-screen .dm-feed-control{
+        pointer-events:auto;
+    }
+}
+
+@media(max-width:560px){
+    #decision-makers-screen .dm-feed-scroll{
+        height:520px;
+        max-height:60vh;
+    }
+}
+
