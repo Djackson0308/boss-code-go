@@ -20778,16 +20778,16 @@ async function goListLoadFeature() {
     $('go-list-home-headline').textContent = data.headline || 'GOOD THINGS ARE HAPPENING. GO FIND THEM.';
     $('go-list-home-description').textContent = data.description || 'Discover businesses, creators, and destinations.';
     const visual = $('go-list-home-visual');
-    const old = visual.querySelector('img');
+    const photo = $('go-list-home-photo');
+    const old = photo.querySelector('img');
     if(old)old.remove();
     goListFeaturedEntry = data.entry || null;
     $('go-list-home-feature-name').textContent = goListFeaturedEntry?.name || '';
     const featureButton = $('go-list-feature-open');
     featureButton.hidden = !goListFeaturedEntry;
     if(goListFeaturedEntry)featureButton.innerHTML = `MEET ${goListEscape(goListFeaturedEntry.name)} <span aria-hidden="true">↗</span>`;
-    const image = goListSafeUrl(goListFeaturedEntry?.cover_url);
-    visual.querySelector('.go-list-home-no-photo').hidden = Boolean(image);
-    if(image){const img=document.createElement('img');img.src=image;img.alt='';visual.prepend(img)}
+    const image = goListSafeUrl(data.home_image_url);
+    if(image){const img=document.createElement('img');img.src=image;img.alt='';photo.appendChild(img)}
   } catch { /* The generic panel remains useful when offline. */ }
 }
 
