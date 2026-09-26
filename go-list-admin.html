@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The GO List Admin | B.O.S.S CODE GO</title>
+<style>
+:root{--black:#080808;--panel:#151515;--line:#383838;--white:#fff;--yellow:#f5c518;--red:#d40000;--muted:#b9b9b9}
+*{box-sizing:border-box}body{margin:0;background:var(--black);color:var(--white);font:15px/1.5 Arial,sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}.shell{max-width:1360px;margin:auto;padding:24px}.top{display:flex;gap:20px;align-items:end;justify-content:space-between;border-bottom:3px solid var(--yellow);padding:20px 0 28px}.eyebrow{color:var(--yellow);font-size:11px;font-weight:900;letter-spacing:.2em}.top h1{font-size:clamp(38px,6vw,76px);line-height:.87;letter-spacing:-.055em;margin:8px 0}.top p{color:var(--muted);max-width:600px}.top a{color:var(--white);text-decoration:none;border:1px solid var(--line);padding:10px 16px}.login{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin:24px 0}.login label{flex:1;min-width:220px}.login input{width:100%}.status{min-height:24px;color:var(--yellow);font-weight:700}.layout{display:grid;grid-template-columns:minmax(250px,350px) minmax(0,1fr);gap:22px}.panel{background:var(--panel);border:1px solid var(--line);padding:22px}.panel h2{margin:0 0 16px;font-size:25px}.panel h3{margin:0 0 10px;font-size:19px}.entries{max-height:720px;overflow:auto;margin-top:14px}.entry{width:100%;display:flex;align-items:center;gap:12px;border:1px solid var(--line);background:#101010;color:#fff;text-align:left;padding:10px;margin:8px 0}.entry:hover,.entry.active{border-color:var(--yellow)}.entry img{width:56px;height:56px;object-fit:cover;background:#222}.entry span{display:block;font-weight:800}.entry small{display:block;color:var(--muted);font-size:11px}.tag{background:var(--red);padding:3px 7px;color:#fff;font-size:10px;font-weight:900}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{grid-column:1/-1}label{display:block;font-size:12px;font-weight:800;letter-spacing:.04em}label span{display:block;margin-bottom:6px;color:var(--muted)}input,textarea,select{width:100%;background:#090909;color:#fff;border:1px solid #555;border-radius:0;padding:11px 12px;min-height:42px}textarea{min-height:105px;resize:vertical}input:focus,textarea:focus,select:focus{outline:2px solid var(--yellow);outline-offset:1px}.checkrow{display:flex;flex-wrap:wrap;gap:12px 22px;padding:10px 0}.checkrow label{display:inline-flex;gap:7px;align-items:center;color:#fff}.checkrow input{width:auto;min-height:0;accent-color:var(--red)}.actions{display:flex;flex-wrap:wrap;gap:9px;margin:20px 0}.btn{background:var(--red);border:1px solid var(--red);color:#fff;font-weight:900;padding:12px 18px;text-transform:uppercase;letter-spacing:.07em}.btn.secondary{background:transparent;border-color:var(--yellow);color:var(--yellow)}.btn:disabled{opacity:.5;cursor:wait}.subhead{border-top:1px solid var(--line);margin:26px 0 16px;padding-top:22px;font-size:18px;font-weight:900}.uploads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.uploadbox{border:1px dashed #777;padding:14px}.uploadbox input[type=file]{border:0;padding:8px 0;min-height:0}.uploadbox button{margin-top:8px}.hint{font-size:12px;color:var(--muted)}.preview{display:flex;gap:12px;align-items:center;min-height:64px}.preview img{max-width:130px;max-height:95px;object-fit:cover}.feature{margin-top:22px}.feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.empty{color:var(--muted);padding:16px}.save-note{color:var(--muted);font-size:12px}.pill{border:1px solid var(--yellow);color:var(--yellow);font-size:10px;font-weight:900;padding:3px 6px}@media(max-width:800px){.layout{grid-template-columns:1fr}.top{align-items:start;flex-direction:column}.grid,.uploads,.feature-grid{grid-template-columns:1fr}.entries{max-height:300px}.shell{padding:14px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top"><div><div class="eyebrow">B.O.S.S CODE GO / DIRECTORY CONTROL</div><h1>THE GO LIST</h1><p>Add real businesses, creators, destinations and organizations. Choose the face of the home panel whenever you want.</p></div><a href="admin-hub.html">ADMIN HUB</a></header>
+  <div class="login"><label><span>ADMIN KEY</span><input id="key" type="password" autocomplete="off" placeholder="Enter your existing admin key"></label><button id="connect" class="btn" type="button">CONNECT</button><button id="forget" class="btn secondary" type="button">CLEAR KEY</button></div>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+  <div class="layout">
+    <aside class="panel"><h2>YOUR LISTINGS</h2><button id="new" class="btn secondary" type="button">ADD NEW ENTRY</button><div id="entries" class="entries"><p class="empty">Connect to load listings.</p></div></aside>
+    <main>
+      <section class="panel">
+        <h2 id="form-title">NEW GO LIST ENTRY</h2>
+        <form id="form">
+          <div class="grid">
+            <label><span>NAME *</span><input name="name" maxlength="160" required></label>
+            <label><span>URL NAME</span><input name="slug" maxlength="180" placeholder="Generated from name"></label>
+            <div class="full"><span class="hint">WHAT ARE YOU ADDING? Pick every type that fits.</span><div class="checkrow" id="kinds"><label><input type="checkbox" value="business"> Business</label><label><input type="checkbox" value="creator"> Creator</label><label><input type="checkbox" value="destination"> Destination</label><label><input type="checkbox" value="organization"> Organization</label></div></div>
+            <label><span>CATEGORY</span><input name="category" placeholder="Food, Music, Fashion, Services..."></label>
+            <label><span>DISPLAY ORDER</span><input name="sort_order" type="number" value="0"></label><label><span>FEATURED THROUGH</span><input name="featured_until" type="date"><small class="hint">The listing appears first through this date.</small></label>
+            <label class="full"><span>SHORT INTRO</span><textarea name="summary" maxlength="420" placeholder="The quick story people see on a card"></textarea></label>
+            <label class="full"><span>FULL STORY</span><textarea name="story" maxlength="12000" rows="8" placeholder="Who they are, what they do and why people should get to know them"></textarea></label>
+            <label><span>CITY</span><input name="city"></label><label><span>STATE OR REGION</span><input name="state"></label>
+            <label><span>COUNTRY</span><input name="country" value="United States"></label><label><span>STREET ADDRESS OR DESTINATION</span><input name="address"></label>
+            <div class="full checkrow"><label><input name="online" type="checkbox"> Available online</label><label><input name="published" type="checkbox"> Published in the app</label><label><input name="founding_partner" type="checkbox"> Founding Partner</label></div>
+            <label><span>WEBSITE</span><input name="website_url" type="url" placeholder="https://"></label><label><span>EMAIL</span><input name="contact_email" type="email"></label>
+            <label><span>PHONE</span><input name="contact_phone" type="tel"></label><label><span>PHOTO URL</span><input name="cover_url" type="url" placeholder="Upload below or paste a link"></label>
+          </div>
+          <div class="subhead">REAL PHOTOS AND VIDEO</div>
+          <div class="uploads">
+            <div class="uploadbox"><strong>MAIN PHOTO</strong><p class="hint">JPG, PNG or WEBP up to 10 MB.</p><input id="photo-file" type="file" accept="image/jpeg,image/png,image/webp"><button class="btn secondary" type="button" data-upload="cover_url" data-input="photo-file">UPLOAD PHOTO</button></div>
+            <div class="uploadbox"><strong>VIDEO</strong><p class="hint">MP4, WEBM or MOV up to 75 MB.</p><input id="video-file" type="file" accept="video/mp4,video/webm,video/quicktime"><button class="btn secondary" type="button" data-upload="video_url" data-input="video-file">UPLOAD VIDEO</button></div>
+            <div class="uploadbox"><strong>VIDEO COVER PHOTO</strong><input id="poster-file" type="file" accept="image/jpeg,image/png,image/webp"><button class="btn secondary" type="button" data-upload="video_poster_url" data-input="poster-file">UPLOAD COVER</button></div>
+            <div class="uploadbox"><strong>GALLERY PHOTO</strong><input id="gallery-file" type="file" accept="image/jpeg,image/png,image/webp"><button class="btn secondary" type="button" data-upload="gallery" data-input="gallery-file">ADD TO GALLERY</button></div>
+          </div>
+          <div class="grid" style="margin-top:14px"><label class="full"><span>VIDEO URL</span><input name="video_url" type="url" placeholder="Upload above or paste a direct video link"></label><label class="full"><span>VIDEO COVER URL</span><input name="video_poster_url" type="url"></label><label class="full"><span>GALLERY PHOTO URLS, ONE PER LINE</span><textarea name="gallery" placeholder="Upload photos above or paste links here"></textarea></label></div>
+          <div class="preview" id="preview"></div>
+          <div class="subhead">SOCIAL LINKS</div>
+          <div class="grid" id="social-fields"><label><span>INSTAGRAM</span><input name="instagram" type="url"></label><label><span>FACEBOOK</span><input name="facebook" type="url"></label><label><span>TIKTOK</span><input name="tiktok" type="url"></label><label><span>YOUTUBE</span><input name="youtube" type="url"></label><label><span>LINKEDIN</span><input name="linkedin" type="url"></label><label><span>X</span><input name="x" type="url"></label></div>
+          <div class="actions"><button class="btn" type="submit" id="save">SAVE ENTRY</button><button class="btn secondary" type="button" id="reset">START A NEW ENTRY</button></div>
+          <p class="save-note">An unpublished entry stays in Admin. Only published entries appear in the app.</p>
+        </form>
+      </section>
+      <section class="panel feature"><h2>HOME FEATURE PANEL</h2><p class="hint">The GO List name stays in place. Change its headline, description and featured listing here.</p><div class="feature-grid"><label class="full"><span>HEADLINE</span><input id="headline" value="GOOD THINGS ARE HAPPENING. GO FIND THEM."></label><label class="full"><span>DESCRIPTION</span><input id="description" value="Discover businesses, creators, and destinations."></label><label class="full"><span>FEATURED LISTING</span><select id="featured"><option value="">Show GO List without a featured listing</option></select></label></div><div class="actions"><button id="save-feature" class="btn" type="button">SAVE HOME FEATURE</button></div></section>
+    </main>
+  </div>
+</div>
+<script>
+const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
+const $=id=>document.getElementById(id);
+const form=$('form');
+let key=sessionStorage.getItem('boss-go-list-admin-key')||'';
+let rows=[];
+let selectedId=null;
+$('key').value=key;
+function setStatus(message,error=false){$('status').textContent=message;$('status').style.color=error?'#ff7474':'#f5c518'}
+function safeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function api(path,options={}){
+  if(!key)throw new Error('Enter your admin key first.');
+  const res=await fetch(API+path,{...options,headers:{'X-Admin-Key':key,...options.headers}});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok||!data.success)throw new Error(data.error||`Request failed (${res.status}).`);
+  return data;
+}
+function field(name){return form.elements.namedItem(name)}
+function setField(name,value){const input=field(name);if(input)input.value=value??''}
+function resetForm(){selectedId=null;form.reset();setField('country','United States');setField('sort_order',0);$('form-title').textContent='NEW GO LIST ENTRY';$('preview').innerHTML='';document.querySelectorAll('.entry').forEach(x=>x.classList.remove('active'))}
+function edit(row){selectedId=row.id;form.reset();$('form-title').textContent='EDIT '+row.name.toUpperCase();for(const name of ['name','slug','category','summary','story','city','state','country','address','website_url','contact_email','contact_phone','cover_url','video_url','video_poster_url','sort_order','featured_until'])setField(name,row[name]);setField('gallery',(row.gallery||[]).join('\n'));field('online').checked=!!row.online;field('published').checked=!!row.published;field('founding_partner').checked=!!row.founding_partner;document.querySelectorAll('#kinds input').forEach(x=>x.checked=(row.kinds||[]).includes(x.value));for(const name of ['instagram','facebook','tiktok','youtube','linkedin','x'])setField(name,row.socials?.[name]||'');$('preview').innerHTML=row.cover_url?`<img src="${safeText(row.cover_url)}" alt="Selected listing photo"><strong>${safeText(row.name)}</strong>`:'';document.querySelectorAll('.entry').forEach(x=>x.classList.toggle('active',Number(x.dataset.id)===selectedId));form.scrollIntoView({behavior:'smooth',block:'start'})}
+function draw(){const box=$('entries');box.innerHTML='';if(!rows.length){box.innerHTML='<p class="empty">No GO List entries yet. Add the first one.</p>'}for(const row of rows){const button=document.createElement('button');button.type='button';button.className='entry'+(row.id===selectedId?' active':'');button.dataset.id=row.id;button.innerHTML=`${row.cover_url?`<img src="${safeText(row.cover_url)}" alt="">`:'<span style="width:56px;height:56px;background:#333"></span>'}<span>${safeText(row.name)}<small>${safeText((row.kinds||[]).join(', '))} ${row.city?safeText(row.city):''}</small></span>${row.published?'<span class="pill">LIVE</span>':'<span class="tag">DRAFT</span>'}`;button.onclick=()=>edit(row);box.appendChild(button)}}
+function drawFeatured(current){const select=$('featured');select.innerHTML='<option value="">Show GO List without a featured listing</option>';for(const row of rows.filter(x=>x.published)){const option=document.createElement('option');option.value=row.id;option.textContent=row.name;select.appendChild(option)}select.value=String(current||'')}
+async function load(){setStatus('Loading The GO List...');const [list,settings]=await Promise.all([api('/admin/go-list/entries'),api('/admin/go-list/settings')]);rows=list.data||[];draw();$('headline').value=settings.data?.headline||'GOOD THINGS ARE HAPPENING. GO FIND THEM.';$('description').value=settings.data?.description||'Discover businesses, creators, and destinations.';drawFeatured(settings.data?.featured_entry_id);setStatus(`${rows.length} entries loaded.`)}
+$('connect').onclick=async()=>{key=$('key').value.trim();sessionStorage.setItem('boss-go-list-admin-key',key);try{await load()}catch(e){setStatus(e.message,true)}};
+$('forget').onclick=()=>{key='';sessionStorage.removeItem('boss-go-list-admin-key');$('key').value='';setStatus('Key cleared.')};
+$('new').onclick=resetForm;$('reset').onclick=resetForm;
+form.onsubmit=async event=>{event.preventDefault();const kinds=[...document.querySelectorAll('#kinds input:checked')].map(x=>x.value);if(!kinds.length){setStatus('Choose at least one type.',true);return}const socials={};for(const name of ['instagram','facebook','tiktok','youtube','linkedin','x'])socials[name]=field(name).value.trim();const data={};for(const name of ['name','slug','category','summary','story','city','state','country','address','website_url','contact_email','contact_phone','cover_url','video_url','video_poster_url','sort_order','featured_until'])data[name]=field(name).value.trim();data.kinds=kinds;data.socials=socials;data.gallery=field('gallery').value.split('\n').map(x=>x.trim()).filter(Boolean);data.online=field('online').checked;data.published=field('published').checked;data.founding_partner=field('founding_partner').checked;const button=$('save');button.disabled=true;try{const result=await api(selectedId?`/admin/go-list/entries/${selectedId}`:'/admin/go-list/entries',{method:selectedId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const id=result.id||selectedId;const currentFeatured=$('featured').value;await load();const saved=rows.find(x=>x.id===id);if(saved)edit(saved);drawFeatured(currentFeatured);setStatus('Entry saved.')}catch(e){setStatus(e.message,true)}finally{button.disabled=false}};
+document.querySelectorAll('[data-upload]').forEach(button=>button.onclick=async()=>{const file=$(button.dataset.input).files[0];if(!file){setStatus('Choose a file first.',true);return}const target=button.dataset.upload;const body=new FormData();body.append('file',file);button.disabled=true;setStatus(`Uploading ${file.name}...`);try{const result=await api('/admin/go-list/media',{method:'POST',body});if(target==='gallery'){const lines=field('gallery').value.trim();field('gallery').value=(lines?lines+'\n':'')+result.url}else setField(target,result.url);if(target==='cover_url')$('preview').innerHTML=`<img src="${safeText(result.url)}" alt="Uploaded photo">`;setStatus('Upload complete. Save the entry to keep this file on its profile.')}catch(e){setStatus(e.message,true)}finally{button.disabled=false}});
+$('save-feature').onclick=async()=>{try{await api('/admin/go-list/settings',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({headline:$('headline').value,description:$('description').value,featured_entry_id:$('featured').value||null})});setStatus('Home panel updated.')}catch(e){setStatus(e.message,true)}};
+if(key)load().catch(e=>setStatus(e.message,true));
+</script>
+</body>
+</html>

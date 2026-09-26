@@ -20750,3 +20750,128 @@
     scheduleDemographicsPrompt();
 
 window.addEventListener("resize",()=>{document.documentElement.style.setProperty("--page-banner-width",document.documentElement.clientWidth+"px");});
+
+
+/* =========================================================
+   THE GO LIST
+   ========================================================= */
+const goListScreen = $('go-list-screen');
+let goListEntries = [];
+let goListOffset = 0;
+let goListMore = false;
+let goListType = '';
+let goListSearchTimer;
+let goListLoading = false;
+let goListQueuedReset = false;
+let goListFeaturedEntry = null;
+const goListEscape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const goListSafeUrl = value => {try{const url=new URL(value);return /^https?:$/.test(url.protocol)?url.href:''}catch{return ''}};
+const goListLocation = row => [row.city,row.state,row.country].filter(Boolean).join(', ') || (row.online?'AVAILABLE ONLINE':'DISCOVER MORE');
+
+async function goListLoadFeature() {
+  try {
+    const response = await fetch(`${API}/go-list/featured`,{cache:'no-store'});
+    if(!response.ok)throw Error('Feature unavailable');
+    const body = await response.json();
+    if(!body.success)return;
+    const data = body.data || {};
+    $('go-list-home-headline').textContent = data.headline || 'GOOD THINGS ARE HAPPENING. GO FIND THEM.';
+    $('go-list-home-description').textContent = data.description || 'Discover businesses, creators, and destinations.';
+    const visual = $('go-list-home-visual');
+    const old = visual.querySelector('img');
+    if(old)old.remove();
+    goListFeaturedEntry = data.entry || null;
+    $('go-list-home-feature-name').textContent = goListFeaturedEntry?.name || '';
+    const featureButton = $('go-list-feature-open');
+    featureButton.hidden = !goListFeaturedEntry;
+    if(goListFeaturedEntry)featureButton.innerHTML = `MEET ${goListEscape(goListFeaturedEntry.name)} <span aria-hidden="true">↗</span>`;
+    const image = goListSafeUrl(goListFeaturedEntry?.cover_url);
+    visual.querySelector('.go-list-home-no-photo').hidden = Boolean(image);
+    if(image){const img=document.createElement('img');img.src=image;img.alt='';visual.prepend(img)}
+  } catch { /* The generic panel remains useful when offline. */ }
+}
+
+function goListOpenDirectory() {
+  $('go-list-detail').hidden = true;
+  $('go-list-browse').hidden = false;
+  showScreen(goListScreen);
+  goListFetch(true);
+}
+async function goListFetch(reset=false) {
+  if(goListLoading){if(reset)goListQueuedReset=true;return}
+  if(reset){goListOffset=0;goListEntries=[];$('go-list-results').innerHTML='<p class="go-list-message">Finding who is on The GO List...</p>'}
+  goListLoading=true;
+  const params=new URLSearchParams({limit:'48',offset:String(goListOffset)});
+  const search=$('go-list-search').value.trim();
+  const state=$('go-list-state').value.trim();
+  if(search)params.set('q',search);
+  if(state)params.set('state',state);
+  if(goListType)params.set('type',goListType);
+  try {
+    const response=await fetch(`${API}/go-list/entries?${params}`,{cache:'no-store'});
+    if(!response.ok)throw Error('The GO List could not load. Try again.');
+    const body=await response.json();
+    if(!body.success)throw Error(body.error||'The GO List could not load.');
+    const rows=body.data||[];
+    goListEntries.push(...rows);
+    goListOffset+=rows.length;
+    goListMore=Boolean(body.has_more);
+    goListRender();
+  } catch(error) {
+    $('go-list-results').innerHTML=`<p class="go-list-message">${goListEscape(error.message)}</p>`;
+    $('go-list-more').hidden=true;
+  } finally {goListLoading=false;if(goListQueuedReset){goListQueuedReset=false;goListFetch(true)}}
+}
+function goListRender() {
+  const grid=$('go-list-results');
+  grid.innerHTML='';
+  $('go-list-count').textContent=goListEntries.length?`${goListEntries.length}${goListMore?'+':''} TO EXPLORE`:'';
+  if(!goListEntries.length){grid.innerHTML='<p class="go-list-message">Nothing here yet. Try another search or check back as The GO List grows.</p>'}
+  for(const row of goListEntries){
+    const button=document.createElement('button');
+    button.type='button';button.className='go-list-card';
+    const cover=goListSafeUrl(row.cover_url);
+    const type=(row.kinds||[])[0]||'GO LIST';
+    button.innerHTML=`<div class="go-list-card-photo">${cover?`<img src="${goListEscape(cover)}" alt="${goListEscape(row.name)}">`:'GO'}</div><div class="go-list-card-body"><span class="go-list-card-type">${row.featured?'FEATURED / ':''}${goListEscape(type.toUpperCase())}${row.category?' / '+goListEscape(row.category.toUpperCase()):''}</span><h3>${goListEscape(row.name)}</h3><p>${goListEscape(row.summary||'Get to know the people and places making moves.')}</p><div class="go-list-card-bottom"><span>${goListEscape(goListLocation(row))}${row.online && row.city?' / ONLINE TOO':''}</span><b aria-hidden="true">↗</b></div></div>`;
+    button.addEventListener('click',()=>goListOpenDetail(row.slug));
+    grid.appendChild(button);
+  }
+  $('go-list-more').hidden=!goListMore;
+}
+async function goListOpenDetail(slug) {
+  showScreen(goListScreen);
+  $('go-list-browse').hidden=true;
+  const detail=$('go-list-detail');detail.hidden=false;
+  detail.innerHTML='<p class="go-list-message">Opening the story...</p>';
+  try {
+    const response=await fetch(`${API}/go-list/entries/${encodeURIComponent(slug)}`,{cache:'no-store'});
+    if(!response.ok)throw Error('This profile is not available right now.');
+    const body=await response.json();
+    if(!body.success)throw Error(body.error||'Profile unavailable.');
+    goListRenderDetail(body.data);
+  } catch(error){detail.innerHTML=`<button class="go-list-detail-back" type="button">← THE GO LIST</button><p class="go-list-message">${goListEscape(error.message)}</p>`;detail.querySelector('button').onclick=goListBackToBrowse}
+}
+function goListBackToBrowse(){$('go-list-detail').hidden=true;$('go-list-browse').hidden=false;window.scrollTo({top:0,behavior:'smooth'})}
+function goListRenderDetail(row) {
+  const detail=$('go-list-detail');
+  const cover=goListSafeUrl(row.cover_url),video=goListSafeUrl(row.video_url);
+  const poster=goListSafeUrl(row.video_poster_url);
+  const links=[];
+  if(goListSafeUrl(row.website_url))links.push(`<a href="${goListEscape(goListSafeUrl(row.website_url))}" rel="noopener">VISIT WEBSITE ↗</a>`);
+  if(row.contact_email)links.push(`<a href="mailto:${encodeURIComponent(row.contact_email)}">EMAIL ↗</a>`);
+  if(row.contact_phone)links.push(`<a href="tel:${goListEscape(String(row.contact_phone).replace(/[^+0-9]/g,''))}">CALL ↗</a>`);
+  if(row.address){const directions=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row.address+', '+goListLocation(row))}`;links.push(`<a href="${goListEscape(directions)}" rel="noopener">GET DIRECTIONS ↗</a>`)}
+  for(const [name,url] of Object.entries(row.socials||{})){const safe=goListSafeUrl(url);if(safe)links.push(`<a href="${goListEscape(safe)}" rel="noopener">${goListEscape(name.toUpperCase())} ↗</a>`)}
+  const photos=(row.gallery||[]).map(goListSafeUrl).filter(Boolean).slice(0,12);
+  detail.innerHTML=`<button class="go-list-detail-back" type="button">← THE GO LIST</button><div class="go-list-detail-cover">${cover?`<img src="${goListEscape(cover)}" alt="${goListEscape(row.name)}">`:''}<div class="go-list-detail-title"><small>${row.founding_partner?'FOUNDING PARTNER / ':''}${goListEscape((row.kinds||[]).join(' / ').toUpperCase())}${row.category?' / '+goListEscape(row.category.toUpperCase()):''}</small><h2>${goListEscape(row.name)}</h2><p>${goListEscape(goListLocation(row))}${row.online && row.city?' / AVAILABLE ONLINE':''}</p></div></div><div class="go-list-detail-grid"><div class="go-list-detail-story"><h3>${goListEscape(row.summary||'GET TO KNOW THE STORY')}</h3><p>${goListEscape(row.story||row.summary||'')}</p></div><aside class="go-list-detail-links"><h3>MAKE YOUR NEXT MOVE</h3>${links.join('')||'<p>More ways to connect are coming soon.</p>'}</aside></div>${video?`<h3>SEE THE STORY IN MOTION</h3><video class="go-list-video" controls preload="metadata" playsinline ${poster?`poster="${goListEscape(poster)}"`:''}><source src="${goListEscape(video)}">Your device cannot play this video.</video>`:''}${photos.length?`<h3>MORE TO DISCOVER</h3><div class="go-list-media">${photos.map(src=>`<img src="${goListEscape(src)}" alt="${goListEscape(row.name)} gallery photo" loading="lazy">`).join('')}</div>`:''}`;
+  detail.querySelector('.go-list-detail-back').onclick=goListBackToBrowse;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+on('go-list-open','click',goListOpenDirectory);
+on('go-list-feature-open','click',()=>goListFeaturedEntry?goListOpenDetail(goListFeaturedEntry.slug):goListOpenDirectory());
+on('go-list-back','click',()=>showScreen(home));
+on('go-list-more','click',()=>goListFetch(false));
+for(const id of ['go-list-search','go-list-state'])on(id,'input',()=>{clearTimeout(goListSearchTimer);goListSearchTimer=setTimeout(()=>goListFetch(true),300)});
+qa('[data-go-type]',goListScreen).forEach(button=>button.addEventListener('click',()=>{goListType=button.dataset.goType||'';qa('[data-go-type]',goListScreen).forEach(x=>x.classList.toggle('active',x===button));goListFetch(true)}));
+goListLoadFeature();
