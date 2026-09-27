@@ -5667,3 +5667,13 @@ body,
   .go-list-types button{padding:8px 11px;font-size:11px}
   .go-list-section-heading{margin-bottom:12px}
 }
+
+/* Home card belongs to the black B.O.S.S CODE home screen. */
+.go-list-home{background:#151515;color:#fff}
+.go-list-home-copy{background:#151515;color:#fff}
+.go-list-home h2{color:#fff}
+.go-list-home-copy>strong{color:#fff}
+.go-list-home-copy>p{color:#ddd}
+.go-list-home-kicker{background:#fff;color:#111}
+.go-list-home-actions button:last-child{background:#fff;color:#111;border-color:#fff}
+@media(max-width:550px){.go-list-home h2{color:#fff}.go-list-home-copy>strong{color:#fff}}
