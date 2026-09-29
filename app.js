@@ -2705,6 +2705,10 @@
     screen
     );
 
+    if(typeof goEnsureCommerceLegalNotices==='function'){
+    goEnsureCommerceLegalNotices();
+    }
+
 
     return screen;
 
@@ -20273,6 +20277,134 @@
     let goActiveRun=null;
     let goCurrentChallenge=null;
 
+    const GO_LEGAL_EFFECTIVE_DATE='September 28, 2026';
+    const GO_LEGAL_CONTACT_EMAIL='greatness@bosscodemedia.com';
+
+    const GO_LEGAL_DOCS={
+      terms:{
+        title:'TERMS OF USE',
+        kicker:'B.O.S.S CODE GO',
+        intro:'These Terms of Use govern access to and use of B.O.S.S CODE GO and its features, content, community areas, courses, commerce and related services.',
+        sections:[
+          ['AGREEMENT TO THESE TERMS',`By accessing or using B.O.S.S CODE GO, you agree to these Terms of Use and the Privacy Policy. If you do not agree, do not use the app. If you are under the age required to enter a binding agreement where you live, use the app only with permission and supervision from a parent or legal guardian.`],
+          ['YOUR ACCOUNT',`Some features require a B.O.S.S CODE GO account. You are responsible for providing accurate information, keeping access to your email secure and not allowing another person to misuse your account. You may delete your account through the Profile area. Removing the app from a device does not delete the account.`],
+          ['PERMITTED USE',`B.O.S.S CODE GO is provided for lawful personal use and for authorized business interactions with B.O.S.S. CODE MEDIA GROUP LLC. You may not interfere with the app, attempt unauthorized access, misuse another person's account, scrape protected information, introduce malicious code, bypass access controls or use the service for unlawful activity.`],
+          ['CONTENT AND INTELLECTUAL PROPERTY',`B.O.S.S CODE GO, B.O.S.S CODE MEDIA branding, course materials, videos, graphics, written materials, music, logos and other original content are owned by B.O.S.S. CODE MEDIA GROUP LLC or used with permission unless otherwise stated. Access to content does not transfer ownership. Content may not be copied, redistributed, resold or publicly reposted except where B.O.S.S CODE GO expressly allows it.`],
+          ['USER SUBMISSIONS',`When you intentionally submit material for community review or publication, you confirm that you have the right to submit it. You give B.O.S.S. CODE MEDIA GROUP LLC a nonexclusive permission to host, display, reproduce and moderate that submission as needed to operate B.O.S.S CODE GO. Private challenge responses and private reflections are not treated as public submissions unless you intentionally choose a sharing feature.`],
+          ['COMMUNITY USE',`Community participation is also governed by the Community Guidelines. B.O.S.S. CODE MEDIA GROUP LLC may review, approve, decline or remove community material and may restrict accounts that violate the rules or create safety, legal or operational concerns.`],
+          ['PURCHASES AND PAID FEATURES',`Prices, included benefits and access information are shown before purchase. Payment processing may be provided by Apple, Google, Stripe or another approved payment provider depending on the product, platform and location. Additional Course Access Terms, Refund Information, Shipping and Returns, or Support Is A Decision Terms apply when relevant.`],
+          ['THIRD PARTY SERVICES',`Some B.O.S.S CODE GO features rely on third party services such as payment processing, video hosting, maps, email delivery and infrastructure providers. Those services may have their own terms and privacy practices. B.O.S.S. CODE MEDIA GROUP LLC is not responsible for third party services outside its control.`],
+          ['EDUCATIONAL AND MOTIVATIONAL CONTENT',`Decision Makers materials, challenges, videos and related content are educational and motivational. They are not medical, legal, financial or mental health advice and do not promise a particular personal, professional or financial result.`],
+          ['SERVICE AVAILABILITY',`Features may be updated, repaired, replaced, suspended or discontinued when reasonably necessary. We work to keep B.O.S.S CODE GO available but cannot guarantee uninterrupted or error free operation.`],
+          ['LIMITATION OF LIABILITY',`To the maximum extent allowed by applicable law, B.O.S.S. CODE MEDIA GROUP LLC is not liable for indirect, incidental, special or consequential losses resulting from use of or inability to use B.O.S.S CODE GO. Nothing in these terms limits rights or remedies that cannot legally be limited.`],
+          ['CHANGES TO THESE TERMS',`These terms may be updated when B.O.S.S CODE GO features, business practices or legal requirements change. The effective date shown in this Legal & Support area identifies the current version.`],
+          ['CONTACT',`Questions about these Terms of Use can be sent to greatness@bosscodemedia.com.`]
+        ]
+      },
+      community:{
+        title:'COMMUNITY GUIDELINES',
+        kicker:'DECISION MAKERS COMMUNITY',
+        intro:'The B.O.S.S CODE GO community exists to encourage progress, share approved inspiration and recognize growth.',
+        sections:[
+          ['RESPECT PEOPLE',`Treat other people with respect. Harassment, bullying, threats, hateful content, targeted humiliation or intimidation are not allowed.`],
+          ['KEEP IT APPROPRIATE',`Do not submit sexually explicit content, graphic violence, illegal material or content that is designed to shock, exploit or endanger another person.`],
+          ['PROTECT PRIVACY',`Do not post private or sensitive information about another person without permission. Do not share passwords, financial information, private addresses or other information that could put someone at risk.`],
+          ['BE AUTHENTIC',`Do not impersonate another person or business. Do not knowingly submit false claims about another person, deceptive promotions or fraudulent material.`],
+          ['NO SPAM OR ABUSE',`Do not flood the community with repeated promotions, scams, malicious links or unrelated advertising. Business promotion must use an authorized B.O.S.S CODE GO advertising or business feature when available.`],
+          ['OWN WHAT YOU SUBMIT',`Only submit words, photos or other material that you created or have permission to use. Do not submit copyrighted material simply because it is available online.`],
+          ['MODERATION',`Inspiration submissions may be reviewed before appearing publicly. B.O.S.S. CODE MEDIA GROUP LLC may decline or remove content, limit community features or restrict an account when reasonably necessary to enforce these guidelines, protect users or comply with law.`],
+          ['CURRENT COMMUNITY FORMAT',`B.O.S.S CODE GO Community 1.0 is an activity feed rather than open chat. Approved inspiration and progress activity may appear in the feed. Users may Encourage activity where that feature is available. There are no public comment threads in the current community experience.`],
+          ['REPORTING CONCERNS',`Community concerns can be reported through available reporting tools or by contacting greatness@bosscodemedia.com.`]
+        ]
+      },
+      refunds:{
+        title:'REFUND INFORMATION',
+        kicker:'PURCHASES & PAYMENTS',
+        intro:'Refund handling depends on what was purchased, the payment provider that processed the transaction and applicable law.',
+        sections:[
+          ['APPLE OR GOOGLE PURCHASES',`When Apple or Google processes a purchase, refund eligibility and the refund request process may be controlled by that store. Users should follow the refund process provided by the store that processed the transaction.`],
+          ['DIRECT ELIGIBLE PURCHASES',`When an eligible purchase is processed directly for B.O.S.S. CODE MEDIA GROUP LLC through an approved payment provider, refund requests can be sent to greatness@bosscodemedia.com. Requests are reviewed based on the product, whether access or fulfillment has already occurred, the reason for the request and applicable law.`],
+          ['DIGITAL COURSES',`Digital course access can be delivered immediately after a successful purchase. Refund rights may vary by platform and location. B.O.S.S. CODE MEDIA GROUP LLC does not promise a refund after substantial digital course access or use unless required by law or required by the payment provider's rules.`],
+          ['PHYSICAL CLOTHING',`Eligible clothing returns are governed by the Shipping and Returns policy. Approved refunds are generally issued after the returned item is received and inspected unless the item was incorrect, damaged or another remedy is required by law.`],
+          ['SUPPORT IS A DECISION',`Support contributions are voluntary and are generally final once successfully processed, except where required by law or where a duplicate charge, unauthorized transaction or confirmed processing error occurred. A supporter shirt offered with qualifying support does not convert the contribution into a tax deductible donation.`],
+          ['DUPLICATE OR UNAUTHORIZED CHARGES',`If you believe you were charged more than once or did not authorize a transaction, contact greatness@bosscodemedia.com promptly and include the email used for the transaction and enough information to identify the charge. Do not send full payment card numbers by email.`]
+        ]
+      },
+      shipping:{
+        title:'SHIPPING & RETURNS',
+        kicker:'THE CODE CLOTHING',
+        intro:'These terms apply to physical clothing and merchandise fulfilled by or for B.O.S.S. CODE MEDIA GROUP LLC.',
+        sections:[
+          ['ORDER INFORMATION',`Customers are responsible for providing a complete and accurate shipping address. If an address error is discovered, contact greatness@bosscodemedia.com as soon as possible. An address may not be changeable after fulfillment begins.`],
+          ['SHIPPING',`Available shipping methods, charges and estimated delivery information are shown during checkout when applicable. Delivery dates are estimates and may be affected by carrier delays, weather, holidays or circumstances outside B.O.S.S. CODE MEDIA GROUP LLC's control.`],
+          ['STANDARD RETURNS',`Eligible clothing may be returned within 30 days after delivery when it is unworn, unwashed and in resalable condition. Items marked final sale, personalized items and items damaged after delivery may be excluded from voluntary returns except where applicable law provides otherwise.`],
+          ['RETURN SHIPPING',`Unless an item arrived damaged, defective or incorrect, the customer may be responsible for return shipping costs. Original shipping charges may be nonrefundable where permitted by law.`],
+          ['DAMAGED OR INCORRECT ITEMS',`If an order arrives damaged or the wrong item was sent, contact greatness@bosscodemedia.com as soon as reasonably possible with the order information and photos when helpful. We will work to provide an appropriate replacement, correction or refund.`],
+          ['SUPPORTER SHIRTS',`A supporter shirt provided as part of a qualifying Support Is A Decision contribution is a promotional benefit rather than a separate retail clothing purchase. If the wrong supporter shirt is sent or it arrives damaged, contact us so we can work to correct the issue.`],
+          ['REFUND TIMING',`Approved refunds may take additional time to appear after they are issued because banks and payment providers control final posting time.`]
+        ]
+      },
+      support:{
+        title:'SUPPORT IS A DECISION TERMS',
+        kicker:'SUPPORT B.O.S.S CODE MEDIA',
+        intro:'Support Is A Decision gives people a way to voluntarily support B.O.S.S CODE MEDIA and its work.',
+        sections:[
+          ['VOLUNTARY SUPPORT',`A Support Is A Decision payment is a voluntary contribution to B.O.S.S. CODE MEDIA GROUP LLC. It is not an investment, ownership interest, loan or promise of financial return.`],
+          ['NOT A CHARITABLE TAX DEDUCTION',`B.O.S.S. CODE MEDIA GROUP LLC does not represent Support Is A Decision payments as charitable tax deductible donations. Users should not treat a payment as tax deductible unless separate written documentation specifically states otherwise.`],
+          ['NO COURSE ACCESS',`Support is separate from paid Decision Makers course purchases and does not unlock paid courses unless a specific offer expressly says otherwise.`],
+          ['SUPPORTER SHIRT',`When the supporter shirt offer is active, a qualifying support payment of $50 or more may include one black B.O.S.S CODE supporter shirt as described in the app. The supporter must provide accurate size and shipping information. Availability, sizing and fulfillment may be subject to reasonable limits.`],
+          ['PAYMENT PROCESSING',`Support payments are completed through the payment method shown at checkout. B.O.S.S CODE GO does not store full payment card numbers.`],
+          ['REFUNDS',`Support payments are generally final once processed, except where required by law or where a duplicate charge, unauthorized payment or confirmed processing error occurred. Questions can be sent to greatness@bosscodemedia.com.`]
+        ]
+      },
+      courses:{
+        title:'COURSE ACCESS TERMS',
+        kicker:'DECISION MAKERS',
+        intro:'These terms apply to paid Decision Makers courses and other paid course content offered through B.O.S.S CODE GO.',
+        sections:[
+          ['PERSONAL ACCESS',`Course access is for the purchasing user's personal use unless a separate written business or group license says otherwise. Accounts, course access and protected course materials may not be shared, resold or transferred.`],
+          ['ACCESS DELIVERY',`Access is connected to the account and email used for the eligible purchase. Users should use the same account information when returning to a purchased course.`],
+          ['ACCESS DURATION',`Any fixed access period will be stated in the course offer or checkout information when applicable. If no fixed period is stated, access remains subject to continued course availability, account status and these terms. B.O.S.S. CODE MEDIA GROUP LLC may make reasonable technical changes to how course content is delivered.`],
+          ['COURSE MATERIALS',`Videos, worksheets, exercises, downloads and other course materials are protected content. Users may use authorized materials for their own learning but may not publicly repost, redistribute, sell, copy in bulk or create a competing product from protected course materials.`],
+          ['PROGRESS DATA',`Course progress and saved responses may remain connected to an active B.O.S.S CODE GO account so users can continue where they left off. Permanent account deletion removes associated app based course progress and account access information as described in the Privacy Policy and account deletion information. Limited transaction records may be retained when legitimately necessary.`],
+          ['NO GUARANTEE OF RESULTS',`Courses are educational and motivational. Results depend on many factors outside B.O.S.S. CODE MEDIA GROUP LLC's control. Purchasing or completing a course does not guarantee a specific business, financial, career or personal result.`],
+          ['REFUNDS',`Refund eligibility depends on the payment provider, applicable law and the Refund Information shown in B.O.S.S CODE GO. Where Apple or Google processes the purchase, their refund process may apply.`],
+          ['ACCOUNT MISUSE',`Access may be restricted when there is evidence of fraud, chargeback abuse, account sharing, unauthorized redistribution, security threats or other serious violations of these terms, subject to applicable law and payment provider requirements.`]
+        ]
+      },
+      privacy:{
+        title:'PRIVACY POLICY',
+        kicker:'YOUR DATA',
+        intro:'B.O.S.S. CODE MEDIA GROUP LLC operates B.O.S.S CODE GO. This policy explains the personal information the app may collect, how it is used, how long it may be retained and how users can request deletion.',
+        sections:[
+          ['INFORMATION WE MAY COLLECT',`Depending on how you use GO, information may include account email, display name, profile photo, challenge progress, written challenge responses, private reflections, achievements, course progress, community activity, contact form information, clothing or supporter shirt shipping details, transaction related information, analytics identifiers and optional audience information such as age range or gender when voluntarily provided.`],
+          ['HOW INFORMATION IS USED',`Information is used to create and secure accounts, save progress, provide purchased or requested services, operate community features, process and fulfill transactions, provide customer support, improve B.O.S.S CODE GO, understand aggregate usage, prevent abuse and meet legal or operational obligations.`],
+          ['PRIVATE CHALLENGE INFORMATION',`Challenge responses, reflections and similar personal progress information are intended to remain private unless the user intentionally uses a sharing feature. Approved inspiration submissions and intentionally shared achievements or milestones may appear in the community experience.`],
+          ['SERVICE PROVIDERS',`B.O.S.S CODE GO may use service providers for functions such as payment processing, email delivery, video delivery, maps, hosting, storage, analytics and application infrastructure. Those providers receive information only as needed for the services they perform and may have their own privacy terms.`],
+          ['PAYMENTS',`Full payment card numbers are handled by the payment provider used at checkout and are not stored directly by B.O.S.S CODE GO. Transaction, order, refund and fulfillment information may be retained as reasonably necessary for accounting, tax, fraud prevention, support and legal obligations.`],
+          ['ANALYTICS AND DEVICE STORAGE',`GO may use a device or visitor identifier and local or session storage to keep sessions working, remember preferences, understand app usage and support analytics. Optional audience information is voluntary.`],
+          ['RETENTION',`Challenge progress, written responses, reflections, achievements, streaks and related history may remain connected to an account for as long as the account remains active so the user can review growth over time. Other records are retained only as reasonably necessary for the purpose collected, legitimate business operations or legal requirements.`],
+          ['ACCOUNT AND DATA DELETION',`Users can initiate permanent deletion inside GO from Decision Makers, Open My Profile, Profile, Delete Account. A user who cannot access the app can request account deletion by contacting greatness@bosscodemedia.com. Deleting the app from a device does not delete the account.`],
+          ['WHAT DELETION REMOVES',`Permanent deletion removes or anonymizes associated personal app data such as profile information and images, challenge progress and responses, private reflections, tracker information, achievements, course progress, community account information and other personal account information where applicable. Limited transaction, tax, refund, fraud prevention, security or fulfillment records may be retained when legitimately required.`],
+          ['SECURITY',`Reasonable technical and organizational safeguards are used to protect personal information. No internet connected service can guarantee absolute security.`],
+          ['CHANGES',`This policy may be updated when the app, data practices or legal requirements change. The current effective date appears in this Legal & Support area.`],
+          ['CONTACT',`Privacy and deletion questions can be sent to greatness@bosscodemedia.com.`]
+        ]
+      },
+      deletion:{
+        title:'ACCOUNT & DATA DELETION',
+        kicker:'YOUR ACCOUNT',
+        intro:'B.O.S.S CODE GO users can permanently delete their account and associated personal app data.',
+        sections:[
+          ['DELETE INSIDE THE APP',`Open Decision Makers, open your profile, select the Profile tab and choose Delete Account. Review the warning and follow the final confirmation steps. Permanent account deletion cannot be undone.`],
+          ['IF YOU CANNOT ACCESS THE APP',`Send an account deletion request to greatness@bosscodemedia.com and include the email address associated with the B.O.S.S CODE GO account. We may ask you to verify ownership before completing the request.`],
+          ['WHAT IS DELETED',`Deletion includes the GO profile, profile image, challenge responses, private reflections, challenge progress and history, reports, achievements, course progress and account based course access information, community posts and related activity, login sessions and other personal app information associated with the account where applicable.`],
+          ['LIMITED RETENTION',`Some limited payment, tax, refund, fraud prevention, security, dispute, accounting or fulfillment records may be retained when reasonably necessary or legally required. Retained records are not used to restore the deleted GO profile or challenge history.`],
+          ['SUBSCRIPTIONS AND EXTERNAL PAYMENTS',`Deleting a B.O.S.S CODE GO account does not necessarily cancel a subscription or recurring payment managed by Apple, Google or another payment provider. Applicable subscriptions must be managed through the provider that processed them.`]
+        ]
+      }
+    };
+
     try{goToken=localStorage.getItem(GO_AUTH_TOKEN_KEY)||'';}catch{}
 
     async function goFetch(path,options={}){
@@ -20313,6 +20445,13 @@
       .go-delete-account-status{min-height:20px;margin-top:10px;color:#ff8585;font-size:12px;font-weight:800;line-height:1.45}
       .go-auth-spam-note{display:none;margin:10px 0 2px;padding:10px 12px;border-left:3px solid #f5c518;background:#15130a;color:#ddd;font-size:12px;font-weight:800;line-height:1.45}
       .go-auth-spam-note.show{display:block}
+      .go-inline-legal{margin:12px 0;color:#8f8f8f;font-size:11px;line-height:1.55}.go-inline-legal button{appearance:none;border:0;background:transparent;color:#f5c518;padding:0;font:inherit;font-weight:900;text-decoration:underline;cursor:pointer}.go-auth-legal{margin:12px 0 0;color:#999;font-size:11px;line-height:1.5}.go-auth-legal button{appearance:none;border:0;background:none;color:#f5c518;padding:0;font:inherit;font-weight:900;text-decoration:underline;cursor:pointer}
+      .go-profile-legal-row{margin-top:18px;padding-top:16px;border-top:1px solid #252525}.go-profile-legal-button{appearance:none;border:1px solid #f5c518;border-radius:999px;background:transparent;color:#f5c518;padding:10px 15px;font:inherit;font-size:12px;font-weight:900;letter-spacing:.04em;cursor:pointer}.go-profile-legal-button:hover{background:#f5c518;color:#000}
+      #go-legal-overlay{z-index:39000}.go-legal-shell{width:min(900px,100%);margin:0 auto 60px}.go-legal-topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0 15px;background:rgba(0,0,0,.96)}.go-legal-topbar h2{margin:0;font-size:18px}.go-legal-close{width:44px;height:44px;border:2px solid #d40000;border-radius:50%;background:#050505;color:#fff;font-size:22px;cursor:pointer}
+      .go-legal-hero{border-top:5px solid #f5c518;border-bottom:1px solid #292929;background:#090909;padding:24px;margin-bottom:16px}.go-legal-hero small{color:#f5c518;font-weight:900;letter-spacing:.15em}.go-legal-hero h1{margin:6px 0 8px;font-size:clamp(34px,7vw,60px);line-height:1}.go-legal-hero p{margin:0;color:#aaa;line-height:1.6}
+      .go-legal-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.go-legal-card{appearance:none;width:100%;text-align:left;border:1px solid #303030;border-left:4px solid #f5c518;border-radius:14px;background:#090909;color:#fff;padding:16px;cursor:pointer}.go-legal-card:hover{border-color:#f5c518}.go-legal-card strong{display:block;font-size:15px;margin-bottom:5px}.go-legal-card span{display:block;color:#929292;font-size:12px;line-height:1.5}
+      .go-legal-doc{border:1px solid #2c2c2c;border-radius:18px;background:#090909;padding:22px}.go-legal-doc-back{margin-bottom:18px}.go-legal-doc .go-kicker{margin-bottom:5px}.go-legal-doc h1{margin:0 0 10px;font-size:clamp(34px,7vw,58px);line-height:1}.go-legal-doc-intro{color:#bbb;line-height:1.65;margin:0 0 20px}.go-legal-doc-section{padding:20px 0;border-top:1px solid #292929}.go-legal-doc-section h2{margin:0 0 8px;font-size:20px}.go-legal-doc-section p{margin:0;color:#b8b8b8;line-height:1.7}.go-legal-effective{margin-top:20px;padding-top:16px;border-top:1px solid #292929;color:#777;font-size:11px}.go-legal-contact{color:#f5c518;font-weight:900}
+      @media(max-width:650px){.go-legal-grid{grid-template-columns:1fr}.go-legal-hero,.go-legal-doc{padding:18px}}
 
       .go-challenge-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}.go-challenge-card{border:1px solid #2c2c2c;border-radius:18px;background:#080808;overflow:hidden;display:flex;flex-direction:column}.go-challenge-cover{aspect-ratio:16/10;background:#111;display:flex;align-items:center;justify-content:center;color:#f5c518;font-weight:900;text-align:center;padding:15px;background-size:cover;background-position:center}.go-challenge-card-body{padding:15px;display:flex;flex-direction:column;flex:1}.go-challenge-card small{color:#f5c518;font-weight:900}.go-challenge-card h3{margin:5px 0 8px;font-size:19px}.go-challenge-card p{color:#999;line-height:1.45;font-size:13px;flex:1}.go-challenge-card button{width:100%;margin-top:10px}
 
@@ -20362,13 +20501,130 @@
         on('go-close','click',()=>goClose());
       }
       if(!$('go-auth-overlay')){
-        const auth=document.createElement('div');auth.id='go-auth-overlay';auth.className='go-overlay';auth.innerHTML=`<div class="go-auth-card"><div class="go-kicker">B.O.S.S CODE GO ACCOUNT</div><h2 id="go-auth-title">SIGN IN</h2><p class="go-muted">Use your email. We will send you a secure 6 digit code.</p><div class="go-field"><label>EMAIL</label><input id="go-auth-email" type="email" autocomplete="email" placeholder="you@example.com"></div><div id="go-code-wrap" class="go-field" style="display:none"><label>6 DIGIT CODE</label><input id="go-auth-code" inputmode="numeric" maxlength="6" placeholder="000000"></div><div id="go-auth-spam-note" class="go-auth-spam-note">DON'T SEE THE EMAIL? IT IS MOST LIKELY IN YOUR SPAM OR JUNK FOLDER. CHECK THERE FOR YOUR 6 DIGIT CODE.</div><div class="go-actions"><button id="go-auth-send" class="go-primary" type="button">SEND CODE</button><button id="go-auth-verify" class="go-primary" type="button" style="display:none">VERIFY & SIGN IN</button><button id="go-auth-cancel" class="go-secondary" type="button">CANCEL</button></div><div id="go-auth-status" class="go-status"></div></div>`;
+        const auth=document.createElement('div');auth.id='go-auth-overlay';auth.className='go-overlay';auth.innerHTML=`<div class="go-auth-card"><div class="go-kicker">B.O.S.S CODE GO ACCOUNT</div><h2 id="go-auth-title">SIGN IN</h2><p class="go-muted">Use your email. We will send you a secure 6 digit code.</p><div class="go-field"><label>EMAIL</label><input id="go-auth-email" type="email" autocomplete="email" placeholder="you@example.com"></div><div id="go-code-wrap" class="go-field" style="display:none"><label>6 DIGIT CODE</label><input id="go-auth-code" inputmode="numeric" maxlength="6" placeholder="000000"></div><div id="go-auth-spam-note" class="go-auth-spam-note">DON'T SEE THE EMAIL? IT IS MOST LIKELY IN YOUR SPAM OR JUNK FOLDER. CHECK THERE FOR YOUR 6 DIGIT CODE.</div><div class="go-auth-legal">By continuing, you agree to the <button type="button" data-go-legal-doc="terms">TERMS OF USE</button> and acknowledge the <button type="button" data-go-legal-doc="privacy">PRIVACY POLICY</button>.</div><div class="go-actions"><button id="go-auth-send" class="go-primary" type="button">SEND CODE</button><button id="go-auth-verify" class="go-primary" type="button" style="display:none">VERIFY & SIGN IN</button><button id="go-auth-cancel" class="go-secondary" type="button">CANCEL</button></div><div id="go-auth-status" class="go-status"></div></div>`;
         document.body.appendChild(auth);
         on('go-auth-send','click',goSendCode);on('go-auth-verify','click',goVerifyCode);on('go-auth-cancel','click',()=>auth.classList.remove('open'));
         try{$('go-auth-email').value=localStorage.getItem(GO_AUTH_EMAIL_KEY)||crmSavedIdentity().email||'';}catch{}
       }
+      goEnsureLegalUI();
+      goInstallLegalCommerceObserver();
       goEnsureDecisionMakerZone();
       goSetupMobileMapLock();
+    }
+
+
+    function goEnsureLegalUI(){
+      if(!$('go-legal-overlay')){
+        const overlay=document.createElement('div');
+        overlay.id='go-legal-overlay';
+        overlay.className='go-overlay';
+        overlay.innerHTML=`<div class="go-legal-shell"><div class="go-legal-topbar"><h2>B.O.S.S CODE GO • LEGAL &amp; SUPPORT</h2><button class="go-legal-close" id="go-legal-close" type="button" aria-label="Close">×</button></div><div id="go-legal-main"></div></div>`;
+        document.body.appendChild(overlay);
+        on('go-legal-close','click',goCloseLegal);
+      }
+
+      if(!window.__bossGoLegalDelegationInstalled){
+        window.__bossGoLegalDelegationInstalled=true;
+        document.addEventListener('click',event=>{
+          const docButton=event.target.closest?.('[data-go-legal-doc]');
+          if(docButton){
+            event.preventDefault();
+            goOpenLegalDoc(docButton.dataset.goLegalDoc);
+            return;
+          }
+
+          const hubButton=event.target.closest?.('[data-go-legal-hub]');
+          if(hubButton){
+            event.preventDefault();
+            goOpenLegalHub();
+          }
+        });
+      }
+    }
+
+    function goCloseLegal(){
+      $('go-legal-overlay')?.classList.remove('open');
+      if(!$('go-challenge-overlay')?.classList.contains('open')&&!$('go-auth-overlay')?.classList.contains('open')){
+        document.body.style.overflow='';
+      }
+    }
+
+    function goOpenLegalOverlay(){
+      goEnsureLegalUI();
+      $('go-legal-overlay')?.classList.add('open');
+      document.body.style.overflow='hidden';
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function goOpenLegalHub(){
+      goOpenLegalOverlay();
+      const main=$('go-legal-main');
+      if(!main)return;
+
+      const cards=[
+        ['terms','TERMS OF USE','Rules for using B.O.S.S CODE GO and its services.'],
+        ['privacy','PRIVACY POLICY','How GO collects, uses, protects, retains and deletes personal information.'],
+        ['community','COMMUNITY GUIDELINES','Rules for inspiration submissions, activity and community participation.'],
+        ['refunds','REFUND INFORMATION','How refund handling differs for digital content, clothing, support and payment providers.'],
+        ['shipping','SHIPPING & RETURNS','Shipping and return rules for The Code Clothing and physical merchandise.'],
+        ['support','SUPPORT IS A DECISION TERMS','Terms for voluntary support payments and the supporter shirt offer.'],
+        ['courses','COURSE ACCESS TERMS','Personal access, course materials, progress and paid course rules.'],
+        ['deletion','ACCOUNT & DATA DELETION','How to permanently delete a GO account and associated personal app data.']
+      ];
+
+      main.innerHTML=`<section class="go-legal-hero"><small>B.O.S.S CODE MEDIA GROUP LLC</small><h1>LEGAL &amp; SUPPORT</h1><p>Everything you need to understand your account, privacy, community participation, purchases and B.O.S.S CODE GO services.</p></section><div class="go-legal-grid">${cards.map(card=>`<button type="button" class="go-legal-card" data-go-legal-doc="${card[0]}"><strong>${card[1]}</strong><span>${card[2]}</span></button>`).join('')}</div><div class="go-legal-effective">Effective ${GO_LEGAL_EFFECTIVE_DATE} • Questions: <span class="go-legal-contact">${GO_LEGAL_CONTACT_EMAIL}</span></div>`;
+    }
+
+    function goOpenLegalDoc(key){
+      const doc=GO_LEGAL_DOCS[String(key||'').trim()];
+      if(!doc)return;
+
+      goOpenLegalOverlay();
+      const main=$('go-legal-main');
+      if(!main)return;
+
+      main.innerHTML=`<section class="go-legal-doc"><button type="button" class="go-secondary go-legal-doc-back" data-go-legal-hub="1">← BACK TO LEGAL &amp; SUPPORT</button><div class="go-kicker">${esc(doc.kicker||'B.O.S.S CODE GO')}</div><h1>${esc(doc.title||'LEGAL')}</h1><p class="go-legal-doc-intro">${esc(doc.intro||'')}</p>${(doc.sections||[]).map(section=>`<div class="go-legal-doc-section"><h2>${esc(section[0])}</h2><p>${esc(section[1])}</p></div>`).join('')}<div class="go-legal-effective">Effective ${GO_LEGAL_EFFECTIVE_DATE} • Contact <span class="go-legal-contact">${GO_LEGAL_CONTACT_EMAIL}</span></div></section>`;
+    }
+
+    function goInsertLegalNotice(anchor,id,html){
+      if(!anchor||$(id))return;
+      const notice=document.createElement('div');
+      notice.id=id;
+      notice.className='go-inline-legal';
+      notice.innerHTML=html;
+      anchor.insertAdjacentElement('beforebegin',notice);
+    }
+
+    function goEnsureCommerceLegalNotices(){
+      goInsertLegalNotice(
+        $('support-submit'),
+        'go-support-legal-notice',
+        'By continuing, you acknowledge the <button type="button" data-go-legal-doc="support">SUPPORT IS A DECISION TERMS</button> and <button type="button" data-go-legal-doc="refunds">REFUND INFORMATION</button>.'
+      );
+
+      goInsertLegalNotice(
+        $('clothing-secure-checkout'),
+        'go-clothing-legal-notice',
+        'By continuing to secure checkout, you agree to the <button type="button" data-go-legal-doc="shipping">SHIPPING &amp; RETURNS</button> and acknowledge the <button type="button" data-go-legal-doc="refunds">REFUND INFORMATION</button>.'
+      );
+
+      goInsertLegalNotice(
+        $('dm-course-purchase-button'),
+        'go-course-legal-notice',
+        'By continuing to course checkout, you agree to the <button type="button" data-go-legal-doc="courses">COURSE ACCESS TERMS</button>, <button type="button" data-go-legal-doc="terms">TERMS OF USE</button> and <button type="button" data-go-legal-doc="refunds">REFUND INFORMATION</button>.'
+      );
+    }
+
+    function goInstallLegalCommerceObserver(){
+      if(window.__bossGoLegalCommerceObserver)return;
+      goEnsureCommerceLegalNotices();
+
+      const observer=new MutationObserver(()=>{
+        goEnsureCommerceLegalNotices();
+      });
+
+      observer.observe(document.body,{childList:true,subtree:true});
+      window.__bossGoLegalCommerceObserver=observer;
     }
 
     function goEnsureDecisionMakerZone(){
@@ -20610,9 +20866,9 @@
 
     function goRenderHub(data,tab){
       const main=$('go-main'),s=data.stats||{};
-      main.innerHTML=`<section class="go-panel"><div class="go-kicker">MY B.O.S.S CODE GO</div><h1>${esc(goProfile?.display_name||'MY ACCOUNT')}</h1><p class="go-muted">${esc(goProfile?.email||'')}</p><div class="go-tabs"><button class="go-tab" data-go-tab="progress">PROGRESS</button><button class="go-tab" data-go-tab="history">HISTORY</button><button class="go-tab" data-go-tab="achievements">ACHIEVEMENTS</button><button class="go-tab" data-go-tab="community">COMMUNITY</button><button class="go-tab" data-go-tab="profile">PROFILE</button></div></section><div id="go-tab-progress" class="go-tab-page"><section class="go-panel"><h2>MY PROGRESS</h2><div class="go-stat-grid"><div class="go-stat"><b>${Number(s.days_completed||0)}</b>DAYS</div><div class="go-stat"><b>${Number(s.total_points||0)}</b>POINTS</div><div class="go-stat"><b>${Number(s.completed_runs||0)}</b>FINISHED</div><div class="go-stat"><b>${Number(s.longest_streak||0)}</b>BEST STREAK</div><div class="go-stat"><b>${Number(s.achievement_count||0)}</b>BADGES</div></div>${goActiveRun?`<div class="go-actions"><button class="go-primary" id="go-hub-continue">CONTINUE ${esc(goActiveRun.title)}</button></div>`:'<p class="go-muted">Choose a published challenge from Decision Makers to begin your next 30 days.</p>'}</section></div><div id="go-tab-history" class="go-tab-page"><section class="go-panel"><h2>CHALLENGE HISTORY</h2>${data.history.length?data.history.map(h=>`<div class="go-history-item"><div><strong>${esc(h.title)}</strong><div><small>${esc(String(h.status||'').toUpperCase())} • ${Number(h.days_completed||0)}/${Number(h.duration_days||30)} DAYS • ${Number(h.total_points||0)} POINTS</small></div></div><div class="go-actions">${h.status==='active'?`<button class="go-primary" data-go-open-run="${h.id}">CONTINUE</button>`:`<button class="go-secondary" data-go-report="${h.id}">REPORT</button>`}</div></div>`).join(''):'<div class="go-empty">NO CHALLENGE HISTORY YET.</div>'}</section></div><div id="go-tab-achievements" class="go-tab-page"><section class="go-panel"><h2>ACHIEVEMENTS</h2>${data.achievements.length?data.achievements.map(a=>`<div class="go-achievement"><div class="go-badge">${a.badge_image_url?`<img src="${esc(a.badge_image_url)}" alt="">`:'★'}</div><div style="flex:1"><strong>${esc(a.title)}</strong><div class="go-muted">${esc(a.description||'')}</div><small>${esc(a.challenge_title||'ALL CHALLENGES')}</small></div><button class="go-secondary" data-go-share-achievement="${a.user_achievement_id}" data-shared="${Number(a.shared_to_community||0)}">${Number(a.shared_to_community||0)?'SHARED':'SHARE'}</button></div>`).join(''):'<div class="go-empty">YOUR ACHIEVEMENTS WILL APPEAR HERE.</div>'}</section></div><div id="go-tab-community" class="go-tab-page"><section class="go-panel"><h2>COMMUNITY</h2><p class="go-muted">Real B.O.S.S CODE GO activity and approved inspiration. No comments. Encourage somebody when their progress moves you.</p><div class="go-field"><label>SUBMIT INSPIRATION FOR REVIEW</label><input id="go-inspiration-title" placeholder="Optional title"><textarea id="go-inspiration-body" placeholder="Share something that could encourage another Decision Maker."></textarea></div><button class="go-primary" id="go-submit-inspiration" type="button">SUBMIT FOR REVIEW</button><div id="go-inspiration-status" class="go-status"></div><h3 style="margin-top:28px">ACTIVITY FEED</h3>${data.community.length?data.community.map(a=>`<article class="go-feed-item"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:`<div class="go-avatar"></div>`}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><div><small>${esc(a.activity_type||'PROGRESS')}</small></div></div></div><h3>${esc(a.title||'')}</h3><p class="go-muted">${esc(a.body||'')}</p><button class="go-encourage ${Number(a.encouraged_by_me)?'on':''}" data-go-encourage="${a.id}" data-on="${Number(a.encouraged_by_me)?1:0}">👏 ENCOURAGE • <span>${Number(a.encourage_count||0)}</span></button></article>`).join(''):'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE.</div>'}<h3 style="margin-top:28px">MY INSPIRATION SUBMISSIONS</h3>${data.mine.length?data.mine.slice(0,10).map(x=>`<div class="go-history-item"><div><strong>${esc(x.title||'INSPIRATION')}</strong><div class="go-muted">${esc(x.body||'')}</div></div><small>${esc(String(x.status||'pending').toUpperCase())}</small></div>`).join(''):'<div class="go-empty">NO SUBMISSIONS YET.</div>'}</section></div><div id="go-tab-profile" class="go-tab-page"><section class="go-panel"><div class="go-kicker">YOUR COMMUNITY IDENTITY</div><h2>MY PROFILE</h2><p class="go-muted">Update the name and photo people see around Decision Makers. Your email stays connected to your secure B.O.S.S CODE GO account.</p><div class="go-field"><label>DISPLAY NAME</label><input id="go-profile-name" value="${esc(goProfile?.display_name||'')}"></div><div class="go-field"><label>PROFILE PHOTO</label><div class="go-profile-photo-editor" style="display:flex !important;align-items:center !important;gap:16px !important;flex-wrap:wrap !important;margin-top:10px !important"><div id="go-profile-photo-visual" class="go-profile-photo-preview" role="img" aria-label="Profile photo" style="width:104px !important;height:104px !important;min-width:104px !important;min-height:104px !important;max-width:104px !important;max-height:104px !important;flex:0 0 104px !important;border-radius:50% !important;overflow:hidden !important;border:2px solid #F5C518 !important;background-color:#111 !important;background-image:${goProfile?.profile_photo_url?`url('${esc(goProfile.profile_photo_url)}')`:'none'} !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;display:flex !important;align-items:center !important;justify-content:center !important;box-sizing:border-box !important">${goProfile?.profile_photo_url?'':`<div id="go-profile-photo-placeholder" style="width:100% !important;height:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;color:#F5C518 !important;font-size:10px !important;font-weight:900 !important;letter-spacing:.08em !important;padding:10px !important;box-sizing:border-box !important">ADD PHOTO</div>`}</div><div style="min-width:0"><input id="go-profile-photo" type="hidden" value="${esc(goProfile?.profile_photo_url||'')}"><input id="go-profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button class="go-secondary" id="go-profile-photo-pick" type="button">UPLOAD / CHANGE PHOTO</button><p class="go-muted" style="margin:8px 0 0">Choose a photo from your phone or computer.</p><div id="go-profile-photo-status" class="go-status"></div></div></div></div><label class="go-check"><input id="go-profile-public" type="checkbox" ${Number(goProfile?.public_profile_enabled)!==0?'checked':''}> SHOW MY PROFILE IN COMMUNITY ACTIVITY</label><label class="go-check"><input id="go-profile-achievements" type="checkbox" ${Number(goProfile?.share_achievements)!==0?'checked':''}> ALLOW ACHIEVEMENT SHARING</label><label class="go-check"><input id="go-profile-milestones" type="checkbox" ${Number(goProfile?.share_milestones)!==0?'checked':''}> ALLOW MILESTONE SHARING</label><div class="go-actions"><button class="go-primary" id="go-save-profile" type="button">SAVE PROFILE</button><button class="go-danger" id="go-logout" type="button">SIGN OUT</button></div><div id="go-profile-status" class="go-status"></div><div class="go-profile-delete-row"><button class="go-profile-delete-button" id="go-delete-account-open" type="button">DELETE ACCOUNT</button></div></section></div>`;
+      main.innerHTML=`<section class="go-panel"><div class="go-kicker">MY B.O.S.S CODE GO</div><h1>${esc(goProfile?.display_name||'MY ACCOUNT')}</h1><p class="go-muted">${esc(goProfile?.email||'')}</p><div class="go-tabs"><button class="go-tab" data-go-tab="progress">PROGRESS</button><button class="go-tab" data-go-tab="history">HISTORY</button><button class="go-tab" data-go-tab="achievements">ACHIEVEMENTS</button><button class="go-tab" data-go-tab="community">COMMUNITY</button><button class="go-tab" data-go-tab="profile">PROFILE</button></div></section><div id="go-tab-progress" class="go-tab-page"><section class="go-panel"><h2>MY PROGRESS</h2><div class="go-stat-grid"><div class="go-stat"><b>${Number(s.days_completed||0)}</b>DAYS</div><div class="go-stat"><b>${Number(s.total_points||0)}</b>POINTS</div><div class="go-stat"><b>${Number(s.completed_runs||0)}</b>FINISHED</div><div class="go-stat"><b>${Number(s.longest_streak||0)}</b>BEST STREAK</div><div class="go-stat"><b>${Number(s.achievement_count||0)}</b>BADGES</div></div>${goActiveRun?`<div class="go-actions"><button class="go-primary" id="go-hub-continue">CONTINUE ${esc(goActiveRun.title)}</button></div>`:'<p class="go-muted">Choose a published challenge from Decision Makers to begin your next 30 days.</p>'}</section></div><div id="go-tab-history" class="go-tab-page"><section class="go-panel"><h2>CHALLENGE HISTORY</h2>${data.history.length?data.history.map(h=>`<div class="go-history-item"><div><strong>${esc(h.title)}</strong><div><small>${esc(String(h.status||'').toUpperCase())} • ${Number(h.days_completed||0)}/${Number(h.duration_days||30)} DAYS • ${Number(h.total_points||0)} POINTS</small></div></div><div class="go-actions">${h.status==='active'?`<button class="go-primary" data-go-open-run="${h.id}">CONTINUE</button>`:`<button class="go-secondary" data-go-report="${h.id}">REPORT</button>`}</div></div>`).join(''):'<div class="go-empty">NO CHALLENGE HISTORY YET.</div>'}</section></div><div id="go-tab-achievements" class="go-tab-page"><section class="go-panel"><h2>ACHIEVEMENTS</h2>${data.achievements.length?data.achievements.map(a=>`<div class="go-achievement"><div class="go-badge">${a.badge_image_url?`<img src="${esc(a.badge_image_url)}" alt="">`:'★'}</div><div style="flex:1"><strong>${esc(a.title)}</strong><div class="go-muted">${esc(a.description||'')}</div><small>${esc(a.challenge_title||'ALL CHALLENGES')}</small></div><button class="go-secondary" data-go-share-achievement="${a.user_achievement_id}" data-shared="${Number(a.shared_to_community||0)}">${Number(a.shared_to_community||0)?'SHARED':'SHARE'}</button></div>`).join(''):'<div class="go-empty">YOUR ACHIEVEMENTS WILL APPEAR HERE.</div>'}</section></div><div id="go-tab-community" class="go-tab-page"><section class="go-panel"><h2>COMMUNITY</h2><p class="go-muted">Real B.O.S.S CODE GO activity and approved inspiration. No comments. Encourage somebody when their progress moves you.</p><div class="go-field"><label>SUBMIT INSPIRATION FOR REVIEW</label><input id="go-inspiration-title" placeholder="Optional title"><textarea id="go-inspiration-body" placeholder="Share something that could encourage another Decision Maker."></textarea></div><div class="go-inline-legal">By submitting inspiration, you agree to the <button type="button" data-go-legal-doc="community">COMMUNITY GUIDELINES</button>. Only submit material you have the right to share.</div><button class="go-primary" id="go-submit-inspiration" type="button">SUBMIT FOR REVIEW</button><div id="go-inspiration-status" class="go-status"></div><h3 style="margin-top:28px">ACTIVITY FEED</h3>${data.community.length?data.community.map(a=>`<article class="go-feed-item"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:`<div class="go-avatar"></div>`}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><div><small>${esc(a.activity_type||'PROGRESS')}</small></div></div></div><h3>${esc(a.title||'')}</h3><p class="go-muted">${esc(a.body||'')}</p><button class="go-encourage ${Number(a.encouraged_by_me)?'on':''}" data-go-encourage="${a.id}" data-on="${Number(a.encouraged_by_me)?1:0}">👏 ENCOURAGE • <span>${Number(a.encourage_count||0)}</span></button></article>`).join(''):'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE.</div>'}<h3 style="margin-top:28px">MY INSPIRATION SUBMISSIONS</h3>${data.mine.length?data.mine.slice(0,10).map(x=>`<div class="go-history-item"><div><strong>${esc(x.title||'INSPIRATION')}</strong><div class="go-muted">${esc(x.body||'')}</div></div><small>${esc(String(x.status||'pending').toUpperCase())}</small></div>`).join(''):'<div class="go-empty">NO SUBMISSIONS YET.</div>'}</section></div><div id="go-tab-profile" class="go-tab-page"><section class="go-panel"><div class="go-kicker">YOUR COMMUNITY IDENTITY</div><h2>MY PROFILE</h2><p class="go-muted">Update the name and photo people see around Decision Makers. Your email stays connected to your secure B.O.S.S CODE GO account.</p><div class="go-field"><label>DISPLAY NAME</label><input id="go-profile-name" value="${esc(goProfile?.display_name||'')}"></div><div class="go-field"><label>PROFILE PHOTO</label><div class="go-profile-photo-editor" style="display:flex !important;align-items:center !important;gap:16px !important;flex-wrap:wrap !important;margin-top:10px !important"><div id="go-profile-photo-visual" class="go-profile-photo-preview" role="img" aria-label="Profile photo" style="width:104px !important;height:104px !important;min-width:104px !important;min-height:104px !important;max-width:104px !important;max-height:104px !important;flex:0 0 104px !important;border-radius:50% !important;overflow:hidden !important;border:2px solid #F5C518 !important;background-color:#111 !important;background-image:${goProfile?.profile_photo_url?`url('${esc(goProfile.profile_photo_url)}')`:'none'} !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;display:flex !important;align-items:center !important;justify-content:center !important;box-sizing:border-box !important">${goProfile?.profile_photo_url?'':`<div id="go-profile-photo-placeholder" style="width:100% !important;height:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;color:#F5C518 !important;font-size:10px !important;font-weight:900 !important;letter-spacing:.08em !important;padding:10px !important;box-sizing:border-box !important">ADD PHOTO</div>`}</div><div style="min-width:0"><input id="go-profile-photo" type="hidden" value="${esc(goProfile?.profile_photo_url||'')}"><input id="go-profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button class="go-secondary" id="go-profile-photo-pick" type="button">UPLOAD / CHANGE PHOTO</button><p class="go-muted" style="margin:8px 0 0">Choose a photo from your phone or computer.</p><div id="go-profile-photo-status" class="go-status"></div></div></div></div><label class="go-check"><input id="go-profile-public" type="checkbox" ${Number(goProfile?.public_profile_enabled)!==0?'checked':''}> SHOW MY PROFILE IN COMMUNITY ACTIVITY</label><label class="go-check"><input id="go-profile-achievements" type="checkbox" ${Number(goProfile?.share_achievements)!==0?'checked':''}> ALLOW ACHIEVEMENT SHARING</label><label class="go-check"><input id="go-profile-milestones" type="checkbox" ${Number(goProfile?.share_milestones)!==0?'checked':''}> ALLOW MILESTONE SHARING</label><div class="go-actions"><button class="go-primary" id="go-save-profile" type="button">SAVE PROFILE</button><button class="go-danger" id="go-logout" type="button">SIGN OUT</button></div><div id="go-profile-status" class="go-status"></div><div class="go-profile-legal-row"><button class="go-profile-legal-button" id="go-legal-support-open" type="button">LEGAL &amp; SUPPORT</button></div><div class="go-profile-delete-row"><button class="go-profile-delete-button" id="go-delete-account-open" type="button">DELETE ACCOUNT</button></div></section></div>`;
       const profilePhotoVisual=$('go-profile-photo-visual');if(profilePhotoVisual){['width','height','min-width','min-height','max-width','max-height'].forEach(prop=>profilePhotoVisual.style.setProperty(prop,'104px','important'));profilePhotoVisual.style.setProperty('flex','0 0 104px','important');profilePhotoVisual.style.setProperty('border-radius','50%','important');profilePhotoVisual.style.setProperty('overflow','hidden','important');profilePhotoVisual.style.setProperty('background-size','cover','important');profilePhotoVisual.style.setProperty('background-position','center','important');profilePhotoVisual.style.setProperty('background-repeat','no-repeat','important');}
-      qa('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>goSetTab(b.dataset.goTab)));qa('[data-go-open-run]').forEach(b=>b.addEventListener('click',()=>goOpenRun(Number(b.dataset.goOpenRun))));qa('[data-go-report]').forEach(b=>b.addEventListener('click',()=>goOpenReport(Number(b.dataset.goReport))));qa('[data-go-share-achievement]').forEach(b=>b.addEventListener('click',()=>goShareAchievement(b)));qa('[data-go-encourage]').forEach(b=>b.addEventListener('click',()=>goToggleEncourage(b)));on('go-hub-continue','click',()=>goOpenRun(goActiveRun.id));on('go-submit-inspiration','click',goSubmitInspiration);on('go-profile-photo-pick','click',()=>$('go-profile-photo-file')?.click());on('go-profile-photo-file','change',e=>goUploadProfilePhoto(e.target.files?.[0]));on('go-save-profile','click',goSaveProfile);on('go-logout','click',goLogout);on('go-delete-account-open','click',goOpenDeleteAccountScreen);goSetTab(tab||'progress');
+      qa('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>goSetTab(b.dataset.goTab)));qa('[data-go-open-run]').forEach(b=>b.addEventListener('click',()=>goOpenRun(Number(b.dataset.goOpenRun))));qa('[data-go-report]').forEach(b=>b.addEventListener('click',()=>goOpenReport(Number(b.dataset.goReport))));qa('[data-go-share-achievement]').forEach(b=>b.addEventListener('click',()=>goShareAchievement(b)));qa('[data-go-encourage]').forEach(b=>b.addEventListener('click',()=>goToggleEncourage(b)));on('go-hub-continue','click',()=>goOpenRun(goActiveRun.id));on('go-submit-inspiration','click',goSubmitInspiration);on('go-profile-photo-pick','click',()=>$('go-profile-photo-file')?.click());on('go-profile-photo-file','change',e=>goUploadProfilePhoto(e.target.files?.[0]));on('go-save-profile','click',goSaveProfile);on('go-logout','click',goLogout);on('go-legal-support-open','click',goOpenLegalHub);on('go-delete-account-open','click',goOpenDeleteAccountScreen);goSetTab(tab||'progress');
     }
 
     function goSetTab(name){qa('[data-go-tab]').forEach(b=>b.classList.toggle('active',b.dataset.goTab===name));qa('.go-tab-page').forEach(p=>p.classList.remove('active'));$(`go-tab-${name}`)?.classList.add('active');}
