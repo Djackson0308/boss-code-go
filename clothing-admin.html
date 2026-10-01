@@ -79,15 +79,51 @@ button{cursor:pointer}
 .loginbox h2{font-size:26px;margin:7px 0}
 .loginbox p{color:#888;font-size:11px;line-height:1.5;margin-bottom:18px}
 .note{padding:13px 14px;border-radius:13px;background:#120f02;border:1px solid #3b3207;color:#e7d16d;font-size:10px;line-height:1.5;margin-top:14px}
+.orders-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:14px}
+.orders-toolbar .field{min-width:210px;flex:0 1 260px}
+.order-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.order-stat{background:#070707;border:1px solid #252525;border-radius:14px;padding:13px}
+.order-stat strong{display:block;font-size:18px}
+.order-stat span{display:block;color:#777;font-size:9px;font-weight:900;letter-spacing:1px;margin-top:4px}
+.order-list{display:grid;gap:9px}
+.order-row{width:100%;text-align:left;color:#fff;background:#060606;border:1px solid #252525;border-radius:14px;padding:14px}
+.order-row:hover{border-color:#555}
+.order-row.active{border-color:#F5C518}
+.order-row-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.order-number{font-size:13px;font-weight:900}
+.order-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:7px;color:#888;font-size:9px}
+.order-badge{display:inline-block;padding:5px 8px;border-radius:999px;background:#181818;color:#aaa;font-size:8px;font-weight:900}
+.order-badge.paid{background:#102518;color:#72e59a}
+.order-badge.refunded{background:#321414;color:#ff8c8c}
+.order-badge.partial{background:#332b0e;color:#F5C518}
+.order-detail{margin-top:16px;border-top:1px solid #252525;padding-top:16px}
+.order-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.order-box{background:#070707;border:1px solid #252525;border-radius:14px;padding:14px}
+.order-box h3{font-size:12px;margin-bottom:9px}
+.order-box p{font-size:10px;line-height:1.6;color:#bbb}
+.order-items{display:grid;gap:8px}
+.order-item{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;background:#050505;border:1px solid #242424;border-radius:12px;padding:9px}
+.order-item img{width:54px;height:54px;object-fit:contain;background:#000;border-radius:8px}
+.order-item strong{font-size:10px}
+.order-item small{display:block;color:#777;font-size:9px;margin-top:4px}
+.refund-row{padding:9px 0;border-bottom:1px solid #222;font-size:9px;color:#bbb}
+.refund-row:last-child{border-bottom:0}
+
 @media(max-width:900px){
 .layout{grid-template-columns:1fr}
 .toggle-row{grid-template-columns:1fr}
+.order-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.order-detail-grid{grid-template-columns:1fr}
 }
 @media(max-width:700px){
 .grid,.variant-tools{grid-template-columns:1fr}
 .full{grid-column:auto}
 .photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .variant-row,.request-row{grid-template-columns:1fr}
+.order-stats{grid-template-columns:1fr 1fr}
+.order-item{grid-template-columns:46px 1fr}
+.order-item img{width:46px;height:46px}
+.order-item>div:last-child{grid-column:2}
 .head{display:block}
 .status{display:inline-block;margin-top:10px}
 }
@@ -134,6 +170,38 @@ button{cursor:pointer}
       <button id="newProduct" class="btn red">NEW PRODUCT</button>
       <button id="lock" class="btn gray">LOCK ADMIN</button>
     </div>
+  </section>
+
+  <section id="ordersCard" class="card">
+    <div class="head">
+      <div>
+        <small>ORDERS AND SHIPPING</small>
+        <h2>CUSTOMER ORDERS</h2>
+      </div>
+      <div id="ordersStatus" class="status">READY</div>
+    </div>
+
+    <div class="orders-toolbar">
+      <div class="field">
+        <label>FULFILLMENT FILTER</label>
+        <select id="orderFilter" class="select">
+          <option value="">ALL ORDERS</option>
+          <option value="unfulfilled">UNFULFILLED</option>
+          <option value="processing">PROCESSING</option>
+          <option value="shipped">SHIPPED</option>
+          <option value="fulfilled">FULFILLED</option>
+          <option value="canceled">CANCELED</option>
+        </select>
+      </div>
+      <div class="actions" style="margin-top:0">
+        <button id="refreshOrders" class="btn outline" type="button">REFRESH ORDERS</button>
+      </div>
+    </div>
+
+    <div id="orderStats" class="order-stats"></div>
+    <div id="orderList" class="order-list"></div>
+    <div id="orderDetail" class="order-detail" hidden></div>
+    <div id="orderMsg" class="message"></div>
   </section>
 
   <div class="layout">
@@ -367,6 +435,8 @@ let KEY = "";
 let products = [];
 let currentProduct = null;
 let currentFull = null;
+let clothingOrders = [];
+let currentOrderId = null;
 
 const $ = id => document.getElementById(id);
 
@@ -387,6 +457,37 @@ function centsFromDollars(value){
 function dollarsFromCents(value){
   if(value === null || value === undefined || value === "") return "";
   return (Number(value || 0) / 100).toFixed(2);
+}
+
+function money(value){
+  return `$${(Number(value || 0) / 100).toFixed(2)}`;
+}
+
+function prettyDate(value){
+  if(!value) return "";
+  const date = new Date(String(value).includes("T") ? value : String(value).replace(" ","T") + "Z");
+  if(Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleString();
+}
+
+function paymentBadge(status){
+  const value = String(status || "").toLowerCase();
+  if(value === "paid") return "paid";
+  if(value === "refunded") return "refunded";
+  if(value === "partially_refunded") return "partial";
+  return "";
+}
+
+function shippingLines(shipping){
+  const info = shipping || {};
+  const address = info.address || {};
+  return [
+    info.name || "",
+    address.line1 || "",
+    address.line2 || "",
+    [address.city,address.state,address.postal_code].filter(Boolean).join(", "),
+    address.country || ""
+  ].filter(Boolean);
 }
 
 function slugify(value){
@@ -548,6 +649,234 @@ function renderProductList(){
   `).join("");
 }
 
+function renderOrderStats(){
+  const total = clothingOrders.length;
+  const unfulfilled = clothingOrders.filter(order => order.fulfillment_status === "unfulfilled").length;
+  const processing = clothingOrders.filter(order => order.fulfillment_status === "processing").length;
+  const shipped = clothingOrders.filter(order => ["shipped","fulfilled"].includes(order.fulfillment_status)).length;
+
+  $("orderStats").innerHTML = `
+    <div class="order-stat"><strong>${total}</strong><span>ORDERS SHOWN</span></div>
+    <div class="order-stat"><strong>${unfulfilled}</strong><span>UNFULFILLED</span></div>
+    <div class="order-stat"><strong>${processing}</strong><span>PROCESSING</span></div>
+    <div class="order-stat"><strong>${shipped}</strong><span>SHIPPED OR FULFILLED</span></div>
+  `;
+}
+
+function renderOrders(){
+  renderOrderStats();
+  const target = $("orderList");
+
+  if(!clothingOrders.length){
+    target.innerHTML = '<div class="empty">NO CLOTHING ORDERS FOUND.</div>';
+    $("orderDetail").hidden = true;
+    return;
+  }
+
+  target.innerHTML = clothingOrders.map(order => `
+    <button type="button" class="order-row ${Number(currentOrderId) === Number(order.id) ? "active" : ""}" onclick="selectClothingOrder(${Number(order.id)})">
+      <div class="order-row-top">
+        <div>
+          <div class="order-number">${esc(order.order_number || `ORDER ${order.id}`)}</div>
+          <div class="order-meta">
+            <span>${esc(order.customer_name || "NO NAME")}</span>
+            <span>${esc(order.customer_email || "")}</span>
+            <span>${Number(order.item_count || 0)} ITEM${Number(order.item_count || 0) === 1 ? "" : "S"}</span>
+            <span>${esc(prettyDate(order.created_at))}</span>
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:900">${money(order.total_cents)}</div>
+          <div class="badges" style="justify-content:flex-end">
+            <span class="order-badge ${paymentBadge(order.payment_status)}">${esc(String(order.payment_status || order.status || "pending").toUpperCase().replaceAll("_"," "))}</span>
+            <span class="order-badge">${esc(String(order.fulfillment_status || "unfulfilled").toUpperCase())}</span>
+          </div>
+        </div>
+      </div>
+    </button>
+  `).join("");
+}
+
+async function loadOrders(){
+  const filter = $("orderFilter")?.value || "";
+  const query = filter ? `?fulfillment_status=${encodeURIComponent(filter)}&limit=100` : "?limit=100";
+
+  $("ordersStatus").textContent = "LOADING";
+  $("ordersStatus").classList.remove("ok");
+
+  try{
+    const result = await api(`/clothing/orders${query}`);
+    clothingOrders = Array.isArray(result.data) ? result.data : [];
+    renderOrders();
+    $("ordersStatus").textContent = "LIVE";
+    $("ordersStatus").classList.add("ok");
+    $("orderMsg").textContent = "";
+
+    if(currentOrderId && clothingOrders.some(order => Number(order.id) === Number(currentOrderId))){
+      await selectClothingOrder(currentOrderId);
+    }
+    else if(currentOrderId){
+      currentOrderId = null;
+      $("orderDetail").hidden = true;
+    }
+  }
+  catch(error){
+    clothingOrders = [];
+    renderOrders();
+    $("ordersStatus").textContent = "ERROR";
+    $("ordersStatus").classList.remove("ok");
+    $("orderMsg").textContent = error.message;
+  }
+}
+
+window.selectClothingOrder = async function(id){
+  currentOrderId = Number(id);
+  renderOrders();
+  $("orderMsg").textContent = "LOADING ORDER...";
+
+  try{
+    const result = await api(`/clothing/orders/${id}`);
+    const data = result.data || {};
+    const order = data.clothing_order || {};
+    const payment = data.payment_order || {};
+    const items = Array.isArray(data.items) ? data.items : [];
+    const refunds = Array.isArray(data.refunds) ? data.refunds : [];
+    const shipping = data.shipping || {};
+    const addressHtml = shippingLines(shipping).map(line => esc(line)).join("<br>") || "NO SHIPPING ADDRESS SAVED";
+    const refunded = Number(data.refunded_cents || 0);
+    const net = Math.max(0, Number(order.total_cents || payment.amount_cents || 0) - refunded);
+
+    $("orderDetail").innerHTML = `
+      <div class="head" style="margin-bottom:12px">
+        <div>
+          <small>ORDER DETAILS</small>
+          <h2>${esc(order.order_number || `ORDER ${order.id || ""}`)}</h2>
+        </div>
+        <div class="badges">
+          <span class="order-badge ${paymentBadge(payment.status)}">${esc(String(payment.status || order.status || "pending").toUpperCase().replaceAll("_"," "))}</span>
+          <span class="order-badge">${esc(String(order.fulfillment_status || "unfulfilled").toUpperCase())}</span>
+        </div>
+      </div>
+
+      <div class="order-detail-grid">
+        <div class="order-box">
+          <h3>CUSTOMER</h3>
+          <p>
+            ${esc(order.customer_name || "NO NAME")}<br>
+            ${esc(order.customer_email || "NO EMAIL")}<br>
+            ${esc(order.phone || "NO PHONE")}
+          </p>
+        </div>
+
+        <div class="order-box">
+          <h3>SHIP TO</h3>
+          <p>${addressHtml}</p>
+        </div>
+
+        <div class="order-box">
+          <h3>PAYMENT</h3>
+          <p>
+            ORDER TOTAL: <strong>${money(order.total_cents || payment.amount_cents)}</strong><br>
+            REFUNDED: <strong>${money(refunded)}</strong><br>
+            NET: <strong>${money(net)}</strong><br>
+            PAID: ${esc(prettyDate(order.paid_at || payment.paid_at) || "NOT PAID")}
+          </p>
+        </div>
+
+        <div class="order-box">
+          <h3>FULFILLMENT HISTORY</h3>
+          <p>
+            CREATED: ${esc(prettyDate(order.created_at))}<br>
+            SHIPPED: ${esc(prettyDate(order.shipped_at) || "NOT YET")}<br>
+            FULFILLED: ${esc(prettyDate(order.fulfilled_at) || "NOT YET")}<br>
+            UPDATED: ${esc(prettyDate(order.updated_at))}
+          </p>
+        </div>
+      </div>
+
+      <div class="order-box" style="margin-top:12px">
+        <h3>ITEMS</h3>
+        <div class="order-items">
+          ${items.length ? items.map(item => `
+            <div class="order-item">
+              ${item.image_url ? `<img src="${esc(item.image_url)}" alt="">` : '<div style="width:54px;height:54px;background:#000;border:1px solid #222;border-radius:8px"></div>'}
+              <div>
+                <strong>${esc(item.product_name || "ITEM")}</strong>
+                <small>${esc(item.color || "")} ${esc(item.size || "")} · QTY ${Number(item.quantity || 1)}</small>
+              </div>
+              <div style="font-size:10px;font-weight:900">${money(item.line_total_cents)}</div>
+            </div>
+          `).join("") : '<div class="empty">NO ITEMS FOUND.</div>'}
+        </div>
+      </div>
+
+      <div class="order-box" style="margin-top:12px">
+        <h3>SHIPPING MANAGEMENT</h3>
+        <div class="grid">
+          <div class="field">
+            <label>FULFILLMENT STATUS</label>
+            <select id="orderFulfillmentStatus" class="select">
+              ${["unfulfilled","processing","shipped","fulfilled","canceled"].map(status => `<option value="${status}" ${order.fulfillment_status === status ? "selected" : ""}>${status.toUpperCase()}</option>`).join("")}
+            </select>
+          </div>
+          <div class="field">
+            <label>CARRIER</label>
+            <input id="orderCarrier" class="input" value="${esc(order.carrier || "")}" placeholder="USPS, UPS, FedEx">
+          </div>
+          <div class="field full">
+            <label>TRACKING NUMBER</label>
+            <input id="orderTracking" class="input" value="${esc(order.tracking_number || "")}" placeholder="Enter tracking number">
+          </div>
+          <div class="field full">
+            <label>ADMIN NOTES</label>
+            <textarea id="orderAdminNotes" class="textarea" placeholder="Internal notes only">${esc(order.admin_notes || "")}</textarea>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn red" type="button" onclick="saveClothingOrder(${Number(order.id)})">SAVE ORDER UPDATE</button>
+        </div>
+      </div>
+
+      <div class="order-box" style="margin-top:12px">
+        <h3>REFUND HISTORY</h3>
+        ${refunds.length ? refunds.map(refund => `
+          <div class="refund-row">
+            <strong>${money(refund.amount_cents)}</strong> · ${esc(String(refund.status || "").toUpperCase())} · ${esc(prettyDate(refund.updated_at || refund.created_at))}
+          </div>
+        `).join("") : '<p>NO REFUNDS ON THIS ORDER.</p>'}
+      </div>
+    `;
+
+    $("orderDetail").hidden = false;
+    $("orderMsg").textContent = "";
+  }
+  catch(error){
+    $("orderMsg").textContent = error.message;
+  }
+};
+
+window.saveClothingOrder = async function(id){
+  try{
+    $("orderMsg").textContent = "SAVING ORDER...";
+    await api(`/clothing/orders/${id}`, {
+      method:"PUT",
+      body:JSON.stringify({
+        fulfillment_status:$("orderFulfillmentStatus").value,
+        carrier:$("orderCarrier").value.trim(),
+        tracking_number:$("orderTracking").value.trim(),
+        admin_notes:$("orderAdminNotes").value.trim()
+      })
+    });
+
+    $("orderMsg").textContent = "ORDER UPDATED.";
+    await loadOrders();
+    await selectClothingOrder(id);
+  }
+  catch(error){
+    $("orderMsg").textContent = error.message;
+  }
+};
+
 async function loadProducts(){
   const result = await api("/clothing/products?include_unpublished=1");
   products = Array.isArray(result.data) ? result.data : [];
@@ -569,7 +898,8 @@ async function loadRequests(){
 async function loadAll(){
   await Promise.all([
     loadProducts(),
-    loadRequests()
+    loadRequests(),
+    loadOrders()
   ]);
 
   if(currentProduct){
@@ -930,6 +1260,12 @@ $("adminKey").onkeydown = event => {
 };
 $("lock").onclick = lock;
 $("refresh").onclick = loadAll;
+$("refreshOrders").onclick = loadOrders;
+$("orderFilter").onchange = () => {
+  currentOrderId = null;
+  $("orderDetail").hidden = true;
+  loadOrders();
+};
 $("newProduct").onclick = resetProductForm;
 $("saveProduct").onclick = saveProduct;
 $("deleteProduct").onclick = deleteProduct;
