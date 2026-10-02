@@ -3423,7 +3423,8 @@ async function uploadFile(
 file,
 folder,
 msgId,
-targetId
+targetId,
+privateKind = ""
 ){
 
 if(!file){
@@ -3445,17 +3446,48 @@ file
 );
 
 
+let uploadPath =
+"/media/upload";
+
+
+if(privateKind){
+
+if(!currentCourse?.id){
+$(msgId).textContent =
+"SAVE OR SELECT A COURSE BEFORE UPLOADING PRIVATE LESSON MEDIA.";
+return;
+}
+
+form.append(
+"course_id",
+String(currentCourse.id)
+);
+
+form.append(
+"kind",
+privateKind
+);
+
+
+uploadPath =
+"/admin/dm-course-media/upload";
+
+}
+else{
+
 form.append(
 "folder",
 folder
 );
+
+}
 
 
 try{
 
 const result =
 await api(
-"/media/upload",
+uploadPath,
 {
 method:"POST",
 body:form
@@ -3464,11 +3496,15 @@ body:form
 
 
 $(targetId).value =
-result.url || "";
+privateKind
+? (result.value || "")
+: (result.url || "");
 
 
 $(msgId).textContent =
-"UPLOAD COMPLETE.";
+privateKind
+? "PRIVATE SECURE UPLOAD COMPLETE."
+: "UPLOAD COMPLETE.";
 
 
 setTimeout(
@@ -3521,7 +3557,8 @@ uploadFile(
 event.target.files[0],
 `courses/${currentCourse?.slug || "course"}/audio`,
 "audioUploadMsg",
-"dAudioUrl"
+"dAudioUrl",
+"audio"
 );
 
 
@@ -3532,7 +3569,8 @@ uploadFile(
 event.target.files[0],
 `courses/${currentCourse?.slug || "course"}/video`,
 "videoUploadMsg",
-"dVideoUrl"
+"dVideoUrl",
+"video"
 );
 
 
@@ -3554,7 +3592,8 @@ uploadFile(
 event.target.files[0],
 `courses/${currentCourse?.slug || "course"}/resources`,
 "resourceUploadMsg",
-"dResourceUrl"
+"dResourceUrl",
+"resource"
 );
 
 
