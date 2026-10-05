@@ -3473,7 +3473,7 @@
     >
 
     <span class="support-shirt-claim-kicker">
-    $50 SUPPORTER REWARD
+    $50 SUPPORTER SHIRT
     </span>
 
     <h3>
