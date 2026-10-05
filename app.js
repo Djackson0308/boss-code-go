@@ -20861,17 +20861,181 @@
     }
 
     async function goOpenHub(tab='progress'){
-      goRequireAuth(async()=>{goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING YOUR B.O.S.S CODE GO ACCOUNT...</div>';try{const [profile,stats,history,achievements,community,mine]=await Promise.all([goFetch('/go/profile'),goFetch('/go/challenge-stats'),goFetch('/go/challenge-history'),goFetch('/go/achievements'),goFetch('/go/community?limit=30'),goFetch('/go/inspiration/mine')]);goProfile=profile.profile;goRenderHub({stats:stats.stats||{},history:history.history||[],achievements:achievements.achievements||[],community:community.activity||[],mine:mine.submissions||[]},tab);}catch(e){main.innerHTML=`<div class="go-panel"><h2>ACCOUNT COULD NOT LOAD</h2><p>${esc(e.message)}</p></div>`;}});
+      goRequireAuth(async()=>{goOpen();const main=$('go-main');main.innerHTML='<div class="go-panel">LOADING YOUR B.O.S.S CODE GO ACCOUNT...</div>';try{const [profile,stats,history,achievements,community,mine,blocks]=await Promise.all([goFetch('/go/profile'),goFetch('/go/challenge-stats'),goFetch('/go/challenge-history'),goFetch('/go/achievements'),goFetch('/go/community?limit=30'),goFetch('/go/inspiration/mine'),goFetch('/go/community/blocks')]);goProfile=profile.profile;goRenderHub({stats:stats.stats||{},history:history.history||[],achievements:achievements.achievements||[],community:community.activity||[],mine:mine.submissions||[],blocks:blocks.blocked||[]},tab);}catch(e){main.innerHTML=`<div class="go-panel"><h2>ACCOUNT COULD NOT LOAD</h2><p>${esc(e.message)}</p></div>`;}});
     }
 
     function goRenderHub(data,tab){
       const main=$('go-main'),s=data.stats||{};
       main.innerHTML=`<section class="go-panel"><div class="go-kicker">MY B.O.S.S CODE GO</div><h1>${esc(goProfile?.display_name||'MY ACCOUNT')}</h1><p class="go-muted">${esc(goProfile?.email||'')}</p><div class="go-tabs"><button class="go-tab" data-go-tab="progress">PROGRESS</button><button class="go-tab" data-go-tab="history">HISTORY</button><button class="go-tab" data-go-tab="achievements">ACHIEVEMENTS</button><button class="go-tab" data-go-tab="community">COMMUNITY</button><button class="go-tab" data-go-tab="profile">PROFILE</button></div></section><div id="go-tab-progress" class="go-tab-page"><section class="go-panel"><h2>MY PROGRESS</h2><div class="go-stat-grid"><div class="go-stat"><b>${Number(s.days_completed||0)}</b>DAYS</div><div class="go-stat"><b>${Number(s.total_points||0)}</b>POINTS</div><div class="go-stat"><b>${Number(s.completed_runs||0)}</b>FINISHED</div><div class="go-stat"><b>${Number(s.longest_streak||0)}</b>BEST STREAK</div><div class="go-stat"><b>${Number(s.achievement_count||0)}</b>BADGES</div></div>${goActiveRun?`<div class="go-actions"><button class="go-primary" id="go-hub-continue">CONTINUE ${esc(goActiveRun.title)}</button></div>`:'<p class="go-muted">Choose a published challenge from Decision Makers to begin your next 30 days.</p>'}</section></div><div id="go-tab-history" class="go-tab-page"><section class="go-panel"><h2>CHALLENGE HISTORY</h2>${data.history.length?data.history.map(h=>`<div class="go-history-item"><div><strong>${esc(h.title)}</strong><div><small>${esc(String(h.status||'').toUpperCase())} • ${Number(h.days_completed||0)}/${Number(h.duration_days||30)} DAYS • ${Number(h.total_points||0)} POINTS</small></div></div><div class="go-actions">${h.status==='active'?`<button class="go-primary" data-go-open-run="${h.id}">CONTINUE</button>`:`<button class="go-secondary" data-go-report="${h.id}">REPORT</button>`}</div></div>`).join(''):'<div class="go-empty">NO CHALLENGE HISTORY YET.</div>'}</section></div><div id="go-tab-achievements" class="go-tab-page"><section class="go-panel"><h2>ACHIEVEMENTS</h2>${data.achievements.length?data.achievements.map(a=>`<div class="go-achievement"><div class="go-badge">${a.badge_image_url?`<img src="${esc(a.badge_image_url)}" alt="">`:'★'}</div><div style="flex:1"><strong>${esc(a.title)}</strong><div class="go-muted">${esc(a.description||'')}</div><small>${esc(a.challenge_title||'ALL CHALLENGES')}</small></div><button class="go-secondary" data-go-share-achievement="${a.user_achievement_id}" data-shared="${Number(a.shared_to_community||0)}">${Number(a.shared_to_community||0)?'SHARED':'SHARE'}</button></div>`).join(''):'<div class="go-empty">YOUR ACHIEVEMENTS WILL APPEAR HERE.</div>'}</section></div><div id="go-tab-community" class="go-tab-page"><section class="go-panel"><h2>COMMUNITY</h2><p class="go-muted">Real B.O.S.S CODE GO activity and approved inspiration. No comments. Encourage somebody when their progress moves you.</p><div class="go-field"><label>SUBMIT INSPIRATION FOR REVIEW</label><input id="go-inspiration-title" placeholder="Optional title"><textarea id="go-inspiration-body" placeholder="Share something that could encourage another Decision Maker."></textarea></div><div class="go-inline-legal">By submitting inspiration, you agree to the <button type="button" data-go-legal-doc="community">COMMUNITY GUIDELINES</button>. Only submit material you have the right to share.</div><button class="go-primary" id="go-submit-inspiration" type="button">SUBMIT FOR REVIEW</button><div id="go-inspiration-status" class="go-status"></div><h3 style="margin-top:28px">ACTIVITY FEED</h3>${data.community.length?data.community.map(a=>`<article class="go-feed-item"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:`<div class="go-avatar"></div>`}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><div><small>${esc(a.activity_type||'PROGRESS')}</small></div></div></div><h3>${esc(a.title||'')}</h3><p class="go-muted">${esc(a.body||'')}</p><button class="go-encourage ${Number(a.encouraged_by_me)?'on':''}" data-go-encourage="${a.id}" data-on="${Number(a.encouraged_by_me)?1:0}">👏 ENCOURAGE • <span>${Number(a.encourage_count||0)}</span></button></article>`).join(''):'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE.</div>'}<h3 style="margin-top:28px">MY INSPIRATION SUBMISSIONS</h3>${data.mine.length?data.mine.slice(0,10).map(x=>`<div class="go-history-item"><div><strong>${esc(x.title||'INSPIRATION')}</strong><div class="go-muted">${esc(x.body||'')}</div></div><small>${esc(String(x.status||'pending').toUpperCase())}</small></div>`).join(''):'<div class="go-empty">NO SUBMISSIONS YET.</div>'}</section></div><div id="go-tab-profile" class="go-tab-page"><section class="go-panel"><div class="go-kicker">YOUR COMMUNITY IDENTITY</div><h2>MY PROFILE</h2><p class="go-muted">Update the name and photo people see around Decision Makers. Your email stays connected to your secure B.O.S.S CODE GO account.</p><div class="go-field"><label>DISPLAY NAME</label><input id="go-profile-name" value="${esc(goProfile?.display_name||'')}"></div><div class="go-field"><label>PROFILE PHOTO</label><div class="go-profile-photo-editor" style="display:flex !important;align-items:center !important;gap:16px !important;flex-wrap:wrap !important;margin-top:10px !important"><div id="go-profile-photo-visual" class="go-profile-photo-preview" role="img" aria-label="Profile photo" style="width:104px !important;height:104px !important;min-width:104px !important;min-height:104px !important;max-width:104px !important;max-height:104px !important;flex:0 0 104px !important;border-radius:50% !important;overflow:hidden !important;border:2px solid #F5C518 !important;background-color:#111 !important;background-image:${goProfile?.profile_photo_url?`url('${esc(goProfile.profile_photo_url)}')`:'none'} !important;background-size:cover !important;background-position:center !important;background-repeat:no-repeat !important;display:flex !important;align-items:center !important;justify-content:center !important;box-sizing:border-box !important">${goProfile?.profile_photo_url?'':`<div id="go-profile-photo-placeholder" style="width:100% !important;height:100% !important;display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;color:#F5C518 !important;font-size:10px !important;font-weight:900 !important;letter-spacing:.08em !important;padding:10px !important;box-sizing:border-box !important">ADD PHOTO</div>`}</div><div style="min-width:0"><input id="go-profile-photo" type="hidden" value="${esc(goProfile?.profile_photo_url||'')}"><input id="go-profile-photo-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden><button class="go-secondary" id="go-profile-photo-pick" type="button">UPLOAD / CHANGE PHOTO</button><p class="go-muted" style="margin:8px 0 0">Choose a photo from your phone or computer.</p><div id="go-profile-photo-status" class="go-status"></div></div></div></div><label class="go-check"><input id="go-profile-public" type="checkbox" ${Number(goProfile?.public_profile_enabled)!==0?'checked':''}> SHOW MY PROFILE IN COMMUNITY ACTIVITY</label><label class="go-check"><input id="go-profile-achievements" type="checkbox" ${Number(goProfile?.share_achievements)!==0?'checked':''}> ALLOW ACHIEVEMENT SHARING</label><label class="go-check"><input id="go-profile-milestones" type="checkbox" ${Number(goProfile?.share_milestones)!==0?'checked':''}> ALLOW MILESTONE SHARING</label><div class="go-actions"><button class="go-primary" id="go-save-profile" type="button">SAVE PROFILE</button><button class="go-danger" id="go-logout" type="button">SIGN OUT</button></div><div id="go-profile-status" class="go-status"></div><div class="go-profile-legal-row"><button class="go-profile-legal-button" id="go-legal-support-open" type="button">LEGAL &amp; SUPPORT</button></div><div class="go-profile-delete-row"><button class="go-profile-delete-button" id="go-delete-account-open" type="button">DELETE ACCOUNT</button></div></section></div>`;
       const profilePhotoVisual=$('go-profile-photo-visual');if(profilePhotoVisual){['width','height','min-width','min-height','max-width','max-height'].forEach(prop=>profilePhotoVisual.style.setProperty(prop,'104px','important'));profilePhotoVisual.style.setProperty('flex','0 0 104px','important');profilePhotoVisual.style.setProperty('border-radius','50%','important');profilePhotoVisual.style.setProperty('overflow','hidden','important');profilePhotoVisual.style.setProperty('background-size','cover','important');profilePhotoVisual.style.setProperty('background-position','center','important');profilePhotoVisual.style.setProperty('background-repeat','no-repeat','important');}
+      goAttachCommunitySafetyControls(data);
       qa('[data-go-tab]').forEach(b=>b.addEventListener('click',()=>goSetTab(b.dataset.goTab)));qa('[data-go-open-run]').forEach(b=>b.addEventListener('click',()=>goOpenRun(Number(b.dataset.goOpenRun))));qa('[data-go-report]').forEach(b=>b.addEventListener('click',()=>goOpenReport(Number(b.dataset.goReport))));qa('[data-go-share-achievement]').forEach(b=>b.addEventListener('click',()=>goShareAchievement(b)));qa('[data-go-encourage]').forEach(b=>b.addEventListener('click',()=>goToggleEncourage(b)));on('go-hub-continue','click',()=>goOpenRun(goActiveRun.id));on('go-submit-inspiration','click',goSubmitInspiration);on('go-profile-photo-pick','click',()=>$('go-profile-photo-file')?.click());on('go-profile-photo-file','change',e=>goUploadProfilePhoto(e.target.files?.[0]));on('go-save-profile','click',goSaveProfile);on('go-logout','click',goLogout);on('go-legal-support-open','click',goOpenLegalHub);on('go-delete-account-open','click',goOpenDeleteAccountScreen);goSetTab(tab||'progress');
     }
 
     function goSetTab(name){qa('[data-go-tab]').forEach(b=>b.classList.toggle('active',b.dataset.goTab===name));qa('.go-tab-page').forEach(p=>p.classList.remove('active'));$(`go-tab-${name}`)?.classList.add('active');}
+
+    function goAttachCommunitySafetyControls(data){
+      const activities=Array.isArray(data?.community)?data.community:[];
+      qa('#go-tab-community .go-feed-item').forEach((card,index)=>{
+        const activity=activities[index];
+        if(!activity||Number(activity.user_id)===Number(goProfile?.id))return;
+
+        const controls=document.createElement('div');
+        controls.className='go-actions';
+        controls.style.marginTop='12px';
+
+        const report=document.createElement('button');
+        report.type='button';
+        report.className='go-secondary';
+        report.textContent='REPORT';
+        report.addEventListener('click',()=>goOpenCommunityReportDialog(activity));
+
+        const block=document.createElement('button');
+        block.type='button';
+        block.className='go-danger';
+        block.textContent='BLOCK MEMBER';
+        block.addEventListener('click',()=>goBlockCommunityUser(activity.user_id,activity.display_name));
+
+        controls.append(report,block);
+        card.appendChild(controls);
+      });
+
+      const profilePanel=q('#go-tab-profile .go-panel');
+      if(profilePanel){
+        const blocked=Array.isArray(data?.blocks)?data.blocks:[];
+        const wrap=document.createElement('div');
+        wrap.style.marginTop='28px';
+        wrap.style.paddingTop='20px';
+        wrap.style.borderTop='1px solid #2b2b2b';
+        wrap.innerHTML=`<div class="go-kicker">COMMUNITY SAFETY</div><h3>BLOCKED MEMBERS</h3><p class="go-muted">Blocked members are hidden from your signed in community feed and cannot interact with you through community activity.</p><div id="go-blocked-members-list"></div>`;
+        profilePanel.appendChild(wrap);
+
+        const list=q('#go-blocked-members-list',wrap)||wrap.querySelector('#go-blocked-members-list');
+        if(list){
+          list.innerHTML=blocked.length
+            ? blocked.map(x=>`<div class="go-history-item"><div><strong>${esc(x.display_name||'B.O.S.S CODE GO Member')}</strong><div class="go-muted">BLOCKED</div></div><button class="go-secondary" type="button" data-go-unblock-user="${Number(x.user_id)}">UNBLOCK</button></div>`).join('')
+            : '<div class="go-empty">YOU HAVE NOT BLOCKED ANY MEMBERS.</div>';
+          list.querySelectorAll('[data-go-unblock-user]').forEach(button=>{
+            button.addEventListener('click',()=>goUnblockCommunityUser(Number(button.dataset.goUnblockUser)));
+          });
+        }
+      }
+    }
+
+    function goEnsureCommunityReportDialog(){
+      let overlay=$('go-community-report-overlay');
+      if(overlay)return overlay;
+
+      overlay=document.createElement('div');
+      overlay.id='go-community-report-overlay';
+      overlay.setAttribute('aria-hidden','true');
+      overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;';
+      overlay.innerHTML=`
+        <div style="width:min(560px,100%);background:#090909;border:2px solid #F5C518;border-radius:18px;padding:22px;box-sizing:border-box;color:#fff">
+          <div class="go-kicker">COMMUNITY SAFETY</div>
+          <h2 style="margin:7px 0 8px">REPORT COMMUNITY ACTIVITY</h2>
+          <p class="go-muted">Tell us why this activity should be reviewed. Reports are sent to B.O.S.S CODE MEDIA for moderation.</p>
+          <div class="go-field">
+            <label>REASON</label>
+            <select id="go-community-report-reason" style="width:100%;min-height:48px;background:#000;color:#fff;border:1px solid #343434;border-radius:12px;padding:10px">
+              <option value="">Choose a reason</option>
+              <option value="harassment">Harassment or bullying</option>
+              <option value="hate">Hateful content</option>
+              <option value="sexual">Sexual content</option>
+              <option value="violence">Violence or threats</option>
+              <option value="privacy">Private information</option>
+              <option value="spam">Spam or scam</option>
+              <option value="impersonation">Impersonation</option>
+              <option value="illegal">Illegal activity</option>
+              <option value="other">Other concern</option>
+            </select>
+          </div>
+          <div class="go-field">
+            <label>DETAILS</label>
+            <textarea id="go-community-report-details" maxlength="1000" placeholder="Optional details that can help us review this report."></textarea>
+          </div>
+          <div id="go-community-report-status" class="go-status"></div>
+          <div class="go-actions">
+            <button id="go-community-report-submit" class="go-primary" type="button">SUBMIT REPORT</button>
+            <button id="go-community-report-cancel" class="go-secondary" type="button">CANCEL</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      on('go-community-report-cancel','click',goCloseCommunityReportDialog);
+      overlay.addEventListener('click',event=>{if(event.target===overlay)goCloseCommunityReportDialog();});
+      return overlay;
+    }
+
+    function goCloseCommunityReportDialog(){
+      const overlay=$('go-community-report-overlay');
+      if(!overlay)return;
+      overlay.style.display='none';
+      overlay.setAttribute('aria-hidden','true');
+      overlay.dataset.activityId='';
+      document.body.style.overflow='';
+    }
+
+    function goOpenCommunityReportDialog(activity){
+      const overlay=goEnsureCommunityReportDialog();
+      overlay.dataset.activityId=String(Number(activity?.id||0));
+      const reason=$('go-community-report-reason');
+      const details=$('go-community-report-details');
+      const status=$('go-community-report-status');
+      if(reason)reason.value='';
+      if(details)details.value='';
+      if(status)status.textContent='';
+      overlay.style.display='flex';
+      overlay.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+
+      const submit=$('go-community-report-submit');
+      if(submit){
+        submit.onclick=async()=>{
+          const activityId=Number(overlay.dataset.activityId||0);
+          const reportReason=String(reason?.value||'').trim();
+          const reportDetails=String(details?.value||'').trim();
+          if(!reportReason){
+            if(status)status.textContent='CHOOSE A REPORT REASON.';
+            return;
+          }
+          submit.disabled=true;
+          if(status)status.textContent='SENDING REPORT...';
+          try{
+            const result=await goFetch(`/go/community/${activityId}/report`,{method:'POST',body:JSON.stringify({reason:reportReason,details:reportDetails})});
+            if(status)status.textContent=result.already_reported?'THIS ACTIVITY IS ALREADY IN YOUR REPORT QUEUE.':'REPORT RECEIVED. THANK YOU FOR HELPING KEEP THE COMMUNITY SAFE.';
+            setTimeout(goCloseCommunityReportDialog,900);
+          }catch(error){
+            if(status)status.textContent=error.message;
+          }finally{
+            submit.disabled=false;
+          }
+        };
+      }
+    }
+
+    async function goBlockCommunityUser(userId,displayName='this member'){
+      const id=Number(userId||0);
+      if(!id)return;
+      if(!confirm(`BLOCK ${String(displayName||'THIS MEMBER').toUpperCase()}? Their community activity will be hidden from your signed in feed.`))return;
+      try{
+        await goFetch(`/go/community/users/${id}/block`,{method:'POST'});
+        await goOpenHub('community');
+      }catch(error){
+        alert(error.message);
+      }
+    }
+
+    async function goUnblockCommunityUser(userId){
+      const id=Number(userId||0);
+      if(!id)return;
+      try{
+        await goFetch(`/go/community/users/${id}/block`,{method:'DELETE'});
+        await goOpenHub('profile');
+      }catch(error){
+        alert(error.message);
+      }
+    }
 
     async function goShareAchievement(button){
       const id=Number(button.dataset.goShareAchievement),next=button.dataset.shared!=='1';
@@ -21023,7 +21187,8 @@
       if(action)action.textContent=goToken?'SHARE / ENCOURAGE':'SIGN IN TO SHARE / ENCOURAGE';
       box.innerHTML='<div class="go-empty">LOADING COMMUNITY ACTIVITY...</div>';
       try{
-        const data=await goFetch('/go/community/public?limit=30');
+        const communityEndpoint=goToken?'/go/community?limit=30':'/go/community/public?limit=30';
+        const data=await goFetch(communityEndpoint);
         const items=Array.isArray(data.activity)?data.activity:[];
         box.innerHTML=items.length?`<div class="dm-feed-control"><span>ACTIVITY FEED</span><button id="dm-feed-toggle" type="button" aria-pressed="false">EXPLORE FEED</button></div><div id="dm-feed-scroll" class="dm-feed-scroll">${items.map(a=>`<article class="dm-community-card"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:'<div class="go-avatar"></div>'}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(String(a.activity_type||'PROGRESS').replace(/_/g,' ').toUpperCase())}</small></div></div><h3>${esc(a.title||'')}</h3><p>${esc(a.body||'')}</p><div class="dm-community-meta">${Number(a.encourage_count||0)} ENCOURAGEMENT${Number(a.encourage_count||0)===1?'':'S'}</div></article>`).join('')}</div>`:'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE AS POSTS ARE APPROVED.</div>';
         if(items.length)goSetupCommunityFeed();

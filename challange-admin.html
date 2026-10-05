@@ -88,13 +88,14 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <button class="tab community-tab active" data-community-view="overview" type="button">OVERVIEW</button>
 <button class="tab community-tab" data-community-view="inspiration" type="button">PENDING POSTS</button>
 <button class="tab community-tab" data-community-view="community" type="button">ACTIVITY FEED</button>
+<button class="tab community-tab" data-community-view="reports" type="button">REPORTS</button>
 <button class="tab community-tab" data-community-view="users" type="button">USERS</button>
 </div>
 
 <div id="community-view-overview" class="community-pane active">
 <div class="section-head"><div><div class="kicker">COMMUNITY HEALTH</div><h3>OVERVIEW</h3></div><button id="refreshGoStats" class="btn outline" type="button">REFRESH STATS</button></div>
 <div class="summary" style="margin-top:14px"><div class="stat"><strong id="goStatUsers">0</strong><span>ACTIVE USERS</span></div><div class="stat"><strong id="goStatRuns">0</strong><span>TOTAL RUNS</span></div><div class="stat"><strong id="goStatActive">0</strong><span>ACTIVE RUNS</span></div><div class="stat"><strong id="goStatCompleted">0</strong><span>COMPLETED</span></div></div>
-<div class="summary" style="margin-top:12px"><div class="stat"><strong id="goStatPending">0</strong><span>PENDING POSTS</span></div><div class="stat"><strong id="goStatEncourage">0</strong><span>ENCOURAGEMENTS</span></div></div>
+<div class="summary" style="margin-top:12px"><div class="stat"><strong id="goStatPending">0</strong><span>PENDING POSTS</span></div><div class="stat"><strong id="goStatEncourage">0</strong><span>ENCOURAGEMENTS</span></div><div class="stat"><strong id="goStatReports">0</strong><span>OPEN REPORTS</span></div></div>
 <div class="community-note">Challenge history and 30 day reports remain tied to each member account. Community Admin gives you the system wide moderation and member controls.</div>
 </div>
 
@@ -108,6 +109,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 <div class="section-head"><div><div class="kicker">LIVE ACTIVITY FEED</div><h3>ACTIVITY FEED CONTROL</h3></div><button id="refreshCommunity" class="btn outline" type="button">REFRESH FEED</button></div>
 <div class="community-note">Edit feed text, hide activity from the app or republish hidden activity. Members can use ENCOURAGE. There are no direct messages.</div>
 <div id="communityList" class="level-list" style="margin-top:14px"></div>
+</div>
+
+<div id="community-view-reports" class="community-pane">
+<div class="section-head"><div><div class="kicker">USER REPORTS</div><h3>REPORT QUEUE</h3></div><div class="actions"><select id="communityReportFilter" class="select" style="width:auto"><option value="open">OPEN</option><option value="reviewing">REVIEWING</option><option value="resolved">RESOLVED</option><option value="dismissed">DISMISSED</option><option value="">ALL</option></select><button id="refreshCommunityReports" class="btn outline" type="button">REFRESH</button></div></div>
+<div class="community-note">Review reports, hide reported activity and disable accounts when necessary. A hidden inspiration post is also removed from approved community publishing.</div>
+<div id="communityReportList" class="level-list" style="margin-top:14px"></div>
 </div>
 
 <div id="community-view-users" class="community-pane">
@@ -241,7 +248,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 </div>
 
 <section class="panel" id="dmMonthAdmin" style="margin-top:16px">
-<div class="section-head"><div><div class="kicker">DECISION MAKERS</div><h2>DECISION MAKER SPOTLIGHTS</h2><p class="muted" style="font-size:10px;margin-top:6px">Manage the featured Decision Makers shown in the app. Each published Spotlight opens its own full profile page with a photo, write up, what they do and optional social or website links.</p></div><button id="refreshDmMonth" class="btn outline" type="button">REFRESH</button></div>
+<div class="section-head"><div><div class="kicker">DECISION MAKERS</div><h2>DECISION MAKERS OF THE MONTH</h2><p class="muted" style="font-size:10px;margin-top:6px">Manage the five featured people shown inside Decision Makers. Every photo uses an upload button.</p></div><button id="refreshDmMonth" class="btn outline" type="button">REFRESH</button></div>
 <div id="dmMonthAdminGrid" class="grid"></div><div id="dmMonthAdminMsg" class="message"></div>
 </section>
 </main>
@@ -250,7 +257,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}
 const API="https://boss-code-go-api.dezthareason4ever.workers.dev";
 let KEY=sessionStorage.getItem("boss-code-admin-key")||"";
 let challenges=[],days=[],levels=[],achievements=[],currentChallenge=null,currentDay=null,currentLevel=null,currentAchievement=null;
-let goStats={},inspirationSubmissions=[],communityActivity=[],goUsers=[];
+let goStats={},inspirationSubmissions=[],communityActivity=[],communityReports=[],goUsers=[];
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 const val=id=>$(id).value.trim(), num=id=>Number($(id).value||0), bool=id=>$(id).checked?1:0;
@@ -288,7 +295,7 @@ async function uploadChallengeImage(file,inputId,previewId,stateId){
  }catch(e){state.textContent="UPLOAD ERROR: "+e.message}
 }
 function activateView(name){document.querySelectorAll(".challenge-tab").forEach(b=>b.classList.toggle("active",b.dataset.view===name));document.querySelectorAll(".challenge-view").forEach(v=>v.classList.remove("active"));const pane=$("view-"+name);if(pane)pane.classList.add("active")}
-function activateCommunityView(name){document.querySelectorAll(".community-tab").forEach(b=>b.classList.toggle("active",b.dataset.communityView===name));document.querySelectorAll(".community-pane").forEach(v=>v.classList.remove("active"));const pane=$("community-view-"+name);if(pane)pane.classList.add("active");if(name==="overview")loadGoStats();if(name==="inspiration")loadInspiration();if(name==="community")loadCommunity();if(name==="users")loadGoUsers()}
+function activateCommunityView(name){document.querySelectorAll(".community-tab").forEach(b=>b.classList.toggle("active",b.dataset.communityView===name));document.querySelectorAll(".community-pane").forEach(v=>v.classList.remove("active"));const pane=$("community-view-"+name);if(pane)pane.classList.add("active");if(name==="overview")loadGoStats();if(name==="inspiration")loadInspiration();if(name==="community")loadCommunity();if(name==="reports")loadCommunityReports();if(name==="users")loadGoUsers()}
 document.querySelectorAll(".challenge-tab").forEach(b=>b.onclick=()=>activateView(b.dataset.view));
 document.querySelectorAll(".community-tab").forEach(b=>b.onclick=()=>activateCommunityView(b.dataset.communityView));
 $("cCoverFile").onchange=e=>uploadChallengeImage(e.target.files?.[0],"cCover","cCoverPreview","cCoverState");
@@ -449,7 +456,7 @@ async function loadSelectedLaunch30Days(){
    ========================================================= */
 async function loadGoStats(){
  const r=await api('/admin/go/stats');goStats=r.stats||{};
- $('goStatUsers').textContent=goStats.active_users||0;$('goStatRuns').textContent=goStats.total_runs||0;$('goStatActive').textContent=goStats.active_runs||0;$('goStatCompleted').textContent=goStats.completed_runs||0;$('goStatPending').textContent=goStats.pending_inspiration||0;$('goStatEncourage').textContent=goStats.encouragements||0;
+ $('goStatUsers').textContent=goStats.active_users||0;$('goStatRuns').textContent=goStats.total_runs||0;$('goStatActive').textContent=goStats.active_runs||0;$('goStatCompleted').textContent=goStats.completed_runs||0;$('goStatPending').textContent=goStats.pending_inspiration||0;$('goStatEncourage').textContent=goStats.encouragements||0;if($('goStatReports'))$('goStatReports').textContent=goStats.open_reports||0;
 }
 async function loadInspiration(){
  const status=$('inspirationFilter').value;const r=await api('/admin/go/inspiration'+(status?`?status=${encodeURIComponent(status)}`:''));inspirationSubmissions=r.submissions||[];renderInspiration();
@@ -467,6 +474,38 @@ function renderCommunity(){
 }
 async function editCommunity(id){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;const title=prompt('Activity title:',x.title||'');if(title===null)return;const body=prompt('Activity text:',x.body||'');if(body===null)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title,body,published:Number(x.published)!==0})});showCommunityMsg('COMMUNITY ACTIVITY UPDATED.');await loadCommunity()}
 async function toggleCommunity(id,published){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title:x.title||'',body:x.body||'',published:!!published})});showCommunityMsg(published?'ACTIVITY PUBLISHED.':'ACTIVITY HIDDEN.');await loadCommunity()}
+async function loadCommunityReports(){
+ const status=$('communityReportFilter')?.value||'';
+ const r=await api('/admin/go/community-reports'+(status?`?status=${encodeURIComponent(status)}`:''));
+ communityReports=r.reports||[];
+ renderCommunityReports();
+}
+function renderCommunityReports(){
+ const box=$('communityReportList');if(!box)return;
+ box.innerHTML=communityReports.length?communityReports.map(x=>{
+   const status=String(x.status||'open').toUpperCase();
+   const visible=Number(x.activity_published)!==0;
+   const actions=x.status==='resolved'||x.status==='dismissed'
+     ? `<button class="btn outline" onclick="updateCommunityReport(${Number(x.id)},'reviewing','none')">REOPEN</button>`
+     : `<button class="btn outline" onclick="updateCommunityReport(${Number(x.id)},'reviewing','none')">REVIEWING</button><button class="btn danger" onclick="updateCommunityReport(${Number(x.id)},'resolved','hide_post')">HIDE POST</button><button class="btn danger" onclick="updateCommunityReport(${Number(x.id)},'resolved','disable_user')">DISABLE USER</button><button class="btn danger" onclick="updateCommunityReport(${Number(x.id)},'resolved','hide_and_disable')">HIDE + DISABLE</button><button class="btn red" onclick="updateCommunityReport(${Number(x.id)},'resolved','none')">RESOLVE</button><button class="btn gray" onclick="updateCommunityReport(${Number(x.id)},'dismissed','none')">DISMISS</button>`;
+   return `<div class="item"><strong>${esc(x.current_title||x.activity_title||'COMMUNITY ACTIVITY')}</strong><small>REPORT #${Number(x.id)} · ${esc(status)} · ${esc(String(x.reason||'other').toUpperCase())}</small><div style="font-size:12px;line-height:1.55;margin:9px 0;color:#ddd">${esc(x.current_body||x.activity_body||'')}</div><small>REPORTED MEMBER: ${esc(x.reported_name||x.reported_display_name||'MEMBER')}${x.reported_email?` · ${esc(x.reported_email)}`:''}</small><small style="display:block;margin-top:4px">REPORTER: ${esc(x.reporter_name||'MEMBER')}${x.reporter_email?` · ${esc(x.reporter_email)}`:''}</small>${x.details?`<div style="font-size:11px;line-height:1.5;margin-top:8px;color:#aaa"><b>DETAILS:</b> ${esc(x.details)}</div>`:''}${x.admin_note?`<div style="font-size:11px;line-height:1.5;margin-top:8px;color:#F5C518"><b>ADMIN NOTE:</b> ${esc(x.admin_note)}</div>`:''}<span class="pill ${visible?'live':''}" style="margin-top:10px">${visible?'POST VISIBLE':'POST HIDDEN'}</span>${x.action_taken?`<small style="display:block;margin-top:6px">ACTION: ${esc(String(x.action_taken).toUpperCase())}</small>`:''}<div class="actions" style="margin-top:12px">${actions}</div></div>`;
+ }).join(''):'<div class="empty">NO REPORTS IN THIS VIEW.</div>';
+}
+async function updateCommunityReport(id,status,action='none'){
+ const item=communityReports.find(x=>Number(x.id)===Number(id));
+ if(!item)return;
+ let note=item.admin_note||'';
+ if(action!=='none'||status==='dismissed'){
+   const entered=prompt('Admin note:',note);
+   if(entered===null)return;
+   note=entered;
+ }
+ const labels={hide_post:'hide this post',disable_user:'disable this user',hide_and_disable:'hide this post and disable this user'};
+ if(labels[action]&&!confirm(`Are you sure you want to ${labels[action]}?`))return;
+ await api(`/admin/go/community-reports/${id}`,{method:'PUT',body:JSON.stringify({status,action,admin_note:note})});
+ showCommunityMsg('REPORT UPDATED.');
+ await Promise.all([loadCommunityReports(),loadGoStats(),loadCommunity(),loadGoUsers()]);
+}
 async function loadGoUsers(){const q=val('userSearch');const r=await api('/admin/go/users'+(q?`?q=${encodeURIComponent(q)}`:''));goUsers=r.users||[];renderGoUsers()}
 function renderGoUsers(){
  $('userList').innerHTML=goUsers.length?goUsers.map(x=>`<div class="item"><strong>${esc(x.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(x.email||'')} · ${Number(x.challenge_runs||0)} RUNS · ${Number(x.achievements||0)} ACHIEVEMENTS</small><span class="pill ${String(x.account_status||'active')==='active'?'live':''}">${esc(String(x.account_status||'active').toUpperCase())}</span><div class="actions" style="margin-top:10px"><button class="btn outline" onclick="renameGoUser(${Number(x.id)})">EDIT NAME</button><button class="btn ${String(x.account_status||'active')==='active'?'danger':'red'}" onclick="toggleGoUser(${Number(x.id)})">${String(x.account_status||'active')==='active'?'DISABLE':'ENABLE'}</button></div></div>`).join(''):'<div class="empty">NO USERS FOUND.</div>';
@@ -474,7 +513,7 @@ function renderGoUsers(){
 async function renameGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const name=prompt('Display name:',x.display_name||'');if(name===null)return;await updateGoUserRecord(x,{display_name:name});showCommunityMsg('USER UPDATED.');await loadGoUsers()}
 async function toggleGoUser(id){const x=goUsers.find(u=>Number(u.id)===Number(id));if(!x)return;const next=String(x.account_status||'active')==='active'?'disabled':'active';if(!confirm(`${next==='disabled'?'Disable':'Enable'} ${x.display_name||x.email||'this user'}?`))return;await updateGoUserRecord(x,{account_status:next});showCommunityMsg(`USER ${next.toUpperCase()}.`);await loadGoUsers()}
 async function updateGoUserRecord(x,changes){const body={display_name:x.display_name||'',public_profile_enabled:Number(x.public_profile_enabled)!==0,share_achievements:Number(x.share_achievements)!==0,share_milestones:Number(x.share_milestones)!==0,account_status:x.account_status||'active',...changes};return api(`/admin/go/users/${x.id}`,{method:'PUT',body:JSON.stringify(body)})}
-async function loadGoSystemAdmin(){await Promise.all([loadGoStats(),loadInspiration(),loadCommunity(),loadGoUsers()])}
+async function loadGoSystemAdmin(){await Promise.all([loadGoStats(),loadInspiration(),loadCommunity(),loadCommunityReports(),loadGoUsers()])}
 
 function toggleScripture(){$("scriptureSection").classList.toggle("hidden",!$("cScripture").checked);updateStats()}
 function updateStats(){if(!currentChallenge)return;$("statDays").textContent=days.length;$("statPublishedDays").textContent=days.filter(d=>Number(d.published)===1).length;$("statLevels").textContent=levels.length;$("statScripture").textContent=$("cScripture").checked?"KJV":"OFF"}
@@ -485,192 +524,19 @@ $("newAchievement").onclick=newAchievement;
 $("saveAchievement").onclick=saveAchievement;
 $("deleteAchievement").onclick=deleteAchievement;
 
-$("refreshGoStats").onclick=loadGoStats;$("refreshInspiration").onclick=loadInspiration;$("inspirationFilter").onchange=loadInspiration;$("refreshCommunity").onclick=loadCommunity;$("searchUsers").onclick=loadGoUsers;$("userSearch").onkeydown=e=>{if(e.key==="Enter")loadGoUsers()};
+$("refreshGoStats").onclick=loadGoStats;$("refreshInspiration").onclick=loadInspiration;$("inspirationFilter").onchange=loadInspiration;$("refreshCommunity").onclick=loadCommunity;if($("refreshCommunityReports"))$("refreshCommunityReports").onclick=loadCommunityReports;if($("communityReportFilter"))$("communityReportFilter").onchange=loadCommunityReports;$("searchUsers").onclick=loadGoUsers;$("userSearch").onkeydown=e=>{if(e.key==="Enter")loadGoUsers()};
 if($("refreshCommunityAdmin"))$("refreshCommunityAdmin").onclick=async()=>{showCommunityMsg("REFRESHING COMMUNITY ADMIN...");await loadGoSystemAdmin();showCommunityMsg("COMMUNITY ADMIN UPDATED.")};
 
 
 
 async function loadDecisionMakersMonthAdmin(){
- const grid=$("dmMonthAdminGrid");
- if(!grid)return;
- grid.innerHTML='<div class="empty">LOADING DECISION MAKER SPOTLIGHTS...</div>';
-
- try{
-  const d=await api('/admin/go/decision-maker-spotlights');
-  const rows=d.people||[];
-
-  grid.innerHTML=rows.map(p=>`
-   <div class="subpanel" data-dm-month-slot="${p.slot}">
-    <div class="section-head">
-     <div>
-      <div class="kicker">SPOTLIGHT ${p.slot}</div>
-      <h3>${esc(p.name||'NEW DECISION MAKER')}</h3>
-     </div>
-     <span class="pill ${Number(p.published)!==0?'live':''}">
-      ${Number(p.published)!==0?'PUBLISHED':'DRAFT'}
-     </span>
-    </div>
-
-    <div class="field">
-     <label>NAME</label>
-     <input class="input dmMonthName" value="${esc(p.name||'')}" placeholder="Person or brand name">
-    </div>
-
-    <div class="field" style="margin-top:10px">
-     <label>WHAT THEY DO</label>
-     <input class="input dmMonthWhatTheyDo" value="${esc(p.what_they_do||'')}" placeholder="Example: Entrepreneur • Artist • Community Leader">
-    </div>
-
-    <div class="field" style="margin-top:10px">
-     <label>SMALL LABEL</label>
-     <input class="input dmMonthEyebrow" value="${esc(p.eyebrow||'DECISION MAKER')}" placeholder="DECISION MAKER">
-    </div>
-
-    <div class="field" style="margin-top:10px">
-     <label>HEADLINE / ACCOMPLISHMENT</label>
-     <input class="input dmMonthHeadline" value="${esc(p.headline||'')}" placeholder="Short headline shown on the Spotlight card and page">
-    </div>
-
-    <div class="field" style="margin-top:10px">
-     <label>FULL SPOTLIGHT WRITE UP</label>
-     <textarea class="textarea dmMonthStory" style="min-height:220px" placeholder="Tell their story, what they are building, what they have overcome, why they are being spotlighted and anything else you want readers to know.">${esc(p.story||'')}</textarea>
-    </div>
-
-    <div class="upload-box" style="margin-top:10px">
-     <label>SPOTLIGHT PHOTO</label>
-     <input class="dmMonthPhotoUrl" type="hidden" value="${esc(p.photo_url||'')}">
-     <input class="file-input dmMonthPhotoFile" type="file" accept="image/*">
-     <img class="upload-preview dmMonthPreview ${p.photo_url?'show':''}" ${p.photo_url?`src="${esc(p.photo_url)}"`:''} alt="">
-     <div class="upload-state dmMonthUploadState">${p.photo_url?'PHOTO READY.':'CHOOSE A PHOTO.'}</div>
-    </div>
-
-    <div class="subpanel" style="margin-top:14px">
-     <div class="kicker">SOCIAL + SHOWCASE LINKS</div>
-     <h3>OPTIONAL LINKS</h3>
-
-     <div class="field" style="margin-top:10px">
-      <label>INSTAGRAM LINK</label>
-      <input class="input dmMonthInstagram" value="${esc(p.instagram_url||'')}" placeholder="https://instagram.com/...">
-     </div>
-
-     <div class="field" style="margin-top:10px">
-      <label>FACEBOOK LINK</label>
-      <input class="input dmMonthFacebook" value="${esc(p.facebook_url||'')}" placeholder="https://facebook.com/...">
-     </div>
-
-     <div class="field" style="margin-top:10px">
-      <label>TIKTOK LINK</label>
-      <input class="input dmMonthTikTok" value="${esc(p.tiktok_url||'')}" placeholder="https://tiktok.com/@...">
-     </div>
-
-     <div class="field" style="margin-top:10px">
-      <label>WEBSITE / SHOWCASE LINK</label>
-      <input class="input dmMonthWebsite" value="${esc(p.website_url||'')}" placeholder="Any website, store, project or page they want people to visit">
-     </div>
-
-     <div class="field" style="margin-top:10px">
-      <label>WEBSITE BUTTON LABEL</label>
-      <input class="input dmMonthWebsiteLabel" value="${esc(p.website_label||'VISIT WEBSITE')}" placeholder="VISIT WEBSITE">
-     </div>
-    </div>
-
-    <label class="checkline" style="margin-top:14px">
-     <input class="dmMonthPublished" type="checkbox" ${Number(p.published)!==0?'checked':''}>
-     PUBLISHED IN DECISION MAKER SPOTLIGHTS
-    </label>
-
-    <button class="btn red dmMonthSave" type="button" style="margin-top:12px">
-     SAVE SPOTLIGHT ${p.slot}
-    </button>
-   </div>
-  `).join('');
-
-  grid.querySelectorAll('.dmMonthPhotoFile').forEach(
-   input=>input.onchange=()=>uploadDmMonthPhoto(input)
-  );
-
-  grid.querySelectorAll('.dmMonthSave').forEach(
-   btn=>btn.onclick=()=>saveDmMonthSpot(btn.closest('[data-dm-month-slot]'))
-  );
-
- }catch(e){
-  grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>';
- }
+ const grid=$("dmMonthAdminGrid");if(!grid)return;grid.innerHTML='<div class="empty">LOADING FIVE SPOTS...</div>';
+ try{const d=await api('/admin/go/decision-makers-month');const rows=d.people||[];grid.innerHTML=rows.map(p=>`<div class="subpanel" data-dm-month-slot="${p.slot}"><div class="kicker">SPOT ${p.slot}</div><div class="field"><label>NAME</label><input class="input dmMonthName" value="${esc(p.name||'')}"></div><div class="field" style="margin-top:10px"><label>SMALL LABEL</label><input class="input dmMonthEyebrow" value="${esc(p.eyebrow||'DECISION MAKER')}"></div><div class="field" style="margin-top:10px"><label>HEADLINE / ACCOMPLISHMENT</label><input class="input dmMonthHeadline" value="${esc(p.headline||'')}"></div><div class="field" style="margin-top:10px"><label>SHORT STORY / INFORMATION</label><textarea class="textarea dmMonthStory">${esc(p.story||'')}</textarea></div><div class="upload-box" style="margin-top:10px"><label>PHOTO</label><input class="dmMonthPhotoUrl" type="hidden" value="${esc(p.photo_url||'')}"><input class="file-input dmMonthPhotoFile" type="file" accept="image/*"><img class="upload-preview dmMonthPreview ${p.photo_url?'show':''}" ${p.photo_url?`src="${esc(p.photo_url)}"`:''} alt=""><div class="upload-state dmMonthUploadState">${p.photo_url?'PHOTO READY.':'CHOOSE A PHOTO.'}</div></div><label class="checkline" style="margin-top:10px"><input class="dmMonthPublished" type="checkbox" ${Number(p.published)!==0?'checked':''}> PUBLISHED</label><button class="btn red dmMonthSave" type="button" style="margin-top:12px">SAVE SPOT ${p.slot}</button></div>`).join('');
+ grid.querySelectorAll('.dmMonthPhotoFile').forEach(input=>input.onchange=()=>uploadDmMonthPhoto(input));grid.querySelectorAll('.dmMonthSave').forEach(btn=>btn.onclick=()=>saveDmMonthSpot(btn.closest('[data-dm-month-slot]')));
+ }catch(e){grid.innerHTML='<div class="empty">'+esc(e.message)+'</div>';}
 }
-
-async function uploadDmMonthPhoto(input){
- const card=input.closest('[data-dm-month-slot]');
- const file=input.files?.[0];
- if(!file)return;
-
- const state=card.querySelector('.dmMonthUploadState');
- state.textContent='UPLOADING...';
-
- try{
-  const form=new FormData();
-  form.append('file',file);
-  form.append('folder','decision-maker-spotlights');
-
-  const headers=new Headers();
-  if(KEY)headers.set('X-Admin-Key',KEY);
-
-  const r=await fetch(
-   API+'/media/upload',
-   {method:'POST',headers,body:form}
-  );
-
-  const d=await r.json();
-
-  if(!r.ok||d.success===false)
-   throw Error(d.error||'UPLOAD FAILED');
-
-  card.querySelector('.dmMonthPhotoUrl').value=d.url||'';
-
-  const img=card.querySelector('.dmMonthPreview');
-  img.src=d.url;
-  img.classList.add('show');
-
-  state.textContent='PHOTO UPLOADED.';
- }catch(e){
-  state.textContent='UPLOAD ERROR: '+e.message;
- }
-}
-
-async function saveDmMonthSpot(card){
- const slot=Number(card.dataset.dmMonthSlot);
- const msg=$("dmMonthAdminMsg");
-
- msg.textContent='SAVING SPOTLIGHT '+slot+'...';
-
- try{
-  await api(
-   '/admin/go/decision-maker-spotlights/'+slot,
-   {
-    method:'PUT',
-    body:JSON.stringify({
-     name:card.querySelector('.dmMonthName').value.trim(),
-     what_they_do:card.querySelector('.dmMonthWhatTheyDo').value.trim(),
-     eyebrow:card.querySelector('.dmMonthEyebrow').value.trim(),
-     headline:card.querySelector('.dmMonthHeadline').value.trim(),
-     story:card.querySelector('.dmMonthStory').value.trim(),
-     photo_url:card.querySelector('.dmMonthPhotoUrl').value.trim(),
-     instagram_url:card.querySelector('.dmMonthInstagram').value.trim(),
-     facebook_url:card.querySelector('.dmMonthFacebook').value.trim(),
-     tiktok_url:card.querySelector('.dmMonthTikTok').value.trim(),
-     website_url:card.querySelector('.dmMonthWebsite').value.trim(),
-     website_label:card.querySelector('.dmMonthWebsiteLabel').value.trim()||'VISIT WEBSITE',
-     published:card.querySelector('.dmMonthPublished').checked
-    })
-   }
-  );
-
-  msg.textContent='SPOTLIGHT '+slot+' SAVED.';
-  await loadDecisionMakersMonthAdmin();
-
- }catch(e){
-  msg.textContent=e.message;
- }
-}
+async function uploadDmMonthPhoto(input){const card=input.closest('[data-dm-month-slot]'),file=input.files?.[0];if(!file)return;const state=card.querySelector('.dmMonthUploadState');state.textContent='UPLOADING...';try{const form=new FormData();form.append('file',file);form.append('folder','decision-makers-of-the-month');const headers=new Headers();if(KEY)headers.set('X-Admin-Key',KEY);const r=await fetch(API+'/media/upload',{method:'POST',headers,body:form});const d=await r.json();if(!r.ok||d.success===false)throw Error(d.error||'UPLOAD FAILED');card.querySelector('.dmMonthPhotoUrl').value=d.url||'';const img=card.querySelector('.dmMonthPreview');img.src=d.url;img.classList.add('show');state.textContent='PHOTO UPLOADED.';}catch(e){state.textContent='UPLOAD ERROR: '+e.message}}
+async function saveDmMonthSpot(card){const slot=Number(card.dataset.dmMonthSlot),msg=$("dmMonthAdminMsg");msg.textContent='SAVING SPOT '+slot+'...';try{await api('/admin/go/decision-makers-month/'+slot,{method:'PUT',body:JSON.stringify({name:card.querySelector('.dmMonthName').value.trim(),eyebrow:card.querySelector('.dmMonthEyebrow').value.trim(),headline:card.querySelector('.dmMonthHeadline').value.trim(),story:card.querySelector('.dmMonthStory').value.trim(),photo_url:card.querySelector('.dmMonthPhotoUrl').value.trim(),published:card.querySelector('.dmMonthPublished').checked})});msg.textContent='SPOT '+slot+' SAVED.';}catch(e){msg.textContent=e.message}}
 if($("refreshDmMonth"))$("refreshDmMonth").onclick=loadDecisionMakersMonthAdmin;
 setTimeout(()=>{if(KEY)loadDecisionMakersMonthAdmin()},600);
 
