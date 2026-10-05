@@ -21187,7 +21187,7 @@
       if(action)action.textContent=goToken?'SHARE / ENCOURAGE':'SIGN IN TO SHARE / ENCOURAGE';
       box.innerHTML='<div class="go-empty">LOADING COMMUNITY ACTIVITY...</div>';
       try{
-        const communityEndpoint=goToken?'/go/community?limit=30':'/go/community/public?limit=30';
+        const communityEndpoint='/go/community/public?limit=30';
         const data=await goFetch(communityEndpoint);
         const items=Array.isArray(data.activity)?data.activity:[];
         box.innerHTML=items.length?`<div class="dm-feed-control"><span>ACTIVITY FEED</span><button id="dm-feed-toggle" type="button" aria-pressed="false">EXPLORE FEED</button></div><div id="dm-feed-scroll" class="dm-feed-scroll">${items.map(a=>`<article class="dm-community-card"><div class="go-feed-head">${a.profile_photo_url?`<img class="go-avatar" src="${esc(a.profile_photo_url)}" alt="">`:'<div class="go-avatar"></div>'}<div><strong>${esc(a.display_name||'B.O.S.S CODE GO Member')}</strong><small>${esc(String(a.activity_type||'PROGRESS').replace(/_/g,' ').toUpperCase())}</small></div></div><h3>${esc(a.title||'')}</h3><p>${esc(a.body||'')}</p><div class="dm-community-meta">${Number(a.encourage_count||0)} ENCOURAGEMENT${Number(a.encourage_count||0)===1?'':'S'}</div></article>`).join('')}</div>`:'<div class="go-empty">COMMUNITY ACTIVITY WILL APPEAR HERE AS POSTS ARE APPROVED.</div>';
