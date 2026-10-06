@@ -1192,12 +1192,24 @@ COURSE DAYS
 
 </div>
 
+<div class="actions">
+
+<button
+id="loadRise30"
+class="btn outline"
+type="button"
+>
+LOAD RISE 30 DAYS
+</button>
+
 <button
 id="newDay"
 class="btn red"
 >
 + NEW
 </button>
+
+</div>
 
 </div>
 
@@ -3129,6 +3141,659 @@ day.completion_message || "";
 }
 
 
+
+/* =========================================================
+   RISE OF THE DECISION MAKER 30 DAY COURSE LOADER
+
+   This is an ADMIN IMPORTER only.
+   It writes editable phase and day content into D1 through
+   the existing /dm-phases and /dm-days API routes.
+
+   It does NOT hard code course content into the customer app.
+   Re-running it updates text and prompts for Days 1 through 30.
+   Existing audio, video, thumbnails, resources and external
+   links are preserved on existing days.
+========================================================= */
+
+const RISE_DECISION_MAKER_PHASES = [
+  {
+    "key": "choice",
+    "title": "THE POWER OF CHOICE",
+    "description": "Wake up to outside influence, inherited thinking, conformity and the responsibility to reclaim an independent mind. Built from the opening message and Chapter 1 of Rise of the Decision Maker.",
+    "sort_order": 1
+  },
+  {
+    "key": "rebirth",
+    "title": "REBIRTHING YOU",
+    "description": "Separate your future from your past, rebuild identity and remove the people, places and patterns that keep the old version of you alive. Built from Chapter 2 of Rise of the Decision Maker.",
+    "sort_order": 2
+  },
+  {
+    "key": "fear",
+    "title": "OVERCOMING FEAR",
+    "description": "Expose fear in its quieter forms, including perfectionism, approval seeking, procrastination and the need for certainty. Built from Chapter 3 of Rise of the Decision Maker.",
+    "sort_order": 3
+  },
+  {
+    "key": "goals",
+    "title": "SETTING CLEAR GOALS",
+    "description": "Recover the ability to dream, define personal greatness and convert imagination into a target you can move toward. Built from Chapter 4 of Rise of the Decision Maker.",
+    "sort_order": 4
+  },
+  {
+    "key": "action",
+    "title": "TAKE ACTION",
+    "description": "Move before conditions are perfect, create momentum, protect your time and take ownership of what your dream requires. Built from Chapter 5 of Rise of the Decision Maker.",
+    "sort_order": 5
+  },
+  {
+    "key": "resilience",
+    "title": "EMBRACING RESILIENCE",
+    "description": "Expect hard days, learn from adversity, adjust without surrendering and anchor yourself to a reason strong enough to survive discomfort. Built from Chapter 6 of Rise of the Decision Maker.",
+    "sort_order": 6
+  },
+  {
+    "key": "confidence",
+    "title": "CONFIDENCE IS POWER",
+    "description": "Build confidence from evidence, release the old identity, protect your inner voice and practice gratitude without becoming comfortable. Built from Chapter 7 of Rise of the Decision Maker.",
+    "sort_order": 7
+  },
+  {
+    "key": "legacy",
+    "title": "KNOWING TIME IS LIMITED",
+    "description": "Use the certainty of limited time as urgency, not fear. Decide what deserves your life and leave your gifts here instead of carrying them away unused. Built from Chapter 8 of Rise of the Decision Maker.",
+    "sort_order": 8
+  }
+];
+
+const RISE_DECISION_MAKER_30_DAYS = [
+  {
+    "day_number": 1,
+    "phase_key": "choice",
+    "title": "WAKE UP TO THE PROGRAMMING",
+    "text_title": "YOU DID NOT CHOOSE EVERY BELIEF YOU CARRY",
+    "text_content": "Most people never stop long enough to ask where their idea of a successful life came from. They inherit a definition, live inside it, then judge themselves by it.\n\nYou were taught what a responsible person should do. You absorbed what a respectable career looks like, what age certain things should happen, what risks are acceptable, what dreams are unrealistic, and how much of yourself should be traded for security. Some of those lessons may be useful. Some may be somebody else’s fear wearing the clothes of wisdom.\n\nThe danger is not that outside influence exists. The danger is living your entire life without noticing it.\n\nA Decision Maker begins by separating inherited thinking from chosen thinking. That means becoming curious about your own mind. When you say, “I could never do that,” whose voice is speaking? When you say, “That is not realistic,” what evidence are you using? When you say, “People like me do not do things like that,” who gave you that rule?\n\nThis course starts before goal setting because a goal built on somebody else’s definition of life will only make you more efficient at becoming somebody you never meant to be.\n\nThe opening message of Rise of the Decision Maker challenges the reader to rewire beliefs, thoughts and actions beyond the limitations of what they were taught. Today is not about blaming parents, teachers, jobs or society. It is about reclaiming responsibility for what you continue to believe from this point forward.\n\nYou cannot become mentally independent until you notice where dependence has been hiding.",
+    "decision_prompt": "What belief about success, work, money, creativity or your future have you accepted without ever seriously questioning it?",
+    "move_prompt": "Write five rules about life that you have carried for years. Next to each one write CHOSEN or INHERITED. Do not judge the answers. Expose them.",
+    "reflection_prompt": "What surprised you when you separated what you chose from what you inherited?",
+    "completion_message": "Awareness is the first break in the chain. You saw the programming. Now you can choose what stays.",
+    "published": 1,
+    "sort_order": 1
+  },
+  {
+    "day_number": 2,
+    "phase_key": "choice",
+    "title": "WHO ARE THEY?",
+    "text_title": "STOP LETTING AN INVISIBLE CROWD RUN YOUR LIFE",
+    "text_content": "“They say” is one of the most powerful phrases in the world because nobody has to identify who “they” are.\n\nThey say you should get a safe job. They say starting a business is risky. They say you are too old. They say you need more credentials. They say everybody is doing it this way. They say that dream probably will not work.\n\nWho are they?\n\nSometimes “they” are people who love you but are speaking from the limits of their own experience. Sometimes they are strangers online. Sometimes they are traditions that have been repeated so many times they now feel like facts. Sometimes they are simply an imaginary audience in your head.\n\nThe point is not to reject every piece of conventional wisdom. The point is to stop surrendering your judgment before you have used it.\n\nA Decision Maker listens, thinks, studies consequences, prays, learns, and then chooses. Independent thinking is not rebellion for the sake of rebellion. It is responsibility. If you are going to live with the result, you need to participate fully in the decision.\n\nThe book asks the question directly because conformity becomes powerful when the source remains vague. The moment you ask “Who exactly said this, and why do I believe them?” a borrowed rule has to defend itself.\n\nYou are allowed to inspect the playbook before you run the play.",
+    "decision_prompt": "Where in your life are you obeying an undefined “they” instead of a conviction you have personally examined?",
+    "move_prompt": "Catch yourself saying or thinking “they say” today. Write down three examples and replace each one with, “What do I believe after thinking this through?”",
+    "reflection_prompt": "Which outside voice has been getting more authority in your life than it has earned?",
+    "completion_message": "You do not need to fight the world. You need to stop giving the world automatic control of your choices.",
+    "published": 1,
+    "sort_order": 2
+  },
+  {
+    "day_number": 3,
+    "phase_key": "choice",
+    "title": "THE SCHOOL BELL NEVER STOPPED RINGING",
+    "text_title": "LEARN TO BUILD, NOT ONLY TO FOLLOW",
+    "text_content": "School can teach valuable knowledge, discipline and skills. But many people leave school highly trained to complete assignments and almost completely untrained to design a life.\n\nThink about the rhythm. Someone else sets the schedule. Someone else defines the task. Someone else decides when you may speak, when the work is due, and what counts as the correct answer. Perform well inside the structure and you are rewarded.\n\nThen adulthood arrives and the biggest opportunities often have no teacher, no rubric, no deadline and no guarantee.\n\nNobody assigns you the business. Nobody grades your idea. Nobody forces you to develop your gift. Nobody calls your house because you have ignored your dream for six months. Building requires a different muscle than following instructions.\n\nThis is one of the strongest ideas in The Power of Choice. A system can prepare you to operate inside existing structures without teaching you to question, create or build new ones.\n\nThat does not mean every person should quit a job or become an entrepreneur. It means every person should be capable of independent thought and creation. You should know how to identify a problem, imagine a solution, teach yourself what you do not know, make a decision with incomplete information and create value without waiting to be assigned.\n\nThe adult version of the school bell is waiting for permission.\n\nDecision Makers learn how to ring their own bell.",
+    "decision_prompt": "In what area of your life are you still waiting for somebody to assign you the next step?",
+    "move_prompt": "Choose one thing you want to learn, build or improve that nobody is requiring of you. Spend thirty focused minutes teaching yourself or creating something around it.",
+    "reflection_prompt": "What felt different about working on something because you chose it instead of because someone required it?",
+    "completion_message": "Today you practiced self direction. Builders do not wait for the assignment.",
+    "published": 1,
+    "sort_order": 3
+  },
+  {
+    "day_number": 4,
+    "phase_key": "choice",
+    "title": "AUDIT THE PROGRAMMING",
+    "text_title": "YOUR INPUTS BECOME YOUR INNER VOICE",
+    "text_content": "Programming does not stop when childhood ends. It continues every day through the information you repeatedly consume.\n\nAlgorithms learn what holds your attention. Advertisements study what triggers desire. News learns what keeps you watching. Social platforms reward comparison, outrage and performance. None of this requires a secret room full of people deciding your future. It only requires your attention to remain available.\n\nWhat enters your mind repeatedly starts to feel normal.\n\nIf you consume fear all day, courage begins to feel reckless. If you watch lifestyles you cannot afford all day, gratitude can feel like failure. If you watch everybody perform confidence, your normal human uncertainty can feel defective. If every voice around you mocks ambition, dreaming can start to feel embarrassing.\n\nA Decision Maker protects mental territory.\n\nYou do not have to disappear from technology. You do have to become intentional about what gets repeated inside your head. Your mind should not be an unlocked building where anybody with content can walk in, hang a picture on the wall and leave.\n\nAudit what enters. Notice what it makes you think. Notice what it makes you want. Notice what it makes you fear.\n\nMental independence is not achieved once. It is maintained.",
+    "decision_prompt": "What source of information, entertainment or social influence most consistently changes your mood, confidence or desires?",
+    "move_prompt": "Do a twenty four hour input audit. Write down the accounts, shows, news, conversations and content you consume most. Mark each one BUILD, NEUTRAL or DRAIN.",
+    "reflection_prompt": "What input needs less access to your mind, and what deserves more?",
+    "completion_message": "Your attention is part of your future. Start spending it like it matters.",
+    "published": 1,
+    "sort_order": 4
+  },
+  {
+    "day_number": 5,
+    "phase_key": "choice",
+    "title": "RECLAIM THE POWER OF CHOICE",
+    "text_title": "YOUR LIFE IS BEING VOTED ON DAILY",
+    "text_content": "A life rarely changes because of one dramatic moment. It changes because small decisions keep voting for the same future.\n\nGet up or stay down. Save or spend. Speak or remain silent. Learn or scroll. Start or delay. Stay around people who weaken you or create distance. Take care of the body or keep borrowing against it. Make the call or keep rehearsing it.\n\nThese decisions look small while they are happening. Their cumulative effect is enormous.\n\nRise of the Decision Maker argues that greatness begins with choice because your future is not only being shaped by what happens to you. It is also being shaped by what you repeatedly authorize.\n\nThis is where responsibility becomes empowering. If every problem is controlled by somebody else, then so is every solution. The moment you identify a decision that belongs to you, power returns.\n\nDo not confuse this with pretending that circumstances do not matter. Money matters. Health matters. family responsibilities matter. Opportunity matters. But inside almost every circumstance there is still a territory of choice.\n\nA Decision Maker finds that territory and works it relentlessly.\n\nYou do not need control over everything. You need ownership of what is yours.",
+    "decision_prompt": "What part of your current situation have you been describing as a circumstance even though there is a decision inside it that belongs to you?",
+    "move_prompt": "Make one decision today that your future self will thank you for. It must be visible in action before the day ends.",
+    "reflection_prompt": "What changed when you focused on your available choice instead of everything you could not control?",
+    "completion_message": "Greatness is not one giant decision. It is a pattern of decisions that refuse to abandon your future.",
+    "published": 1,
+    "sort_order": 5
+  },
+  {
+    "day_number": 6,
+    "phase_key": "rebirth",
+    "title": "REBIRTH REQUIRES A FUNERAL",
+    "text_title": "THE OLD STORY CANNOT KEEP RUNNING THE NEW LIFE",
+    "text_content": "You cannot build a new identity while constantly dragging the old verdict into every room.\n\n“I have always been inconsistent.”\n“I am not good with money.”\n“I never finish.”\n“I am not confident.”\n“I am not a business person.”\n“I tried before and it failed.”\n\nThose may describe moments in your history. They do not have to become permanent job titles.\n\nRebirthing YOU begins with a hard separation between accountability and captivity. Accountability says, “That happened. I own my part. I learned.” Captivity says, “That happened, therefore that is who I am.”\n\nThose are not the same thing.\n\nYour past deserves honesty, not worship. A failure can become data. A mistake can become wisdom. A season can become testimony. But none of it has the authority to define every season after it.\n\nThere may be habits, relationships, beliefs and self descriptions that cannot travel with the person you are trying to become.\n\nToday we bury an identity, not responsibility.\n\nYou are not pretending the old story never happened. You are deciding it will no longer write every new chapter.",
+    "decision_prompt": "What old description of yourself have you repeated so long that it now feels like identity instead of history?",
+    "move_prompt": "Write an OLD IDENTITY statement, then write a NEW STANDARD underneath it. Example: “I never finish” becomes “I finish what I intentionally commit to.”",
+    "reflection_prompt": "What would become possible if you stopped using your past as evidence against your future?",
+    "completion_message": "You can remember the old version without continuing to live as that version.",
+    "published": 1,
+    "sort_order": 6
+  },
+  {
+    "day_number": 7,
+    "phase_key": "rebirth",
+    "title": "ALL CAN BE RESTORED",
+    "text_title": "STOP SENTENCING YOUR FUTURE FOR YESTERDAY",
+    "text_content": "There is a difference between consequences and condemnation.\n\nSome choices have real consequences. Trust may need rebuilding. Money may need recovering. Health may require work. Time may have been lost. None of that means your future has been cancelled.\n\nThe book tells the story of a woman who said, “All can be restored.” The power of the idea is not that life magically returns everything exactly as it was. The power is that restoration can begin the moment truth and responsibility meet a new decision.\n\nShame loves permanence. It tells you that because you wasted years, one more year does not matter. Because you failed publicly, you should stay hidden. Because you made poor choices, you have lost the right to think highly of your future.\n\nThat thinking creates more of the very life you regret.\n\nA Decision Maker does not deny the damage. A Decision Maker refuses to make the damage the final architect.\n\nRestoration often looks ordinary at first. One apology. One payment. One workout. One application. One sober decision. One boundary. One hour spent rebuilding the thing you neglected.\n\nBig restoration is usually a pile of small faithful decisions.",
+    "decision_prompt": "What part of your life have you quietly treated as too damaged, too late or too far gone?",
+    "move_prompt": "Choose one restoration action that can be completed today. Keep it small enough that you cannot hide behind complexity.",
+    "reflection_prompt": "What did taking one restorative action do to your sense of possibility?",
+    "completion_message": "Your future does not need your shame. It needs your participation.",
+    "published": 1,
+    "sort_order": 7
+  },
+  {
+    "day_number": 8,
+    "phase_key": "rebirth",
+    "title": "CHANGE BEFORE SUCCESS",
+    "text_title": "STOP WAITING FOR THE RESULT TO GIVE YOU PERMISSION TO EVOLVE",
+    "text_content": "People often say, “When I make more money, I will become disciplined. When the business takes off, I will become organized. When I lose the weight, I will become confident. When people support me, I will become serious.”\n\nThat order is backwards.\n\nThe path to success is usually paved by the change you wanted success to produce.\n\nIf the future version of you wakes earlier, manages money carefully, protects focus, speaks with confidence, studies the craft and keeps commitments, then those behaviors cannot wait for the reward. They are part of what creates it.\n\nThis is uncomfortable because identity change often arrives before external proof. You may have to behave like a builder while the project is still small. You may have to protect your time before anybody understands what you are building. You may have to say no to an old routine before the new life looks impressive.\n\nTransformation frequently feels lonely because the evidence arrives after the decision.\n\nDo not wait for success to introduce you to the person success requires.",
+    "decision_prompt": "What behavior are you postponing until after you get the result you want?",
+    "move_prompt": "Act for one hour today like the person who already carries the standard required for your next level. Focus on behavior, not pretending you already have the result.",
+    "reflection_prompt": "What standard felt unnatural only because you have not practiced it long enough yet?",
+    "completion_message": "Change is not the prize after success. Change is part of the price.",
+    "published": 1,
+    "sort_order": 8
+  },
+  {
+    "day_number": 9,
+    "phase_key": "rebirth",
+    "title": "CURATE YOUR ENVIRONMENT",
+    "text_title": "STOP ASKING A WEAK ENVIRONMENT TO PRODUCE A STRONGER YOU",
+    "text_content": "Your environment is always teaching you what is normal.\n\nIf everybody around you complains but never builds, action begins to look strange. If every conversation mocks ambition, your own ambition starts defending itself. If your room, schedule, phone and relationships are full of noise, focus becomes harder than it needs to be.\n\nThis does not mean you must abandon everybody who thinks differently. It means you must become honest about influence.\n\nThe people, places and routines around you either make your desired identity easier to practice or harder to practice.\n\nSometimes the next level requires less access. Less time in certain conversations. Less exposure to people who only understand the old version of you. Less availability to habits that keep resetting your progress.\n\nThe goal is not superiority. The goal is alignment.\n\nYou do not need everyone around you to share your dream. You do need enough protected space for your dream to breathe.",
+    "decision_prompt": "What person, place, routine or digital environment most consistently pulls you back toward a version of yourself you are trying to leave?",
+    "move_prompt": "Remove or reduce one source of friction today. Unfollow, relocate, reschedule, clean, set a boundary or create a protected work space.",
+    "reflection_prompt": "What became easier when you changed the environment instead of relying only on willpower?",
+    "completion_message": "You are allowed to build an environment that agrees with the future you are trying to create.",
+    "published": 1,
+    "sort_order": 9
+  },
+  {
+    "day_number": 10,
+    "phase_key": "fear",
+    "title": "NAME THE FEAR",
+    "text_title": "FEAR GETS STRONGER WHEN IT STAYS VAGUE",
+    "text_content": "Fear is often blamed as if it were one thing. It is not.\n\nFear of failure is different from fear of judgment. Fear of losing money is different from fear of looking foolish. Fear of success is different from fear of responsibility. Fear of the unknown is different from fear that you are not capable.\n\nWhen all of these get reduced to “I am nervous,” they become difficult to challenge.\n\nChapter 3 of Rise of the Decision Maker treats fear as a decision making force. Fear does not only make you feel uncomfortable. It changes which options you consider. It can make the familiar look intelligent simply because it is familiar.\n\nA Decision Maker names the fear with precision.\n\nWhat exactly are you afraid will happen? If it happened, what would you do next? What is the cost of obeying this fear for another five years?\n\nFear becomes smaller when the mind has to move from imagination into specifics.\n\nYou do not have to eliminate fear before you move. You have to stop letting unnamed fear cast the deciding vote.",
+    "decision_prompt": "What exact outcome are you afraid of in the area where you have been hesitating?",
+    "move_prompt": "Write the feared outcome in one sentence. Then write three columns: LIKELY, POSSIBLE, RECOVERABLE. Force the fear into specifics.",
+    "reflection_prompt": "Did the fear become more manageable once you stopped treating it like a cloud and started examining it like a problem?",
+    "completion_message": "Courage begins when fear loses the protection of vagueness.",
+    "published": 1,
+    "sort_order": 10
+  },
+  {
+    "day_number": 11,
+    "phase_key": "fear",
+    "title": "STOP CALLING FEAR PREPARATION",
+    "text_title": "PERFECTION CAN BE PROCRASTINATION IN A SUIT",
+    "text_content": "Preparation is useful until it becomes a hiding place.\n\nYou can research for months, revise for years, keep buying equipment, keep changing the logo, keep waiting for more money, keep telling yourself you need one more certification, and never place the dream where it can be judged by reality.\n\nFear loves respectable disguises.\n\nOne of its favorites is perfection.\n\nPerfection says the work is not ready. Fear means, “I am not ready for people to have an opinion about the work.” Those are different problems.\n\nA Decision Maker learns to ask a brutal question: Is this next step actually improving the outcome, or is it protecting me from exposure?\n\nThere is a point where more preparation no longer increases readiness. It only delays feedback.\n\nYou cannot improve a dream that never touches the world.",
+    "decision_prompt": "Where have you been using preparation to avoid the vulnerability of beginning, publishing, asking, selling or showing?",
+    "move_prompt": "Choose the smallest version of the thing you can put into the real world today. Send it, post it, ask for feedback, make the call or schedule the launch.",
+    "reflection_prompt": "What did reality teach you that more private preparation could not?",
+    "completion_message": "Done gives you information. Hidden perfection gives you imagination.",
+    "published": 1,
+    "sort_order": 11
+  },
+  {
+    "day_number": 12,
+    "phase_key": "fear",
+    "title": "FAILURE IS TUITION",
+    "text_title": "STOP DEMANDING A PERFECT RECORD FROM A BEGINNER",
+    "text_content": "Failure feels personal when you confuse performance with identity.\n\nIf the first attempt is weak, you think you are weak. If the launch is quiet, you think the idea is bad. If somebody says no, you think you are unqualified. That interpretation makes experimentation dangerous.\n\nBut builders need experiments.\n\nThe growth mindset in the book reframes challenges and setbacks as opportunities for development. That is not positive thinking. It is a practical operating system.\n\nA failed attempt contains information. Maybe the message was unclear. Maybe the offer was wrong. Maybe the skill needs work. Maybe the timing was poor. Maybe the audience was wrong. Maybe you simply need repetitions.\n\nThe person who refuses to fail is often refusing to learn in public.\n\nA Decision Maker expects some tuition. The goal is not to enjoy failure. The goal is to stop wasting it.\n\nPay attention. Extract the lesson. Adjust quickly. Keep moving.",
+    "decision_prompt": "What failure or rejection are you still using as a reason to doubt yourself instead of as information?",
+    "move_prompt": "Write three lessons from that experience. Then choose one thing you would do differently if you attempted it again.",
+    "reflection_prompt": "How did the meaning of the failure change when you treated it as information instead of identity?",
+    "completion_message": "You already paid for the lesson. Do not leave without the education.",
+    "published": 1,
+    "sort_order": 12
+  },
+  {
+    "day_number": 13,
+    "phase_key": "fear",
+    "title": "STOP ASKING FOR PERMISSION",
+    "text_title": "APPROVAL IS TOO EXPENSIVE",
+    "text_content": "Many dreams are not killed by lack of talent. They are slowly negotiated away while waiting for everybody to understand.\n\nYou explain the idea. Someone looks uncertain. You shrink it.\nYou share the plan. Someone asks whether it is realistic. You delay it.\nYou get excited. Someone close to you is not equally excited. You question yourself.\n\nSupport is valuable. Permission is different.\n\nThe need for approval gives other people veto power over a life they do not have to live.\n\nSome people will only understand the version of you they have already experienced. When you change, their confusion is not always a warning. Sometimes it is evidence that you are leaving the role they are accustomed to.\n\nA Decision Maker can receive wise counsel without surrendering authorship.\n\nYou can listen without obeying every opinion. You can love people without making their comfort your ceiling.",
+    "decision_prompt": "Whose approval are you still waiting for before you fully commit to something you already know matters to you?",
+    "move_prompt": "Make one move today without announcing it, polling people or asking whether they think it is a good idea. Use your own judgment.",
+    "reflection_prompt": "What did you learn about your dependence on outside validation?",
+    "completion_message": "You can appreciate support without requiring permission.",
+    "published": 1,
+    "sort_order": 13
+  },
+  {
+    "day_number": 14,
+    "phase_key": "goals",
+    "title": "REMEMBER HOW TO DREAM",
+    "text_title": "BEFORE YOU MAKE A PLAN, RECOVER POSSIBILITY",
+    "text_content": "Children can imagine without immediately demanding a spreadsheet.\n\nAdults often lose that ability. Every dream is instantly attacked by price, time, risk, age, credentials, family history and probability. Practical thinking has value, but when it arrives too early it can murder possibility before possibility has a chance to speak.\n\nDreaming is not a business plan. It is permission to explore what could be.\n\nChapter 4 eventually moves dreams toward clear goals, but first you need something alive enough to aim at.\n\nThink beyond what is currently available. Think beyond what people around you have done. Think beyond what your present income seems to permit. You are not committing to every idea. You are reopening a part of the mind that may have been trained to shut down.\n\nYour imagination is not childish. It is one of the places creation begins.\n\nA Decision Maker knows when to dream without limits and when to plan with discipline. Today is for the first part.",
+    "decision_prompt": "If money, embarrassment and the need to explain yourself disappeared for five years, what would you seriously consider building, learning, creating or becoming?",
+    "move_prompt": "Fill one page with possibilities. Do not evaluate them until the page is full. Circle the three ideas that create the most energy in you.",
+    "reflection_prompt": "What dream appeared once you temporarily removed the demand to be realistic?",
+    "completion_message": "You cannot build a future you are afraid to imagine.",
+    "published": 1,
+    "sort_order": 14
+  },
+  {
+    "day_number": 15,
+    "phase_key": "goals",
+    "title": "TURN THE DREAM INTO A TARGET",
+    "text_title": "A DREAM NEEDS A PLACE TO LAND",
+    "text_content": "Dreaming expands possibility. Goals create direction.\n\nWithout a target, ambition leaks into random activity. You can work hard every day and still avoid the thing that matters because busyness feels productive.\n\nA clear goal forces decisions.\n\nIf the goal is vague, almost any action can pretend to support it. “I want to do better.” “I want more money.” “I want to grow my business.” Those statements create emotion but not direction.\n\nA Decision Maker asks: What exactly will be different? By when? How will I know movement is happening? What is the next measurable step?\n\nClarity does not guarantee success. It does make honest evaluation possible.\n\nYou are not creating a prison. Goals can be adjusted as information changes. But you need a direction strong enough to organize your next moves.\n\nA dream says someday. A target gives today a job.",
+    "decision_prompt": "Choose one dream from yesterday and define a clear result you want to create within the next ninety days.",
+    "move_prompt": "Write the result, a date, one measurable indicator and the next three actions. Put the first action on your calendar.",
+    "reflection_prompt": "Did defining the target make the dream feel smaller, scarier or more real?",
+    "completion_message": "Your dream now has coordinates. Movement can begin.",
+    "published": 1,
+    "sort_order": 15
+  },
+  {
+    "day_number": 16,
+    "phase_key": "goals",
+    "title": "DEFINE YOUR GREATNESS",
+    "text_title": "STOP BORROWING SOMEBODY ELSE'S SCOREBOARD",
+    "text_content": "If you never define greatness for yourself, the world will happily hand you a scoreboard.\n\nFollowers. Salary. House size. Job title. Attention. Awards. Brands. Applause.\n\nNone of those things are automatically wrong. They become dangerous when they replace your own definition of a meaningful life.\n\nRise of the Decision Maker describes greatness as becoming the most complete version of yourself and doing what your path requires at a high level. That may include business. It may include parenting, art, leadership, faith, service, health or relationships.\n\nGreatness is personal but not passive. Your definition should demand something from you.\n\nIf your version of success destroys your marriage, health, integrity or peace, you need to ask whether you won the right game.\n\nA Decision Maker chooses the scoreboard before the crowd starts cheering.",
+    "decision_prompt": "What would make you respect the way you lived even if nobody online ever saw it?",
+    "move_prompt": "Write your personal definition of greatness in no more than five sentences. Include what you will build and what you refuse to sacrifice.",
+    "reflection_prompt": "Does your current schedule resemble the definition you wrote?",
+    "completion_message": "When your scoreboard is clear, other people’s scoreboards lose power.",
+    "published": 1,
+    "sort_order": 16
+  },
+  {
+    "day_number": 17,
+    "phase_key": "goals",
+    "title": "BUILD A VISION BIGGER THAN FAMILIAR",
+    "text_title": "YOUR VISION MUST OUTGROW YOUR HISTORY",
+    "text_content": "The familiar can become a ceiling because the mind uses what it has seen as evidence for what is possible.\n\nIf nobody in your family built a company, ownership can feel foreign. If everyone around you survives paycheck to paycheck, financial freedom can feel fictional. If your environment has always rewarded playing small, ambition can feel arrogant.\n\nBut history is evidence of what has happened, not a law describing what must happen next.\n\nThe book makes a powerful point: your vision must be larger than what you have known in order to walk into newness.\n\nThat means you may have to develop a picture of life that your current environment cannot validate yet.\n\nVision gives sacrifice context. It gives discipline somewhere to go. It gives discomfort meaning.\n\nA Decision Maker does not need proof that the exact future already exists nearby. A Decision Maker needs enough clarity to start becoming compatible with it.",
+    "decision_prompt": "What future feels almost too different from your current life to say out loud?",
+    "move_prompt": "Create a one page vision of an ordinary day in that future. Describe your work, environment, relationships, health, finances, creative life and how you spend your time.",
+    "reflection_prompt": "Which part of your vision will require the biggest identity change from you?",
+    "completion_message": "Your history can inform you without imprisoning you.",
+    "published": 1,
+    "sort_order": 17
+  },
+  {
+    "day_number": 18,
+    "phase_key": "action",
+    "title": "START MOVING BEFORE YOU'RE READY",
+    "text_title": "CLARITY OFTEN MEETS YOU IN MOTION",
+    "text_content": "There is a kind of clarity that cannot be found while sitting still.\n\nYou can think about selling until you make an offer. You can think about creating content until you publish. You can think about entrepreneurship until a customer asks you a question you did not expect. You can think about writing until a reader reacts to the page.\n\nAction exposes reality.\n\nChapter 5 of Rise of the Decision Maker is built around this principle. Dreams without action remain fantasies, and movement creates information, skill and momentum.\n\nWaiting until you feel ready assumes readiness comes first. In many important things, readiness is produced by doing.\n\nThe first move may be clumsy. That is allowed.\n\nA Decision Maker would rather improve a real attempt than protect an imaginary perfect one.",
+    "decision_prompt": "What meaningful action have you delayed because you believe you need more clarity first?",
+    "move_prompt": "Do a version of it today that is small enough to execute but real enough to produce feedback.",
+    "reflection_prompt": "What became clearer only because you moved?",
+    "completion_message": "Motion turned uncertainty into information. Keep moving.",
+    "published": 1,
+    "sort_order": 18
+  },
+  {
+    "day_number": 19,
+    "phase_key": "action",
+    "title": "KILL THE PARALYSIS OF INACTION",
+    "text_title": "DO NOT LET THE SIZE OF THE DREAM FREEZE THE FIRST STEP",
+    "text_content": "Big dreams can create small movement when the mind tries to solve the entire journey at once.\n\nYou think about the website, money, equipment, audience, taxes, branding, competition, time and everything that could go wrong. The brain experiences the whole future as one giant task, then chooses relief.\n\nThat relief is called procrastination.\n\nThe answer is not more motivation. It is reduction.\n\nWhat can be done now?\nWhat can be done in fifteen minutes?\nWhat problem must be solved before the next problem matters?\nWhat is the smallest action that changes the situation?\n\nA Decision Maker refuses to let a complicated future cancel a simple present.\n\nMomentum often begins with something unimpressive.\n\nSend the email. Make the list. Register the name. Record the first rough video. Walk for ten minutes. Open the document. Save the first hundred dollars.\n\nYou do not need to finish the mountain today. You need to stop sleeping at the bottom.",
+    "decision_prompt": "What dream feels overwhelming because you are mentally carrying too many future steps at once?",
+    "move_prompt": "Break it into the next three physical actions. Complete the smallest one before the day ends.",
+    "reflection_prompt": "Did the dream feel different after you reduced it to something executable?",
+    "completion_message": "Action does not need to be dramatic to break paralysis.",
+    "published": 1,
+    "sort_order": 19
+  },
+  {
+    "day_number": 20,
+    "phase_key": "action",
+    "title": "OWN THE CLOCK",
+    "text_title": "IF IT MATTERS, IT NEEDS TIME WITH YOUR NAME ON IT",
+    "text_content": "People often say they do not have time when the deeper problem is that the important thing has no protected place in the schedule.\n\nUnprotected goals lose to urgent requests, scrolling, fatigue and everybody else’s priorities.\n\nTime blocking is powerful because it turns intention into an appointment.\n\nYou do not need a perfect productivity system. You need a visible agreement with yourself about when meaningful work happens.\n\nA Decision Maker knows that saying something is important while giving it no time is a contradiction.\n\nThis also means being realistic. You may have a job, family, health responsibilities and obligations you cannot ignore. The goal is not to pretend you have endless hours. The goal is to stop donating every unclaimed hour to whatever shouts loudest.\n\nProtect an hour. Protect thirty minutes. Protect three evenings. Protect Saturday morning.\n\nYour dream does not need all of your time. It needs some time that cannot be casually stolen.",
+    "decision_prompt": "What important goal currently depends on you “finding time” instead of having scheduled time?",
+    "move_prompt": "Block at least three specific work sessions for the next seven days. Name the exact task each session is for.",
+    "reflection_prompt": "How does scheduled intention feel different from hoping you will get around to it?",
+    "completion_message": "Your calendar just became evidence of what you say matters.",
+    "published": 1,
+    "sort_order": 20
+  },
+  {
+    "day_number": 21,
+    "phase_key": "action",
+    "title": "TAKE OWNERSHIP OF THE OUTCOME",
+    "text_title": "EXCUSES EXPLAIN. OWNERSHIP CHANGES.",
+    "text_content": "There is a moment in growth where explanation becomes dangerous.\n\nYou may have a valid reason the project stalled. Somebody let you down. Money changed. Work became intense. You were not taught the skill. Your environment was difficult. The reason can be completely true.\n\nBut after the explanation, the question remains: What are you going to do now?\n\nOwnership does not mean everything is your fault. It means the next move is still your responsibility.\n\nVictim thinking asks who should have fixed this. Ownership asks what can I change, learn, stop, start, request or build from here.\n\nChapter 5 connects action with accountability because dreams require somebody to carry them through resistance. If the person responsible for your dream keeps giving authority to every obstacle, the dream has no leader.\n\nA Decision Maker becomes the leader of the next move.",
+    "decision_prompt": "What situation are you accurately explaining but not actively changing?",
+    "move_prompt": "Write two columns: NOT MINE and MINE. Put every factor you cannot control in the first. Put every available response in the second. Take one action from MINE.",
+    "reflection_prompt": "How much energy returned when you stopped arguing with what you cannot control?",
+    "completion_message": "Ownership is not blame. Ownership is access to power.",
+    "published": 1,
+    "sort_order": 21
+  },
+  {
+    "day_number": 22,
+    "phase_key": "resilience",
+    "title": "HARD IS NOT A WARNING",
+    "text_title": "DIFFICULTY DOES NOT MEAN TURN AROUND",
+    "text_content": "Some people treat difficulty as evidence that the path is wrong.\n\nThe work gets harder, results slow down, support disappears, and they assume the dream has stopped making sense.\n\nBut hard things are often hard because they require capacity you have not built yet.\n\nThe Decision Maker Cheat Code in the book makes the point directly: if hard things were easy, everybody would do them. Difficulty filters interest from commitment.\n\nThat does not mean every difficult path is wise. Sometimes you should pivot. Sometimes you should stop. The skill is learning the difference between a bad direction and a demanding direction.\n\nA demanding direction stretches skill, patience, creativity and resilience. A bad direction repeatedly violates your values, evidence or purpose.\n\nDo not abandon a meaningful mission simply because it stopped entertaining you.\n\nA Decision Maker expects a price.",
+    "decision_prompt": "What hard part of your current goal have you been interpreting as a sign that maybe you should quit?",
+    "move_prompt": "Identify the skill or capacity the difficulty is demanding from you. Spend focused time strengthening that exact area today.",
+    "reflection_prompt": "Is the obstacle telling you to stop, or is it telling you what you need to become better at?",
+    "completion_message": "Hard can be information without being a stop sign.",
+    "published": 1,
+    "sort_order": 22
+  },
+  {
+    "day_number": 23,
+    "phase_key": "resilience",
+    "title": "BUILD THE BOUNCE BACK",
+    "text_title": "RESILIENCE IS A PLAN, NOT A PERSONALITY TRAIT",
+    "text_content": "Everybody talks about being resilient after something goes wrong. Decision Makers prepare for the return before the fall.\n\nSetbacks are not hypothetical. A client will say no. A post will flop. Money will get tight. You will get tired. An idea will fail. Someone may disappoint you. Life may interrupt the schedule.\n\nThe question is not whether every day will cooperate. The question is how long one bad day gets to own.\n\nResilience is the ability to feel the hit without building a house inside it.\n\nThat may mean rest. It may mean prayer. It may mean asking for help. It may mean reviewing the mistake. It may mean changing the strategy.\n\nWhat it cannot mean forever is disappearance.\n\nChapter 6 emphasizes adapting, learning and rising again. The warrior mentality is not pretending pain does not hurt. It is refusing to make pain the final instruction.",
+    "decision_prompt": "When you get discouraged, what pattern usually turns one setback into several lost days or weeks?",
+    "move_prompt": "Create a personal bounce back plan with three steps you will use after the next setback. Keep it simple enough to follow when your emotions are high.",
+    "reflection_prompt": "What would change if recovery became part of your system instead of something you improvised?",
+    "completion_message": "You do not need an unbroken path. You need a reliable return.",
+    "published": 1,
+    "sort_order": 23
+  },
+  {
+    "day_number": 24,
+    "phase_key": "resilience",
+    "title": "FIND YOUR REASON WHY",
+    "text_title": "A WEAK WHY COLLAPSES UNDER A STRONG NIGHT",
+    "text_content": "Motivation is emotional weather. Your reason why is the anchor.\n\nThere will be days when the dream is exciting. There will be days when it feels expensive, slow, lonely and inconvenient. If your reason is only “I want to be successful,” discomfort can easily become more persuasive.\n\nChapter 6 ends with the importance of finding your reason why because purpose creates endurance.\n\nWhy does this matter beyond applause?\nWho benefits if you become the person this goal requires?\nWhat does quitting cost?\nWhat example are you trying to set?\nWhat promise to yourself are you tired of breaking?\n\nA strong why does not remove difficulty. It reminds you why difficulty is worth carrying.\n\nYour reason can evolve. It can include family, faith, freedom, creativity, service, legacy or simply the refusal to waste what you know is inside you.\n\nA Decision Maker knows what the mission is connected to.",
+    "decision_prompt": "Why must this goal matter even on a day when you do not feel motivated?",
+    "move_prompt": "Write a WHY statement that is specific enough to make you emotional. Read it out loud. Save it somewhere you will see during hard days.",
+    "reflection_prompt": "Did your reason sound strong enough to survive inconvenience, or did it expose a goal you are not truly committed to?",
+    "completion_message": "When emotion fades, purpose keeps the light on.",
+    "published": 1,
+    "sort_order": 24
+  },
+  {
+    "day_number": 25,
+    "phase_key": "confidence",
+    "title": "CONFIDENCE IS EVIDENCE",
+    "text_title": "STOP WAITING TO FEEL LIKE THE PERSON YOU CAN PROVE YOU ARE BECOMING",
+    "text_content": "Confidence is often described like a personality type. Some people have it. Some people do not.\n\nThat makes confidence sound mysterious.\n\nA more useful view is that confidence grows from evidence.\n\nYou kept your word today. Evidence.\nYou survived the thing you feared. Evidence.\nYou learned a skill you once did not understand. Evidence.\nYou made the call. Evidence.\nYou recovered from failure. Evidence.\nYou stayed consistent for a week. Evidence.\n\nChapter 7 presents confidence as power because self trust changes how you enter decisions. The goal is not arrogance. It is a growing belief that you can meet life because you have watched yourself do hard things.\n\nIf you repeatedly break promises to yourself, confidence weakens. If you repeatedly keep small promises, confidence has material to build with.\n\nDo not wait for confidence to create action. Use action to manufacture confidence.",
+    "decision_prompt": "What evidence already exists that you are more capable than your self doubt admits?",
+    "move_prompt": "Create an EVIDENCE LIST with at least ten things you have survived, learned, built, changed or followed through on. Then add one new piece of evidence today.",
+    "reflection_prompt": "How did your self perception change when you looked at evidence instead of mood?",
+    "completion_message": "Confidence is not noise. It is memory of what you have proven.",
+    "published": 1,
+    "sort_order": 25
+  },
+  {
+    "day_number": 26,
+    "phase_key": "confidence",
+    "title": "FORGET THE OLD YOU",
+    "text_title": "THE PERSON YOU WERE DOES NOT GET PERMANENT OWNERSHIP OF YOUR NAME",
+    "text_content": "Identity can lag behind behavior.\n\nYou may be doing better but still calling yourself lazy.\nYou may be building but still calling yourself inconsistent.\nYou may be growing but still introducing yourself internally with an old weakness.\n\nChapter 7 talks about forgetting the unconfident you. That does not mean pretending your history disappeared. It means refusing to keep resurrecting an outdated identity after your behavior has begun to change.\n\nYour mind needs updated information.\n\nIf you have been disciplined for sixty days, your self description should reflect that.\nIf you have learned to speak up, stop calling yourself somebody who never speaks.\nIf you have started building, stop identifying only as a dreamer.\n\nA Decision Maker lets new evidence edit the story.\n\nYou are allowed to become unfamiliar to the people who memorized an older version of you.",
+    "decision_prompt": "What old identity label no longer matches the evidence of who you are becoming?",
+    "move_prompt": "Write a new identity statement using present tense and evidence. Example: “I am becoming a person who follows through because I have kept these commitments...”",
+    "reflection_prompt": "What part of the old identity are you ready to stop introducing to every new opportunity?",
+    "completion_message": "Growth becomes stronger when your language catches up with your behavior.",
+    "published": 1,
+    "sort_order": 26
+  },
+  {
+    "day_number": 27,
+    "phase_key": "confidence",
+    "title": "PROTECT YOUR INNER VOICE",
+    "text_title": "DO NOT LET EVERY ROOM VOTE ON YOUR SELF BELIEF",
+    "text_content": "Confidence can be built and then slowly negotiated away.\n\nYou walk into a room certain about the work. Somebody laughs. Somebody ignores you. Somebody more experienced speaks. Suddenly you are asking whether you belong.\n\nA Decision Maker learns to distinguish feedback from infection.\n\nFeedback gives information you can use. Infection enters your mind and changes your opinion of yourself without earning that authority.\n\nNot every reaction deserves interpretation.\n\nPeople respond from their own confidence, fear, taste, experience and agenda. Their discomfort with your certainty does not automatically mean your certainty is misplaced.\n\nAt the same time, real confidence is teachable. It can hear correction without collapsing.\n\nProtecting your inner voice does not mean becoming impossible to advise. It means advice gets evaluated instead of absorbed.\n\nYour self belief should be strong enough to learn without disappearing.",
+    "decision_prompt": "What kind of criticism or reaction causes you to question yourself the fastest?",
+    "move_prompt": "Think of one recent piece of feedback. Separate the useful information from the emotional sting. Keep the information. Release the verdict.",
+    "reflection_prompt": "Can you receive correction without turning it into a statement about your worth?",
+    "completion_message": "Confidence listens. It does not surrender.",
+    "published": 1,
+    "sort_order": 27
+  },
+  {
+    "day_number": 28,
+    "phase_key": "confidence",
+    "title": "GRATITUDE WITHOUT COMPLACENCY",
+    "text_title": "APPRECIATE WHAT IS HERE WITHOUT STOPPING WHAT IS POSSIBLE",
+    "text_content": "Ambition without gratitude can turn every achievement into another reason to feel behind.\n\nYou get the thing you prayed for and immediately stare at the next thing. The new job becomes ordinary. The home becomes ordinary. The family becomes ordinary. The health you once wanted becomes invisible.\n\nChapter 7 closes with gratitude because greatness is not only about expansion. It is also about awareness.\n\nGratitude protects you from turning your entire life into a waiting room.\n\nBut gratitude is not complacency.\n\nYou can thank God for what you have while still building what you believe you are called to build. You can love today without cancelling tomorrow.\n\nThe healthiest ambition says, “I am deeply thankful, and I still have work in me.”\n\nA Decision Maker does not need dissatisfaction as fuel.",
+    "decision_prompt": "What blessing in your current life has become so normal that you rarely feel its value anymore?",
+    "move_prompt": "Spend ten quiet minutes naming what is already good. Then work on one future goal from gratitude rather than frustration.",
+    "reflection_prompt": "How did your energy change when progress was not being driven by the belief that your current life is worthless?",
+    "completion_message": "Gratitude gives you a full life while ambition continues building it.",
+    "published": 1,
+    "sort_order": 28
+  },
+  {
+    "day_number": 29,
+    "phase_key": "legacy",
+    "title": "LIVE LIKE TIME MATTERS",
+    "text_title": "MORTALITY IS NOT A THREAT. IT IS A CLOCK.",
+    "text_content": "Most people know life is limited and live as if the supply is endless.\n\nSomeday you will make the call.\nSomeday you will write the book.\nSomeday you will repair the relationship.\nSomeday you will start the company.\nSomeday you will take your health seriously.\nSomeday you will tell people how you feel.\n\nChapter 8 of Rise of the Decision Maker uses mortality as urgency. The point is not to become obsessed with death. The point is to stop acting like delay has no cost.\n\nTime gives every decision weight.\n\nIf your life had an unlimited number of years, procrastination would be less serious. But it does not.\n\nA Decision Maker asks a question most people avoid: If I keep living at this level of courage, what will I regret?\n\nThis question can clarify what matters faster than another productivity trick.\n\nYou are spending life every day. Spend it on purpose.",
+    "decision_prompt": "If nothing changed about the courage, priorities and habits you have today, what would future you most regret?",
+    "move_prompt": "Do one thing you would be angry at yourself for postponing another year. Make the call, write the page, schedule the appointment, start the application or say the words.",
+    "reflection_prompt": "What became less complicated when you remembered that time is a real resource?",
+    "completion_message": "Urgency is not panic. Urgency is respect for the clock.",
+    "published": 1,
+    "sort_order": 29
+  },
+  {
+    "day_number": 30,
+    "phase_key": "legacy",
+    "title": "DIE EMPTY",
+    "text_title": "DO NOT TAKE YOUR UNUSED GREATNESS WITH YOU",
+    "text_content": "This course was never about becoming famous. It was about refusing to live beneath what you know you are capable of becoming.\n\nYou have examined programming. You questioned inherited rules. You separated history from identity. You recovered the ability to dream. You named fear. You created targets. You moved before certainty. You practiced ownership, resilience, confidence and gratitude.\n\nNow comes the final decision.\n\nWhat are you going to do with what is inside you?\n\nThe closing message of Rise of the Decision Maker is a call to live with purpose and leave nothing meaningful unused. “Die empty” means the ideas were attempted, the love was expressed, the gifts were developed, the lessons were passed on, the courage was spent, and the work that mattered received your life.\n\nIt does not mean you accomplish every possible thing. Nobody does.\n\nIt means you stop deliberately abandoning what you know you are here to carry.\n\nYou are not finishing a thirty day course. You are choosing an operating system.\n\nQuestion the script.\nChoose deliberately.\nDream without apology.\nMove before perfect.\nLearn from failure.\nProtect the mission.\nGet back up.\nBecome somebody you trust.\nUse your time.\nLeave the work here.\n\nFrom this point forward, Decision Maker is not a title someone gives you. It is a way you live.\n\nGreatness is a decision.",
+    "decision_prompt": "What gift, idea, calling or responsibility are you no longer willing to leave unused?",
+    "move_prompt": "Write your next ninety day decision. Define one result, one reason why, one weekly commitment and the first action you will take within twenty four hours.",
+    "reflection_prompt": "What changed in the way you think about your life, your choices and your responsibility to your own potential during these thirty days?",
+    "completion_message": "The course is complete. The decision is not. Live in a way that leaves nothing important trapped inside you.",
+    "published": 1,
+    "sort_order": 30
+  }
+];
+
+async function loadRiseDecisionMaker30Days(){
+
+if(!currentCourse){
+showMsg("SELECT THE DECISION MAKERS COURSE FIRST.");
+return;
+}
+
+const confirmed = confirm(
+`Load the new Rise of the Decision Maker 30 day course into "${currentCourse.title}"?
+
+This will replace the titles, written lessons and prompts for Days 1 through 30.
+
+Existing uploaded video, audio, thumbnails, resources and external links will be preserved.
+
+All loaded content will remain editable in this Course Builder.`
+);
+
+if(!confirmed){
+return;
+}
+
+const btn = $("loadRise30");
+const original = btn.textContent;
+btn.disabled = true;
+
+try{
+
+setStatus("PREPARING COURSE");
+
+await Promise.all([
+loadPhases(),
+loadDays()
+]);
+
+const phaseIds = {};
+
+for(let i = 0; i < RISE_DECISION_MAKER_PHASES.length; i++){
+
+const phaseDef = RISE_DECISION_MAKER_PHASES[i];
+
+btn.textContent =
+`PHASE ${i + 1} / ${RISE_DECISION_MAKER_PHASES.length}`;
+
+let existingPhase =
+phases.find(
+phase =>
+String(phase.title || "").trim().toUpperCase() ===
+String(phaseDef.title || "").trim().toUpperCase()
+);
+
+if(existingPhase){
+
+await api(
+`/dm-phases/${existingPhase.id}`,
+{
+method:"PUT",
+body:JSON.stringify({
+course_id:currentCourse.id,
+title:phaseDef.title,
+description:phaseDef.description,
+sort_order:phaseDef.sort_order,
+published:1
+})
+}
+);
+
+phaseIds[phaseDef.key] = Number(existingPhase.id);
+
+}
+else{
+
+const created =
+await api(
+"/dm-phases",
+{
+method:"POST",
+body:JSON.stringify({
+course_id:currentCourse.id,
+title:phaseDef.title,
+description:phaseDef.description,
+sort_order:phaseDef.sort_order,
+published:1
+})
+}
+);
+
+phaseIds[phaseDef.key] = Number(created.id);
+
+}
+
+}
+
+await loadPhases();
+
+for(const phaseDef of RISE_DECISION_MAKER_PHASES){
+
+const fresh =
+phases.find(
+phase =>
+String(phase.title || "").trim().toUpperCase() ===
+String(phaseDef.title || "").trim().toUpperCase()
+);
+
+if(fresh){
+phaseIds[phaseDef.key] = Number(fresh.id);
+}
+
+}
+
+await loadDays();
+
+for(let i = 0; i < RISE_DECISION_MAKER_30_DAYS.length; i++){
+
+const lesson = RISE_DECISION_MAKER_30_DAYS[i];
+
+btn.textContent = `LOADING DAY ${lesson.day_number} / 30`;
+setStatus(`LOADING DAY ${lesson.day_number}`);
+
+const payload = {
+course_id:currentCourse.id,
+phase_id:phaseIds[lesson.phase_key] || null,
+day_number:lesson.day_number,
+title:lesson.title,
+text_title:lesson.text_title,
+text_content:lesson.text_content,
+decision_prompt:lesson.decision_prompt,
+move_prompt:lesson.move_prompt,
+reflection_prompt:lesson.reflection_prompt,
+completion_message:lesson.completion_message,
+published:1,
+sort_order:lesson.sort_order
+};
+
+const existingDay =
+days.find(
+item =>
+Number(item.day_number) ===
+Number(lesson.day_number)
+);
+
+if(existingDay){
+
+await api(
+`/dm-days/${existingDay.id}`,
+{
+method:"PUT",
+body:JSON.stringify(payload)
+}
+);
+
+}
+else{
+
+await api(
+"/dm-days",
+{
+method:"POST",
+body:JSON.stringify({
+...payload,
+resource_button_text:"DOWNLOAD RESOURCE"
+})
+}
+);
+
+}
+
+}
+
+await Promise.all([
+loadPhases(),
+loadDays()
+]);
+
+activateView("days");
+setStatus("RISE 30 DAYS LOADED", true);
+showMsg("RISE OF THE DECISION MAKER 30 DAY COURSE LOADED.");
+
+}
+catch(error){
+
+setStatus("LOAD ERROR");
+showMsg("STOPPED: " + error.message);
+throw error;
+
+}
+finally{
+
+btn.disabled = false;
+btn.textContent = original;
+
+}
+
+}
+
+
 async function newDay(){
 
 if(!currentCourse){
@@ -3645,6 +4310,10 @@ savePhase;
 
 $("deletePhase").onclick =
 deletePhase;
+
+
+$("loadRise30").onclick =
+loadRiseDecisionMaker30Days;
 
 
 $("newDay").onclick =
