@@ -7711,14 +7711,7 @@
     installStyles();
 
 
-    ensureMyCourses();
 
-
-    watchGoAccountSession();
-
-
-    const authRestore =
-      restoreSecureSession();
 
 
     const results =
@@ -7802,20 +7795,6 @@
 
     arrangeDecisionMakersSections();
 
-
-    watchAvailableCourseCards();
-
-
-    setTimeout(
-      compactAvailableCourseCards,
-      250
-    );
-
-
-    setTimeout(
-      compactAvailableCourseCards,
-      900
-    );
 
   }
 
