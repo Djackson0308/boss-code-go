@@ -273,98 +273,7 @@
   }
 
 
-  function youtubeId(value) {
-
-    const text =
-      String(
-        value || ""
-      ).trim();
-
-
-    if (
-      /^[A-Za-z0-9_-]{11}$/.test(
-        text
-      )
-    ) {
-
-      return text;
-
-    }
-
-
-    try {
-
-      const url =
-        new URL(text);
-
-
-      if (
-        url.hostname.includes(
-          "youtu.be"
-        )
-      ) {
-
-        return (
-          url.pathname
-            .replace("/", "")
-            .split("?")[0]
-        );
-
-      }
-
-
-      if (
-        url.searchParams.get("v")
-      ) {
-
-        return (
-          url.searchParams.get(
-            "v"
-          )
-        );
-
-      }
-
-
-      const parts =
-        url.pathname
-          .split("/")
-          .filter(Boolean);
-
-
-      for (
-        const key of [
-          "live",
-          "embed",
-          "shorts"
-        ]
-      ) {
-
-        const index =
-          parts.indexOf(key);
-
-
-        if (
-          index !== -1 &&
-          parts[index + 1]
-        ) {
-
-          return (
-            parts[index + 1]
-          );
-
-        }
-
-      }
-
-    }
-    catch (_) {}
-
-
-    return "";
-
-  }
-
+  function youtubeId(value) { return BossVideo.source(value)||""; }
 
   function savedEmail() {
 
@@ -2741,12 +2650,12 @@
 
         <div class="dm-session-video-wrap">
 
-          <iframe
+          <div
             id="dm-session-player-frame"
             src=""
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
-          ></iframe>
+          ></div>
 
         </div>
 
@@ -2810,10 +2719,7 @@
       "SESSION";
 
 
-    $(
-      "dm-session-player-frame"
-    ).src =
-      `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+    BossVideo.render($("dm-session-player-frame"),id,{title,autoplay:true});
 
 
     $(
@@ -2841,8 +2747,7 @@
       frame
     ) {
 
-      frame.src =
-        "";
+      BossVideo.stop(frame);
 
     }
 
@@ -5929,79 +5834,10 @@
   }
 
 
-  function videoHTML(
-    day
-  ) {
-
-    const url =
-      String(
-        day.video_url ||
-        ""
-      ).trim();
-
-
-    if (
-      !url
-    ) {
-
-      return "";
-
-    }
-
-
-    const id =
-      youtubeId(
-        url
-      );
-
-
-    if (
-      id
-    ) {
-
-      return `
-
-        <div class="dm-course-video">
-
-          <iframe
-            src="https://www.youtube.com/embed/${esc(
-              id
-            )}?rel=0"
-            title="${esc(
-              day.video_title ||
-              day.title ||
-              "Course Video"
-            )}"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-          ></iframe>
-
-        </div>
-
-      `;
-
-    }
-
-
-    return `
-
-      <div class="dm-course-video">
-
-        <video
-          controls
-          playsinline
-          preload="metadata"
-          src="${esc(
-            url
-          )}"
-        ></video>
-
-      </div>
-
-    `;
-
+  function videoHTML(day) {
+    const url=String(day.video_url||"").trim();
+    return url ? `<div class="dm-course-video">${BossVideo.html(url,{title:day.video_title||day.title||"Course Video",poster:day.video_thumbnail_url})}</div>` : "";
   }
-
 
   function audioHTML(
     day

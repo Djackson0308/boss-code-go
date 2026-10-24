@@ -1217,7 +1217,7 @@ Featured
 <div class="field full">
 
 <label>
-YOUTUBE LINK
+VIDEO OR YOUTUBE LINK
 </label>
 
 <input
@@ -1400,7 +1400,7 @@ placeholder="Episode"
 <div class="field full">
 
 <label>
-YOUTUBE LINK
+VIDEO OR YOUTUBE LINK
 </label>
 
 <input
@@ -1556,7 +1556,7 @@ class="input"
 <div class="field full">
 
 <label>
-YOUTUBE LINK
+VIDEO OR YOUTUBE LINK
 </label>
 
 <input
@@ -1787,7 +1787,7 @@ placeholder="What this session teaches."
 <div class="field full">
 
 <label>
-YOUTUBE VIDEO LINK
+VIDEO OR YOUTUBE LINK
 </label>
 
 <input
@@ -2999,7 +2999,7 @@ class="manager"
 >
 
 <p class="section-note">
-Add YouTube music videos to each artist. The app will only show videos that are published here.
+Add uploaded videos or YouTube music videos to each artist. The app will only show videos that are published here.
 </p>
 
 <div class="grid">
@@ -4391,12 +4391,16 @@ class="list"
 
 
 </main>
+<script src="boss-video-player.js"></script>
+<script src="video-library.js"></script>
 <script>
 
 const API =
 "https://boss-code-go-api.dezthareason4ever.workers.dev";
 
 let KEY = "";
+BossVideoLibrary.configure({api:API,getKey:()=>KEY});
+
 
 let videos = [];
 let artists = [];
@@ -4462,37 +4466,7 @@ String(value ?? "")
 .replace(/'/g,"&#039;");
 
 
-function yid(url){
-
-for(
-const pattern of [
-/youtube\.com\/live\/([^?&/]+)/,
-/youtube\.com\/watch\?v=([^&]+)/,
-/youtu\.be\/([^?&/]+)/,
-/youtube\.com\/embed\/([^?&/]+)/,
-/youtube\.com\/shorts\/([^?&/]+)/
-]
-){
-
-const match =
-String(url || "")
-.match(pattern);
-
-if(
-match &&
-match[1]
-){
-
-return match[1];
-
-}
-
-}
-
-return null;
-
-}
-
+function yid(url){ return BossVideo.youtube(url); }
 
 function numberValue(
 id,
@@ -4602,6 +4576,10 @@ return null;
 
 }
 
+
+if(file.type.startsWith("video/") || /\.mp4$/i.test(file.name)){
+try{const asset=await BossVideoLibrary.upload(file,{onProgress:(p,text)=>{$(messageId).textContent=text+" "+p+"%";}});return asset.url;}catch(error){$(messageId).textContent=error.message;return null;}
+}
 
 const form =
 new FormData();
@@ -5143,7 +5121,7 @@ $("dmCategory").value =
 item.category || "On The Go";
 
 $("dmUrl").value =
-item.youtube_url || "";
+item.youtube_url || item.video_url || "";
 
 $("dmDesc").value =
 item.description || "";
@@ -5178,7 +5156,7 @@ $("bbCategory").value =
 item.category || "";
 
 $("bbUrl").value =
-item.youtube_url || "";
+item.youtube_url || item.video_url || "";
 
 $("bbDesc").value =
 item.description || "";
@@ -5207,7 +5185,7 @@ $("tvCategory").value =
 item.category || "";
 
 $("tvUrl").value =
-item.youtube_url || "";
+item.youtube_url || item.video_url || "";
 
 $("tvDesc").value =
 item.description || "";
@@ -5315,6 +5293,7 @@ category:
 $("dmCategory").value,
 
 youtube_url:url,
+video_url:BossVideo.direct(url)||"",
 
 youtube_id:
 yid(url) || "",
@@ -5359,6 +5338,7 @@ category:
 $("bbCategory").value.trim(),
 
 youtube_url:url,
+video_url:BossVideo.direct(url)||"",
 
 youtube_id:
 yid(url) || "",
@@ -5397,6 +5377,7 @@ category:
 $("tvCategory").value.trim(),
 
 youtube_url:url,
+video_url:BossVideo.direct(url)||"",
 
 youtube_id:
 yid(url) || "",
@@ -5630,7 +5611,7 @@ $("sessionDesc").value =
 item.description || "";
 
 $("sessionUrl").value =
-item.youtube_url || "";
+item.youtube_url || item.video_url || "";
 
 $("sessionThumb").value =
 item.thumbnail_url || "";
@@ -5714,6 +5695,7 @@ numberValue(
 ),
 
 youtube_url:url,
+video_url:BossVideo.direct(url)||"",
 
 youtube_id:
 yid(url) || "",
@@ -7094,7 +7076,7 @@ ${esc(artist?.name || "")}
 
 <br>
 
-${esc(item.youtube_url || "")}
+${esc(item.youtube_url || item.video_url || "")}
 
 </div>
 
@@ -7145,7 +7127,7 @@ $("artistVideoTitle").value =
 item.title || "";
 
 $("artistVideoUrl").value =
-item.youtube_url || "";
+item.youtube_url || item.video_url || "";
 
 $("artistVideoThumb").value =
 item.thumbnail_url || "";
@@ -7212,10 +7194,10 @@ const youtubeId =
 yid(youtubeUrl);
 
 
-if(!artistId || !title || !youtubeId){
+if(!artistId || !title || (!youtubeId && !BossVideo.direct(youtubeUrl))){
 
 $("artistVideoMsg").textContent =
-"CHOOSE AN ARTIST, ADD A TITLE AND A VALID YOUTUBE LINK.";
+"CHOOSE AN ARTIST, ADD A TITLE AND A VIDEO OR YOUTUBE LINK.";
 
 return;
 
@@ -7232,7 +7214,7 @@ youtube_url:
 youtubeUrl,
 
 youtube_id:
-youtubeId,
+(youtubeId || ""),
 
 thumbnail_url:
 $("artistVideoThumb").value.trim(),
@@ -10457,6 +10439,7 @@ $("homeFeatureMsg").textContent =
 /* ===================================================== */
 
 function promoMediaPreview(item){
+if(BossVideo.youtube(item.media_url))return `<div class="ad-preview">${BossVideo.html(item.media_url,{title:item.headline})}</div>`;
 
 const url =
 esc(item.media_url || "");
@@ -10830,6 +10813,7 @@ return String(value)
 
 
 async function savePromoAd(){
+if(BossVideo.source($("promoMediaUrl").value))$("promoMediaType").value="video";
 
 const campaignName =
 $("promoCampaign")
@@ -12135,6 +12119,11 @@ loadAnalyticsOnly();
 /* ===================================================== */
 /* STARTUP */
 /* ===================================================== */
+
+['dmUrl','bbUrl','tvUrl','sessionUrl','artistVideoUrl','locationEpisode'].forEach(id=>BossVideoLibrary.mount('#'+id));
+BossVideoLibrary.mount('#homeFeatureMediaUrl',{onSelect:()=>{$('homeFeatureMediaType').value='video';updateHomeFeatureMediaFields();}});
+BossVideoLibrary.mount('#promoMediaUrl',{onSelect:()=>{$('promoMediaType').value='video';}});
+const libraryButton=document.createElement('button');libraryButton.type='button';libraryButton.className='btn outline';libraryButton.textContent='VIDEO LIBRARY';libraryButton.onclick=()=>BossVideoLibrary.open();$('admin-video-manager').prepend(libraryButton);
 
 $("apiLabel").textContent =
 API;

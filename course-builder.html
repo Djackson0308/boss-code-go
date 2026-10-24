@@ -950,7 +950,7 @@ UPLOAD VIDEO
 <input
 id="coursePreviewFile"
 type="file"
-accept="video/*"
+accept="video/mp4,.mp4"
 hidden
 >
 
@@ -1536,7 +1536,7 @@ UPLOAD VIDEO
 <input
 id="videoFile"
 type="file"
-accept="video/*"
+accept="video/mp4,.mp4"
 hidden
 >
 
@@ -1855,6 +1855,8 @@ class="message"
 </main>
 
 
+<script src="boss-video-player.js"></script>
+<script src="video-library.js"></script>
 <script>
 
 const API =
@@ -1874,6 +1876,10 @@ let days = [];
 let currentCourse = null;
 let currentPhase = null;
 let currentDay = null;
+BossVideoLibrary.configure({api:API,getKey:()=>KEY});
+
+BossVideoLibrary.mount("#cPreviewVideo");
+BossVideoLibrary.mount("#dVideoUrl");
 
 
 const $ =
@@ -4097,6 +4103,9 @@ return;
 }
 
 
+if(privateKind === 'video' || file.type.startsWith('video/') || /\.mp4$/i.test(file.name)){
+try{const asset=await BossVideoLibrary.upload(file,{onProgress:(p,text)=>{$(msgId).textContent=text+' '+p+'%';}});$(targetId).value=asset.url;$(msgId).textContent='UPLOAD COMPLETE. SAVE THE COURSE OR DAY.';}catch(error){$(msgId).textContent=error.message;}return;
+}
 $(msgId).textContent =
 "UPLOADING...";
 

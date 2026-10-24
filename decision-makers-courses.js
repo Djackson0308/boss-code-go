@@ -2914,17 +2914,7 @@
                                         : ""
                                 }
 
-                                <video
-                                    controls
-                                    playsinline
-                                    preload="metadata"
-                                    ${
-                                        thumbnail
-                                            ? `poster="${escapeHTML(thumbnail)}"`
-                                            : ""
-                                    }
-                                    src="${escapeHTML(videoUrl)}"
-                                ></video>
+                                ${BossVideo.html(videoUrl,{title:day.video_title||day.title,poster:thumbnail})}
 
                             </div>
                         `

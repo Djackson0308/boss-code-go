@@ -780,18 +780,7 @@
     'video'
     ){
 
-    media.innerHTML=`
-
-    <video
-    src="${url}"
-    autoplay
-    muted
-    controls
-    playsinline
-    preload="metadata"
-    ></video>
-
-    `;
+    media.innerHTML=BossVideo.html(ad.media_url,{title:ad.headline});
 
     }
     else{
@@ -2075,6 +2064,8 @@
     if(!s)
     return;
 
+    document.querySelectorAll('.screen video').forEach(video=>{if(!s.contains(video))video.pause();});
+    document.querySelectorAll('.screen iframe[data-boss-video]').forEach(frame=>{if(!s.contains(frame))frame.contentWindow?.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}),new URL(frame.src).origin);});
     syncHomeFeaturePlayback(s.id==='home-screen');
     applyPageBanners();
 
@@ -5759,36 +5750,7 @@
     $('boss-music-audio');
 
 
-    function musicYoutubeId(url=''){
-
-    for(
-    const r of[
-
-    /youtube\.com\/live\/([^?&/]+)/,
-
-    /youtube\.com\/watch\?v=([^&]+)/,
-
-    /youtu\.be\/([^?&/]+)/,
-
-    /youtube\.com\/embed\/([^?&/]+)/,
-
-    /youtube\.com\/shorts\/([^?&/]+)/
-    ]
-    ){
-
-    const m=
-    String(url)
-    .match(r);
-
-    if(m)
-    return m[1];
-
-    }
-
-    return'';
-
-    }
-
+    function musicYoutubeId(url=''){ return BossVideo.source(url)||''; }
 
     function ensureArtistUI(){
 
@@ -6130,7 +6092,7 @@
     "
     >
 
-    <iframe
+    <div
     id="artist-video-lightbox-frame"
     title="Music Video"
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -6141,7 +6103,7 @@
     border:0;
     display:block;
     "
-    ></iframe>
+    ></div>
 
     </div>
 
@@ -6314,8 +6276,7 @@
     );
 
 
-    frame.src=
-    `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0`;
+    BossVideo.render(frame,id,{title:item.title,autoplay:true});
 
 
     box.classList.add(
@@ -6349,7 +6310,7 @@
 
     if(frame){
 
-    frame.src='';
+    BossVideo.stop(frame);
 
     }
 
@@ -7092,7 +7053,7 @@
 
     const thumb=
     item.thumbnailUrl||
-    `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    BossVideo.thumbnail(id);
 
 
     const b=
@@ -8433,24 +8394,7 @@
     );
 
 
-    box.innerHTML=`
-
-    <iframe
-    data-dm-youtube
-    src="https://www.youtube.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0&enablejsapi=1"
-    title="${esc(title||'Decision Makers')}"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen
-    style="
-    width:100%;
-    height:100%;
-    display:block;
-    border:0;
-    background:#000;
-    "
-    ></iframe>
-
-    `;
+    box.innerHTML=BossVideo.html(videoId,{title,autoplay:true});
 
     }
 
@@ -8507,7 +8451,7 @@
 
     const thumbnail=
     v.thumbnailUrl||
-    `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+    BossVideo.thumbnail(id);
 
 
     const c=
@@ -8699,7 +8643,7 @@
     (
     id
     ?
-    `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+    BossVideo.thumbnail(id)
     :
     ''
     );
@@ -9055,9 +8999,10 @@
 
 
     function stopDM(){
+    document.querySelectorAll("#decision-makers-screen video").forEach(video=>video.pause());
 
     qa(
-    '[data-dm-youtube]'
+    '[data-dm-youtube],#decision-makers-screen iframe[data-boss-video]'
     )
     .forEach(
     frame=>{
@@ -10099,7 +10044,7 @@
     src="${
     esc(
     e.thumbnailUrl||
-    `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+    BossVideo.thumbnail(id)
     )
     }"
     alt="${esc(e.title)}"
@@ -10196,16 +10141,7 @@
     );
 
 
-    p.innerHTML=`
-
-    <iframe
-    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
-    title="${esc(title)}"
-    allow="autoplay; encrypted-media; picture-in-picture"
-    allowfullscreen
-    ></iframe>
-
-    `;
+    p.innerHTML=BossVideo.html(id,{title:title,autoplay:true});
 
 
     if(
@@ -10311,15 +10247,7 @@
     return;
 
 
-    p.innerHTML=`
-
-    <iframe
-    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?rel=0"
-    title="${esc(e.title)}"
-    allowfullscreen
-    ></iframe>
-
-    `;
+    p.innerHTML=BossVideo.html(id,{title:e.title,autoplay:false});
 
 
     if(
@@ -10409,7 +10337,7 @@
 
     const thumbnail=
     v.thumbnailUrl||
-    `https://img.youtube.com/vi/${v.id}/hqdefault.jpg`;
+    BossVideo.thumbnail(v.id);
 
 
     c.innerHTML=`
@@ -10541,17 +10469,7 @@
 
     if(media){
 
-    media.innerHTML=`
-
-    <iframe
-    class="tv-iframe"
-    src="https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&rel=0"
-    title="${esc(title)}"
-    allow="autoplay; encrypted-media; picture-in-picture"
-    allowfullscreen
-    ></iframe>
-
-    `;
+    media.innerHTML=BossVideo.html(id,{title:title,autoplay:true});
 
     }
 
@@ -12230,13 +12148,13 @@
     'Decision Makers',
 
     youtubeUrl:
-    v.youtube_url||
+    v.video_url||v.youtube_url||
     '',
 
     youtubeId:
     v.youtube_id||
     yt(
-    v.youtube_url||
+    v.video_url||v.youtube_url||
     ''
     ),
 
@@ -12298,7 +12216,7 @@
     .join(' • '),
 
     youtubeUrl:
-    v.youtube_url||
+    v.video_url||v.youtube_url||
     '',
 
     thumbnailUrl:
@@ -12352,7 +12270,7 @@
     id:
     v.youtube_id||
     yt(
-    v.youtube_url||
+    v.video_url||v.youtube_url||
     ''
     ),
 
@@ -21433,7 +21351,7 @@ function goListRenderDetail(row) {
   if(row.address){const directions=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(row.address+', '+goListLocation(row))}`;links.push(`<a href="${goListEscape(directions)}" rel="noopener">GET DIRECTIONS ↗</a>`)}
   for(const [name,url] of Object.entries(row.socials||{})){const safe=goListSafeUrl(url);if(safe)links.push(`<a href="${goListEscape(safe)}" rel="noopener">${goListEscape(name.toUpperCase())} ↗</a>`)}
   const photos=(row.gallery||[]).map(goListSafeUrl).filter(Boolean).slice(0,12);
-  detail.innerHTML=`<button class="go-list-detail-back" type="button">← THE GO LIST</button><div class="go-list-detail-cover">${cover?`<img src="${goListEscape(cover)}" alt="${goListEscape(row.name)}">`:''}<div class="go-list-detail-title"><small>${row.founding_partner?'FOUNDING PARTNER / ':''}${goListEscape((row.kinds||[]).join(' / ').toUpperCase())}${row.category?' / '+goListEscape(row.category.toUpperCase()):''}</small><h2>${goListEscape(row.name)}</h2><p>${goListEscape(goListLocation(row))}${row.online && row.city?' / AVAILABLE ONLINE':''}</p></div></div><div class="go-list-detail-grid"><div class="go-list-detail-story"><h3>${goListEscape(row.summary||'GET TO KNOW THE STORY')}</h3><p>${goListEscape(row.story||row.summary||'')}</p></div><aside class="go-list-detail-links"><h3>MAKE YOUR NEXT MOVE</h3>${links.join('')||'<p>More ways to connect are coming soon.</p>'}</aside></div>${video?`<h3>SEE THE STORY IN MOTION</h3><video class="go-list-video" controls preload="metadata" playsinline ${poster?`poster="${goListEscape(poster)}"`:''}><source src="${goListEscape(video)}">Your device cannot play this video.</video>`:''}${photos.length?`<h3>MORE TO DISCOVER</h3><div class="go-list-media">${photos.map(src=>`<img src="${goListEscape(src)}" alt="${goListEscape(row.name)} gallery photo" loading="lazy">`).join('')}</div>`:''}`;
+  detail.innerHTML=`<button class="go-list-detail-back" type="button">← THE GO LIST</button><div class="go-list-detail-cover">${cover?`<img src="${goListEscape(cover)}" alt="${goListEscape(row.name)}">`:''}<div class="go-list-detail-title"><small>${row.founding_partner?'FOUNDING PARTNER / ':''}${goListEscape((row.kinds||[]).join(' / ').toUpperCase())}${row.category?' / '+goListEscape(row.category.toUpperCase()):''}</small><h2>${goListEscape(row.name)}</h2><p>${goListEscape(goListLocation(row))}${row.online && row.city?' / AVAILABLE ONLINE':''}</p></div></div><div class="go-list-detail-grid"><div class="go-list-detail-story"><h3>${goListEscape(row.summary||'GET TO KNOW THE STORY')}</h3><p>${goListEscape(row.story||row.summary||'')}</p></div><aside class="go-list-detail-links"><h3>MAKE YOUR NEXT MOVE</h3>${links.join('')||'<p>More ways to connect are coming soon.</p>'}</aside></div>${video?`<h3>SEE THE STORY IN MOTION</h3>${BossVideo.html(video,{title:row.name,poster})}`:''}${photos.length?`<h3>MORE TO DISCOVER</h3><div class="go-list-media">${photos.map(src=>`<img src="${goListEscape(src)}" alt="${goListEscape(row.name)} gallery photo" loading="lazy">`).join('')}</div>`:''}`;
   detail.querySelector('.go-list-detail-back').onclick=goListBackToBrowse;
   window.scrollTo({top:0,behavior:'smooth'});
 }
