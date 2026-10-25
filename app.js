@@ -8424,7 +8424,7 @@
     class="artist-media-empty"
     style="width:100%"
     >
-    NO DECISION MAKERS VIDEOS ARE PUBLISHED RIGHT NOW.
+    ON THE GO VIDEOS ARE COMING SOON. CHECK BACK FOR FRESH PERSPECTIVE.
     </div>
 
     `;
