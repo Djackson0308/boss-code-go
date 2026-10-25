@@ -19606,7 +19606,7 @@
     await Promise.allSettled([
 
     api(
-    '/videos?all=1'
+    '/videos'
     ),
 
     api(
@@ -19665,7 +19665,8 @@
     '/home-features'
     ),
     api('/page-banners'),
-    api('/boss-code-tv-gallery')
+    api('/boss-code-tv-gallery'),
+    api('/videos/live-display')
 
     ]);
 
@@ -19702,7 +19703,8 @@
 
     homeFeaturesResult,
     bannersResult,
-    tvGalleryResult
+    tvGalleryResult,
+    liveDisplayResult
 
     ]=
     results;
@@ -19716,7 +19718,9 @@
     ){
 
     applyVideos(
-    videosResult.value
+    videosResult.value.concat(
+      videosResult.value.some(v=>v.section==='boss-code-tv-live') || liveDisplayResult.status!=='fulfilled' ? [] : liveDisplayResult.value
+    )
     );
 
     }
