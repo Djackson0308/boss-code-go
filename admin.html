@@ -4388,7 +4388,7 @@ class="list"
 
 </main>
 <script src="boss-video-player.js"></script>
-<script src="video-library.js?v=20261025-owner-workflow-1"></script>
+<script src="video-library.js?v=20261025-publishing-2"></script>
 <script>
 
 const API =
@@ -5089,10 +5089,8 @@ DELETE
 }
 
 
-function editVideo(
-prefix,
-id
-){
+function editVideo(prefix,id){
+if(!BossVideoLibrary.editSaved(prefix+"Url"))return;
 
 const item =
 videos.find(
@@ -5579,6 +5577,7 @@ DELETE
 
 
 function editSession(id){
+if(!BossVideoLibrary.editSaved("sessionUrl"))return;
 
 const item =
 dmSessions.find(
@@ -7102,6 +7101,7 @@ DELETE
 
 
 function editArtistMusicVideo(id){
+if(!BossVideoLibrary.editSaved("artistVideoUrl"))return;
 
 const item =
 artistMusicVideos.find(
@@ -8592,6 +8592,7 @@ DELETE
 
 
 function editLocation(id){
+if(!BossVideoLibrary.editSaved("locationEpisode"))return;
 
 const item =
 locations.find(
@@ -9994,6 +9995,7 @@ DELETE
 
 
 function editHomeFeature(id){
+if(!BossVideoLibrary.editSaved("homeFeatureMediaUrl"))return;
 
 const item =
 homeFeatures.find(
@@ -10653,6 +10655,7 @@ DELETE
 
 
 function editPromoAd(id){
+if(!BossVideoLibrary.editSaved("promoMediaUrl"))return;
 
 const item =
 promoAds.find(

@@ -76,15 +76,17 @@ window.BossVideoControls = function ({ api, upload, library }) {
     const box = document.createElement('fieldset'); box.className = 'boss-video-input'; box.dataset.videoFor = input.id;
     box.innerHTML = '<legend>Video source</legend><label>Select MP4 video from computer<input type="file" accept="video/mp4,.mp4" aria-label="Select MP4 video from computer"></label><div class="video-upload-actions"><button type="button" data-start>Choose MP4 / Upload</button><button type="button" data-library>Existing Video Library</button><button type="button" data-link>YouTube Link</button><button type="button" data-pause hidden>Pause upload</button><button type="button" data-retry hidden>Retry upload</button></div><strong data-state role="status" aria-live="polite">Select an MP4 or use a video link.</strong><progress max="100" value="0" aria-label="Video upload progress" hidden></progress><p data-bytes></p><p data-error role="alert"></p><div data-preview hidden><h3>Verified private preview</h3><video controls playsinline preload="auto"></video><button type="button" data-approve disabled>Approve preview for publication</button></div><small>Selecting an MP4 starts uploading. Keep this page open. Saving is blocked until verification finishes. A new upload stays a draft until you approve its preview and switch Published on.</small>';
     input.after(box);
+    const savedPreview = document.createElement('button'); savedPreview.type = 'button'; savedPreview.textContent = 'Preview saved video'; savedPreview.dataset.savedPreview = '';
+    box.querySelector('.video-upload-actions').append(savedPreview);
     const file = box.querySelector('input[type=file]'), start = box.querySelector('[data-start]'), choose = box.querySelector('[data-library]'), retry = box.querySelector('[data-retry]'), pause = box.querySelector('[data-pause]'), state = box.querySelector('[data-state]'), progress = box.querySelector('progress'), byteText = box.querySelector('[data-bytes]'), error = box.querySelector('[data-error]'), panel = box.querySelector('[data-preview]'), video = panel.querySelector('video'), approve = box.querySelector('[data-approve]');
     const context = { input, box, save, extraSaves, published, config, pending: false, busy: false, approved: false, asset: null, lastFile: null, state: 'Idle', controller: null };
     mounts.set(input.id, context);
     const status = (name, message = '') => { context.state = name; state.textContent = name + (message ? ' — ' + message : ''); box.dataset.uploadState = name; };
     const draft = () => { if (published) { if (published.type === 'checkbox') published.checked = false; else published.value = '0'; published.disabled = true; } context.approved = false; approve.disabled = true; };
     const busy = value => { context.busy = value; start.disabled = choose.disabled = file.disabled = input.disabled = value; legacy.forEach(el => { el.disabled = value; }); pause.hidden = !value; [save, ...extraSaves].filter(Boolean).forEach(el => { el.disabled = value || context.pending; }); };
-    function failed(e) {
+    function failed(e, preservePublication = false) {
       context.pending = true; status('Upload Failed', e.name === 'AbortError' ? 'Interrupted. Retry resumes confirmed parts.' : e.message);
-      error.textContent = e.message; retry.hidden = false; draft();
+      error.textContent = e.message; retry.hidden = false; if (!preservePublication) draft();
     }
     async function verify(asset) {
       context.asset = asset; status('Verifying', 'Checking stored bytes, metadata, and authorized playback.');
@@ -118,22 +120,40 @@ window.BossVideoControls = function ({ api, upload, library }) {
       } catch (e) { failed(e); throw e; }
       finally { busy(false); }
     }
-    async function existing(asset) {
+    async function existing(asset, preservePublication = false) {
       if (context.busy) throw Error('This video is already being verified.');
-      context.pending = true; draft(); busy(true); error.textContent = '';
-      try { return await verify(asset); } catch (e) { failed(e); throw e; } finally { busy(false); }
+      context.pending = true; context.preservePublication = preservePublication; if (!preservePublication) draft(); busy(true); error.textContent = '';
+      try { return await verify(asset); } catch (e) { failed(e, preservePublication); throw e; } finally { busy(false); }
     }
     context.selectFile = run; context.selectAsset = existing;
     file.addEventListener('change', () => { if (file.files[0]) run(file.files[0]).catch(() => {}); });
     for (const el of legacy.filter(el => el.type === 'file')) el.addEventListener('change', () => { const selected = el.files[0]; if (selected && (/\.mp4$/i.test(selected.name) || selected.type.startsWith('video/'))) run(selected).catch(() => {}); });
     start.onclick = () => { if (context.lastFile && context.state === 'Upload Failed') run().catch(() => {}); else file.click(); };
-    retry.onclick = () => (context.lastFile ? run() : context.asset ? existing(context.asset) : Promise.reject(Error('Select the original MP4 to retry.'))).catch(e => { error.textContent = e.message; });
+    retry.onclick = () => (context.lastFile ? run() : context.asset ? existing(context.asset, context.preservePublication) : Promise.reject(Error('Select the original MP4 to retry.'))).catch(e => { error.textContent = e.message; });
     pause.onclick = () => context.controller?.abort();
     choose.onclick = () => library(asset => existing(asset));
+    savedPreview.onclick = async () => {
+      try {
+        const id = managed(input.value.trim()); if (!id) throw Error('Select a stored library video before opening its private preview.');
+        const result = await api(`/admin/video-library/${id}/status`);
+        await existing(result.asset, true);
+      } catch (e) { error.textContent = e.message; }
+    };
+    context.editSaved = () => {
+      if (context.busy) return false;
+      context.pending = false; context.approved = false; context.asset = null; context.lastFile = null;
+      panel.hidden = true; video.pause(); video.removeAttribute('src'); video.load();
+      approve.disabled = true; retry.hidden = true; error.textContent = ''; progress.hidden = true; byteText.textContent = '';
+      if (published) published.disabled = false;
+      [save, ...extraSaves].filter(Boolean).forEach(el => { el.disabled = false; });
+      status('Saved video', 'Use Preview saved video to review it. Saving preserves your Published and Featured choices.');
+      return true;
+    };
     box.querySelector('[data-link]').onclick = () => { input.focus(); state.textContent = 'Paste a YouTube link in the video field.'; };
     approve.onclick = async () => {
       approve.disabled = true;
       try {
+        if (!context.asset || managed(input.value.trim()) !== context.asset.id) throw Error('The edited video changed. Use Preview saved video before approving it.');
         await api(`/admin/video-library/${context.asset.id}/approve`, { method: 'POST', body: JSON.stringify({ confirmed: true, width: video.videoWidth, height: video.videoHeight, duration: video.duration }) });
         context.approved = true; if (published) published.disabled = false;
         status('Ready to Preview', 'Preview approved. Switch Published on and save when you want this video in the app.');
@@ -145,14 +165,8 @@ window.BossVideoControls = function ({ api, upload, library }) {
     const button = event.target.closest?.('button');
     for (const context of mounts.values()) if (button === context.save || context.extraSaves.includes(button)) {
       if (context.busy || context.pending) { event.preventDefault(); event.stopImmediatePropagation(); context.box.querySelector('[data-error]').textContent = 'Finish or retry the selected upload before saving. Your title and selected file are retained.'; return; }
-      const id = managed(context.input.value);
-      if (id && (context.published?.checked || context.published?.value === '1') && !context.approved) {
-        event.preventDefault(); event.stopImmediatePropagation();
-        api('/admin/video-library').then(result => {
-          const asset = result.data.find(a => a.id === id); if (!asset) throw Error('Find this video in the Video Library and select it again.');
-          return context.selectAsset(asset);
-        }).catch(e => { context.box.querySelector('[data-error]').textContent = e.message; });
-      }
+      // Persisted preview approval belongs to the asset, not this page's lifetime.
+      // The server validates it without cancelling the save or changing either toggle.
     }
   }, true);
   async function withSaveLock(path, options, perform) {
@@ -163,7 +177,17 @@ window.BossVideoControls = function ({ api, upload, library }) {
     if (related.some(c => c.busy || c.pending)) throw Error('Wait for the selected video to finish verification, or retry the failed upload.');
     if (saves.has(route)) throw Error('This save is already in progress.');
     saves.add(route); related.forEach(c => [c.save, ...c.extraSaves].filter(Boolean).forEach(el => { el.disabled = true; }));
-    try { return await perform(); } finally { saves.delete(route); related.forEach(c => [c.save, ...c.extraSaves].filter(Boolean).forEach(el => { el.disabled = c.busy || c.pending; })); }
+    try {
+      const result = await perform();
+      if (related.length && options.body) {
+        const requested = JSON.parse(options.body);
+        for (const field of ['published', 'featured']) if (Object.hasOwn(requested, field)) {
+          const expected = [true, 1, '1', 'true'].includes(requested[field]) ? 1 : 0;
+          if (!result.publication_verified || Number(result.data?.[field]) !== expected) throw Error(`Save was not confirmed: ${field} did not match the requested state. Reload the record before retrying.`);
+        }
+      }
+      return result;
+    } finally { saves.delete(route); related.forEach(c => [c.save, ...c.extraSaves].filter(Boolean).forEach(el => { el.disabled = c.busy || c.pending; })); }
   }
   const statusText = item => ({ ready: 'Ready — verified stored video', uploading: 'Uploading — not public', unavailable: 'Unavailable — upload or select a video', linked: 'Linked video', none: 'No video attached' }[item.upload_status] || ((item.youtube_url || item.video_url) ? 'Linked video' : 'Unavailable — no video attached'));
   function thumbnail(item) { return `<div class="thumb video-state-thumb" role="status">${esc(statusText(item))}</div>`; }
@@ -171,7 +195,7 @@ window.BossVideoControls = function ({ api, upload, library }) {
   const style = document.createElement('style');
   style.textContent = '.boss-video-input [data-state]{display:block;margin:14px 0;font-size:17px}.boss-video-input progress:not([hidden]){display:block!important;width:100%;height:24px;accent-color:#e4bb42}.boss-video-input [hidden]{display:none!important}.boss-video-input [data-error]{color:#ffb6a9;white-space:pre-wrap}.boss-video-input video{display:block;width:100%;max-width:720px;max-height:420px;background:#171717}.boss-video-input button:disabled{opacity:.5;cursor:wait}.video-state-thumb{display:flex!important;align-items:center;justify-content:center;padding:12px;background:#29241b!important;color:#ffe4a4!important;text-align:center;min-height:100px;box-sizing:border-box}.boss-video-input [data-bytes]{font-variant-numeric:tabular-nums;overflow-wrap:anywhere}';
   document.head.append(style);
-  return { mount, withSaveLock, statusText, thumbnail, publicationLabel, selectFile(target, file) { const input = typeof target === 'string' ? document.querySelector(target.startsWith('#') ? target : '#' + target) : target; const context = mount(input) || mounts.get(input.id); return context.selectFile(file); } };
+  return { mount, withSaveLock, statusText, thumbnail, publicationLabel, editSaved(target) { return mounts.get(target)?.editSaved() ?? true; }, selectFile(target, file) { const input = typeof target === 'string' ? document.querySelector(target.startsWith('#') ? target : '#' + target) : target; const context = mount(input) || mounts.get(input.id); return context.selectFile(file); } };
 };
 
 (function(){
