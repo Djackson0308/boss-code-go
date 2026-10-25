@@ -1265,7 +1265,6 @@ Show in app.
 <input
 id="dmPub"
 type="checkbox"
-checked
 >
 
 <span class="slider"></span>
@@ -1448,7 +1447,6 @@ Show in Boss Bite.
 <input
 id="bbPub"
 type="checkbox"
-checked
 >
 
 <span class="slider"></span>
@@ -1604,7 +1602,6 @@ Show in B.O.S.S CODE TV.
 <input
 id="tvPub"
 type="checkbox"
-checked
 >
 
 <span class="slider"></span>
@@ -1853,7 +1850,6 @@ Show this session in Decision Makers.
 <input
 id="sessionPub"
 type="checkbox"
-checked
 >
 
 <span class="slider"></span>
@@ -3036,7 +3032,7 @@ Add uploaded videos or YouTube music videos to each artist. The app will only sh
 </div>
 
 <div class="toggle-row">
-<div class="toggle"><div><strong>PUBLISHED</strong><em>Show this music video in the app.</em></div><label class="switch"><input id="artistVideoPub" type="checkbox" checked><span class="slider"></span></label></div>
+<div class="toggle"><div><strong>PUBLISHED</strong><em>Show this music video in the app.</em></div><label class="switch"><input id="artistVideoPub" type="checkbox"><span class="slider"></span></label></div>
 <div class="toggle"><div><strong>FEATURED</strong><em>Feature this music video first.</em></div><label class="switch"><input id="artistVideoFeat" type="checkbox"><span class="slider"></span></label></div>
 </div>
 
@@ -4392,7 +4388,7 @@ class="list"
 
 </main>
 <script src="boss-video-player.js"></script>
-<script src="video-library.js"></script>
+<script src="video-library.js?v=20261025-owner-workflow-1"></script>
 <script>
 
 const API =
@@ -4485,10 +4481,8 @@ return Number.isFinite(n)
 }
 
 
-async function api(
-path,
-options = {}
-){
+async function api(path,options={}) { return BossVideoLibrary.withSaveLock(path,options,()=>rawApi(path,options)); }
+async function rawApi(path,options={}){
 
 const headers =
 new Headers(
@@ -4578,7 +4572,7 @@ return null;
 
 
 if(file.type.startsWith("video/") || /\.mp4$/i.test(file.name)){
-try{const asset=await BossVideoLibrary.upload(file,{onProgress:(p,text)=>{$(messageId).textContent=text+" "+p+"%";}});return asset.url;}catch(error){$(messageId).textContent=error.message;return null;}
+try{const target=messageId==="homeFeatureMsg"?"homeFeatureMediaUrl":messageId==="promoMsg"?"promoMediaUrl":null;if(!target)throw Error("Use the shared Video source control for this video upload.");const asset=await BossVideoLibrary.selectFile(target,file);return asset.url;}catch(error){$(messageId).textContent=error.message;return null;}
 }
 
 const form =
@@ -5041,7 +5035,7 @@ return `
 <div>
 ${image
 ? `<img class="thumb" src="${esc(image)}" alt="">`
-: `<div class="thumb"></div>`
+: BossVideoLibrary.thumbnail(item)
 }
 </div>
 
@@ -5052,7 +5046,7 @@ ${image
 <div class="badges">
 
 <span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+${BossVideoLibrary.publicationLabel(item)}
 </span>
 
 ${Number(item.featured) === 1
@@ -5062,6 +5056,7 @@ ${Number(item.featured) === 1
 
 </div>
 
+<p class="video-status">${esc(BossVideoLibrary.statusText(item))}</p>
 <div class="meta">
 ${esc(item.category || "")}
 </div>
@@ -5218,7 +5213,7 @@ $("dmTitle").value = "";
 $("dmCategory").value = "On The Go";
 $("dmUrl").value = "";
 $("dmDesc").value = "";
-$("dmPub").checked = true;
+$("dmPub").checked = false;
 $("dmFeat").checked = false;
 
 $("dmSave").textContent =
@@ -5238,7 +5233,7 @@ $("bbCity").value = "";
 $("bbCategory").value = "";
 $("bbUrl").value = "";
 $("bbDesc").value = "";
-$("bbPub").checked = true;
+$("bbPub").checked = false;
 $("bbFeat").checked = false;
 
 $("bbSave").textContent =
@@ -5256,7 +5251,7 @@ $("tvTitle").value = "";
 $("tvCategory").value = "";
 $("tvUrl").value = "";
 $("tvDesc").value = "";
-$("tvPub").checked = true;
+$("tvPub").checked = false;
 $("tvFeat").checked = false;
 
 $("tvSave").textContent =
@@ -5521,7 +5516,7 @@ return `
 
 ${image
 ? `<img class="thumb" src="${esc(image)}" alt="">`
-: `<div class="thumb"></div>`
+: BossVideoLibrary.thumbnail(item)
 }
 
 </div>
@@ -5535,7 +5530,7 @@ SESSION ${esc(item.session_number || "")}: ${esc(item.title || "")}
 <div class="badges">
 
 <span class="badge ${Number(item.published) === 1 ? "pub" : "draft"}">
-${Number(item.published) === 1 ? "PUBLISHED" : "DRAFT"}
+${BossVideoLibrary.publicationLabel(item)}
 </span>
 
 ${Number(item.featured) === 1
@@ -5551,10 +5546,7 @@ ${esc(item.description || "")}
 
 <br>
 
-${item.youtube_id
-? "VIDEO READY"
-: "SESSION COMING SOON"
-}
+${esc(BossVideoLibrary.statusText(item))}
 
 </div>
 
@@ -5646,7 +5638,7 @@ $("sessionUrl").value = "";
 $("sessionThumb").value = "";
 $("sessionSort").value = 0;
 
-$("sessionPub").checked = true;
+$("sessionPub").checked = false;
 $("sessionFeat").checked = false;
 
 $("sessionSave").textContent =
@@ -7048,7 +7040,7 @@ return `
 
 ${thumb
 ? `<img class="thumb" src="${esc(thumb)}" alt="">`
-: `<div class="thumb"></div>`
+: BossVideoLibrary.thumbnail(item)
 }
 
 </div>
@@ -7070,6 +7062,7 @@ ${Number(item.featured)===1
 
 </div>
 
+<p class="video-status">${esc(BossVideoLibrary.statusText(item))}</p>
 <div class="meta">
 
 ${esc(artist?.name || "")}
@@ -7160,7 +7153,7 @@ $("artistVideoThumb").value = "";
 $("artistVideoThumbFile").value = "";
 $("artistVideoSort").value = 0;
 
-$("artistVideoPub").checked = true;
+$("artistVideoPub").checked = false;
 $("artistVideoFeat").checked = false;
 
 $("artistVideoSave").textContent =

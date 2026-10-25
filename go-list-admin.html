@@ -54,7 +54,7 @@
   </div>
 </div>
 <script src="boss-video-player.js"></script>
-<script src="video-library.js"></script>
+<script src="video-library.js?v=20261025-owner-workflow-1"></script>
 <script>
 const API='https://boss-code-go-api.dezthareason4ever.workers.dev';
 const $=id=>document.getElementById(id);
@@ -64,11 +64,12 @@ let rows=[];
 let selectedId=null;
 BossVideoLibrary.configure({api:API,getKey:()=>key});
 
-BossVideoLibrary.mount(form.elements.namedItem('video_url'));
+form.elements.namedItem('video_url').id='goListVideoUrl';form.elements.namedItem('published').id='goListVideoPublished';BossVideoLibrary.mount(form.elements.namedItem('video_url'));
 $('key').value=key;
 function setStatus(message,error=false){$('status').textContent=message;$('status').style.color=error?'#ff7474':'#f5c518'}
 function safeText(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function api(path,options={}){
+async function api(path,options={}) { return BossVideoLibrary.withSaveLock(path,options,()=>rawApi(path,options)); }
+async function rawApi(path,options={}){
   if(!key)throw new Error('Enter your admin key first.');
   const res=await fetch(API+path,{...options,headers:{'X-Admin-Key':key,...options.headers}});
   const data=await res.json().catch(()=>({}));
@@ -88,7 +89,7 @@ $('connect').onclick=async()=>{key=$('key').value.trim();sessionStorage.setItem(
 $('forget').onclick=()=>{key='';sessionStorage.removeItem('boss-go-list-admin-key');$('key').value='';setStatus('Key cleared.')};
 $('new').onclick=resetForm;$('new-entry-reset').onclick=resetForm;
 form.onsubmit=async event=>{event.preventDefault();const kinds=[...document.querySelectorAll('#kinds input:checked')].map(x=>x.value);if(!kinds.length){setStatus('Choose at least one type.',true);return}const socials={};for(const name of ['instagram','facebook','tiktok','youtube','linkedin','x'])socials[name]=field(name).value.trim();const data={};for(const name of ['name','slug','category','summary','story','city','state','country','address','website_url','contact_email','contact_phone','cover_url','video_url','video_poster_url','sort_order','featured_until'])data[name]=field(name).value.trim();data.kinds=kinds;data.socials=socials;data.gallery=field('gallery').value.split('\n').map(x=>x.trim()).filter(Boolean);data.online=field('online').checked;data.published=field('published').checked;data.founding_partner=field('founding_partner').checked;const button=$('save');button.disabled=true;try{const result=await api(selectedId?`/admin/go-list/entries/${selectedId}`:'/admin/go-list/entries',{method:selectedId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const id=result.id||selectedId;const currentFeatured=$('featured').value;await load();const saved=rows.find(x=>x.id===id);if(saved)edit(saved);drawFeatured(currentFeatured);setStatus('Entry saved.')}catch(e){setStatus(e.message,true)}finally{button.disabled=false}};
-document.querySelectorAll('[data-upload]').forEach(button=>button.onclick=async()=>{const file=$(button.dataset.input).files[0];if(!file){setStatus('Choose a file first.',true);return}const target=button.dataset.upload;const body=new FormData();body.append('file',file);button.disabled=true;setStatus(`Uploading ${file.name}...`);try{const result=target==='video_url'?await BossVideoLibrary.upload(file,{onProgress:(p,text)=>setStatus(text+' '+p+'%')}):await api('/admin/go-list/media',{method:'POST',body});if(target==='gallery'){const lines=field('gallery').value.trim();field('gallery').value=(lines?lines+'\n':'')+result.url}else setField(target,result.url);if(target==='cover_url')$('preview').innerHTML=`<img src="${safeText(result.url)}" alt="Uploaded photo">`;setStatus('Upload complete. Save the entry to keep this file on its profile.')}catch(e){setStatus(e.message,true)}finally{button.disabled=false}});
+document.querySelectorAll('[data-upload]').forEach(button=>button.onclick=async()=>{const file=$(button.dataset.input).files[0];if(!file){setStatus('Choose a file first.',true);return}const target=button.dataset.upload;const body=new FormData();body.append('file',file);button.disabled=true;setStatus(`Uploading ${file.name}...`);try{const result=target==='video_url'?await BossVideoLibrary.selectFile('goListVideoUrl',file):await api('/admin/go-list/media',{method:'POST',body});if(target==='gallery'){const lines=field('gallery').value.trim();field('gallery').value=(lines?lines+'\n':'')+result.url}else setField(target,result.url);if(target==='cover_url')$('preview').innerHTML=`<img src="${safeText(result.url)}" alt="Uploaded photo">`;setStatus('Upload complete. Save the entry to keep this file on its profile.')}catch(e){setStatus(e.message,true)}finally{button.disabled=false}});
 function homeUploadStatus(message,error=false){const line=$('home-photo-status');line.textContent=message;line.style.color=error?'#ff7474':'#f5c518';setStatus(message,error)}
 $('upload-home-photo').onclick=async()=>{
   const file=$('home-photo-file').files[0];

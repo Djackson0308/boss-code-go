@@ -1856,7 +1856,7 @@ class="message"
 
 
 <script src="boss-video-player.js"></script>
-<script src="video-library.js"></script>
+<script src="video-library.js?v=20261025-owner-workflow-1"></script>
 <script>
 
 const API =
@@ -1958,10 +1958,8 @@ $("msg").textContent =
 }
 
 
-async function api(
-path,
-options = {}
-){
+async function api(path,options={}) { return BossVideoLibrary.withSaveLock(path,options,()=>rawApi(path,options)); }
+async function rawApi(path,options={}){
 
 const headers =
 new Headers(
@@ -4104,7 +4102,7 @@ return;
 
 
 if(privateKind === 'video' || file.type.startsWith('video/') || /\.mp4$/i.test(file.name)){
-try{const asset=await BossVideoLibrary.upload(file,{onProgress:(p,text)=>{$(msgId).textContent=text+' '+p+'%';}});$(targetId).value=asset.url;$(msgId).textContent='UPLOAD COMPLETE. SAVE THE COURSE OR DAY.';}catch(error){$(msgId).textContent=error.message;}return;
+try{await BossVideoLibrary.selectFile(targetId,file);$(msgId).textContent='READY TO PREVIEW. Approve the preview before publishing.';}catch(error){$(msgId).textContent=error.message;}return;
 }
 $(msgId).textContent =
 "UPLOADING...";
