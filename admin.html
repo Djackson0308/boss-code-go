@@ -5263,6 +5263,11 @@ true;
 }
 
 
+async function loadVideosOnly(){
+const result=await api("/videos?all=1");
+videos=result.data||[];
+renderVideo("dm","decision-makers");renderVideo("bb","boss-bite");renderVideo("tv","boss-code-tv");renderLive();
+}
 async function saveVideo(prefix){
 
 let payload = {};
@@ -5430,7 +5435,7 @@ id
 
 resetVideo(prefix);
 
-await loadAll();
+await loadVideosOnly();
 
 }
 catch(error){
