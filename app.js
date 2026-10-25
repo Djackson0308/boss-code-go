@@ -8327,6 +8327,9 @@
        decision-makers-backend.js
     ========================================================= */
 
+    // Public video categories only; page sections and backend management are unchanged.
+    const DM_PUBLIC_VIDEO_CATEGORIES = new Set(['ON THE GO']);
+
     let dmVideos=[];
 
     let dmSessions=[];
@@ -8424,7 +8427,7 @@
     class="artist-media-empty"
     style="width:100%"
     >
-    ON THE GO VIDEOS ARE COMING SOON. CHECK BACK FOR FRESH PERSPECTIVE.
+    NO DECISION MAKERS VIDEOS ARE PUBLISHED RIGHT NOW.
     </div>
 
     `;
@@ -12131,7 +12134,11 @@
     .filter(
     v=>
     v.section===
-    'decision-makers'
+    'decision-makers' &&
+    DM_PUBLIC_VIDEO_CATEGORIES.has(
+      String(v.category || 'ON THE GO').trim().toUpperCase()
+        .replace(/[-_]+/g, ' ').replace(/\s+/g, ' ')
+    )
     )
 
     .map(

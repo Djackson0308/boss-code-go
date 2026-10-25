@@ -32,20 +32,10 @@
 
   >
 
-  <!-- Launch visibility: remove data-public-sections to restore all retained sections. -->
-  <style id="decision-makers-launch-styles">
-    #decision-makers-screen[data-public-sections="on-the-go"] > :not(.decision-header):not(#decision-on-the-go) { display:none !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-header { padding:24px 16px 20px !important; margin:0 auto !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-logo { width:100% !important; height:180px !important; max-height:180px !important; object-fit:contain !important; margin:0 auto !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-tagline { display:none !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-header > h2,
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-intro { display:none !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] #decision-on-the-go { width:100%; max-width:1100px; margin:0 auto !important; padding:20px 16px 32px !important; box-sizing:border-box; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .on-the-go-row { display:grid !important; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)) !important; gap:18px !important; overflow:visible !important; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .on-the-go-card { min-width:0; width:100%; max-width:350px; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .decision-card-body { overflow-wrap:anywhere; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .dm-session-play:focus-visible { outline:3px solid #f5c518; outline-offset:-4px; }
-    #decision-makers-screen[data-public-sections="on-the-go"] .artist-media-empty { grid-column:1/-1; padding:32px 20px; border:1px solid #333; border-radius:18px; background:#0b0b0b; color:#fff; text-align:center; box-sizing:border-box; }
+  <!-- Video-only visibility: keep session cards and all nonvideo page content intact. -->
+  <style id="decision-makers-video-visibility">
+    #decision-sessions .dm-session-media,
+    #decision-sessions .dm-watch-session-button { display:none !important; }
   </style>
 </head>
 
@@ -1514,7 +1504,6 @@
   <div
 
     id="decision-makers-screen"
-    data-public-sections="on-the-go"
 
     class="screen"
 
@@ -2306,7 +2295,7 @@
   ></script>
 
  <script src="boss-video-player.js"></script>
- <script src="app.js?v=20261025-public-videos-1"></script>
+ <script src="app.js?v=20261025-dm-video-only-2"></script>
 
 <script src="decision-makers-backend.js"></script>
 
