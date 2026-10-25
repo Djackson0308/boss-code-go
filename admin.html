@@ -4752,7 +4752,7 @@ api("/decision-maker-challenges?all=1"),
 api("/decision-maker-resources?all=1"),
 api("/contact-inquiries"),
 api("/promo-ads?all=1"),
-api(`/analytics/dashboard?days=${Number($("analyticsDays")?.value || 30)}`)
+Promise.resolve({data:analyticsData})
 
 ]);
 
@@ -11128,6 +11128,7 @@ ${valueFn(item)}
 
 
 function renderAnalytics(){
+if(!analyticsData){$("analyticsStatus").textContent="ON DEMAND";$("analyticsMsg").textContent="Use Refresh Analytics to load this dashboard.";return;}
 
 if(!analyticsData){
 
@@ -12093,23 +12094,7 @@ loadAnalyticsOnly
   while the Admin page is open.
 */
 
-setInterval(
-()=>{
-
-if(
-KEY &&
-$("login")
-.classList
-.contains("hide")
-){
-
-loadAnalyticsOnly();
-
-}
-
-},
-30000
-);
+// Analytics refresh is explicit; idle video management must not exhaust D1 reads.
 
 
 /* ===================================================== */
