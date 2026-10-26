@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-10-26T01:05:57.064Z",
+  "checkedAt": "2026-10-26T01:53:12.649Z",
   "productionCommit": "7c00febb6048b8f115b7c6a8bfad872e24850862",
   "version": "1.0.0",
   "buildNumber": 1,
@@ -11,7 +11,9 @@
     "intendedPublisher": "B.O.S.S. CODE MEDIA GROUP LLC",
     "freeAppsAgreement": "Active 2026-10-25 through 2027-10-25",
     "developerPortalEnrollmentType": "Not verified; portal did not render",
-    "paidAgreement": "Observed expired; not accepted or changed"
+    "paidAgreement": "Observed expired; not accepted or changed",
+    "internalTestingTeamApproved": true,
+    "ownerDecision": "Use current MUSIC GROUP LLC team for internal testing"
   },
   "existingApp": {
     "name": "BOSS CODE MEDIA",
@@ -45,7 +47,7 @@
     }
   },
   "pending": [
-    "Owner choice of Apple team/legal entity",
+    "Browser automation repeatedly disconnected while opening the New App form; GO app record creation was not submitted or verified",
     "Verify/register GO bundle ID on correct team and create matching GO record if appropriate",
     "Configure Apple-managed signing or existing owner-controlled signing credentials",
     "Upload internal-only build and verify Apple processing",
@@ -66,5 +68,11 @@
     "productionMain": "7c00febb6048b8f115b7c6a8bfad872e24850862",
     "productionFilesChanged": 0,
     "androidFilesChanged": 0
+  },
+  "signingConfiguration": {
+    "repositoryActionSecretsConfigured": false,
+    "teamIdVerified": false,
+    "identifierOwnershipVerified": false,
+    "signingReady": false
   }
 }

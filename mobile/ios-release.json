@@ -10,5 +10,8 @@
   "internalTestFlightUploadAuthorized": true,
   "externalTestingAuthorized": false,
   "publicReviewAuthorized": false,
-  "signingReady": false
+  "signingReady": false,
+  "internalTestingTeamApproved": true,
+  "approvedInternalTestingLegalEntity": "B.O.S.S. CODE MUSIC GROUP LLC",
+  "publicPublisherNameResolutionRequired": true
 }
