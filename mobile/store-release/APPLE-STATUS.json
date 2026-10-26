@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-26T01:05:57.064Z",
+  "productionCommit": "7c00febb6048b8f115b7c6a8bfad872e24850862",
+  "version": "1.0.0",
+  "buildNumber": 1,
+  "bundleId": "com.bosscodemedia.go",
+  "bundleIdStatus": "Provisional; not registered or changed",
+  "membership": {
+    "appStoreConnectAccessible": true,
+    "observedLegalEntity": "B.O.S.S. CODE MUSIC GROUP LLC",
+    "intendedPublisher": "B.O.S.S. CODE MEDIA GROUP LLC",
+    "freeAppsAgreement": "Active 2026-10-25 through 2027-10-25",
+    "developerPortalEnrollmentType": "Not verified; portal did not render",
+    "paidAgreement": "Observed expired; not accepted or changed"
+  },
+  "existingApp": {
+    "name": "BOSS CODE MEDIA",
+    "appleId": "1641573518",
+    "bundleId": "com.bosscodemedia.odeum",
+    "sku": "BOSS_CODE_MEDIA_ODEUM",
+    "version": "3.1.101",
+    "removedFromSale": true,
+    "modified": false
+  },
+  "build": {
+    "method": "GitHub Actions standard macos-26 public repository",
+    "xcode": "26.6 (17F113)",
+    "run": "https://github.com/Djackson0308/boss-code-go/actions/runs/40251554028",
+    "commit": "b167fdf0e3fc8e324fea3402017363439e0e5361",
+    "unsignedArchive": "Succeeded",
+    "signedIPA": false,
+    "testFlightUploaded": false,
+    "processing": "Not started",
+    "isolatedFixtures": false,
+    "simulator": {
+      "run": "https://github.com/Djackson0308/boss-code-go/actions/runs/40251816627",
+      "commit": "9007764909182abba134449747b2d704de6fc571",
+      "compile": "Succeeded",
+      "launch": "Succeeded",
+      "visual": "Native startup decision dialog rendered with safe-area status bar; screenshot inspected",
+      "writes": "Fetch/XHR non-read methods and sendBeacon blocked in simulator-only resources after clean archive",
+      "screenshot": "mobile/artifacts/ios-simulator/READ-ONLY-SIMULATOR-STARTUP.png",
+      "fullFeatureAcceptance": false,
+      "physicalIPhoneTested": false
+    }
+  },
+  "pending": [
+    "Owner choice of Apple team/legal entity",
+    "Verify/register GO bundle ID on correct team and create matching GO record if appropriate",
+    "Configure Apple-managed signing or existing owner-controlled signing credentials",
+    "Upload internal-only build and verify Apple processing",
+    "Physical iPhone functional acceptance",
+    "Reconcile website ad-hoc deployment before deletion/support correction",
+    "Finalize privacy, age/content rights, payment and export-compliance answers"
+  ],
+  "protectedSystemsChanged": false,
+  "website": {
+    "privacyStatus": 200,
+    "deletionStatus": 200,
+    "deletionProblem": "Deletion-specific title still serves privacy-policy h1 and body",
+    "canonicalDeployment": "ba05f40e-2999-4605-b526-912615907339",
+    "sourceMismatch": "Ad-hoc dirty upload at 98169a7f4dec89bddfd7c884a0fd51f358bfd4a2 differs from available website main b8849bb9b124f25ddadc42fea740c7240389b833",
+    "publishedChanges": false
+  },
+  "protectedSourceCheck": {
+    "productionMain": "7c00febb6048b8f115b7c6a8bfad872e24850862",
+    "productionFilesChanged": 0,
+    "androidFilesChanged": 0
+  }
+}

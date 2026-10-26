@@ -1,0 +1,68 @@
+B.O.S.S. CODE GO - INTERNAL TESTFLIGHT PREPARATION
+
+App: B.O.S.S. CODE GO
+Version: 1.0.0; initial build: 1 (must check App Store Connect uniqueness).
+Bundle ID: com.bosscodemedia.go, provisional until existing records are inspected.
+Support: greatness@bosscodemedia.com
+Privacy: https://bosscodemedia.com/bosscodego
+Feedback contact: greatness@bosscodemedia.com
+Review contact first/last name and phone: owner confirmation required.
+Copyright, age rating, content rights and export-compliance answers: owner confirmation required.
+
+Beta description draft:
+B.O.S.S. CODE GO brings together B.O.S.S. CODE media, Decision Makers,
+ON THE GO videos, GO LIST discovery, music, challenges and community features.
+Published content continues loading from the existing GO backend.
+
+What to test:
+Startup; safe areas; Home navigation; Magazine; The Boss Bite; B.O.S.S. CODE TV;
+Decision Makers with its original introduction, Challenges, Tracker and Profile;
+ON THE GO video loading, playback and fullscreen; Sessions container hidden;
+GO LIST content and refresh; Music; clothing; B.O.S.S. CHECK IN; connection loss
+and recovery; profile selection; login, sign-out and deletion confirmation;
+background/return and external checkout return. Check new published content
+appears without reinstalling. Do not delete real production accounts or submit
+test posts/orders. Use an owner-controlled test account for destructive tests.
+
+Review access:
+Existing email-code authentication remains unchanged. Owner must supply a
+working reviewer access process before public review. No universal login or
+authentication bypass has been introduced.
+
+Distribution boundary:
+Internal TestFlight upload is authorized. Do not enable external testing,
+invite external testers, publish a beta link or submit for public review.
+Do not accept new legal agreements on the owner's behalf.
+
+Signing handoff:
+Confirm the correct Apple legal team first. The signed-in team observed is
+B.O.S.S. CODE MUSIC GROUP LLC, while the intended seller is MEDIA GROUP LLC.
+Inspect existing BOSS CODE MEDIA (App Store ID 1641573518) before registering
+any new identifier; it was shown as Removed from App Store. Its bundle ID is
+com.bosscodemedia.odeum and its iOS version is 3.1.101. Do not overwrite or
+rename it by assumption.
+
+The isolated GitHub macOS workflow proves unsigned compilation. It contains no
+Apple credentials and cannot upload. Preferred credential-free signing handoff
+is Xcode Cloud managed signing after the correct team/app record is verified.
+Initial Xcode Cloud setup may require Xcode on a Mac and owner approval for
+GitHub source access. Select the existing shared App scheme and internal-only
+TestFlight distribution. The prepared ci_post_clone.sh requires Node 22+ and
+verified ios-release.json signing fields; no signing secrets are committed.
+
+Compliance holds:
+The account deletion URL still renders privacy-policy body content. A dedicated
+deletion/support draft exists, but the website's ad hoc production deployment
+differs from available source. Reconcile that baseline before publishing.
+The existing in-app permanent deletion flow is retained and sends authenticated
+DELETE /go/account after confirmation; it was not executed against production.
+Privacy disclosures, UGC moderation, reachable digital purchase flows, media
+rights and final native screenshots need owner/device review before public
+submission. Existing browser screenshots are drafts, not native iPhone captures.
+
+Verified existing record update: BOSS CODE MEDIA uses com.bosscodemedia.odeum,
+SKU BOSS_CODE_MEDIA_ODEUM and iOS version 3.1.101. It is unchanged. GO uses a
+different provisional ID; uploading version 1.0.0 as an update to that existing
+record must not be assumed valid. The selected organization has an active Free
+Apps agreement from October 25, 2026 through October 25, 2027. Developer portal
+enrollment type and the 10-character signing Team ID remain unverified.
