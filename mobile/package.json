@@ -1,0 +1,32 @@
+{
+  "name": "boss-code-go-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "sync": "npm run build && cap sync",
+    "assets": "node scripts/assets.mjs",
+    "check": "node --test tests/*.test.mjs",
+    "android:debug": "powershell -ExecutionPolicy Bypass -File scripts/android-build.ps1 -Variant Debug",
+    "android:bundle": "powershell -ExecutionPolicy Bypass -File scripts/android-build.ps1 -Variant Release",
+    "ios:prepare": "npm run build && cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/android": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/network": "8.0.1",
+    "@capacitor/splash-screen": "8.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3",
+    "esbuild": "0.28.2",
+    "sharp": "0.35.5"
+  }
+}

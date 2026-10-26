@@ -1,0 +1,21 @@
+{
+  "appId": "com.bosscodemedia.go",
+  "appName": "B.O.S.S. CODE GO",
+  "webDir": "www",
+  "backgroundColor": "#000000",
+  "loggingBehavior": "debug",
+  "server": {
+    "hostname": "djackson0308.github.io",
+    "androidScheme": "https",
+    "iosScheme": "capacitor",
+    "cleartext": false,
+    "errorPath": "offline.html"
+  },
+  "android": { "allowMixedContent": false, "webContentsDebuggingEnabled": false },
+  "ios": { "contentInset": "never", "allowsLinkPreview": false, "preferredContentMode": "mobile" },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "SplashScreen": { "launchAutoHide": true, "launchShowDuration": 1200, "backgroundColor": "#000000", "showSpinner": false },
+    "SystemBars": { "style": "DARK", "insetsHandling": "css" }
+  }
+}

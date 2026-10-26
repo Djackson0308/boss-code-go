@@ -1,0 +1,12 @@
+{
+  "appName": "B.O.S.S. CODE GO",
+  "appId": "com.bosscodemedia.go",
+  "identifierStatus": "PROVISIONAL: owner must confirm identifier availability in both developer accounts",
+  "identifierOwnershipConfirmed": false,
+  "version": "1.0.0",
+  "buildNumber": 1,
+  "productionApi": "https://boss-code-go-api.dezthareason4ever.workers.dev",
+  "publicWebsite": "https://djackson0308.github.io/boss-code-go/",
+  "resumeRefreshAfterMs": 300000,
+  "submissionAuthorized": false
+}

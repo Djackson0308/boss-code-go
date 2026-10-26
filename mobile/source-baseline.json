@@ -1,0 +1,322 @@
+{
+  "commit": "7c00febb6048b8f115b7c6a8bfad872e24850862",
+  "files": [
+    {
+      "path": "Music/dez-tha-reason/artwork/Dez photo.jpg",
+      "gitSha": "c22673a89ab2aa8ab2044c618655ee5241fb4be0",
+      "normalization": "none"
+    },
+    {
+      "path": "Music/dez-tha-reason/artwork/Rise Cover.jpg",
+      "gitSha": "ece0d1108c3b46bbe6da71bb4e7799713d9f0323",
+      "normalization": "none"
+    },
+    {
+      "path": "Music/fundamentals/artwork/Fun-album-cover.png",
+      "gitSha": "1b0c78b88aaf1c9a2d264f566a4de594472a5adc",
+      "normalization": "none"
+    },
+    {
+      "path": "Music/fundamentals/artwork/fundamentals-photo.jpg",
+      "gitSha": "6b7abb8ee55b782968417d0fc44ee783a4f1f267",
+      "normalization": "none"
+    },
+    {
+      "path": "app.js",
+      "gitSha": "5db3e410b439194b44998a0e38ca0db5b7ab90cb",
+      "normalization": "none",
+      "normalizedSha256": "f350597c9c77536e47099db1a4576cce5037a645d664a306e432b598a1edeb5d"
+    },
+    {
+      "path": "boss-video-player.js",
+      "gitSha": "c4840a235f9329bb39a5ef91c96c3046b8ba0231",
+      "normalization": "none",
+      "normalizedSha256": "4bb9034aedf7ad712529ba231328660416feca23d6a6fdf006647c1563c0d4ff"
+    },
+    {
+      "path": "decision-makers-backend.js",
+      "gitSha": "4ea54d251e67d63b1081b2a3e532f585052aac90",
+      "normalization": "lf",
+      "normalizedSha256": "99a55b2b9fe1fc0c7f18403a08d937b2199a73909a0f4df85a4422e7048cc270"
+    },
+    {
+      "path": "images/Action photos/bossbite-1.jpg",
+      "gitSha": "dc79fb37754e5b51567cba7aa682aac56c8161fc",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-10.jpg",
+      "gitSha": "0cf61df8feba2394faad9efabdb380c3a81bae26",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-11.jpg",
+      "gitSha": "f83bdc1c47ef430634c56b44f11ad3be68ac0768",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-12.jpg",
+      "gitSha": "32b5c4d607c41dbb70962679991eb2a853e849f1",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-13.jpg",
+      "gitSha": "c8b8281e7baad69d4e4970ff906a28a58d691912",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-14.jpg",
+      "gitSha": "47ee5e2320ff64c6d8d7e82a00e1a9a78afcd92c",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-15.jpg",
+      "gitSha": "31b831253f2a69fed17c838b05810feaab5a0474",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-16.jpg",
+      "gitSha": "175ff81d98856e61885c3eaadf8f10b7fa2d3c36",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-17.jpg",
+      "gitSha": "48431e23480495a8ba76aeb25ac81ce83fecae4c",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-18.jpg",
+      "gitSha": "bca5b201babace5ec7e655bbfaa09a104905fa60",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-19.jpg",
+      "gitSha": "847497cfb614f6c52f453bf8fde603831e182f7e",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-2.jpg",
+      "gitSha": "9ba30248491f02b86c76482045458fbc3f3b5b6e",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-20.jpg",
+      "gitSha": "c35512f027f13106663a33a885874ec8d017981f",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-21.jpg",
+      "gitSha": "45d36f6bea133e1af9d51342a228c62ac1ca9108",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-22.jpg",
+      "gitSha": "2c6766e7c8a9c022a0724916c048a6dc38d21b2e",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-23.jpg",
+      "gitSha": "7491237b5f1b11b81369a0d8515ee197a18ac775",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-24.jpg",
+      "gitSha": "aff98cb3afea765b722b162160e95ad2a9970b57",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-25.jpg",
+      "gitSha": "dbefbc1ac2f07a9ebb7cd6aa0a87f9ad56abcb44",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-26.jpg",
+      "gitSha": "1688b274a3f711939ce7d34bd4da598b63335196",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-27.jpg",
+      "gitSha": "d3aa9e7ceadbe5e0f3f7e109348bfa6bbc6eef9c",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-28.jpg",
+      "gitSha": "fdf34d000bea13a80077fef8587da4c705936ed9",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-29.jpg",
+      "gitSha": "a76a348b3439255448a29a6b1f7aef8c08617597",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-3.jpg",
+      "gitSha": "5de122459173424c7235d4e4213c33ce96153315",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-4.jpg",
+      "gitSha": "ab82391b47091354e6a2b9331ff962c7633457e0",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-5.jpg",
+      "gitSha": "5d84b2c75d3e76d658a292618f6a8606c2efe5b6",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-6.jpg",
+      "gitSha": "ad9fe557e52d4684bbc4fe42dc6fe3e7e671ecb7",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-7.jpg",
+      "gitSha": "527a190ff9d9c2839d6c55560c2f530259461647",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-8.jpg",
+      "gitSha": "4cf43b96b63d6d106b931c769cd490dce7d1c959",
+      "normalization": "none"
+    },
+    {
+      "path": "images/Action photos/bossbite-9.jpg",
+      "gitSha": "ae5a659a2d5880af75fab30ba4fd853910ee1a90",
+      "normalization": "none"
+    },
+    {
+      "path": "images/DECISION MAKERS LOGO.png",
+      "gitSha": "5375ca1b3fcde90f7e72879b4d805af317ffac8f",
+      "normalization": "none"
+    },
+    {
+      "path": "images/THE CODE CLOTHING LOGO.png",
+      "gitSha": "5580b3ee3bff50a7fc07b51ad477aedbf7101e00",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-bite-logo.png",
+      "gitSha": "b9e55d731b557bb4751c51af799e8a4b2a6ab43a",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-bite-logo.png.png",
+      "gitSha": "200534d564e86ac9004a89dc5976f1a6c23bc19d",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-bite-pin.png",
+      "gitSha": "200534d564e86ac9004a89dc5976f1a6c23bc19d",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-code-go-logo.png",
+      "gitSha": "c18581eb51690e157c34b45f3e8c004d4c789de0",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-code-media-logo.png",
+      "gitSha": "6f22507a25472136e09316a5753e5682ff7c0a98",
+      "normalization": "none"
+    },
+    {
+      "path": "images/boss-code-tv-logo.png",
+      "gitSha": "df2737def9c4c17305925fee511983c2ab586c75",
+      "normalization": "none"
+    },
+    {
+      "path": "images/code-clothing-logo.png",
+      "gitSha": "a739932d1a5837d8b500e7be9ebbb7fa8c194aab",
+      "normalization": "none"
+    },
+    {
+      "path": "images/decision-makers-logo.png",
+      "gitSha": "24ac7a3a9f7df1aaa8734e585a2d46f39d8edda1",
+      "normalization": "none"
+    },
+    {
+      "path": "images/dez-tha-reason-logo.jpg",
+      "gitSha": "ba83163184c0255cb97d4cd55f1212bbf6c013e2",
+      "normalization": "none"
+    },
+    {
+      "path": "images/magazine-logo.png",
+      "gitSha": "1f446359f39788003747ec68262ea494c8813892",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/Carroll County.jpeg",
+      "gitSha": "fa7b212c75bb9ff139617c93e7f4aaea4edda0e2",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/Deli on the square.jpeg",
+      "gitSha": "d68ecec44831f0d86fb0d02ea758a032c0832dfb",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/Grizzly bean.jpg",
+      "gitSha": "6f0f195eb8690e737602e794cb258eded86025bf",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/The chop house.png",
+      "gitSha": "c27c6059b2062c361fb5a5e77fb8582136964e67",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/betty kaye.png",
+      "gitSha": "03180562c62672a26b33e78d1346b8f16fd63908",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/boss-bite-pin.png",
+      "gitSha": "200534d564e86ac9004a89dc5976f1a6c23bc19d",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/century.jpeg",
+      "gitSha": "54cf22d4de7c50d8bbeac0cbcefbad9dee1dfdad",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/haitian sensation.png",
+      "gitSha": "a558eafbc39657282f89bdfeabd8c8389ae8d28f",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/house of spudz.jpeg",
+      "gitSha": "d769b4809aa7e20ad0721779d19893652b603d39",
+      "normalization": "none"
+    },
+    {
+      "path": "images/restaurants/rr coffee.jpg",
+      "gitSha": "520c273b3b6eb5706d5a89530d30b0a03a5e8f5c",
+      "normalization": "none"
+    },
+    {
+      "path": "index.html",
+      "gitSha": "53e3fe9ff79e395a185ee9a125e1ff5c36fd8075",
+      "normalization": "none",
+      "normalizedSha256": "c78c2c1f38ac30b92087f4f3aae697d3a03cf6141135e7cd61a88b1fce97ef78"
+    },
+    {
+      "path": "style.css",
+      "gitSha": "92abdda8c5947a0bda31b1b02ef45321690669ae",
+      "normalization": "none",
+      "normalizedSha256": "01cbfdda40696a196bfc5521d8e5cdb6ebf3be03569e02cbf05d04369bbecc89"
+    }
+  ],
+  "vendor": [
+    {
+      "file": "maplibre-gl.js",
+      "sha256": "1525f971223d81f169f049f1ce50083e6f1643aa6b0ea0716653a550d2d57fc2",
+      "source": "https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"
+    },
+    {
+      "file": "maplibre-gl.css",
+      "sha256": "43c1d886b5fdf0aac4e7135bd6f84b823d9f48283a648012665f9be52c01389f",
+      "source": "https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css"
+    }
+  ]
+}
