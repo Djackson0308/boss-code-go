@@ -20,6 +20,8 @@ jobs:
         working-directory: mobile
       - name: Compile unsigned iPhoneOS archive
         run: bash mobile/scripts/ios-build.sh
+      - name: Read-only iPhone simulator startup
+        run: bash mobile/scripts/ios-simulator-smoke.sh
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -28,4 +30,5 @@ jobs:
             mobile/artifacts/ios/*.txt
             mobile/artifacts/ios/*.log
             mobile/artifacts/ios/*.json
+            mobile/artifacts/ios/*.png
           retention-days: 1
