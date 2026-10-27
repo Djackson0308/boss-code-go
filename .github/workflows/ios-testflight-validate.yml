@@ -1,0 +1,34 @@
+name: Validate GO TestFlight deployment configuration
+on:
+  push:
+    branches: [ios/testflight-deploy]
+    paths:
+      - .github/workflows/ios-testflight.yml
+      - .github/workflows/ios-testflight-validate.yml
+      - mobile/ci/ios-testflight.yml
+      - mobile/scripts/ios-testflight.sh
+      - mobile/scripts/ios-testflight-api.mjs
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Check new deployment scripts and workflow syntax
+        run: |
+          bash -n mobile/scripts/ios-testflight.sh
+          node --check mobile/scripts/ios-testflight-api.mjs
+          python3 -m pip install --disable-pip-version-check 'PyYAML==6.0.2'
+          python3 - <<'PY'
+          import yaml
+          from pathlib import Path
+          for name in ('ios-testflight.yml', 'ios-testflight-validate.yml'):
+              with (Path('.github/workflows') / name).open() as source:
+                  config = yaml.safe_load(source)
+              assert config['jobs'], name
+          print('Deployment shell, JavaScript, and workflow YAML syntax passed.')
+          PY

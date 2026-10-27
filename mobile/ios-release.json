@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "buildNumber": "1",
   "provisionalBundleId": "com.bosscodemedia.go",
-  "identifierOwnershipConfirmed": false,
-  "developerTeamId": null,
+  "identifierOwnershipConfirmed": true,
+  "developerTeamId": "TW7B5QZNV4",
   "observedLegalEntity": "B.O.S.S. CODE MUSIC GROUP LLC",
   "intendedPublisher": "B.O.S.S. CODE MEDIA GROUP LLC",
   "internalTestFlightUploadAuthorized": true,
@@ -13,5 +13,6 @@
   "signingReady": false,
   "internalTestingTeamApproved": true,
   "approvedInternalTestingLegalEntity": "B.O.S.S. CODE MUSIC GROUP LLC",
-  "publicPublisherNameResolutionRequired": true
+  "publicPublisherNameResolutionRequired": true,
+  "appStoreConnectAppId": "6827774049"
 }
