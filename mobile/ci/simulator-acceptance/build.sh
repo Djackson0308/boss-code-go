@@ -17,11 +17,12 @@ const tracked=execFileSync('git',['diff','--name-only'],{encoding:'utf8'}).trim(
 if(tracked.length)throw Error('Tracked application files changed during staging: '+tracked.join(', '));
 const html=fs.readFileSync('ios/App/App/public/index.html','utf8');
 if(html.includes('ios-simulator-read-only-review')||html.includes('isolated-test-fixtures'))throw Error('Modified test-only app cannot supply store screenshots');
-const record={sourceCommit:'c8b6dd6902acb0704efe8fb68fa883b707f01c22',version:'1.0.0',buildNumber:1,simulatorConfiguration:'Debug, CODE_SIGNING_ALLOWED=NO',sourceFilesModified:false,testFixtureContent:false,applicationInstrumentationInjected:false,manifest,stagedIndexSha256:crypto.createHash('sha256').update(html).digest('hex')};
+const record={sourceCommit:'c8b6dd6902acb0704efe8fb68fa883b707f01c22',version:'1.0.0',buildNumber:1,simulatorConfiguration:'Debug, CODE_SIGNING_ALLOWED=NO, CAPACITOR_DEBUG=true',debugInspectability:'Existing Info.plist build variable; required by the precompiled SPM framework; no source edits',sourceFilesModified:false,testFixtureContent:false,applicationInstrumentationInjected:false,manifest,stagedIndexSha256:crypto.createHash('sha256').update(html).digest('hex')};
 fs.writeFileSync('../../simulator-results/source-verification.json',JSON.stringify(record,null,2)+'\n');
 JS
 xcodebuild -version
 xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
   -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/go-build1-simulator" \
-  CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/go-simulator-build.log" 2>&1 || { tail -60 "$RUNNER_TEMP/go-simulator-build.log"; exit 1; }
+  CODE_SIGNING_ALLOWED=NO CAPACITOR_DEBUG=true build > "$RUNNER_TEMP/go-simulator-build.log" 2>&1 || { tail -60 "$RUNNER_TEMP/go-simulator-build.log"; exit 1; }
+[[ "$(/usr/libexec/PlistBuddy -c 'Print :CAPACITOR_DEBUG' "$RUNNER_TEMP/go-build1-simulator/Build/Products/Debug-iphonesimulator/App.app/Info.plist")" == true ]] || { echo 'Simulator inspector build setting missing'; exit 1; }
 grep '\*\* BUILD SUCCEEDED \*\*' "$RUNNER_TEMP/go-simulator-build.log"

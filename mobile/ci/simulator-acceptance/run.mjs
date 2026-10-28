@@ -83,5 +83,5 @@ try{
  }
 }catch(error){report.fatal=redact(error.message).slice(0,1600);report.fatalStage=stage;console.log('Simulator harness error at '+stage+': '+report.fatal);}
 
-finally{if(session)await command('DELETE','').catch(()=>{});if(udid)try{sim('shutdown',udid);}catch{}report.finishedAt=new Date().toISOString();await save();}
+finally{if(rd)await rd.disconnect().catch(()=>{});if(udid)try{sim('shutdown',udid);}catch{}report.finishedAt=new Date().toISOString();await save();}
 if(report.fatal)process.exitCode=1;
