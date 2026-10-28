@@ -29,7 +29,8 @@ async function capture(name){
  if(state.fixture)throw Error('Fixture marker found');report.screenshots.push({file,device:deviceLabel,nativeSimulatorCapture:true,sourceModified:false,...state});await save();
 }
 const requireWebkit=createRequire(path.join(process.env.RUNNER_TEMP,'go-webkit/package.json'));
-const {createRemoteDebugger}=await import(pathToFileURL(requireWebkit.resolve('appium-remote-debugger')).href);
+const remotePackage=JSON.parse(await fs.readFile(requireWebkit.resolve('appium-remote-debugger/package.json'),'utf8'));
+const {createRemoteDebugger}=await import(pathToFileURL(path.resolve(path.dirname(requireWebkit.resolve('appium-remote-debugger/package.json')),remotePackage.exports['.'].import)).href);
 const {NativeSimctl}=await import(pathToFileURL(requireWebkit.resolve('@appium/coresim')).href);
 const nativeSimctl=new NativeSimctl();
 const quietLog=new Proxy({},{get:()=>()=>{}});
