@@ -8,6 +8,12 @@ await fs.mkdir(path.join(out,'screenshots'),{recursive:true});
 const app=path.join(process.env.RUNNER_TEMP,'go-build1-simulator/Build/Products/Debug-iphonesimulator/App.app');
 const token=process.env.GO_TEST_SESSION_TOKEN||'',email=process.env.GO_TEST_ACCOUNT_EMAIL||'';
 const redact=text=>{let s=String(text);for(const secret of [token,email].filter(Boolean))s=s.replaceAll(secret,'[PRIVATE]');return s.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[PRIVATE EMAIL]');};
+const output=process.stdout.write.bind(process.stdout);
+const reportLog=value=>output(redact(value)+'\n');
+// Suppress library transport/console logs, which can contain script arguments.
+// Only our explicitly selected, sanitized acceptance evidence reaches CI logs.
+const suppress=(_chunk,encoding,callback)=>{if(typeof encoding==='function')encoding();if(typeof callback==='function')callback();return true;};
+process.stdout.write=suppress;process.stderr.write=suppress;
 const report={startedAt:new Date().toISOString(),sourceCommit:'c8b6dd6902acb0704efe8fb68fa883b707f01c22',version:'1.0.0',buildNumber:1,physicalDeviceTested:false,sourceModified:false,tests:[],screenshots:[],limits:['Simulator hardware/media codecs do not establish physical-device compatibility','No purchases, posts, challenge entries, profile edits or account deletion are performed','Store screenshots capture only guest/public screens; authenticated account screens are excluded']};
 const save=()=>fs.writeFile(path.join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');
 const sim=(...args)=>execFileSync('xcrun',['simctl',...args],{encoding:'utf8',maxBuffer:5e6,timeout:480000});
@@ -18,7 +24,7 @@ const js=(script,...args)=>rd.executeAtom('execute_script',[script,args],frameCo
 const asyncjs=(script,...args)=>rd.executeAtomAsync('execute_async_script',[script,args,90000],frameContext);
 const command=async(method,p)=>{if(method==='DELETE')await rd?.disconnect();else throw Error('Unsupported native command '+p);};
 async function wait(script,timeout=30000){const end=Date.now()+timeout;let error;while(Date.now()<end){try{const r=await js(script);if(r)return r;}catch(e){error=e.message;}await delay(500);}throw Error('Wait timed out: '+script.slice(0,150)+(error?' '+error.slice(0,150):''));}
-async function test(name,work){try{const evidence=await work();report.tests.push({device:deviceLabel,name,status:'PASS',evidence});console.log(`${deviceLabel}: PASS ${name}`);}catch(error){report.tests.push({device:deviceLabel,name,status:'FAIL',error:redact(error.message).slice(0,900)});console.log(`${deviceLabel}: FAIL ${name}: ${redact(error.message).slice(0,250)}`);}await save();}
+async function test(name,work){try{const evidence=await work();report.tests.push({device:deviceLabel,name,status:'PASS',evidence});reportLog(`${deviceLabel}: PASS ${name}`);}catch(error){report.tests.push({device:deviceLabel,name,status:'FAIL',error:redact(error.message).slice(0,900)});reportLog(`${deviceLabel}: FAIL ${name}: ${redact(error.message).slice(0,250)}`);}await save();}
 async function click(selector){const element=await rd.executeAtom('find_element_fragment',['css selector',selector]);await rd.executeAtom('click',[element],[],{emulateUserGesture:true});}
 async function settle(){await delay(1600);await js('window.scrollTo({top:0,behavior:"instant"}); return true;');await delay(500);}
 async function screen(id){await js('showScreen(document.getElementById(arguments[0]));return document.querySelector(".screen.active-screen")?.id;',id);await wait(`return document.getElementById(${JSON.stringify(id)})?.classList.contains('active-screen')`);await settle();}
@@ -41,17 +47,17 @@ try{
  const choose=pattern=>{for(const runtime of runtimes){const device=all[runtime].find(d=>pattern.test(d.name));if(device)return{...device,runtime};}throw Error('Required simulator not available: '+pattern);};
  const devices=[['iphone',choose(/^iPhone 17 Pro$/)],['ipad',choose(/^iPad Pro 13-inch \(M[45]\)$/)]];
  for(const [label,device] of devices){
-  deviceLabel=label;udid=device.udid;stage='simulator-boot';console.log(`${label}: booting ${device.name} on ${device.runtime}`);report.tests.push({device:label,name:'simulator-selection',status:'PASS',evidence:{name:device.name,runtime:device.runtime}});await save();
+  deviceLabel=label;udid=device.udid;stage='simulator-boot';reportLog(`${label}: booting ${device.name} on ${device.runtime}`);report.tests.push({device:label,name:'simulator-selection',status:'PASS',evidence:{name:device.name,runtime:device.runtime}});await save();
   try{sim('boot',udid);}catch(error){if(!String(error.stderr).includes('Booted'))throw error;}
-  sim('bootstatus',udid,'-b');console.log(`${label}: simulator booted`);sim('status_bar',udid,'override','--time','9:41','--batteryState','charged','--batteryLevel','100');sim('install',udid,app);console.log(`${label}: application installed; starting automation`);
-  stage='native-launch';sim('launch',udid,'com.bosscodemedia.go');console.log(label+': application launched');await delay(5000);
+  sim('bootstatus',udid,'-b');reportLog(`${label}: simulator booted`);sim('status_bar',udid,'override','--time','9:41','--batteryState','charged','--batteryLevel','100');sim('install',udid,app);reportLog(`${label}: application installed; starting automation`);
+  stage='native-launch';sim('launch',udid,'com.bosscodemedia.go');reportLog(label+': application launched');await delay(5000);
   sim('io',udid,'screenshot','--type=png',path.join(out,'screenshots',label+'-00-startup-diagnostic.png'));
   stage='webview-connection';const socketPath=await nativeSimctl.getWebInspectorSocket(udid);
   if(!socketPath)throw Error('Simulator Web Inspector socket unavailable');
-  rd=createRemoteDebugger({bundleId:'com.bosscodemedia.go',isSafari:false,platformVersion:device.runtime.split('iOS-')[1].replaceAll('-','.'),socketPath,garbageCollectOnExecute:false,logFullResponse:false,logAllCommunication:false,logAllCommunicationHexDump:false,pageReadyTimeout:60000,targetCreationTimeoutMs:120000,log:quietLog},false);
-  const appDictionary=await rd.connect(60000);console.log(JSON.stringify({device:label,inspectorApps:Object.values(appDictionary).map(a=>({bundleId:a.bundleId,active:a.isActive,automation:a.isAutomationEnabled}))}));const pages=await rd.selectApp();const page=pages.find(p=>p.url?.startsWith('capacitor://'));
+  rd=createRemoteDebugger({bundleId:'com.bosscodemedia.go',additionalBundleIds:['process-App'],isSafari:false,platformVersion:device.runtime.split('iOS-')[1].replaceAll('-','.'),socketPath,garbageCollectOnExecute:false,logFullResponse:false,logAllCommunication:false,logAllCommunicationHexDump:false,pageReadyTimeout:60000,targetCreationTimeoutMs:120000,log:quietLog},false);
+  const appDictionary=await rd.connect(60000);reportLog(JSON.stringify({device:label,inspectorApps:Object.values(appDictionary).map(a=>({bundleId:a.bundleId,active:a.isActive,automation:a.isAutomationEnabled}))}));const pages=await rd.selectApp();const page=pages.find(p=>p.url?.startsWith('capacitor://'));
   if(!page)throw Error('Running application WebView not found');
-  const [appId,pageId]=String(page.id).split('.');await rd.selectPage(appId,pageId);session='webkit';console.log(label+': WebKit connection ready');
+  const [appId,pageId]=String(page.id).split('.');await rd.selectPage(appId,pageId);session='webkit';reportLog(label+': WebKit connection ready');
   await test('startup and native WebView',async()=>{await wait('return typeof showScreen === "function" && !!document.getElementById("home-screen")',45000);return await js('return {url:location.href,platform:Capacitor.getPlatform(),viewport:{width:innerWidth,height:innerHeight},ready:document.readyState}');});
   await js('document.getElementById("daily-decision-close")?.click();document.getElementById("boss-demo-skip")?.click();return true;');await delay(3500);
   await test('native HTTPS backend content',async()=>{const r=await asyncjs('const done=arguments[arguments.length-1];Promise.all(["/videos","/go/challenges","/go-list/entries?limit=1&offset=0"].map(async p=>{const r=await fetch("https://boss-code-go-api.dezthareason4ever.workers.dev"+p);const b=await r.json();return {path:p,status:r.status,success:b.success,records:(b.data||b.challenges||b.entries||[]).length};})).then(done).catch(e=>done({error:e.message}));');if(!Array.isArray(r)||r.some(x=>x.status!==200))throw Error(JSON.stringify(r));return r;});
@@ -81,7 +87,7 @@ try{
   if(token&&email){await test('authenticated session restoration and protected profile',async()=>{await js('localStorage.setItem("boss-code-go-auth-token-v1",arguments[0]);localStorage.setItem("boss-code-go-auth-email-v1",arguments[1]);location.reload();return true',token,email);await delay(7000);await wait('return typeof goOpenHub === "function"');const auth=await asyncjs('const done=arguments[arguments.length-1];fetch("https://boss-code-go-api.dezthareason4ever.workers.dev/go/profile",{headers:{Authorization:"Bearer "+localStorage.getItem("boss-code-go-auth-token-v1")}}).then(async r=>{const b=await r.json();done({status:r.status,success:b.success,hasProfile:!!b.profile})}).catch(e=>done({error:e.message}));');if(auth.status!==200)throw Error(JSON.stringify(auth));await js('goOpenHub("profile");return true');await wait('return !!document.getElementById("go-profile-name")');return {...auth,profileUi:true,method:'Normal email-code authentication verified locally; issued session restored in simulator; no authentication bypass'};});}else report.tests.push({device:label,name:'authenticated account features',status:'BLOCKED',reason:'Owner-authorized normal login session not yet available'});
   await command('DELETE','');session=null;sim('shutdown',udid);udid=null;await save();
  }
-}catch(error){report.fatal=redact(error.message).slice(0,1600);report.fatalStage=stage;console.log('Simulator harness error at '+stage+': '+report.fatal);}
+}catch(error){report.fatal=redact(error.message).slice(0,1600);report.fatalStage=stage;reportLog('Simulator harness error at '+stage+': '+report.fatal);}
 
 finally{if(rd)await rd.disconnect().catch(()=>{});if(udid)try{sim('shutdown',udid);}catch{}report.finishedAt=new Date().toISOString();await save();}
 if(report.fatal)process.exitCode=1;

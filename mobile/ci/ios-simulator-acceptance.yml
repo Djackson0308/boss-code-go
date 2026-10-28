@@ -5,6 +5,7 @@ on:
     paths: [mobile/ci/simulator-acceptance-request.json]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: go-build-1-simulator-acceptance
   cancel-in-progress: false
@@ -29,7 +30,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
           node-version: '22'
-      - name: Build unchanged application for Apple simulators
+      - name: Reuse verified exact-source simulator application
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: bash acceptance-harness/mobile/ci/simulator-acceptance/build.sh
       - name: Install pinned simulator WebKit automation
         run: npm install --prefix "$RUNNER_TEMP/go-webkit" --no-audit --no-fund appium-remote-debugger@18.0.2 @appium/coresim@1.14.0
