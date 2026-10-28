@@ -31,12 +31,8 @@ jobs:
           node-version: '22'
       - name: Build unchanged application for Apple simulators
         run: bash acceptance-harness/mobile/ci/simulator-acceptance/build.sh
-      - name: Install pinned simulator automation
-        run: |
-          export APPIUM_HOME="$RUNNER_TEMP/go-appium"
-          echo "APPIUM_HOME=$APPIUM_HOME" >> "$GITHUB_ENV"
-          npm install --global appium@3.9.0
-          appium driver install xcuitest@12.22.0
+      - name: Install pinned simulator WebKit automation
+        run: npm install --prefix "$RUNNER_TEMP/go-webkit" --no-audit --no-fund appium-remote-debugger@18.0.2 @appium/coresim@1.14.0
       - name: Test iPhone and iPad and capture native screenshots
         env:
           GO_TEST_SESSION_TOKEN: ${{ secrets.GO_SIMULATOR_SESSION_TOKEN }}
