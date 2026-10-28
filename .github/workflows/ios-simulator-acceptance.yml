@@ -1,0 +1,55 @@
+name: GO build 1 simulator acceptance and store screenshots
+on:
+  push:
+    branches: [ios/testflight-deploy]
+    paths: [mobile/ci/simulator-acceptance-request.json]
+permissions:
+  contents: read
+concurrency:
+  group: go-build-1-simulator-acceptance
+  cancel-in-progress: false
+jobs:
+  acceptance:
+    if: github.repository == 'Djackson0308/boss-code-go' && github.ref == 'refs/heads/ios/testflight-deploy'
+    runs-on: macos-26
+    timeout-minutes: 60
+    environment: testflight-internal
+    env:
+      APPIUM_HOME: ${{ runner.temp }}/go-appium
+    steps:
+      - name: Check out exact TestFlight build 1 application source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: c8b6dd6902acb0704efe8fb68fa883b707f01c22
+          path: app-source
+          persist-credentials: false
+      - name: Check out acceptance harness separately
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: acceptance-harness
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Build unchanged application for Apple simulators
+        run: bash acceptance-harness/mobile/ci/simulator-acceptance/build.sh
+      - name: Install pinned simulator automation
+        run: |
+          npm install --global appium@3.9.0
+          appium driver install xcuitest@12.22.0
+      - name: Test iPhone and iPad and capture native screenshots
+        env:
+          GO_TEST_SESSION_TOKEN: ${{ secrets.GO_SIMULATOR_SESSION_TOKEN }}
+          GO_TEST_ACCOUNT_EMAIL: ${{ secrets.GO_SIMULATOR_ACCOUNT_EMAIL }}
+        run: node acceptance-harness/mobile/ci/simulator-acceptance/run.mjs
+      - name: Preserve simulator evidence and clean native screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: go-build-1-simulator-acceptance-${{ github.run_id }}
+          path: |
+            simulator-results/acceptance.json
+            simulator-results/source-verification.json
+            simulator-results/screenshots/*.png
+          if-no-files-found: warn
+          retention-days: 14
