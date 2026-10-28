@@ -10,7 +10,37 @@ concurrency:
   group: go-internal-testflight
   cancel-in-progress: false
 jobs:
+  icon-validation:
+    if: github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - name: Install existing app dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: mobile
+      - name: Validate approved icon and launch build 2 on iPhone simulator
+        env:
+          GO_APPROVED_ICON_SHA256: 'd0bf598bc56ab644bec3dfd068b32ec02772ff244fd847a4f59f114bb6b9f029'
+        run: node scripts/ios-icon-validate.mjs
+        working-directory: mobile
+      - name: Preserve public icon and simulator evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: go-build2-icon-validation-${{ github.run_id }}
+          path: |
+            mobile/artifacts/icon-build2/*.png
+            mobile/artifacts/icon-build2/validation.json
+          if-no-files-found: warn
+          retention-days: 14
   deploy:
+    needs: icon-validation
     if: github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
     runs-on: macos-26
     timeout-minutes: 90
