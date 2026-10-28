@@ -43,7 +43,7 @@ keychain add-certificates --path "$keychain_path" --certificate "$signing_temp/c
 xcode-project use-profiles --project ios/App/App.xcodeproj \
   --profile "$signing_temp/profiles/*.mobileprovision" --archive-method app-store \
   --export-options-plist "$signing_temp/export-options.plist" \
-  --custom-export-options '{"method":"app-store-connect","teamID":"TW7B5QZNV4","manageAppVersionAndBuildNumber":false}'
+  --custom-export-options '{"method":"app-store","teamID":"TW7B5QZNV4","manageAppVersionAndBuildNumber":false}'
 xcode-project build-ipa --project ios/App/App.xcodeproj --scheme App --config Release \
   --no-show-build-settings --disable-xcpretty \
   --archive-directory "$signing_temp/archive" --ipa-directory "$signing_temp/ipa" \

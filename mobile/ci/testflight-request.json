@@ -2,5 +2,6 @@
   "appId": "6827774049",
   "bundleId": "com.bosscodemedia.go",
   "version": "1.0.0",
-  "buildNumber": 1
+  "buildNumber": 1,
+  "attempt": 2
 }
