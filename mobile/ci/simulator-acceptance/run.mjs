@@ -49,7 +49,7 @@ try{
   stage='webview-connection';const socketPath=await nativeSimctl.getWebInspectorSocket(udid);
   if(!socketPath)throw Error('Simulator Web Inspector socket unavailable');
   rd=createRemoteDebugger({bundleId:'com.bosscodemedia.go',isSafari:false,platformVersion:device.runtime.split('iOS-')[1].replaceAll('-','.'),socketPath,garbageCollectOnExecute:false,logFullResponse:false,logAllCommunication:false,logAllCommunicationHexDump:false,pageReadyTimeout:60000,targetCreationTimeoutMs:120000,log:quietLog},false);
-  await rd.connect(60000);const pages=await rd.selectApp();const page=pages.find(p=>p.url?.startsWith('capacitor://'));
+  const appDictionary=await rd.connect(60000);console.log(JSON.stringify({device:label,inspectorApps:Object.values(appDictionary).map(a=>({bundleId:a.bundleId,active:a.isActive,automation:a.isAutomationEnabled}))}));const pages=await rd.selectApp();const page=pages.find(p=>p.url?.startsWith('capacitor://'));
   if(!page)throw Error('Running application WebView not found');
   const [appId,pageId]=String(page.id).split('.');await rd.selectPage(appId,pageId);session='webkit';console.log(label+': WebKit connection ready');
   await test('startup and native WebView',async()=>{await wait('return typeof showScreen === "function" && !!document.getElementById("home-screen")',45000);return await js('return {url:location.href,platform:Capacitor.getPlatform(),viewport:{width:innerWidth,height:innerHeight},ready:document.readyState}');});

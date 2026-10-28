@@ -25,4 +25,17 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
   -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/go-build1-simulator" \
   CODE_SIGNING_ALLOWED=NO CAPACITOR_DEBUG=true build > "$RUNNER_TEMP/go-simulator-build.log" 2>&1 || { tail -60 "$RUNNER_TEMP/go-simulator-build.log"; exit 1; }
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :CAPACITOR_DEBUG' "$RUNNER_TEMP/go-build1-simulator/Build/Products/Debug-iphonesimulator/App.app/Info.plist")" == true ]] || { echo 'Simulator inspector build setting missing'; exit 1; }
+node --input-type=module <<'JS'
+import fs from 'node:fs';import path from 'node:path';import crypto from 'node:crypto';
+const product=path.join(process.env.RUNNER_TEMP,'go-build1-simulator/Build/Products/Debug-iphonesimulator/App.app');
+const configPath=path.join(product,'capacitor.config.json');
+const config=JSON.parse(fs.readFileSync(configPath));config.ios={...config.ios,webContentsDebuggingEnabled:true};
+fs.writeFileSync(configPath,JSON.stringify(config));
+const file='../../simulator-results/source-verification.json',record=JSON.parse(fs.readFileSync(file));
+record.simulatorOnlyConfigurationOverrides={'ios.webContentsDebuggingEnabled':true};
+record.overrideScope='Compiled simulator product only; no source/configuration edits in the pinned checkout or TestFlight binary';
+record.simulatorConfigSha256=crypto.createHash('sha256').update(fs.readFileSync(configPath)).digest('hex');
+fs.writeFileSync(file,JSON.stringify(record,null,2)+'\n');
+JS
+/usr/bin/ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/go-build1-simulator/Build/Products/Debug-iphonesimulator/App.app" ../../simulator-results/App-simulator.zip
 grep '\*\* BUILD SUCCEEDED \*\*' "$RUNNER_TEMP/go-simulator-build.log"

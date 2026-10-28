@@ -46,6 +46,7 @@ jobs:
           path: |
             simulator-results/acceptance.json
             simulator-results/source-verification.json
+            simulator-results/App-simulator.zip
             simulator-results/screenshots/*.png
           if-no-files-found: warn
           retention-days: 14
