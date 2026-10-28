@@ -470,7 +470,17 @@ async function moderateInspiration(id,status){
 }
 async function loadCommunity(){const r=await api('/admin/go/community');communityActivity=r.activity||[];renderCommunity()}
 function renderCommunity(){
- $('communityList').innerHTML=communityActivity.length?communityActivity.map(x=>`<div class="item"><strong>${esc(x.title||x.activity_type||'ACTIVITY')}</strong><small>${esc(x.display_name||'MEMBER')} · ${esc(String(x.activity_type||'activity').toUpperCase())} · ${Number(x.encourage_count||0)} ENCOURAGE</small><div style="font-size:12px;line-height:1.55;margin:9px 0;color:#ddd">${esc(x.body||'')}</div><span class="pill ${Number(x.published)?'live':''}">${Number(x.published)?'VISIBLE':'HIDDEN'}</span><div class="actions" style="margin-top:10px"><button class="btn outline" onclick="editCommunity(${Number(x.id)})">EDIT</button><button class="btn ${Number(x.published)?'danger':'red'}" onclick="toggleCommunity(${Number(x.id)},${Number(x.published)?0:1})">${Number(x.published)?'HIDE':'PUBLISH'}</button></div></div>`).join(''):'<div class="empty">NO COMMUNITY ACTIVITY YET.</div>';
+ $('communityList').innerHTML=communityActivity.length?communityActivity.map(x=>`<div class="item"><strong>${esc(x.title||x.activity_type||'ACTIVITY')}</strong><small>${esc(x.display_name||'MEMBER')} · ${esc(String(x.activity_type||'activity').toUpperCase())} · ${Number(x.encourage_count||0)} ENCOURAGE</small><div style="font-size:12px;line-height:1.55;margin:9px 0;color:#ddd">${esc(x.body||'')}</div><span class="pill ${Number(x.published)?'live':''}">${Number(x.published)?'VISIBLE':'HIDDEN'}</span><div class="actions" style="margin-top:10px"><button class="btn outline" onclick="editCommunity(${Number(x.id)})">EDIT</button><button class="btn ${Number(x.published)?'danger':'red'}" onclick="toggleCommunity(${Number(x.id)},${Number(x.published)?0:1})">${Number(x.published)?'HIDE':'PUBLISH'}</button><button type="button" class="btn danger" onclick="deleteCommunityPost(${Number(x.id)},this)">Delete Post</button></div></div>`).join(''):'<div class="empty">NO COMMUNITY ACTIVITY YET.</div>';
+}
+async function deleteCommunityPost(id,button){
+ const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;
+ if(!confirm('Permanently delete this feed post?\n\n'+(x.title||x.activity_type||'ACTIVITY')+'\n\nThis cannot be undone. The creator profile, Spotlight placements and other content will be preserved.'))return;
+ button.disabled=true;
+ try{
+  await api('/admin/go/community/'+id,{method:'DELETE'});
+  communityActivity=communityActivity.filter(a=>Number(a.id)!==Number(id));renderCommunity();
+  showCommunityMsg('POST PERMANENTLY DELETED.');
+ }catch(e){showCommunityMsg('DELETE FAILED: '+e.message);button.disabled=false;}
 }
 async function editCommunity(id){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;const title=prompt('Activity title:',x.title||'');if(title===null)return;const body=prompt('Activity text:',x.body||'');if(body===null)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title,body,published:Number(x.published)!==0})});showCommunityMsg('COMMUNITY ACTIVITY UPDATED.');await loadCommunity()}
 async function toggleCommunity(id,published){const x=communityActivity.find(a=>Number(a.id)===Number(id));if(!x)return;await api(`/admin/go/community/${id}`,{method:'PUT',body:JSON.stringify({title:x.title||'',body:x.body||'',published:!!published})});showCommunityMsg(published?'ACTIVITY PUBLISHED.':'ACTIVITY HIDDEN.');await loadCommunity()}
