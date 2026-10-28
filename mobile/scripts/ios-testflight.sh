@@ -40,6 +40,17 @@ app-store-connect fetch-signing-files com.bosscodemedia.go \
   --platform IOS --type IOS_APP_STORE --strict-match-identifier --create \
   --certificates-dir "$signing_temp/certificates" --profiles-dir "$signing_temp/profiles"
 keychain add-certificates --path "$keychain_path" --certificate "$signing_temp/certificates/*.p12"
+# Xcode must discover the downloaded profile in its installed-profile directory.
+# Keep the temporary copy for CLI selection and install by UUID for Xcode 26.
+for profile in "$signing_temp"/profiles/*.mobileprovision; do
+  security cms -D -i "$profile" > "$signing_temp/profile.plist"
+  profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$signing_temp/profile.plist")"
+  [[ "$profile_uuid" =~ ^[A-Fa-f0-9-]+$ ]] || { echo 'Invalid provisioning profile UUID.'; exit 1; }
+  for profile_directory in "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles" "$HOME/Library/MobileDevice/Provisioning Profiles"; do
+    mkdir -p "$profile_directory"
+    cp "$profile" "$profile_directory/$profile_uuid.mobileprovision"
+  done
+done
 xcode-project use-profiles --project ios/App/App.xcodeproj \
   --profile "$signing_temp/profiles/*.mobileprovision" --archive-method app-store \
   --export-options-plist "$signing_temp/export-options.plist" \
