@@ -8,9 +8,9 @@ const token=process.env.GO_TEST_SESSION_TOKEN||'',email=process.env.GO_TEST_ACCO
 const redact=text=>{let s=String(text);for(const secret of [token,email].filter(Boolean))s=s.replaceAll(secret,'[PRIVATE]');return s.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[PRIVATE EMAIL]');};
 const report={startedAt:new Date().toISOString(),sourceCommit:'c8b6dd6902acb0704efe8fb68fa883b707f01c22',version:'1.0.0',buildNumber:1,physicalDeviceTested:false,sourceModified:false,tests:[],screenshots:[],limits:['Simulator hardware/media codecs do not establish physical-device compatibility','No purchases, posts, challenge entries, profile edits or account deletion are performed','Store screenshots capture only guest/public screens; authenticated account screens are excluded']};
 const save=()=>fs.writeFile(path.join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');
-const sim=(...args)=>execFileSync('xcrun',['simctl',...args],{encoding:'utf8',maxBuffer:5e6});
+const sim=(...args)=>execFileSync('xcrun',['simctl',...args],{encoding:'utf8',maxBuffer:5e6,timeout:480000});
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
-let session,udid,deviceLabel;
+let session,udid,deviceLabel,stage='appium-startup';
 async function request(method,endpoint,body){
  const response=await fetch('http://127.0.0.1:4723'+endpoint,{method,headers:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(240000)});
  const data=await response.json();if(!response.ok||data.value?.error)throw Error(redact(data.value?.message||JSON.stringify(data)));
@@ -39,13 +39,14 @@ try{
  const choose=pattern=>{for(const runtime of runtimes){const device=all[runtime].find(d=>pattern.test(d.name));if(device)return{...device,runtime};}throw Error('Required simulator not available: '+pattern);};
  const devices=[['iphone',choose(/^iPhone 17 Pro$/)],['ipad',choose(/^iPad Pro 13-inch \(M[45]\)$/)]];
  for(const [label,device] of devices){
-  deviceLabel=label;udid=device.udid;report.tests.push({device:label,name:'simulator-selection',status:'PASS',evidence:{name:device.name,runtime:device.runtime}});await save();
+  deviceLabel=label;udid=device.udid;stage='simulator-boot';console.log(`${label}: booting ${device.name} on ${device.runtime}`);report.tests.push({device:label,name:'simulator-selection',status:'PASS',evidence:{name:device.name,runtime:device.runtime}});await save();
   try{sim('boot',udid);}catch(error){if(!String(error.stderr).includes('Booted'))throw error;}
-  sim('bootstatus',udid,'-b');sim('status_bar',udid,'override','--time','9:41','--batteryState','charged','--batteryLevel','100');sim('install',udid,app);
-  const created=await request('POST','/session',{capabilities:{alwaysMatch:{platformName:'iOS','appium:automationName':'XCUITest','appium:deviceName':device.name,'appium:udid':udid,'appium:bundleId':'com.bosscodemedia.go','appium:noReset':true,'appium:newCommandTimeout':300,'appium:webviewConnectTimeout':90000,'appium:showXcodeLog':false,'appium:waitForIdleTimeout':1,'appium:derivedDataPath':path.join(process.env.RUNNER_TEMP,'go-wda')}}});
+  sim('bootstatus',udid,'-b');console.log(`${label}: simulator booted`);sim('status_bar',udid,'override','--time','9:41','--batteryState','charged','--batteryLevel','100');sim('install',udid,app);console.log(`${label}: application installed; starting automation`);
+  stage='automation-session';
+  const created=await request('POST','/session',{capabilities:{alwaysMatch:{platformName:'iOS','appium:automationName':'XCUITest','appium:deviceName':device.name,'appium:udid':udid,'appium:bundleId':'com.bosscodemedia.go','appium:noReset':true,'appium:newCommandTimeout':300,'appium:webviewConnectTimeout':90000,'appium:wdaLaunchTimeout':120000,'appium:wdaConnectionTimeout':120000,'appium:wdaStartupRetries':1,'appium:showXcodeLog':false,'appium:waitForIdleTimeout':1,'appium:derivedDataPath':path.join(process.env.RUNNER_TEMP,'go-wda')}}});
   session=created.sessionId;
   if(!session)throw Error('Appium session ID missing');
-  let contexts=[];for(let i=0;i<90;i++){contexts=await command('GET','/contexts');if(contexts.some(c=>c.startsWith('WEBVIEW')))break;await delay(1000);}
+  stage='webview-connection';console.log(`${label}: native automation session ready`);let contexts=[];for(let i=0;i<90;i++){contexts=await command('GET','/contexts');if(contexts.some(c=>c.startsWith('WEBVIEW')))break;await delay(1000);}
   const webview=contexts.find(c=>c.startsWith('WEBVIEW'));if(!webview)throw Error('Inspectable app WebView not found');await command('POST','/context',{name:webview});
   await command('POST','/timeouts',{script:90000,implicit:0,pageLoad:90000});
   await test('startup and native WebView',async()=>{await wait('return typeof showScreen === "function" && !!document.getElementById("home-screen")',45000);return await js('return {url:location.href,platform:Capacitor.getPlatform(),viewport:{width:innerWidth,height:innerHeight},ready:document.readyState}');});
@@ -65,6 +66,6 @@ try{
   if(token&&email){await test('authenticated session restoration and protected profile',async()=>{await js('localStorage.setItem("boss-code-go-auth-token-v1",arguments[0]);localStorage.setItem("boss-code-go-auth-email-v1",arguments[1]);location.reload();return true',token,email);await delay(7000);await wait('return typeof goOpenHub === "function"');const auth=await asyncjs('const done=arguments[arguments.length-1];fetch("https://boss-code-go-api.dezthareason4ever.workers.dev/go/profile",{headers:{Authorization:"Bearer "+localStorage.getItem("boss-code-go-auth-token-v1")}}).then(async r=>{const b=await r.json();done({status:r.status,success:b.success,hasProfile:!!b.profile})}).catch(e=>done({error:e.message}));');if(auth.status!==200)throw Error(JSON.stringify(auth));await js('goOpenHub("profile");return true');await wait('return !!document.getElementById("go-profile-name")');return {...auth,profileUi:true,method:'Normal email-code authentication verified locally; issued session restored in simulator; no authentication bypass'};});}else report.tests.push({device:label,name:'authenticated account features',status:'BLOCKED',reason:'Owner-authorized normal login session not yet available'});
   await command('DELETE','');session=null;sim('shutdown',udid);udid=null;await save();
  }
-}catch(error){report.fatal=redact(error.message).slice(0,1600);console.log('Simulator harness error: '+report.fatal);}
+}catch(error){report.fatal=redact(error.message).slice(0,1600);report.fatalStage=stage;console.log('Simulator harness error at '+stage+': '+report.fatal);if(!report.tests.some(t=>t.name==='startup and native WebView')){report.startupDiagnostics=redact(await fs.readFile(path.join(process.env.RUNNER_TEMP,'go-appium-server.log'),'utf8')).slice(-9000);console.log(report.startupDiagnostics);}}
 finally{if(session)await command('DELETE','').catch(()=>{});if(udid)try{sim('shutdown',udid);}catch{}server.kill('SIGTERM');await serverLog.close();report.finishedAt=new Date().toISOString();await save();}
 if(report.fatal)process.exitCode=1;
