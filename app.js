@@ -8473,7 +8473,7 @@
     class="decision-placeholder-video"
     data-dm-quick-media
     style="
-    aspect-ratio:9/16;
+    aspect-ratio:16/9;
     background:#000;
     overflow:hidden;
     position:relative;
@@ -8486,7 +8486,7 @@
     style="
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:contain;
     display:block;
     "
     >
@@ -8521,6 +8521,8 @@
     <h3>
     ${esc(v.title)}
     </h3>
+
+    ${v.creator ? `<p class="on-the-go-creator">${esc(v.creator)}</p>` : ""}
 
     <p>
     ${esc(v.description||'')}
@@ -12172,6 +12174,8 @@
     category:
     v.category||
     'ON THE GO',
+
+    creator: v.creator_name || v.creator || v.author_name || v.channel_name || '',
 
     description:
     v.description||

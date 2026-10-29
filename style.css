@@ -5699,3 +5699,33 @@ body,
   .go-list-section-heading span{font-size:10px;text-align:right}
   .go-list-message{padding:25px 18px;font-size:15px}
 }
+
+/* ON THE GO: responsive widescreen cards for every published video. */
+#decision-makers-screen #decision-on-the-go .on-the-go-row {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    overflow:visible;
+}
+#decision-makers-screen #decision-on-the-go .on-the-go-card { min-width:0; }
+#decision-makers-screen #decision-on-the-go [data-dm-quick-media] {
+    width:100%;
+    height:auto;
+    min-height:0;
+    aspect-ratio:16/9;
+    background:#000;
+    position:relative;
+}
+#decision-makers-screen #decision-on-the-go [data-dm-quick-media] > img,
+#decision-makers-screen #decision-on-the-go [data-dm-quick-media] > video,
+#decision-makers-screen #decision-on-the-go [data-dm-quick-media] > iframe {
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    object-position:center;
+}
+#decision-makers-screen #decision-on-the-go .decision-card-body { overflow-wrap:anywhere; }
+#decision-makers-screen #decision-on-the-go .on-the-go-creator { margin:6px 0; font-weight:600; }
+@media(max-width:767px) {
+    #decision-makers-screen #decision-on-the-go .on-the-go-row { grid-template-columns:minmax(0,1fr); }
+}
