@@ -2,6 +2,7 @@
   "appId": "6827774049",
   "bundleId": "com.bosscodemedia.go",
   "version": "1.0.0",
-  "buildNumber": 2,
-  "attempt": 1
+  "buildNumber": 3,
+  "attempt": 1,
+  "reason": "Required MapLibre license notices: native bundle and existing Terms screen; preserve builds 1 and 2"
 }
