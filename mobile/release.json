@@ -1,12 +1,13 @@
 {
   "appName": "B.O.S.S. CODE GO",
   "appId": "com.bosscodemedia.go",
-  "identifierStatus": "PROVISIONAL: owner must confirm identifier availability in both developer accounts",
-  "identifierOwnershipConfirmed": false,
+  "identifierStatus": "Existing com.bosscodemedia.go application verified in the owner's Google Play Console; Android update only",
+  "identifierOwnershipConfirmed": true,
   "version": "1.0.0",
-  "buildNumber": 1,
+  "buildNumber": 4,
   "productionApi": "https://boss-code-go-api.dezthareason4ever.workers.dev",
   "publicWebsite": "https://djackson0308.github.io/boss-code-go/",
   "resumeRefreshAfterMs": 300000,
-  "submissionAuthorized": false
+  "submissionAuthorized": true,
+  "submissionScope": "Google Play Internal Testing only; no production or iOS submission"
 }

@@ -1,7 +1,7 @@
 {
   "appName": "B.O.S.S. CODE GO",
   "version": "1.0.0",
-  "buildNumber": "3",
+  "buildNumber": "1",
   "provisionalBundleId": "com.bosscodemedia.go",
   "identifierOwnershipConfirmed": true,
   "developerTeamId": "TW7B5QZNV4",
@@ -10,7 +10,7 @@
   "internalTestFlightUploadAuthorized": true,
   "externalTestingAuthorized": false,
   "publicReviewAuthorized": false,
-  "signingReady": false,
+  "signingReady": true,
   "internalTestingTeamApproved": true,
   "approvedInternalTestingLegalEntity": "B.O.S.S. CODE MUSIC GROUP LLC",
   "publicPublisherNameResolutionRequired": true,

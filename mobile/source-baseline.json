@@ -1,5 +1,5 @@
 {
-  "commit": "7c00febb6048b8f115b7c6a8bfad872e24850862",
+  "commit": "c374e5587a5f9f31af5c32956278540ff305e925",
   "files": [
     {
       "path": "Music/dez-tha-reason/artwork/Dez photo.jpg",
@@ -23,9 +23,9 @@
     },
     {
       "path": "app.js",
-      "gitSha": "5db3e410b439194b44998a0e38ca0db5b7ab90cb",
-      "normalization": "none",
-      "normalizedSha256": "f350597c9c77536e47099db1a4576cce5037a645d664a306e432b598a1edeb5d"
+      "gitSha": "e45860b53587fe4717b944d789c20537fd79e631",
+      "normalization": "lf",
+      "normalizedSha256": "3291a2c15cc15873915cc4b7eeb0e17e9a37ea44db7640f2c43b3719c9061f1c"
     },
     {
       "path": "boss-video-player.js",
@@ -296,15 +296,21 @@
     },
     {
       "path": "index.html",
-      "gitSha": "53e3fe9ff79e395a185ee9a125e1ff5c36fd8075",
+      "gitSha": "ea698b2383d0a3b30e3a76ad62a08e4ef347bde2",
       "normalization": "none",
-      "normalizedSha256": "c78c2c1f38ac30b92087f4f3aae697d3a03cf6141135e7cd61a88b1fce97ef78"
+      "normalizedSha256": "51452f12fb1de28d93ca1a048bacddf8b3d9f7fec8ef7cafc78e3d6a514188c4"
     },
     {
       "path": "style.css",
-      "gitSha": "92abdda8c5947a0bda31b1b02ef45321690669ae",
-      "normalization": "none",
-      "normalizedSha256": "01cbfdda40696a196bfc5521d8e5cdb6ebf3be03569e02cbf05d04369bbecc89"
+      "gitSha": "a3bde25576626c159b2a356c55491f1e2603943a",
+      "normalization": "lf",
+      "normalizedSha256": "7b5d422073ee7d67adfbea825510315b4dbd5be37a7a2931b78f336b4362772b"
+    },
+    {
+      "path": "community-live.js",
+      "normalization": "lf",
+      "gitSha": "60748feec4796eedcd05a60c8f45183afd632ff4",
+      "normalizedSha256": "7fc7f93335c373b2f4db839ff299d908162e00daf86621730ffcbbbaeef1774e"
     }
   ],
   "vendor": [
@@ -318,5 +324,9 @@
       "sha256": "43c1d886b5fdf0aac4e7135bd6f84b823d9f48283a648012665f9be52c01389f",
       "source": "https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css"
     }
-  ]
+  ],
+  "feedLiveReview": {
+    "baseCommit": "787fccc2f25651a2fc2d9d949b07a6a7f293fe42",
+    "scope": "Feed-card IDs and standalone deletion subscriber only"
+  }
 }

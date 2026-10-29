@@ -1,0 +1,47 @@
+name: GO ON THE GO signed iOS build only
+on:
+  push:
+    branches: [ios/on-the-go-build4]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: go-ios-build-only
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/ios/on-the-go-build4' && github.repository == 'Djackson0308/boss-code-go'
+    runs-on: macos-26
+    timeout-minutes: 90
+    environment: testflight-internal
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Install pinned build tools
+        run: |
+          python -m pip install --disable-pip-version-check 'codemagic-cli-tools==0.70.1'
+          npm ci --no-audit --no-fund
+        working-directory: mobile
+      - name: Compile and sign only; no Apple upload
+        env:
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.APP_STORE_CONNECT_KEY_IDENTIFIER }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          CERTIFICATE_PRIVATE_KEY: ${{ secrets.APPLE_DISTRIBUTION_PRIVATE_KEY }}
+          APP_STORE_CONNECT_DISABLE_JWT_CACHE: 'true'
+        run: bash mobile/scripts/ios-build-only.sh
+      - name: Preserve signed build artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: go-ios-build4-${{ github.run_id }}
+          path: mobile/artifacts/ios-build4/
+          if-no-files-found: ignore
+          retention-days: 3

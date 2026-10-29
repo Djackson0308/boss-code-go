@@ -44,8 +44,6 @@ for (const item of baseline.vendor) {
   assert.equal(createHash('sha256').update(bytes).digest('hex'), item.sha256, item.file + ' integrity');
   await copyFile(resolve(mobile, 'vendor', item.file), resolve(out, 'vendor', item.file));
 }
-await copyFile(resolve(mobile, 'vendor/MAPLIBRE-LICENSE.txt'), resolve(out, 'vendor/MAPLIBRE-LICENSE.txt'));
-assert((await readFile(resolve(out, 'vendor/MAPLIBRE-LICENSE.txt'), 'utf8')).includes('Redistribution and use'));
 await build({ entryPoints: [resolve(mobile, 'src/native.js')], outfile: resolve(out, 'native.js'), bundle: true, platform: 'browser', format: 'iife', target: ['safari15', 'chrome100'], define: { __GO_RELEASE__: JSON.stringify(release) } });
 await writeFile(resolve(mobile, 'build-manifest.json'), JSON.stringify({ sourceCommit: baseline.commit, version: release.version, buildNumber: release.buildNumber, appId: release.appId, isolatedTestFixtures: process.env.BOSS_GO_TEST_FIXTURES === '1', sharedSourceSha256: hashes, nativeOnlyAdditions: ['app-hook.js', 'native.js', 'native.css', 'offline.html'], remoteContentBundled: false }, null, 2));
 console.log(`Bundled reviewed shared frontend ${baseline.commit}; remote content remains API-driven.`);

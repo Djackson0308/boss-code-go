@@ -68,6 +68,7 @@ if (Capacitor.isNativePlatform()) {
     connected = (await Network.getStatus()).connected;
     if (!connected || failed) announce('Connect to load the latest published content.');
     await App.addListener('appStateChange', state => {
+      window.dispatchEvent(new CustomEvent('go-community-app-state',{detail:{active:state.isActive}}));
       if (!state.isActive) { inactiveAt = Date.now(); return; }
       if (shouldRefresh({ inactiveAt, now: Date.now(), minimumAge: config.resumeRefreshAfterMs, busy: busy(), connected })) refresh();
       inactiveAt = 0;
