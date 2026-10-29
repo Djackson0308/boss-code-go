@@ -8402,6 +8402,31 @@
     }
 
 
+    function openOnTheGoPlayer(video, source, trigger) {
+      document.getElementById('on-the-go-player')?.close();
+      const dialog = document.createElement('dialog');
+      dialog.id = 'on-the-go-player';
+      dialog.setAttribute('aria-labelledby', 'on-the-go-player-title');
+      dialog.innerHTML = `<header><h2 id="on-the-go-player-title">${esc(video.title)}</h2><button type="button" data-otg-close>Close</button></header><div class="otg-player-media"></div><div class="otg-player-details">${video.creator ? '<p>'+esc(video.creator)+'</p>' : ''}<p>${esc(video.description || '')}</p><button type="button" data-otg-fullscreen>Fullscreen</button><span role="status"></span></div>`;
+      const x = window.scrollX, y = window.scrollY;
+      document.body.append(dialog);
+      const media = dialog.querySelector('.otg-player-media');
+      playDMVideoInBox(media, source, video.title, video.backendId || video.id || source, 'on-the-go');
+      dialog.querySelector('[data-otg-close]').onclick = () => dialog.close();
+      dialog.addEventListener('close', () => { BossVideo.stop(media);dialog.remove();trigger?.focus({preventScroll:true});window.scrollTo(x,y); }, {once:true});
+      dialog.querySelector('[data-otg-fullscreen]').onclick = async () => {
+        const player = media.querySelector('video,iframe');
+        try {
+          if (player?.requestFullscreen) await player.requestFullscreen();
+          else if (player?.webkitEnterFullscreen) player.webkitEnterFullscreen();
+          else if (player?.webkitRequestFullscreen) player.webkitRequestFullscreen();
+          else throw Error('Fullscreen unavailable');
+          if (document.fullscreenElement && screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{});
+        } catch { dialog.querySelector('[role=status]').textContent = 'Use the fullscreen control in the video player.'; }
+      };
+      dialog.showModal();dialog.querySelector('[data-otg-close]').focus();
+    }
+
     function buildDM(){
 
     const row=
@@ -8500,7 +8525,7 @@
     inset:0;
     "
     >
-    ▶
+    &#9654;
     </button>
 
     <span
@@ -8546,28 +8571,7 @@
     'click',
     ()=>{
 
-    const media=
-    q(
-    '[data-dm-quick-media]',
-    c
-    );
-
-
-    playDMVideoInBox(
-
-    media,
-
-    id,
-
-    v.title,
-
-    v.backendId||
-    v.id||
-    id,
-
-    'on-the-go'
-
-    );
+    openOnTheGoPlayer(v, id, play);
 
     }
     );
