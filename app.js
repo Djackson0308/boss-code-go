@@ -8477,9 +8477,7 @@
     return;
 
 
-    const thumbnail=
-    v.thumbnailUrl||
-    BossVideo.thumbnail(id);
+    // Each preview is resolved from this card’s own source and metadata.
 
 
     const c=
@@ -8506,12 +8504,14 @@
     >
 
     <img
-    src="${esc(thumbnail)}"
+    data-quick-thumbnail
+    loading="lazy"
+    decoding="async"
     alt="${esc(v.title)}"
     style="
     width:100%;
     height:100%;
-    object-fit:contain;
+    object-fit:cover;
     display:block;
     "
     >
@@ -8557,6 +8557,8 @@
 
     `;
 
+
+    BossQuickThumbnail.attach(c.querySelector('[data-quick-thumbnail]'), v, id);
 
     const play=
     q(
@@ -12172,7 +12174,7 @@
     ),
 
     thumbnailUrl:
-    v.thumbnail_url||
+    v.thumbnail_url||v.thumbnailUrl||v.poster_url||v.posterUrl||
     '',
 
     category:
