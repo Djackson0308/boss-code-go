@@ -3,7 +3,7 @@
   "bundleId": "com.bosscodemedia.go",
   "version": "1.0.0",
   "buildNumber": 4,
-  "attempt": 1,
+  "attempt": 2,
   "reason": "Restore internal Code Clothing and Magazine navigation",
-  "qaOnly": true
+  "qaOnly": false
 }
