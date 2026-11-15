@@ -79,6 +79,8 @@ if (Capacitor.isNativePlatform()) {
     document.addEventListener('click', event => {
       const anchor = event.target.closest?.('a[href]');
       if (!anchor || anchor.hasAttribute('download')) return;
+      // These shared home tiles have app.js click handlers for their in-app screens.
+      if (anchor.matches('.app-menu a.app-button[href="https://www.bosscodemedia.com/shop"], .app-menu a.app-button[href*="magazine.bosscodemedia.com"]')) return;
       if (isExternal(anchor.href, location.href)) { event.preventDefault(); Browser.open({ url: anchor.href }); }
     }, true);
     const open = window.open.bind(window);

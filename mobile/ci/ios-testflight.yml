@@ -11,6 +11,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   icon-validation:
+    outputs:
+      qa_only: ${{ steps.request.outputs.qa_only }}
     if: github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
     runs-on: macos-26
     timeout-minutes: 30
@@ -24,7 +26,11 @@ jobs:
       - name: Install existing app dependencies
         run: npm ci --no-audit --no-fund
         working-directory: mobile
-      - name: Validate approved icon and launch build 2 on iPhone simulator
+      - name: Read QA-only setting
+        id: request
+        working-directory: mobile
+        run: node -e 'console.log("qa_only=" + (require("./ci/testflight-request.json").qaOnly === true))' >> "$GITHUB_OUTPUT"
+      - name: Validate the iOS bundle and launch on an iPhone simulator
         env:
           GO_APPROVED_ICON_SHA256: 'd0bf598bc56ab644bec3dfd068b32ec02772ff244fd847a4f59f114bb6b9f029'
         run: node scripts/ios-icon-validate.mjs
@@ -33,7 +39,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: go-build2-icon-validation-${{ github.run_id }}
+          name: go-ios-qa-${{ github.run_id }}
           path: |
             mobile/artifacts/icon-build2/*.png
             mobile/artifacts/icon-build2/validation.json
@@ -41,7 +47,7 @@ jobs:
           retention-days: 14
   deploy:
     needs: icon-validation
-    if: github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
+    if: needs.icon-validation.outputs.qa_only == 'false' && github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
     runs-on: macos-26
     timeout-minutes: 90
     environment: testflight-internal

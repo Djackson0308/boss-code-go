@@ -22,7 +22,15 @@ window.BossGoNative = {
     if (!goListScreen.hidden && goListScreen.classList.contains('active-screen') && !document.querySelector('#go-list-detail').hidden) { goListBackToBrowse(); return true; }
     const active = document.querySelector('.screen.active-screen');
     if (active && active.id !== 'home-screen') {
-      const back = active.querySelector('.back-button,.return-home-button,.go-list-back,.contact-back');
+      if (active.id === 'the-code-clothing-screen') {
+        if (active.querySelector('#clothing-cart-panel.show')) closeClothingCart();
+        else if (active.querySelector('#clothing-detail.show')) {
+          const backToShop = active.querySelector('#clothing-back-to-shop');
+          if (backToShop) backToShop.click(); else openClothingStore();
+        } else $('the-code-clothing-back').click();
+        return true;
+      }
+      const back = active.querySelector('.back-button,.return-home-button,.go-list-back,.contact-back,#boss-internal-back');
       if (back) back.click(); else showScreen(home);
       return true;
     }
