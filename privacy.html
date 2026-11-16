@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>B.O.S.S. CODE GO Privacy Policy</title>
+
+  <meta
+    name="description"
+    content="Privacy Policy for the B.O.S.S. CODE GO mobile application operated by B.O.S.S. CODE MEDIA GROUP LLC."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Anton&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #050505;
+      --black2: #0d0d0d;
+      --yellow: #f4c900;
+      --red: #d71920;
+      --white: #ffffff;
+      --soft-white: #e8e8e8;
+      --gray: #a9a9a9;
+      --line: #2c2c2c;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--black);
+      color: var(--white);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--yellow);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .brand-bar {
+      height: 8px;
+      display: flex;
+    }
+
+    .brand-bar .yellow {
+      flex: 3;
+      background: var(--yellow);
+    }
+
+    .brand-bar .red {
+      flex: 1;
+      background: var(--red);
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 34px));
+      margin: auto;
+    }
+
+    header {
+      padding: 48px 0 34px;
+      border-bottom: 4px solid var(--yellow);
+      position: relative;
+    }
+
+    header::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 150px;
+      height: 4px;
+      background: var(--red);
+    }
+
+    .company {
+      font-family: "Anton", Arial, sans-serif;
+      color: var(--yellow);
+      text-transform: uppercase;
+      font-size: 15px;
+      letter-spacing: 1.4px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: clamp(48px, 8vw, 86px);
+      line-height: 0.93;
+      letter-spacing: 0.3px;
+      font-weight: 400;
+    }
+
+    h1 span {
+      color: var(--yellow);
+    }
+
+    .header-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 40px;
+      margin-top: 26px;
+    }
+
+    .intro {
+      max-width: 760px;
+      margin: 0;
+      color: var(--soft-white);
+      font-size: 16px;
+    }
+
+    .date {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--gray);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .controls-text {
+      font-size: 13px;
+      color: var(--gray);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      border: 2px solid var(--yellow);
+      background: transparent;
+      padding: 8px 13px;
+      color: var(--white);
+      font-family: "Anton", Arial, sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 0;
+    }
+
+    button:hover {
+      background: var(--yellow);
+      color: var(--black);
+    }
+
+    .privacy-intro {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      margin: 28px 0;
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--red);
+    }
+
+    .privacy-intro > div {
+      padding: 24px;
+      background: var(--black2);
+    }
+
+    .privacy-intro > div:first-child {
+      border-right: 1px solid var(--line);
+    }
+
+    .privacy-intro h2 {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: 25px;
+      font-weight: 400;
+      color: var(--yellow);
+      margin: 0 0 10px;
+    }
+
+    .privacy-intro p {
+      margin: 0;
+      color: #d3d3d3;
+      font-size: 14px;
+    }
+
+    .policy-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 45px;
+    }
+
+    details {
+      background: var(--black2);
+      border: 1px solid #292929;
+      border-left: 5px solid #2a2a2a;
+    }
+
+    details[open] {
+      border-left-color: var(--red);
+      background: #101010;
+    }
+
+    details summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      min-height: 65px;
+      padding: 15px 52px 15px 17px;
+      position: relative;
+      user-select: none;
+    }
+
+    details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .number {
+      font-family: "Anton", Arial, sans-serif;
+      font-size: 22px;
+      color: var(--yellow);
+      min-width: 42px;
+    }
+
+    .title {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: 18px;
+      line-height: 1.15;
+      font-weight: 400;
+      color: var(--white);
+    }
+
+    .icon {
+      position: absolute;
+      right: 17px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--yellow);
+      font-size: 25px;
+    }
+
+    details[open] .icon {
+      color: var(--red);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .content {
+      border-top: 1px solid #252525;
+      margin: 0 17px;
+      padding: 18px 0 22px 42px;
+      color: #cacaca;
+      font-size: 14px;
+    }
+
+    .content p {
+      margin: 0 0 13px;
+    }
+
+    .content h3 {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: 15px;
+      letter-spacing: 0.4px;
+      font-weight: 400;
+      color: var(--yellow);
+      margin: 22px 0 8px;
+    }
+
+    .content ul {
+      padding-left: 20px;
+      margin: 8px 0 16px;
+    }
+
+    .content li {
+      margin-bottom: 6px;
+    }
+
+    .contact {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 40px;
+      padding: 32px 0;
+      border-top: 5px solid var(--yellow);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+
+    .contact::before {
+      content: "";
+      position: absolute;
+      top: -5px;
+      left: 0;
+      height: 5px;
+      width: 130px;
+      background: var(--red);
+    }
+
+    .contact h2 {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: 35px;
+      line-height: 1;
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .contact-info {
+      color: #cacaca;
+      font-size: 14px;
+    }
+
+    .contact-info p {
+      margin: 0 0 8px;
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: 26px 0 38px;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .motto {
+      font-family: "Anton", Arial, sans-serif;
+      text-transform: uppercase;
+      font-size: 14px;
+      color: var(--yellow);
+      letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 760px) {
+
+      .page {
+        width: calc(100% - 24px);
+      }
+
+      .header-bottom {
+        display: block;
+      }
+
+      .date {
+        margin-top: 18px;
+      }
+
+      .controls {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .privacy-intro {
+        grid-template-columns: 1fr;
+      }
+
+      .privacy-intro > div:first-child {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .policy-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        padding-left: 8px;
+      }
+
+      .contact {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      footer {
+        display: block;
+      }
+
+      .motto {
+        margin-top: 8px;
+      }
+
+    }
+
+  </style>
+<link rel="canonical" href="https://djackson0308.github.io/boss-code-go/privacy.html"/></head>
+
+<body>
+
+  <div class="brand-bar">
+    <div class="yellow"></div>
+    <div class="red"></div>
+  </div>
+
+  <div class="page">
+
+    <header>
+
+      <div class="company">
+        B.O.S.S. CODE MEDIA GROUP LLC
+      </div>
+
+      <h1 id="go-privacy-policy">
+        B.O.S.S. CODE GO
+        <br>
+        <span>Privacy Policy</span>
+      </h1>
+
+      <div class="header-bottom">
+
+        <p class="intro">
+          This policy explains how B.O.S.S. CODE GO collects,
+          uses, stores, shares and protects information connected
+          to your use of the app and its services.
+        </p>
+
+        <div class="date">
+          Effective September 28, 2026 · Updated November 15, 2026
+        </div>
+
+      </div>
+
+    </header>
+
+    <div class="controls">
+
+      <div class="controls-text">
+        Open any section below to review the full policy.
+      </div>
+
+      <div class="buttons">
+
+        <button onclick="expandAll()">
+          Expand All
+        </button>
+
+        <button onclick="collapseAll()">
+          Collapse All
+        </button>
+
+      </div>
+
+    </div>
+
+    <section class="privacy-intro">
+
+      <div>
+
+        <h2>Your Information</h2>
+
+        <p>
+          B.O.S.S. CODE GO uses information to operate accounts,
+          courses, challenges, community features, purchases and
+          other features within the GO experience.
+        </p>
+
+      </div>
+
+      <div>
+
+        <h2>Your Control</h2>
+
+        <p>
+          Users may manage certain account information and may request
+          permanent deletion of their account and associated personal data.
+        </p>
+
+      </div>
+
+    </section>
+
+    <main class="policy-grid">
+
+      <details open>
+
+        <summary>
+          <span class="number">01</span>
+          <span class="title">About This Policy</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            This Privacy Policy applies to the B.O.S.S. CODE GO
+            mobile application and related services operated by
+            B.O.S.S. CODE MEDIA GROUP LLC.
+          </p>
+
+          <p>
+            References to "B.O.S.S. CODE GO," "GO," "we," "our"
+            and "us" refer to B.O.S.S. CODE MEDIA GROUP LLC and
+            the B.O.S.S. CODE GO service where appropriate.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">02</span>
+          <span class="title">Information We Collect</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <h3>Account Information</h3>
+
+          <ul>
+            <li>Email address</li>
+            <li>Account identifier</li>
+            <li>Authentication information</li>
+            <li>Account status and creation information</li>
+          </ul>
+
+          <h3>Profile Information</h3>
+
+          <ul>
+            <li>Display name</li>
+            <li>Profile photograph</li>
+            <li>Profile details provided by the user</li>
+            <li>Profile privacy preferences</li>
+          </ul>
+
+          <h3>Community Activity</h3>
+
+          <ul>
+            <li>Posts</li>
+            <li>Encourage interactions</li>
+            <li>Reports</li>
+            <li>Blocked accounts</li>
+            <li>Moderation information</li>
+          </ul>
+
+          <h3>Decision Makers and Challenges</h3>
+
+          <ul>
+            <li>Challenge participation</li>
+            <li>Challenge progress</li>
+            <li>Completed activities</li>
+            <li>Streaks</li>
+            <li>Achievements</li>
+            <li>Goals</li>
+            <li>Tracker information</li>
+            <li>Written challenge responses</li>
+            <li>Personal reflections</li>
+          </ul>
+
+          <p>
+            Private challenge responses and reflections are not intended
+            to become public unless the user intentionally chooses to share
+            information through a feature designed for public sharing.
+          </p>
+
+          <h3>Courses</h3>
+
+          <ul>
+            <li>Course enrollment</li>
+            <li>Lesson progress</li>
+            <li>Lesson completion</li>
+            <li>Resume position</li>
+            <li>Course access information</li>
+          </ul>
+
+          <h3>B.O.S.S. Check In</h3>
+
+          <p>
+            Responses submitted through B.O.S.S. Check In may be stored
+            when necessary for the feature to operate as intended.
+          </p>
+
+          <h3>Purchases</h3>
+
+          <ul>
+            <li>Transaction identifier</li>
+            <li>Transaction status</li>
+            <li>Product purchased</li>
+            <li>Purchase amount</li>
+            <li>Purchase date</li>
+            <li>Refund information</li>
+            <li>Purchase access information</li>
+          </ul>
+
+          <h3>Physical Orders</h3>
+
+          <ul>
+            <li>Name</li>
+            <li>Shipping address</li>
+            <li>Contact information</li>
+            <li>Size or product selection</li>
+            <li>Order status</li>
+            <li>Fulfillment information</li>
+          </ul>
+
+          <h3>GO List</h3>
+
+          <ul>
+            <li>Business name</li>
+            <li>Business location</li>
+            <li>Business contact information</li>
+            <li>Website or social media information</li>
+            <li>Images</li>
+            <li>Listing information</li>
+          </ul>
+
+          <h3>Technical Information</h3>
+
+          <ul>
+            <li>Device or browser information</li>
+            <li>IP address</li>
+            <li>Application activity</li>
+            <li>Error and diagnostic information</li>
+            <li>Session information</li>
+            <li>A persistent visitor identifier generated by GO, stored on your device and sent with usage events</li>
+            <li>A session identifier that groups events from an app session</li>
+            <li>Approximate country, region and city derived from network information</li>
+            <li>Security logs</li>
+          </ul>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">03</span>
+          <span class="title">How Information Is Used</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>Information may be used to:</p>
+
+          <ul>
+            <li>Create and maintain accounts</li>
+            <li>Authenticate users</li>
+            <li>Protect accounts and app security</li>
+            <li>Save preferences and progress</li>
+            <li>Operate challenges and trackers</li>
+            <li>Maintain challenge history</li>
+            <li>Deliver course content</li>
+            <li>Maintain course access</li>
+            <li>Operate community features</li>
+            <li>Process reports and moderation</li>
+            <li>Fulfill merchandise orders</li>
+            <li>Maintain GO List listings</li>
+            <li>Maintain order and purchase history, including order and fulfillment details and payment status</li>
+            <li>Provide customer support</li>
+            <li>Prevent fraud and abuse</li>
+            <li>Diagnose technical problems</li>
+            <li>Improve B.O.S.S. CODE GO</li>
+            <li>Measure screen opens, button actions, and impressions and clicks on GO promotions</li>
+            <li>Connect app activity to an account or contact when you provide your name or email</li>
+            <li>Meet applicable legal obligations</li>
+          </ul>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">04</span>
+          <span class="title">Public Information</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            Some GO features allow users to intentionally share
+            information with other users.
+          </p>
+
+          <p>
+            Public information may include a display name,
+            profile photo, community posts and other information
+            clearly identified as public.
+          </p>
+
+          <p>
+            Users should avoid posting sensitive personal
+            information in public areas of the app.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">05</span>
+          <span class="title">Sharing and Service Providers</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            B.O.S.S. CODE MEDIA GROUP LLC does not sell personal
+            information simply because someone uses B.O.S.S. CODE GO.
+          </p>
+
+          <p>
+            Information may be processed by service providers
+            when necessary to provide app functionality.
+          </p>
+
+          <h3>Services May Include</h3>
+
+          <ul>
+            <li>Cloud infrastructure</li>
+            <li>Database hosting</li>
+            <li>Media delivery</li>
+            <li>Payment processing</li>
+            <li>Email delivery</li>
+            <li>Video playback</li>
+            <li>Mapping</li>
+            <li>Security and fraud prevention</li>
+          </ul>
+
+          <p>
+            Providers may include services from companies such as
+            Cloudflare, Stripe, YouTube or Google, Apple and other
+            infrastructure providers used by GO.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">06</span>
+          <span class="title">Payments</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            Eligible transactions may be processed through Stripe,
+            Apple, Google or another payment provider permitted for
+            the applicable transaction.
+          </p>
+
+          <p>
+            Payment providers may collect financial information directly
+            from users.
+          </p>
+
+          <p>
+            GO may retain transaction identifiers, purchase status,
+            entitlement records and other information needed to support
+            the transaction.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">07</span>
+          <span class="title">Third Party Services</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            GO may display or deliver content using third party services,
+            including video, maps, payments, media delivery and other
+            technologies.
+          </p>
+
+          <p>
+            Technical information may be transmitted to a provider when
+            necessary to deliver a requested feature.
+          </p>
+
+          <p>
+            Cloudflare provides hosting and network information, Stripe handles payment entry and processing, Resend supports sign-in and marketing email, and YouTube or Google provides embedded video. Embedded players load directly from their provider, which may receive network, device and playback information. GO uses both standard YouTube embeds and privacy-enhanced embeds. Provider practices may vary by player and user settings. Read the providers' privacy policies for details.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">08</span>
+          <span class="title">Security</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            B.O.S.S. CODE MEDIA GROUP LLC uses reasonable administrative,
+            technical and organizational safeguards intended to protect
+            information from unauthorized access, alteration, disclosure,
+            misuse or destruction.
+          </p>
+
+          <p>
+            Measures may include encrypted connections, authentication
+            controls, access restrictions, server side authorization,
+            database protections and account separation.
+          </p>
+
+          <p>
+            No electronic storage or transmission system can be guaranteed
+            to be completely secure.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">09</span>
+          <span class="title">Data Retention</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            B.O.S.S. CODE GO retains information for as long as reasonably
+            necessary to operate the service and provide the features
+            requested by the user.
+          </p>
+
+          <h3>Challenge Information</h3>
+
+          <p>
+            Challenge progress, written responses, reflections,
+            achievements, streaks and related history may remain connected
+            to the user's account for as long as the account remains active.
+          </p>
+
+          <p>
+            Keeping this information allows users to review their progress,
+            completed challenges and personal growth history over time.
+          </p>
+
+          <p>
+            If GO provides an option to delete individual information,
+            users may remove that information sooner.
+          </p>
+
+          <h3>Other Information</h3>
+
+          <p>
+            Certain business, transaction, security or legal records may
+            be retained for longer periods when reasonably necessary for
+            accounting, fraud prevention, dispute resolution or compliance
+            with applicable law.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">10</span>
+          <span class="title">Account and Data Deletion</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            Users may request permanent deletion of their
+            B.O.S.S. CODE GO account and associated personal information.
+          </p>
+
+          <p>
+            Account deletion requests may be submitted by contacting
+            B.O.S.S. CODE MEDIA GROUP LLC at
+            <a href="mailto:greatness@bosscodemedia.com">greatness@bosscodemedia.com</a>.
+          </p>
+
+          <p>
+            To request deletion in the app, open Decision Makers, go to My Profile and choose Delete Account. Follow the confirmation prompts.
+          </p>
+
+          <p>
+            When a permanent account deletion request is completed,
+            associated personal data will be deleted or anonymized unless
+            limited retention is necessary for legitimate legal, security,
+            fraud prevention, accounting or regulatory purposes.
+          </p>
+
+          <p>Associated data may include:</p>
+
+          <ul>
+            <li>Profile information</li>
+            <li>Profile images</li>
+            <li>Challenge progress</li>
+            <li>Written challenge responses</li>
+            <li>Private reflections</li>
+            <li>Tracker information</li>
+            <li>Achievements</li>
+            <li>Course progress</li>
+            <li>Community account information</li>
+            <li>Other personal information associated with the account</li>
+          </ul>
+
+          <p>
+            Removing the B.O.S.S. CODE GO application from a device does
+            not automatically delete the user's account.
+          </p>
+
+          <p>
+            Account deletion may not automatically cancel a subscription
+            managed through Apple, Google or another payment provider.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">11</span>
+          <span class="title">Your Privacy Choices</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            Depending on applicable law, users may have rights regarding
+            their personal information.
+          </p>
+
+          <p>These may include the ability to:</p>
+
+          <ul>
+            <li>Request access to certain information</li>
+            <li>Correct certain information</li>
+            <li>Request account deletion</li>
+            <li>Request deletion of certain personal data</li>
+            <li>Ask questions about how information is handled</li>
+          </ul>
+
+          <p>
+            Identity verification may be required before certain requests
+            are completed.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">12</span>
+          <span class="title">Photos and Media</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            When GO allows a user to select or upload a profile photograph,
+            image or media file, access is used to provide the feature
+            requested by the user.
+          </p>
+
+          <p>
+            Users should only upload content that they have the right to use.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">13</span>
+          <span class="title">Location and Maps</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            GO may display restaurant locations, businesses,
+            venues and other geographic information.
+          </p>
+
+          <p>
+            GO stores approximate country, region and city with usage events, based on Cloudflare network information. This analytics flow uses network information to estimate location.
+          </p>
+
+          <p>
+            If a future feature requires device location, the appropriate
+            device permission and disclosure will be provided.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">14</span>
+          <span class="title">Notifications and Marketing Email</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            GO may offer notifications for app activity,
+            updates, reminders, content or other app features.
+          </p>
+
+          <p>
+            Users may manage notification permissions through their device settings. GO’s contact system can mark new contacts as eligible for first-party marketing by default. Eligibility is a contact status. Marketing emails include an unsubscribe link. You can also contact GO support about marketing choices. Sign-in codes and order communications serve separate account and transaction needs.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">15</span>
+          <span class="title">Children's Privacy</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            B.O.S.S. CODE GO is not designed to intentionally collect
+            personal information from children in violation of applicable law.
+          </p>
+
+          <p>
+            Intended audience and age eligibility requirements will be
+            communicated through the app, store listing and registration
+            experience where applicable.
+          </p>
+
+        </div>
+
+      </details>
+
+      <details>
+
+        <summary>
+          <span class="number">16</span>
+          <span class="title">Changes to This Policy</span>
+          <span class="icon">+</span>
+        </summary>
+
+        <div class="content">
+
+          <p>
+            This Privacy Policy may be updated when GO changes,
+            new features are introduced, data practices change,
+            or legal and platform requirements change.
+          </p>
+
+          <p>
+            The effective date at the top of this page will be updated when
+            the policy changes.
+          </p>
+
+        </div>
+
+      </details>
+
+    </main>
+
+    <section class="contact">
+
+      <div>
+
+        <h2>Privacy Questions</h2>
+
+      </div>
+
+      <div class="contact-info">
+
+        <p>
+          <strong>B.O.S.S. CODE MEDIA GROUP LLC</strong>
+        </p>
+
+        <p>
+          B.O.S.S. CODE GO Privacy
+        </p>
+
+        <p>
+          Email:
+          <a href="mailto:greatness@bosscodemedia.com">greatness@bosscodemedia.com</a>
+        </p>
+
+        <p>
+          Website:
+          <a href="https://bosscodemedia.com">
+            bosscodemedia.com
+          </a>
+        </p>
+
+      </div>
+
+    </section>
+
+    <footer>
+
+      <div>
+        © 2026 B.O.S.S. CODE MEDIA GROUP LLC.
+        All rights reserved.
+      </div>
+
+      <div class="motto">
+        Greatness is a Decision.
+      </div>
+
+    </footer>
+
+  </div>
+
+  <script>
+
+    function expandAll() {
+
+      document
+        .querySelectorAll("details")
+        .forEach(function(section) {
+
+          section.open = true;
+
+        });
+
+    }
+
+    function collapseAll() {
+
+      document
+        .querySelectorAll("details")
+        .forEach(function(section) {
+
+          section.open = false;
+
+        });
+
+      document
+        .querySelector("header")
+        .scrollIntoView({
+          behavior: "smooth"
+        });
+
+    }
+
+  </script>
+
+</body>
+</html>
