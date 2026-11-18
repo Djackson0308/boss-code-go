@@ -27,9 +27,13 @@ for (const item of baseline.files) {
 // Use the same production source. These additions exist only in the staged native bundle.
 // Apply the provider's privacy-enhanced embed host before any iframe is created.
 // This reduces personalization; it is not a declaration that tracking is absent.
-const nativeAppSource = (await readFile(resolve(out, 'app.js'), 'utf8')).replaceAll('https://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/');
+// Keep the existing inline player, hosted in an HTTPS document for YouTube's
+// required client referrer. Only native staged assets use this integration.
+const nativePlayerUrls = source => source.replace(/https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/([^\s"'`?]+)\?/g, 'https://djackson0308.github.io/boss-code-go/go-player.html?video=$1&');
+const nativeAppSource = nativePlayerUrls(await readFile(resolve(out, 'app.js'), 'utf8')).replace('This information is voluntary and is used only for aggregate B.O.S.S CODE GO analytics.', 'This information is voluntary and helps us understand the B.O.S.S CODE GO audience. It may be linked to visitor or account information as explained in our Privacy Policy.');
 await writeFile(resolve(out, 'app.js'), nativeAppSource + '\n' + await readFile(resolve(mobile, 'src/app-hook.js'), 'utf8'));
-let html = await readFile(resolve(out, 'index.html'), 'utf8');
+await writeFile(resolve(out, 'boss-video-player.js'), nativePlayerUrls(await readFile(resolve(out, 'boss-video-player.js'), 'utf8')));
+let html = nativePlayerUrls(await readFile(resolve(out, 'index.html'), 'utf8'));
 assert(html.includes('#decision-makers-screen #decision-sessions { display:none !important; }'));
 html = html.replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover"');
 html = html.replace('</head>', '<link rel="stylesheet" href="native.css">\n<script src="native.js"></script>\n</head>');

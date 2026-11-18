@@ -96,8 +96,9 @@ if (Capacitor.isNativePlatform()) {
       for (const frame of document.querySelectorAll('iframe')) {
         if (players.has(frame)) continue;
         let url; try { url = new URL(frame.src); } catch { continue; }
-        if (!['www.youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname)) continue;
-        const id = url.pathname.match(/^\/embed\/([\w-]{11})/)?.[1]; if (!id) continue;
+        const hostedPlayer = url.origin === 'https://djackson0308.github.io' && url.pathname === '/boss-code-go/go-player.html';
+        if (!hostedPlayer && !['www.youtube.com', 'www.youtube-nocookie.com'].includes(url.hostname)) continue;
+        const id = hostedPlayer ? url.searchParams.get('video') : url.pathname.match(/^\/embed\/([\w-]{11})/)?.[1]; if (!/^[\w-]{11}$/.test(id || '')) continue;
         frame.referrerPolicy = 'strict-origin-when-cross-origin';
         const button = document.createElement('button'); button.className = 'go-native-youtube'; button.type = 'button';
         button.textContent = 'Open on YouTube'; button.onclick = () => Browser.open({ url: `https://www.youtube.com/watch?v=${id}` });

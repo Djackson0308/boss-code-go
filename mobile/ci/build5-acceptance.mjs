@@ -24,7 +24,7 @@ const js=(script,...args)=>rd.executeAtom('execute_script',[script,args],frameCo
 const asyncjs=(script,...args)=>rd.executeAtomAsync('execute_async_script',[script,args,90000],frameContext);
 const command=async(method,p)=>{if(method==='DELETE')await rd?.disconnect();else throw Error('Unsupported native command '+p);};
 async function wait(script,timeout=30000){const end=Date.now()+timeout;let error;while(Date.now()<end){try{const r=await js(script);if(r)return r;}catch(e){error=e.message;}await delay(500);}throw Error('Wait timed out: '+script.slice(0,150)+(error?' '+error.slice(0,150):''));}
-async function test(name,work){if(!['startup and native WebView','native HTTPS backend content','focused home navigation','focused music playback','Magazine Reader','build5 privacy and clothing','build5 YouTube playback'].includes(name))return;try{const evidence=await work();report.tests.push({device:deviceLabel,name,status:'PASS',evidence});reportLog(`${deviceLabel}: PASS ${name}`);}catch(error){report.tests.push({device:deviceLabel,name,status:'FAIL',error:redact(error.message).slice(0,900)});reportLog(`${deviceLabel}: FAIL ${name}: ${redact(error.message).slice(0,250)}`);}await save();}
+async function test(name,work){if(!['startup and native WebView','native HTTPS backend content','focused home navigation','focused music playback','Magazine Reader','build5 privacy and clothing','build5 YouTube playback','native provider fallback'].includes(name))return;try{const evidence=await work();report.tests.push({device:deviceLabel,name,status:'PASS',evidence});reportLog(`${deviceLabel}: PASS ${name}`);}catch(error){report.tests.push({device:deviceLabel,name,status:'FAIL',error:redact(error.message).slice(0,900)});reportLog(`${deviceLabel}: FAIL ${name}: ${redact(error.message).slice(0,250)}`);}await save();}
 async function click(selector){await js('document.querySelector(arguments[0])?.scrollIntoView({block:"center",behavior:"instant"});return true',selector);await delay(300);const element=await rd.executeAtom('find_element_fragment',['css selector',selector],frameContext);await rd.executeAtom('click',[element],frameContext,{emulateUserGesture:true});}
 async function settle(){await delay(1600);await js('window.scrollTo({top:0,behavior:"instant"}); return true;');await delay(500);}
 async function screen(id){await js('showScreen(document.getElementById(arguments[0]));return document.querySelector(".screen.active-screen")?.id;',id);await wait(`return document.getElementById(${JSON.stringify(id)})?.classList.contains('active-screen')`);await settle();}
@@ -93,9 +93,14 @@ try{
   await test('build5 privacy and clothing',async()=>{
     const privacy=await js('return GO_LEGAL_DOCS.privacy.sections.map(x=>x.join(" ")).join("\\n")');
     if(!privacy.includes('affirmative opt-in')||!privacy.includes('approximate city'))throw Error('Updated privacy notice absent');
+    if(await js('return !!document.querySelector("#boss-demographics-overlay.open")'))await click('#boss-demo-skip');
     await js('openClothingStore();return true');await delay(5000);
     const state=await js('return {screen:document.querySelector(".screen.active-screen")?.id,products:document.querySelectorAll(".clothing-product-card").length,cart:typeof openClothingCart,checkout:typeof startClothingStripeCheckout}');
     if(state.screen!=='the-code-clothing-screen'||state.cart!=='function'||state.checkout!=='function')throw Error(JSON.stringify(state));
+    if(!state.products)throw Error('No storefront products loaded');
+    await click('.clothing-product-card');await wait('return !!document.querySelector("#clothing-detail.show #clothing-add-to-cart")');
+    if(!await js('return BossGoNative.back()'))throw Error('Product Back not handled');
+    if(await js('return !!document.querySelector("#clothing-detail.show")'))throw Error('Product Back did not return to storefront');
     await js('openClothingCart();return true');await delay(500);
     if(!await js('return !!document.querySelector("#clothing-cart-panel.show")'))throw Error('Cart did not open');
     const backState=await js('const before={screen:document.querySelector(".screen.active-screen")?.id,dialogs:document.querySelectorAll("dialog[open]").length,overlays:Array.from(document.querySelectorAll("#go-auth-overlay.open,#go-challenge-overlay.open,#daily-decision-modal.open,#boss-demographics-overlay.open,#boss-promo-ad-overlay.show")).map(e=>e.id)};const handled=BossGoNative.back();return {before,handled,screenAfter:document.querySelector(".screen.active-screen")?.id};');
@@ -108,13 +113,19 @@ try{
     await screen('boss-code-tv-screen');await delay(2500);await click('.tv-thumbnail');
     await wait('return !!document.querySelector("#boss-code-tv-screen iframe")');
     const src=await js('const f=document.querySelector("#boss-code-tv-screen iframe");f.id="build5-youtube-player";return f.src');
-    if(!src.startsWith('https://www.youtube-nocookie.com/embed/'))throw Error('Privacy-enhanced embed missing: '+src);
-    await js('window.__goPlayback={};const frame=document.getElementById("build5-youtube-player");const u=new URL(frame.src);u.searchParams.set("enablejsapi","1");frame.src=u.href;window.onYouTubeIframeAPIReady=()=>{window.__goPlayer=new YT.Player("build5-youtube-player",{events:{onReady:e=>{window.__goPlayback.ready=true;e.target.mute();e.target.playVideo();},onStateChange:e=>{window.__goPlayback.state=e.data;},onError:e=>{window.__goPlayback.error=e.data;}}});};if(window.YT?.Player)window.onYouTubeIframeAPIReady();else{const script=document.createElement("script");script.src="https://www.youtube.com/iframe_api";document.head.append(script);}return true');
+    if(!src.startsWith('https://djackson0308.github.io/boss-code-go/go-player.html?video='))throw Error('HTTPS privacy-enhanced player missing: '+src);
+    await js('window.__goPlayback={};const frame=document.getElementById("build5-youtube-player");addEventListener("message",event=>{if(event.source===frame.contentWindow&&event.origin==="https://djackson0308.github.io"&&event.data?.type==="go-player-state")window.__goPlayback=event.data;});frame.contentWindow.postMessage({type:"go-player-command",command:"state"},"https://djackson0308.github.io");return true');
+    await wait('return window.__goPlayback?.ready',30000);
+    await js('const f=document.getElementById("build5-youtube-player");for(const command of ["mute","play"])f.contentWindow.postMessage({type:"go-player-command",command},"https://djackson0308.github.io");return true');
     await delay(15000);
-    const playback=await js('return {...window.__goPlayback,time:window.__goPlayer?.getCurrentTime?.(),state:window.__goPlayer?.getPlayerState?.()}');
-    await capture('youtube-playback');
+    await js('document.getElementById("build5-youtube-player").contentWindow.postMessage({type:"go-player-command",command:"state"},"https://djackson0308.github.io");return true');await delay(1000);
+    const playback=await js('return window.__goPlayback');await capture('youtube-playback');
     if(!(playback.time>0)||playback.error||playback.state!==1)throw Error('YouTube API playback verification failed: '+JSON.stringify(playback));
-    return {src,playback,inspection:'Supported YouTube IFrame API; enablejsapi added only for QA instrumentation',physicalFullscreenGesturePending:true};
+    await screen('home-screen');await delay(1500);
+    await js('document.getElementById("build5-youtube-player")?.contentWindow.postMessage({type:"go-player-command",command:"state"},"https://djackson0308.github.io");return true');await delay(500);
+    const afterNavigation=await js('return window.__goPlayback');
+    if(afterNavigation.state===1)throw Error('YouTube kept playing after leaving TV');
+    return {src,playback,afterNavigation,inspection:'Supported player API through origin-checked HTTPS player bridge',physicalFullscreenGesturePending:true};
   });
 
   await command('DELETE','');session=null;sim('shutdown',udid);udid=null;await save();
