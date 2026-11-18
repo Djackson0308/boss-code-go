@@ -98,7 +98,9 @@ try{
     if(state.screen!=='the-code-clothing-screen'||state.cart!=='function'||state.checkout!=='function')throw Error(JSON.stringify(state));
     await js('openClothingCart();return true');await delay(500);
     if(!await js('return !!document.querySelector("#clothing-cart-panel.show")'))throw Error('Cart did not open');
-    if(!await js('return BossGoNative.back()'))throw Error('Cart back did not handle navigation');
+    const backState=await js('const before={screen:document.querySelector(".screen.active-screen")?.id,dialogs:document.querySelectorAll("dialog[open]").length,overlays:Array.from(document.querySelectorAll("#go-auth-overlay.open,#go-challenge-overlay.open,#daily-decision-modal.open,#boss-demographics-overlay.open,#boss-promo-ad-overlay.show")).map(e=>e.id)};const handled=BossGoNative.back();return {before,handled,screenAfter:document.querySelector(".screen.active-screen")?.id};');
+    if(!backState.handled)throw Error('Cart back not handled: '+JSON.stringify(backState));
+    if(await js('return !!document.querySelector("#clothing-cart-panel.show")')){await capture('cart-back-failure');throw Error('Cart remains open: '+JSON.stringify(backState));}
     if(await js('return !!document.querySelector("#clothing-cart-panel.show")'))throw Error('Cart back did not close cart');
     await capture('build5-clothing');return {privacyUpdated:true,...state,cartBackVerified:true,noPurchaseAttempted:true};
   });
@@ -107,12 +109,12 @@ try{
     await wait('return !!document.querySelector("#boss-code-tv-screen iframe")');
     const src=await js('const f=document.querySelector("#boss-code-tv-screen iframe");f.id="build5-youtube-player";return f.src');
     if(!src.startsWith('https://www.youtube-nocookie.com/embed/'))throw Error('Privacy-enhanced embed missing: '+src);
-    const reference=await rd.executeAtom('frame_by_id_or_name',['build5-youtube-player']);if(!reference?.WINDOW)throw Error('Cannot inspect provider frame');frameContext=[reference.WINDOW];
-    try{await delay(5000);await js('const v=document.querySelector("video");if(v){v.muted=true;v.play().catch(()=>{});}return true');await delay(8000);
-      const playback=await js('const v=document.querySelector("video");return {time:v?.currentTime,paused:v?.paused,error:v?.error?.code,text:document.body.innerText.slice(0,500),fullscreenControl:!!document.querySelector(".ytp-fullscreen-button")}');
-      if(!playback.time||playback.paused||playback.error)throw Error('Playback not verified: '+JSON.stringify(playback));
-      return {src,playback,physicalFullscreenGesturePending:true};
-    }finally{frameContext=[];}
+    await js('window.__goPlayback={};const frame=document.getElementById("build5-youtube-player");const u=new URL(frame.src);u.searchParams.set("enablejsapi","1");frame.src=u.href;window.onYouTubeIframeAPIReady=()=>{window.__goPlayer=new YT.Player("build5-youtube-player",{events:{onReady:e=>{window.__goPlayback.ready=true;e.target.mute();e.target.playVideo();},onStateChange:e=>{window.__goPlayback.state=e.data;},onError:e=>{window.__goPlayback.error=e.data;}}});};if(window.YT?.Player)window.onYouTubeIframeAPIReady();else{const script=document.createElement("script");script.src="https://www.youtube.com/iframe_api";document.head.append(script);}return true');
+    await delay(15000);
+    const playback=await js('return {...window.__goPlayback,time:window.__goPlayer?.getCurrentTime?.(),state:window.__goPlayer?.getPlayerState?.()}');
+    await capture('youtube-playback');
+    if(!(playback.time>0)||playback.error||playback.state!==1)throw Error('YouTube API playback verification failed: '+JSON.stringify(playback));
+    return {src,playback,inspection:'Supported YouTube IFrame API; enablejsapi added only for QA instrumentation',physicalFullscreenGesturePending:true};
   });
 
   await command('DELETE','');session=null;sim('shutdown',udid);udid=null;await save();
