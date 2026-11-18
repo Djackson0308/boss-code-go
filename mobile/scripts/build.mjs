@@ -25,7 +25,10 @@ for (const item of baseline.files) {
   hashes[item.path] = createHash('sha256').update(bytes).digest('hex');
 }
 // Use the same production source. These additions exist only in the staged native bundle.
-await writeFile(resolve(out, 'app.js'), (await readFile(resolve(out, 'app.js'), 'utf8')) + '\n' + await readFile(resolve(mobile, 'src/app-hook.js'), 'utf8'));
+// Apply the provider's privacy-enhanced embed host before any iframe is created.
+// This reduces personalization; it is not a declaration that tracking is absent.
+const nativeAppSource = (await readFile(resolve(out, 'app.js'), 'utf8')).replaceAll('https://www.youtube.com/embed/', 'https://www.youtube-nocookie.com/embed/');
+await writeFile(resolve(out, 'app.js'), nativeAppSource + '\n' + await readFile(resolve(mobile, 'src/app-hook.js'), 'utf8'));
 let html = await readFile(resolve(out, 'index.html'), 'utf8');
 assert(html.includes('#decision-makers-screen #decision-sessions { display:none !important; }'));
 html = html.replace('content="width=device-width, initial-scale=1.0"', 'content="width=device-width, initial-scale=1.0, viewport-fit=cover"');

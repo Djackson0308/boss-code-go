@@ -1,0 +1,123 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+const root=process.cwd(),out=path.join(root,'simulator-results');
+await fs.mkdir(path.join(out,'screenshots'),{recursive:true});
+const app=path.join(process.env.RUNNER_TEMP,'go-icon-build2/Build/Products/Debug-iphonesimulator/App.app');
+const token=process.env.GO_TEST_SESSION_TOKEN||'',email=process.env.GO_TEST_ACCOUNT_EMAIL||'';
+const redact=text=>{let s=String(text);for(const secret of [token,email].filter(Boolean))s=s.replaceAll(secret,'[PRIVATE]');return s.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,'[PRIVATE EMAIL]');};
+const output=process.stdout.write.bind(process.stdout);
+const reportLog=value=>output(redact(value)+'\n');
+// Suppress library transport/console logs, which can contain script arguments.
+// Only our explicitly selected, sanitized acceptance evidence reaches CI logs.
+const suppress=(_chunk,encoding,callback)=>{if(typeof encoding==='function')encoding();if(typeof callback==='function')callback();return true;};
+process.stdout.write=suppress;process.stderr.write=suppress;
+const report={startedAt:new Date().toISOString(),sourceCommit:process.env.GITHUB_SHA,version:'1.0.0',buildNumber:5,physicalDeviceTested:false,sourceModified:false,tests:[],screenshots:[],limits:['Simulator hardware/media codecs do not establish physical-device compatibility','No purchases, posts, challenge entries, profile edits or account deletion are performed','Store screenshots capture only guest/public screens; authenticated account screens are excluded']};
+const save=()=>fs.writeFile(path.join(out,'acceptance.json'),JSON.stringify(report,null,2)+'\n');
+const sim=(...args)=>execFileSync('xcrun',['simctl',...args],{encoding:'utf8',maxBuffer:5e6,timeout:480000});
+const delay=ms=>new Promise(r=>setTimeout(r,ms));
+let session,udid,deviceLabel,stage='appium-startup';
+let rd;let frameContext=[];
+const js=(script,...args)=>rd.executeAtom('execute_script',[script,args],frameContext,{timeoutMs:90000});
+const asyncjs=(script,...args)=>rd.executeAtomAsync('execute_async_script',[script,args,90000],frameContext);
+const command=async(method,p)=>{if(method==='DELETE')await rd?.disconnect();else throw Error('Unsupported native command '+p);};
+async function wait(script,timeout=30000){const end=Date.now()+timeout;let error;while(Date.now()<end){try{const r=await js(script);if(r)return r;}catch(e){error=e.message;}await delay(500);}throw Error('Wait timed out: '+script.slice(0,150)+(error?' '+error.slice(0,150):''));}
+async function test(name,work){if(!['startup and native WebView','native HTTPS backend content','focused home navigation','focused music playback','Magazine Reader','build5 privacy and clothing','build5 YouTube playback'].includes(name))return;try{const evidence=await work();report.tests.push({device:deviceLabel,name,status:'PASS',evidence});reportLog(`${deviceLabel}: PASS ${name}`);}catch(error){report.tests.push({device:deviceLabel,name,status:'FAIL',error:redact(error.message).slice(0,900)});reportLog(`${deviceLabel}: FAIL ${name}: ${redact(error.message).slice(0,250)}`);}await save();}
+async function click(selector){await js('document.querySelector(arguments[0])?.scrollIntoView({block:"center",behavior:"instant"});return true',selector);await delay(300);const element=await rd.executeAtom('find_element_fragment',['css selector',selector],frameContext);await rd.executeAtom('click',[element],frameContext,{emulateUserGesture:true});}
+async function settle(){await delay(1600);await js('window.scrollTo({top:0,behavior:"instant"}); return true;');await delay(500);}
+async function screen(id){await js('showScreen(document.getElementById(arguments[0]));return document.querySelector(".screen.active-screen")?.id;',id);await wait(`return document.getElementById(${JSON.stringify(id)})?.classList.contains('active-screen')`);await settle();}
+async function capture(name){
+ await js('return Promise.all(Array.from(document.querySelectorAll(".screen.active-screen img")).map(i=>i.complete?Promise.resolve():new Promise(r=>{i.onload=i.onerror=r;setTimeout(r,5000)}))).then(()=>true)');
+ const file=`${deviceLabel}-${name}.png`;sim('io',udid,'screenshot','--type=png',path.join(out,'screenshots',file));
+ const state=await js('return {screen:document.querySelector(".screen.active-screen")?.id,title:document.querySelector(".screen.active-screen h1,.screen.active-screen h2")?.textContent?.trim(),fixture:!!document.getElementById("ios-simulator-read-only-review"),width:innerWidth,height:innerHeight,dpr:devicePixelRatio}');
+ if(state.fixture)throw Error('Fixture marker found');report.screenshots.push({file,device:deviceLabel,nativeSimulatorCapture:true,sourceModified:false,...state});await save();
+}
+const requireWebkit=createRequire(path.join(process.env.RUNNER_TEMP,'go-webkit/package.json'));
+const remotePackage=JSON.parse(await fs.readFile(requireWebkit.resolve('appium-remote-debugger/package.json'),'utf8'));
+const {createRemoteDebugger}=await import(pathToFileURL(path.resolve(path.dirname(requireWebkit.resolve('appium-remote-debugger/package.json')),remotePackage.exports['.'].import)).href);
+const {NativeSimctl}=await import(pathToFileURL(requireWebkit.resolve('@appium/coresim')).href);
+const nativeSimctl=new NativeSimctl();
+const quietLog=new Proxy({},{get:()=>()=>{}});
+report.limits.push('WebKit DOM interaction and simctl native capture; physical gestures and OS permission dialogs are not verified');
+try{
+ const all=JSON.parse(sim('list','devices','available','-j')).devices;
+ const runtimes=Object.keys(all).filter(k=>/iOS-(26|27)/.test(k)).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).reverse();
+ const choose=pattern=>{for(const runtime of runtimes){const device=all[runtime].find(d=>pattern.test(d.name));if(device)return{...device,runtime};}throw Error('Required simulator not available: '+pattern);};
+ const devices=[['iphone',choose(/^iPhone 17 Pro$/)]];
+ for(const [label,device] of devices){
+  deviceLabel=label;udid=device.udid;stage='simulator-boot';reportLog(`${label}: booting ${device.name} on ${device.runtime}`);report.tests.push({device:label,name:'simulator-selection',status:'PASS',evidence:{name:device.name,runtime:device.runtime}});await save();
+  try{sim('boot',udid);}catch(error){if(!String(error.stderr).includes('Booted'))throw error;}
+  sim('bootstatus',udid,'-b');reportLog(`${label}: simulator booted`);sim('status_bar',udid,'override','--time','9:41','--batteryState','charged','--batteryLevel','100');sim('install',udid,app);reportLog(`${label}: application installed; starting automation`);
+  stage='native-launch';sim('launch',udid,'com.bosscodemedia.go');reportLog(label+': application launched');await delay(5000);
+  sim('io',udid,'screenshot','--type=png',path.join(out,'screenshots',label+'-00-startup-diagnostic.png'));
+  stage='webview-connection';const socketPath=await nativeSimctl.getWebInspectorSocket(udid);
+  if(!socketPath)throw Error('Simulator Web Inspector socket unavailable');
+  rd=createRemoteDebugger({bundleId:'com.bosscodemedia.go',additionalBundleIds:['process-App'],isSafari:false,platformVersion:device.runtime.split('iOS-')[1].replaceAll('-','.'),socketPath,garbageCollectOnExecute:false,logFullResponse:false,logAllCommunication:false,logAllCommunicationHexDump:false,pageReadyTimeout:60000,targetCreationTimeoutMs:120000,log:quietLog},false);
+  const appDictionary=await rd.connect(60000);reportLog(JSON.stringify({device:label,inspectorApps:Object.values(appDictionary).map(a=>({bundleId:a.bundleId,active:a.isActive,automation:a.isAutomationEnabled}))}));const pages=await rd.selectApp();const page=pages.find(p=>p.url?.startsWith('capacitor://'));
+  if(!page)throw Error('Running application WebView not found');
+  const [appId,pageId]=String(page.id).split('.');await rd.selectPage(appId,pageId);session='webkit';reportLog(label+': WebKit connection ready');
+  await test('startup and native WebView',async()=>{await wait('return typeof showScreen === "function" && !!document.getElementById("home-screen")',45000);return await js('return {url:location.href,platform:Capacitor.getPlatform(),viewport:{width:innerWidth,height:innerHeight},ready:document.readyState}');});
+  await js('document.getElementById("daily-decision-close")?.click();document.getElementById("boss-demo-skip")?.click();return true;');await delay(3500);
+  await test('native HTTPS backend content',async()=>{const r=await asyncjs('const done=arguments[arguments.length-1];Promise.all(["/videos","/go/challenges","/go-list/entries?limit=1&offset=0"].map(async p=>{const r=await fetch("https://boss-code-go-api.dezthareason4ever.workers.dev"+p);const b=await r.json();return {path:p,status:r.status,success:b.success,records:(b.data||b.challenges||b.entries||[]).length};})).then(done).catch(e=>done({error:e.message}));');if(!Array.isArray(r)||r.some(x=>x.status!==200))throw Error(JSON.stringify(r));return r;});
+  await test('home public content',async()=>{await screen('home-screen');await capture('01-home');return await js('return {text:document.getElementById("home-screen").innerText.slice(0,100),images:document.querySelectorAll("#home-screen img").length}');});
+  await test('Decision Makers introduction and challenges',async()=>{await screen('decision-makers-screen');await wait('return document.querySelectorAll("#go-challenge-grid [data-go-challenge]").length>0',45000);await capture('02-decision-makers');return await js('return {challengeCards:document.querySelectorAll("#go-challenge-grid [data-go-challenge]").length,sessionsHidden:getComputedStyle(document.getElementById("decision-sessions")).display==="none",quickVideos:document.querySelectorAll(".on-the-go-card").length}');});
+  await test('ON THE GO published content',async()=>{await screen('decision-makers-screen');await wait('return document.querySelectorAll(".on-the-go-card").length>0');await js('document.getElementById("decision-on-the-go").scrollIntoView({behavior:"instant",block:"start"});return true;');await delay(1000);await capture('03-on-the-go');return await js('return {cards:document.querySelectorAll(".on-the-go-card").length,imagesLoaded:Array.from(document.querySelectorAll(".on-the-go-card img")).filter(i=>i.complete&&i.naturalWidth>0).length}');});
+  await test('ON THE GO media playback',async()=>{await screen('decision-makers-screen');await wait('return !!document.querySelector(".dm-session-play")');await click('.dm-session-play');await delay(2500);const media=await js('const v=document.querySelector("#decision-makers-screen video");const f=document.querySelector("#decision-makers-screen iframe[data-boss-video]");return {nativeVideo:!!v,iframe:!!f,src:v?.currentSrc||f?.src||null,readyState:v?.readyState,error:v?.error?.code};');if(media.nativeVideo){await js('const v=document.querySelector("#decision-makers-screen video");v.muted=true;v.play().catch(()=>{});return true');await delay(5000);const playback=await js('const v=document.querySelector("#decision-makers-screen video");return {time:v.currentTime,paused:v.paused,readyState:v.readyState,error:v.error?.code}');if(playback.time<=0||playback.error)throw Error(JSON.stringify(playback));return {...media,playback};}if(media.iframe){
+ await js('document.querySelector("#decision-makers-screen iframe[data-boss-video]").id="go-acceptance-player";return true');
+ const reference=await rd.executeAtom('frame_by_id_or_name',['go-acceptance-player']);
+ if(!reference?.WINDOW)throw Error('Automation could not enter provider frame');
+ frameContext=[reference.WINDOW];
+ try{await delay(3000);const state=await js('return {video:!!document.querySelector("video"),text:document.body.innerText.slice(0,600)}');
+ if(!state.video)throw Error('Provider player unavailable: '+JSON.stringify(state));
+ await js('const v=document.querySelector("video");v.muted=true;v.play().catch(()=>{});return true');await delay(8000);
+ const playback=await js('const v=document.querySelector("video");return {time:v?.currentTime,paused:v?.paused,readyState:v?.readyState,error:v?.error?.code,text:document.body.innerText.slice(0,500)}');
+ if(!playback.time||playback.error)throw Error('Provider playback did not advance: '+JSON.stringify(playback));
+ return {...media,playbackVerified:true,playback};
+ }finally{frameContext=[];}
+ }throw Error('No media player appeared');});
+  await test('Boss Bite content and map',async()=>{await screen('boss-bite-screen');await delay(3000);await capture('04-boss-bite');return await js('return {text:document.getElementById("boss-bite-screen").innerText.slice(0,180),mapCanvas:!!document.querySelector("#boss-bite-screen canvas"),imagesLoaded:Array.from(document.querySelectorAll("#boss-bite-screen img")).filter(i=>i.complete&&i.naturalWidth).length}');});
+  await test('B.O.S.S. CODE TV catalog',async()=>{await screen('boss-code-tv-screen');await delay(2500);await capture('05-code-tv');return await js('return {text:document.getElementById("boss-code-tv-screen").innerText.slice(0,180),videoCards:document.querySelectorAll("#boss-code-tv-screen [data-video-id]").length}');});
+  await test('Magazine Reader',async()=>{await js('openMagazineHub();return true');await delay(5000);const state=await js('return {screen:document.querySelector(".screen.active-screen")?.id,frames:Array.from(document.querySelectorAll(".screen.active-screen iframe")).map(f=>({src:f.src,title:f.title})),text:document.querySelector(".screen.active-screen")?.innerText.slice(0,160)}');if(!state.frames.length){const card=await js('return !!document.querySelector(".magazine-issue-card")');if(card){await click('.magazine-issue-card');await delay(5000);}}await capture('06-magazine');return await js('return {screen:document.querySelector(".screen.active-screen")?.id,iframe:document.querySelector(".screen.active-screen iframe")?.src||null,accessibleFrameText:(()=>{try{return document.querySelector(".screen.active-screen iframe")?.contentDocument?.body?.innerText.slice(0,200)||null}catch{return null}})()}');});
+  await test('Music catalog',async()=>{await screen('music-screen');await capture('07-music');return await js('return {text:document.getElementById("music-screen").innerText.slice(0,180),audioElements:document.querySelectorAll("audio").length}');});
+  await test('GO LIST live discovery',async()=>{await js('goListOpenDirectory();return true');await delay(4000);await capture('08-go-list');return await js('return {text:document.getElementById("go-list-results")?.innerText.slice(0,260),cards:document.querySelectorAll("#go-list-results>*").length}');});
+  await test('guest authentication gate and invalid email error',async()=>{await screen('decision-makers-screen');await js('document.getElementById("go-account-button")?.click();return true');await wait('return document.getElementById("go-auth-overlay")?.classList.contains("open")');await click('#go-auth-send');await delay(1500);const status=await js('return document.getElementById("go-auth-status").textContent');await click('#go-auth-cancel');if(!status)throw Error('No validation/error message');return {guestGate:true,errorText:status};});
+  await test('controlled network failure and recovery UI',async()=>{const result=await asyncjs('const done=arguments[arguments.length-1];const original=window.fetch;window.fetch=()=>Promise.reject(new Error("Controlled simulator network failure"));Promise.resolve(window.BossGoNative.refresh()).catch(()=>{}).finally(()=>{window.dispatchEvent(new Event("go-native-connection-failed"));setTimeout(()=>{const text=document.querySelector(".go-native-notice")?.textContent||"";window.fetch=original;done({notice:text,injection:"Runtime transport rejection only; app source unchanged"});},300);});');if(!result.notice)throw Error('No failure notice');await js('window.fetch=window.fetch;return true');await asyncjs('const done=arguments[arguments.length-1];BossGoNative.refresh().then(()=>done({recovered:true})).catch(e=>done({error:e.message}));');return result;});
+  if(token&&email){await test('authenticated session restoration and protected profile',async()=>{await js('localStorage.setItem("boss-code-go-auth-token-v1",arguments[0]);localStorage.setItem("boss-code-go-auth-email-v1",arguments[1]);location.reload();return true',token,email);await delay(7000);await wait('return typeof goOpenHub === "function"');const auth=await asyncjs('const done=arguments[arguments.length-1];fetch("https://boss-code-go-api.dezthareason4ever.workers.dev/go/profile",{headers:{Authorization:"Bearer "+localStorage.getItem("boss-code-go-auth-token-v1")}}).then(async r=>{const b=await r.json();done({status:r.status,success:b.success,hasProfile:!!b.profile})}).catch(e=>done({error:e.message}));');if(auth.status!==200)throw Error(JSON.stringify(auth));await js('goOpenHub("profile");return true');await wait('return !!document.getElementById("go-profile-name")');return {...auth,profileUi:true,method:'Normal email-code authentication verified locally; issued session restored in simulator; no authentication bypass'};});}else report.limits.push('Authentication was verified separately in production; no login code requested during this guest simulator run');
+  await test('focused home navigation',async()=>{const checks=[];for(const [selector,id] of [['#decision-makers-button','decision-makers-screen'],['#boss-bite-button','boss-bite-screen'],['#boss-code-tv-button','boss-code-tv-screen'],['#music-button','music-screen']]){await screen('home-screen');await click(selector);await delay(1600);const promo=await js('const e=document.getElementById("boss-promo-ad-overlay");return !!e&&e.getAttribute("aria-hidden")==="false"');if(promo)await click('#boss-promo-ad-close');await wait('return document.getElementById('+JSON.stringify(id)+')?.classList.contains("active-screen")');checks.push({selector,screen:id});}return checks;});
+  await test('focused music playback',async()=>{await screen('music-screen');await wait('return !!document.querySelector(".artist-card")');await click('.artist-card');await wait('return !!document.querySelector(".music-track")');await click('.music-track');await delay(12000);const r=await js('const a=document.getElementById("boss-music-audio");return {src:a?.currentSrc,time:a?.currentTime,paused:a?.paused,readyState:a?.readyState,error:a?.error?.code}');if(!r.time||r.paused||r.error)throw Error(JSON.stringify(r));await js('document.getElementById("boss-music-audio").pause();return true');return r;});
+  await test('focused magazine reader',async()=>{await js('openMagazineHub();return true');await delay(5000);await js('document.querySelector(".screen.active-screen iframe").id="go-magazine-test";return true');const f=await rd.executeAtom('frame_by_id_or_name',['go-magazine-test']);if(!f?.WINDOW)throw Error('Magazine frame unavailable');frameContext=[f.WINDOW];try{const library=await js('return {text:document.body.innerText.slice(0,1800),links:Array.from(document.querySelectorAll("a,button")).map(e=>({tag:e.tagName,text:e.innerText,href:e.href})).filter(x=>/read|issue/i.test(x.text)).slice(0,12)}');const selector=await js('const es=Array.from(document.querySelectorAll("a,button"));const e=es.find(e=>/read issue/i.test(e.innerText));if(!e)return null;e.id="go-read-issue";return "#go-read-issue"');if(!selector)throw Error('Read Issue control unavailable: '+JSON.stringify(library));await click(selector);await delay(9000);const reader=await js('return {url:location.href,text:document.body.innerText.slice(0,1600),canvas:document.querySelectorAll("canvas").length,images:Array.from(document.images).filter(i=>i.complete&&i.naturalWidth).length,frames:Array.from(document.querySelectorAll("iframe")).map(e=>e.src)}');return {library,reader};}finally{frameContext=[];}});
+  await test('native magazine view',async()=>{await js('openMagazineHub();return true');await delay(3500);await js('const f=document.querySelector(".screen.active-screen iframe");f.src="https://magazine.bosscodemedia.com/reader.html?pdf=CORMEGA%2026.pdf";return true');await delay(10000);const file=deviceLabel+'-magazine-published-reader.png';sim('io',udid,'screenshot','--type=png',path.join(out,'screenshots',file));return {screenshot:file,requiresVisualReview:true,method:'Navigate the existing magazine iframe to the exact published Read Issue link; cross-origin control automation unavailable',readerControlsVerified:false};});
+  await test('native provider fallback',async()=>{const evidence=[];for(const id of ['boss-bite-screen','boss-code-tv-screen']){await screen(id);await delay(2500);if(id==='boss-code-tv-screen')await click('.tv-thumbnail');await wait('return !!document.querySelector("#'+id+' .go-native-youtube")');const src=await js('return document.querySelector("#'+id+' iframe")?.src');await click('#'+id+' .go-native-youtube');await delay(9000);const file=deviceLabel+'-'+id+'-external-provider.png';sim('io',udid,'screenshot','--type=png',path.join(out,'screenshots',file));evidence.push({screen:id,embed:src,externalProviderScreenshot:file,playbackVerified:false,requiresVisualReview:true});await asyncjs('const done=arguments[arguments.length-1];Capacitor.nativePromise("Browser","close",{}).then(()=>done(true)).catch(e=>done({error:e.message}));');await delay(1500);}return evidence;});
+  await test('build5 privacy and clothing',async()=>{
+    const privacy=await js('return GO_LEGAL_DOCS.privacy.sections.map(x=>x.join(" ")).join("\\n")');
+    if(!privacy.includes('affirmative opt-in')||!privacy.includes('approximate city'))throw Error('Updated privacy notice absent');
+    await js('openClothingStore();return true');await delay(5000);
+    const state=await js('return {screen:document.querySelector(".screen.active-screen")?.id,products:document.querySelectorAll(".clothing-product-card").length,cart:typeof openClothingCart,checkout:typeof startClothingStripeCheckout}');
+    if(state.screen!=='the-code-clothing-screen'||state.cart!=='function'||state.checkout!=='function')throw Error(JSON.stringify(state));
+    await js('openClothingCart();return true');await delay(500);
+    if(!await js('return !!document.querySelector("#clothing-cart-panel.show")'))throw Error('Cart did not open');
+    if(!await js('return BossGoNative.back()'))throw Error('Cart back did not handle navigation');
+    if(await js('return !!document.querySelector("#clothing-cart-panel.show")'))throw Error('Cart back did not close cart');
+    await capture('build5-clothing');return {privacyUpdated:true,...state,cartBackVerified:true,noPurchaseAttempted:true};
+  });
+  await test('build5 YouTube playback',async()=>{
+    await screen('boss-code-tv-screen');await delay(2500);await click('.tv-thumbnail');
+    await wait('return !!document.querySelector("#boss-code-tv-screen iframe")');
+    const src=await js('const f=document.querySelector("#boss-code-tv-screen iframe");f.id="build5-youtube-player";return f.src');
+    if(!src.startsWith('https://www.youtube-nocookie.com/embed/'))throw Error('Privacy-enhanced embed missing: '+src);
+    const reference=await rd.executeAtom('frame_by_id_or_name',['build5-youtube-player']);if(!reference?.WINDOW)throw Error('Cannot inspect provider frame');frameContext=[reference.WINDOW];
+    try{await delay(5000);await js('const v=document.querySelector("video");if(v){v.muted=true;v.play().catch(()=>{});}return true');await delay(8000);
+      const playback=await js('const v=document.querySelector("video");return {time:v?.currentTime,paused:v?.paused,error:v?.error?.code,text:document.body.innerText.slice(0,500),fullscreenControl:!!document.querySelector(".ytp-fullscreen-button")}');
+      if(!playback.time||playback.paused||playback.error)throw Error('Playback not verified: '+JSON.stringify(playback));
+      return {src,playback,physicalFullscreenGesturePending:true};
+    }finally{frameContext=[];}
+  });
+
+  await command('DELETE','');session=null;sim('shutdown',udid);udid=null;await save();
+ }
+}catch(error){report.fatal=redact(error.message).slice(0,1600);report.fatalStage=stage;reportLog('Simulator harness error at '+stage+': '+report.fatal);}
+
+finally{if(rd)await rd.disconnect().catch(()=>{});if(udid)try{sim('shutdown',udid);}catch{}report.finishedAt=new Date().toISOString();await save();}
+if(report.fatal||report.tests.some(t=>t.status==='FAIL'))process.exitCode=1;

@@ -15,7 +15,7 @@ jobs:
       qa_only: ${{ steps.request.outputs.qa_only }}
     if: github.ref == 'refs/heads/ios/testflight-deploy' && github.repository == 'Djackson0308/boss-code-go'
     runs-on: macos-26
-    timeout-minutes: 30
+    timeout-minutes: 50
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
@@ -35,6 +35,11 @@ jobs:
           GO_APPROVED_ICON_SHA256: 'd0bf598bc56ab644bec3dfd068b32ec02772ff244fd847a4f59f114bb6b9f029'
         run: node scripts/ios-icon-validate.mjs
         working-directory: mobile
+      - name: Install existing pinned simulator inspection tools
+        run: npm install --prefix "$RUNNER_TEMP/go-webkit" --no-audit --no-fund appium-remote-debugger@18.0.2 @appium/coresim@1.14.0
+      - name: Verify native privacy, media and navigation
+        run: node ci/build5-acceptance.mjs
+        working-directory: mobile
       - name: Preserve public icon and simulator evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -43,6 +48,7 @@ jobs:
           path: |
             mobile/artifacts/icon-build2/*.png
             mobile/artifacts/icon-build2/validation.json
+            mobile/simulator-results/**
           if-no-files-found: warn
           retention-days: 14
   deploy:
